@@ -56,9 +56,13 @@ pnpm-debug.log*
 *.temp
 .cache/
 
+# Development outputs
+.outputs/
+
 # Package manager locks (keep one based on your choice)
 # Uncomment the lock files you DON'T want to track:
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
-# bun.lockb
+bun.lockb
+bun.lock
