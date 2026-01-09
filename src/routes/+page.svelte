@@ -3,17 +3,14 @@
 
 	let mounted = $state(false);
 
-	onMount(() => {
-		mounted = true;
-	});
+	onMount(() => { mounted = true });
 </script>
 
 <main>
-	<h1>Iris</h1>
-	<p>ILR Toolkit - CSV to ILR XML Conversion</p>
-
 	{#if mounted}
-		<p>Desktop app running</p>
+	  <p>App is mounted</p>
+	{:else}
+	  <p>Be patient, my child...</p>
 	{/if}
 </main>
 
