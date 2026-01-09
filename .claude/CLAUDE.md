@@ -89,6 +89,13 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 - Always clear code edits before making them
 - Use conventional commit format (see Versioning below)
 
+### Verification Before Committing
+- Never commit code that hasn't been verified to work
+- For new features: Test manually or run automated tests
+- For bug fixes: Verify the fix resolves the issue
+- For refactors: Ensure behaviour is unchanged
+- Always run the code before committing
+
 ### Versioning with svu
 - Use conventional commits for automatic semantic versioning:
   - `fix:` → patch bump (0.1.0 → 0.1.1)
