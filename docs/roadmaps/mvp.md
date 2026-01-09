@@ -18,21 +18,28 @@ None currently
 - [ ] Implement CSV parser with header-based column matching
 - [ ] Create ILR XML generator (minimal valid structure)
 - [ ] Build semantic validator (beyond structural checks)
-- [ ] Implement storage abstraction for cross-submission history
+- [ ] Implement storage abstraction for cross-submission history (must support future ESFA response storage)
+- [ ] Add configuration system (user preferences + custom field mappings)
 - [ ] Add unit tests for core transformations
 
 **CLI Interface**
-- [ ] Implement `iris convert` command (CSV → ILR XML)
+- [ ] Add rich terminal UI libraries (chalk, ora, cli-table3, boxen, figures)
+- [ ] Implement `iris convert` command (CSV → ILR XML with preview option)
 - [ ] Implement `iris validate` command (validate existing XML)
 - [ ] Implement `iris check` command (cross-submission consistency)
+- [ ] Implement `iris compare <month1> <month2>` command (cross-month inconsistency detection)
+- [ ] Implement `iris config` command (manage user configuration)
+- [ ] Add preview mode (summary or full XML output before save)
 - [ ] Add comprehensive CLI help and error messages
 - [ ] Test CLI with real CSV exports from Airtable
 
 **Desktop Interface**
 - [ ] Create file picker UI for CSV input
 - [ ] Add validation results display panel
+- [ ] Add XML preview panel (show output before saving)
 - [ ] Implement output file save dialog
 - [ ] Show cross-submission warnings in UI
+- [ ] Add configuration UI (manage field mappings and preferences)
 - [ ] Add basic error handling and user feedback
 
 **Documentation**
@@ -48,25 +55,29 @@ None currently
 
 ## 2. MVP Milestones
 
-### Milestone 1: Shared Core Library ✓
+### Milestone 1: Shared Core Library
 **Goal:** Working transformation engine used by both interfaces
 
 **Deliverables:**
 - CSV parser that tolerates column reordering
 - ILR XML generator producing valid output
 - Semantic validation beyond structural checks
-- File-based storage for cross-submission data
+- File-based storage for cross-submission data (designed to support future ESFA response storage)
+- Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - Test coverage for core transformations
 
 ### Milestone 2: CLI Interface
 **Goal:** Functional CLI for technical users and automation
 
 **Deliverables:**
-- `iris convert` command working end-to-end
+- Rich terminal UI (colored output, spinners, progress bars, formatted tables)
+- `iris convert` command working end-to-end with preview mode
 - `iris validate` for existing XML files
 - `iris check` for cross-submission consistency
+- `iris compare <month1> <month2>` for cross-month inconsistency detection (warns but allows)
+- `iris config` for managing user configuration
 - Global installation via `bun link`
-- Comprehensive error messages
+- Comprehensive error messages and help text
 
 ### Milestone 3: Desktop Interface
 **Goal:** Accessible native app for non-technical users
@@ -74,7 +85,10 @@ None currently
 **Deliverables:**
 - macOS `.app` bundle
 - File picker for CSV input
+- XML preview panel (show output before saving)
 - Validation results display
+- Configuration UI (field mappings and preferences)
+- Cross-submission warnings display
 - Output save location selection
 - Basic but clear error handling
 
@@ -92,10 +106,16 @@ None currently
 
 ## 3. Beyond MVP: Future Features
 
+**Post-Submission Error Prediction**
+- Analyze ILR XML and predict ESFA validation errors before actual submission
+- Requires: historical submission data + actual ESFA response storage
+- Machine learning or rule-based prediction based on past submission outcomes
+- Architecture support: Storage abstraction must handle ESFA response data (designed in Milestone 1)
+
 **Cross-Submission Analysis**
-- Historical trend reporting
-- Prediction of submission outcomes based on past data
+- Historical trend reporting (submission patterns over time)
 - Anomaly detection across submission periods
+- Statistical analysis of submission outcomes
 
 **Declarative Transformation Layer**
 - Define transformation rules in JSON/YAML
