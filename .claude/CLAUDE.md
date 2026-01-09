@@ -57,6 +57,47 @@ bun link                 # Link for local development (iris command available)
 bun install -g .         # Install globally from project
 ```
 
+## Git Workflow
+
+### Branch Naming
+Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
+
+**Structure:** `<prefix>/<short-description>`
+
+**Rules:**
+- All lowercase
+- Hyphens between words (no underscores or spaces)
+- Imperative mood: `add-feature`, not `adds-feature` or `adding-feature`
+- Descriptive but concise: `feat/calculate-user-stats` not `feat/stats`
+- No ticket numbers (not using GitHub issues)
+
+**Common prefixes:** `feat/`, `fix/`, `enhance/`, `refactor/`, `test/`, `docs/`, `config/`
+
+### Branch Granularity
+- Branches must represent **minimal tangible improvements**
+- Scope: Much smaller than individual roadmap tasks
+- Example: A roadmap task like "Build semantic validator" would be split into multiple branches:
+  - `feat/add-validator-types` (define validation result types)
+  - `feat/add-basic-validator` (implement basic validation structure)
+  - `feat/add-field-rules` (add specific field validation rules)
+- Each branch should be merge-ready within a focused work session
+- When in doubt, go smaller
+
+### Commit Granularity
+- Commit frequently with clear, granular changes
+- More commits = more portfolio evidence
+- Always clear code edits before making them
+- Use conventional commit format (see Versioning below)
+
+### Versioning with svu
+- Use conventional commits for automatic semantic versioning:
+  - `fix:` → patch bump (0.1.0 → 0.1.1)
+  - `feat:` → minor bump (0.1.0 → 0.2.0)
+  - `feat!:` or `BREAKING CHANGE` → major bump (0.1.0 → 1.0.0)
+- After each merge to main, check `svu next` and create tag
+- Push tags: `git push --tags`
+- See ~/.claude/docs/cli-tools-usage-guide.md#2.1 for full workflow
+
 ## Project Structure
 
 ```
