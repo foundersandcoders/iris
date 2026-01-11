@@ -6,11 +6,14 @@ Iris converts learner data from CSV exports into ILR-compliant XML for ESFA subm
 
 ## What It Does
 
+- **Beautiful TUI**: Full-screen interactive terminal interface (primary UX)
 - Parses CSV exports using header-based matching (tolerates column reordering)
 - Generates ILR-compliant XML for ESFA submission
+- Interactive error exploration and validation workflows
 - Semantic validation beyond structural XML checks
 - Cross-submission consistency checking using historical data
-- Dual interface: CLI for automation, native desktop app for non-technical users
+- Direct commands for automation and scripting
+- Desktop app for users who prefer GUI
 
 ## Quick Start
 
@@ -18,30 +21,33 @@ Iris converts learner data from CSV exports into ILR-compliant XML for ESFA subm
 # Install dependencies
 bun install
 
-# Run CLI locally
+# Run TUI locally
 bun run src/cli.ts
 
-# Link CLI globally
+# Link globally and use TUI
 bun link
+iris                      # Launch full-screen TUI
+iris convert file.csv     # Direct command (scriptable)
 iris --help
-
-# Run desktop app in development
-bun tauri dev
 
 # Run tests
 bun test
+
+# Desktop app
+bun tauri dev
 ```
 
 ## Architecture
 
-Built on a shared TypeScript core with two interfaces:
+Built on a shared TypeScript core with multiple interfaces:
 
-- **CLI**: Bun runtime, direct filesystem access
-- **Desktop**: Tauri + SvelteKit, native macOS app
+- **TUI** (primary): terminal-kit, full-screen interactive interface
+- **Direct Commands**: Scriptable automation with beautiful output
+- **Desktop**: Tauri + SvelteKit, cross-platform native app (macOS, Windows, Linux)
 
-Both interfaces use identical transformation and validation logic from `src/lib/`.
+All interfaces use identical transformation and validation logic from `src/lib/`.
 
-See [docs/proposal.md](docs/proposal.md) for detailed context.
+See [docs/adrs/](docs/adrs/) for architectural decisions and [docs/technical/tui-ux-design.md](docs/technical/tui-ux-design.md) for TUI design details.
 
 ## Project Structure
 
@@ -49,10 +55,12 @@ See [docs/proposal.md](docs/proposal.md) for detailed context.
 iris/
 ├── src/
 │   ├── lib/           # Shared core (parser, validator, generator, storage)
-│   ├── cli.ts         # CLI entry point
+│   ├── tui/           # TUI interface (screens, components, workflows)
+│   ├── commands/      # Direct command implementations
+│   ├── cli.ts         # Entry point (routes to TUI or commands)
 │   └── routes/        # SvelteKit desktop UI
-├── src-tauri/         # Tauri Rust backend (generated)
-├── docs/              # Documentation, roadmaps, ADRs
+├── src-tauri/         # Tauri Rust backend
+├── docs/              # Documentation, roadmaps, ADRs, technical specs
 └── tests/             # Vitest tests
 ```
 

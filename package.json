@@ -16,7 +16,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "tauri:sign": "codesign --deep --force --verify --verbose --sign \"-\" src-tauri/target/release/bundle/macos/Iris.app"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",

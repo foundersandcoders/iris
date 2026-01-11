@@ -22,16 +22,31 @@ None currently
 - [ ] Add configuration system (user preferences + custom field mappings)
 - [ ] Add unit tests for core transformations
 
-**CLI Interface**
-- [ ] Add rich terminal UI libraries (chalk, ora, cli-table3, boxen, figures)
-- [ ] Implement `iris convert` command (CSV → ILR XML with preview option)
-- [ ] Implement `iris validate` command (validate existing XML)
-- [ ] Implement `iris check` command (cross-submission consistency)
-- [ ] Implement `iris compare <month1> <month2>` command (cross-month inconsistency detection)
-- [ ] Implement `iris config` command (manage user configuration)
-- [ ] Add preview mode (summary or full XML output before save)
-- [ ] Add comprehensive CLI help and error messages
-- [ ] Test CLI with real CSV exports from Airtable
+**TUI Interface (Primary)**
+- [ ] Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
+- [ ] Create TUI application scaffold and theme system
+- [ ] Build dashboard with menu navigation and recent activity
+- [ ] Implement interactive file picker for CSV selection
+- [ ] Create processing screen with live progress and log viewer
+- [ ] Build validation results explorer (error/warning navigation)
+- [ ] Implement success/completion screen with next actions
+- [ ] Add settings management screen
+- [ ] Create submission history browser
+- [ ] Implement keyboard navigation (arrows, vim-style, shortcuts)
+- [ ] Add help overlay system (contextual help)
+- [ ] Build convert workflow (file select → process → results)
+- [ ] Build validate workflow (file select → validate → explore errors)
+- [ ] Build cross-submission check workflow
+- [ ] Add visual feedback (animations, transitions, spinners)
+- [ ] Test TUI with real CSV exports from Airtable
+
+**Direct Commands (Automation)**
+- [ ] Implement `iris convert <file>` (non-TUI execution with pretty output)
+- [ ] Implement `iris validate <file>` (non-TUI validation)
+- [ ] Implement `iris check` (non-TUI cross-submission check)
+- [ ] Implement `iris --help` and command-specific help
+- [ ] Add `--interactive` flag to launch TUI for specific workflows
+- [ ] Test direct commands in automation/scripting scenarios
 
 **Desktop Interface**
 - [ ] Create file picker UI for CSV input
@@ -66,40 +81,56 @@ None currently
 - Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - Test coverage for core transformations
 
-### Milestone 2: CLI Interface
-**Goal:** Functional CLI for technical users and automation
+### Milestone 2: TUI Interface (Primary)
+**Goal:** Beautiful, interactive terminal interface as the main user experience
 
 **Deliverables:**
-- Rich terminal UI (colored output, spinners, progress bars, formatted tables)
-- `iris convert` command working end-to-end with preview mode
-- `iris validate` for existing XML files
-- `iris check` for cross-submission consistency
-- `iris compare <month1> <month2>` for cross-month inconsistency detection (warns but allows)
-- `iris config` for managing user configuration
+- Full-screen TUI application (`iris` launches dashboard)
+- Interactive file picker with preview
+- Live processing screen with progress and logs
+- Validation results explorer (navigate errors/warnings)
+- Settings management screen
+- Submission history browser
+- Complete workflows: convert, validate, cross-check
+- Keyboard navigation (arrows, vim-style, shortcuts)
+- Help overlay system
+- Visual polish (animations, gradients, transitions)
 - Global installation via `bun link`
-- Comprehensive error messages and help text
 
-### Milestone 3: Desktop Interface
-**Goal:** Accessible native app for non-technical users
+### Milestone 3: Direct Commands (Automation)
+**Goal:** Scriptable commands for automation and power users
 
 **Deliverables:**
-- macOS `.app` bundle
+- `iris convert <file>` working end-to-end (non-TUI)
+- `iris validate <file>` for existing XML files
+- `iris check` for cross-submission consistency
+- Beautiful console output (consola, spinners, progress)
+- `--interactive` flag to launch TUI for specific workflows
+- Comprehensive help text (`--help`)
+- CI/CD compatibility
+
+### Milestone 4: Desktop Interface
+**Goal:** Native cross-platform app for users who prefer GUI over terminal
+**Status:** Follows TUI implementation, informed by TUI user feedback
+**Platforms:** macOS, Windows, Linux (via Tauri)
+
+**Deliverables:**
+- Cross-platform builds (macOS `.app`, Windows `.exe`, Linux `.AppImage`)
 - File picker for CSV input
-- XML preview panel (show output before saving)
+- XML preview panel
 - Validation results display
-- Configuration UI (field mappings and preferences)
+- Configuration UI
 - Cross-submission warnings display
 - Output save location selection
-- Basic but clear error handling
 
-### Milestone 4: Production Ready
+### Milestone 5: Production Ready
 **Goal:** Replaces existing Electron tool in production
 
 **Deliverables:**
 - Validation against real Airtable exports
 - All transformation logic from existing tool replicated
 - User acceptance testing with FaC staff
-- Code signing for macOS distribution
+- Code signing/distribution setup for target platforms
 - First production submission using Iris
 
 ---
@@ -151,6 +182,16 @@ None currently
 None yet
 
 #### 4b2. Record of Other Completed Tasks
+
+**2026-01-11:**
+- Designed TUI-first interface architecture (ADR 002)
+- Created comprehensive TUI UX design document
+- Updated roadmap to prioritize TUI over basic CLI
+- Defined visual design language (colors, typography, layouts)
+- Planned screen layouts for all major workflows
+- Specified interaction patterns and keyboard navigation
+- Documented component architecture and code structure
+- **Impact:** TUI becomes primary interface, desktop GUI deprioritized to post-MVP
 
 **2026-01-09:**
 - Configured CLAUDE.md with Iris project details
