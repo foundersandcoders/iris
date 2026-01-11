@@ -121,13 +121,13 @@ iris validate --interactive  # Launch TUI for validation exploration
 
 ### Positive
 
-1. **Portfolio impact:** TUI demonstrates advanced terminal skills beyond basic CLI scripting
-2. **Primary interface clarity:** TUI as main UX (not just automation layer)
-3. **Better workflows:** Interactive file browsing, live validation, error exploration
-4. **Focused development:** Build TUI first, validate with users, then build desktop GUI
-5. **Automation preserved:** Direct commands still available for scripting
-6. **Beautiful output:** Modern terminal aesthetics match quality of desktop apps
-7. **Accessibility:** No GUI framework knowledge required, works over SSH
+1. **Primary interface clarity:** TUI as main UX (not just automation layer)
+2. **Better workflows:** Interactive file browsing, live validation, error exploration
+3. **Focused development:** Build TUI first, validate with users, then build desktop GUI
+4. **Automation preserved:** Direct commands still available for scripting
+5. **Beautiful output:** Modern terminal aesthetics match quality of desktop apps
+6. **Accessibility:** No GUI framework knowledge required, works over SSH
+7. **Lower barrier to entry:** Terminal-based tool easier to distribute than macOS app (no signing, notarization)
 
 ### Negative
 
