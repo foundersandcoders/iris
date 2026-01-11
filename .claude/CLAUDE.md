@@ -5,20 +5,25 @@
 Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders and Coders' existing Electron-based export tool. It converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and transformation logic.
 
 Key features:
+- **TUI-first interface:** Beautiful full-screen terminal application as primary UX
 - Header-based CSV parsing (tolerates column reordering)
 - Semantic validation (beyond structural XML validation)
 - Cross-submission consistency checking
-- Dual interface: CLI for automation, desktop app for non-technical users
-- Shared processing core ensures identical logic across both interfaces
+- Interactive error exploration and validation workflows
+- Direct commands for automation and scripting
+- Desktop app (post-MVP) for users who prefer GUI over terminal
+- Shared processing core ensures identical logic across all interfaces
 
 ## Tech Stack
 
 - **Runtime:** Bun
-- **Desktop Framework:** Tauri (Rust backend, no Rust code written)
-- **Frontend:** SvelteKit with TypeScript
-- **CLI:** TypeScript with bun runtime
+- **TUI Framework:** terminal-kit (primary interface)
+- **TUI Libraries:** consola, chalk, gradient-string, cli-table3, boxen, ora, listr2, figures
+- **Desktop Framework:** Tauri (Rust backend, post-MVP, no Rust code written)
+- **Frontend:** SvelteKit with TypeScript (desktop GUI, post-MVP)
 - **Storage:** File-based (local filesystem, no database)
 - **XML Generation:** Native TypeScript (no external XML libraries yet)
+- **Testing:** Vitest
 
 ## Development Conventions
 
@@ -39,20 +44,26 @@ No database. File-based storage for:
 ```bash
 # Development
 bun install              # Install dependencies
+bun run cli              # Run TUI locally (development)
+iris                     # Run globally installed TUI (after bun link)
+
+# TUI Usage (after global install)
+iris                     # Launch full-screen TUI (primary interface)
+iris convert file.csv    # Direct command (non-TUI, scriptable)
+iris validate file.xml   # Direct validation command
+iris --interactive       # Launch TUI from command context
+iris --help              # Show help
+
+# Desktop GUI (post-MVP)
 bun dev                  # Run SvelteKit dev server
 bun tauri dev            # Run Tauri desktop app in dev mode
-bun run cli              # Run CLI tool locally
-iris                     # Run globally installed CLI (after bun link)
-
-# Building
 bun tauri build          # Build desktop app (.app bundle for macOS)
-bun run build            # Build SvelteKit for production
 
 # Testing
 bun test                 # Run Vitest tests
 bun test:watch          # Run tests in watch mode
 
-# CLI Global Install
+# Global Install
 bun link                 # Link for local development (iris command available)
 bun install -g .         # Install globally from project
 ```
@@ -110,24 +121,42 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 ```
 iris/
 ├── src/
-│   ├── lib/               # Shared core logic (used by both CLI and desktop)
+│   ├── lib/               # Shared core logic (used by TUI, commands, and desktop)
 │   │   ├── parser.ts      # CSV parsing with header-based matching
 │   │   ├── validator.ts   # Semantic validation logic
 │   │   ├── generator.ts   # ILR XML generation
 │   │   └── storage.ts     # Filesystem abstraction for cross-submission data
-│   ├── cli.ts             # CLI entry point (bun runtime)
-│   └── routes/            # SvelteKit routes (desktop UI)
+│   │
+│   ├── tui/               # TUI interface (primary)
+│   │   ├── app.ts         # Main TUI application
+│   │   ├── theme.ts       # Colors, borders, symbols
+│   │   ├── screens/       # Full-screen views (dashboard, file-picker, etc.)
+│   │   ├── components/    # Reusable UI components (panel, progress-bar, menu)
+│   │   ├── workflows/     # Multi-step processes (convert, validate, check)
+│   │   └── utils/         # TUI utilities (keyboard, layout, animations)
+│   │
+│   ├── commands/          # Direct command implementations (non-TUI)
+│   │   ├── convert.ts     # Convert command with pretty output
+│   │   ├── validate.ts    # Validate command
+│   │   └── check.ts       # Cross-submission check
+│   │
+│   ├── cli.ts             # Entry point (routes to TUI or direct commands)
+│   │
+│   └── routes/            # SvelteKit routes (desktop GUI, post-MVP)
 │       ├── +page.svelte   # Main desktop interface
 │       └── api/           # Server endpoints (if needed)
-├── src-tauri/             # Tauri Rust backend (generated, rarely touched)
+│
+├── src-tauri/             # Tauri Rust backend (post-MVP, generated, rarely touched)
 │   ├── Cargo.toml         # Rust dependencies
 │   ├── tauri.conf.json    # Tauri app configuration
 │   └── src/main.rs        # Rust entry point (boilerplate)
+│
 ├── docs/                  # Documentation
 │   ├── roadmaps/          # Project roadmaps
 │   ├── work-records/      # Development journal
 │   ├── adrs/              # Architecture decisions
-│   └── technical/         # Technical docs (ILR spec, validation rules)
+│   └── technical/         # Technical docs (TUI design, ILR spec, validation rules)
+│
 ├── tests/                 # Vitest test files
 └── .claude/               # Claude Code configuration
 ```
