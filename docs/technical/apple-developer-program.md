@@ -61,66 +61,118 @@ Should we pay £79/year ($99 USD) for an Apple Developer Program membership to s
 - Email instructions: "How to override macOS security warnings"
 
 **Reality Check:**
-- Non-technical staff won't do this
-- Creates support burden
-- Looks unprofessional
-- Security team may block it
+- Non-technical staff won't do this reliably
+- Creates ongoing support burden
+- Undermines tool adoption (friction on every install)
+- Security-conscious users may refuse
+
+**macOS Sequoia (2024+) Change:**
+- Right-click override removed
+- Must use System Settings → Privacy & Security
+- Even more steps, even more friction
+
+**Gatekeeper Override Persistence:**
+- Override should persist after first approval
+- **Known bug:** App updates can re-trigger warnings
+- Staff may need to override again with each update
 
 ---
 
-## Real-World Scenarios
+## Real-World Impact
 
-### Scenario 1: Internal Tool (3 Staff Developers)
+### Scenario: 6 Internal Tools Per Year
 
-**With Developer Program:**
-- Deploy once, works for everyone
-- 2 minutes per developer (download, double-click, done)
-- Total: 6 minutes
+**Context:**
+- 3 developers building internal macOS tools
+- Each developer creates ~2 tools annually
+- Total: 6 new tools per year
+- Each tool distributed to non-technical staff
+- Minimum 1 update/year (ILR schema changes), likely more
 
-**Without Developer Program:**
-- Deploy with manual override instructions
-- 10-15 minutes per developer (troubleshooting, security overrides)
-- Total: 30-45 minutes
-- Ongoing support requests when updates are released
+### With Developer Program (£79/year)
 
-**Cost calculation:**
-- £79/year ÷ 39 minutes saved = **£2.03 per minute saved**
-- If developer time costs £40/hour: 39 minutes = **£26 in wasted time**
-- Over 12 months with monthly updates: 468 minutes = **£312 in wasted time**
+**First install:**
+- Staff receives link to download
+- Double-click `.app` file
+- App opens immediately
+- **Time per person:** 1 minute
+
+**Updates (6 tools × 1+ updates/year):**
+- Download new version
+- Replace old version
+- Double-click
+- App opens immediately
+- **Time per person:** 1 minute per update
+
+**Staff motivation:**
+- No friction
+- Tools "just work"
+- Professional experience
+- High adoption rate
+
+### Without Developer Program (Free)
+
+**First install (per tool, per person):**
+1. Download app
+2. Double-click → blocked by Gatekeeper
+3. Google "macOS app is damaged"
+4. Navigate to System Settings → Privacy & Security
+5. Find app in list, click "Open Anyway"
+6. Confirm override dialog
+7. App finally opens
+- **Time per person:** 5-10 minutes
+- **Support requests:** High (steps 3-6 confuse non-technical users)
+
+**Updates (known Gatekeeper bug):**
+- Update may re-trigger warnings
+- Staff must repeat override process
+- Some staff give up and keep using old version
+- **Time per person:** 5-10 minutes per affected update
+- **Motivation impact:** Tool fatigue, reduced adoption
+
+### Time Impact Over One Year
+
+**Assumptions:**
+- 6 new tools released
+- Average 5 staff members per tool (30 total installs)
+- 6 tools receive updates (30 total updates)
+- 50% of updates re-trigger Gatekeeper bug (15 re-overrides)
+
+**With paid signing:**
+- Initial installs: 30 × 1 min = 30 minutes
+- Updates: 30 × 1 min = 30 minutes
+- **Total: 1 hour across all staff**
+
+**Without paid signing:**
+- Initial installs: 30 × 7 min = 210 minutes (3.5 hours)
+- Updates: 15 × 7 min = 105 minutes (1.75 hours)
+- Support time: ~2 hours (email threads, Slack messages, video calls)
+- **Total: 7.25 hours across all staff and support**
+
+**Difference: 6.25 hours saved per year**
+
+But more importantly:
+
+**Motivation Impact:**
+- Staff less likely to try new internal tools
+- Updates avoided due to friction
+- "This tool is more trouble than it's worth" mentality
+- Internal tools fail to reach adoption potential
 
 ---
 
-### Scenario 2: Multiple Internal Tools
+### Wider Distribution Potential
 
 **With Developer Program:**
-- Certificate works for **all** macOS apps you build
-- Build validator tools, admin dashboards, automation utilities
-- One-time £79 covers everything
+- Can share tools publicly (GitHub releases, website)
+- Other apprenticeship providers could use your tools
+- Builds Founders and Coders' reputation for quality tooling
+- Students' apps can be properly distributed
 
 **Without Developer Program:**
-- Every app requires manual override on every machine
-- Support burden multiplies with each tool
-- Users stop trusting internal tools
-
----
-
-### Scenario 3: Developer Training Context
-
-**With Developer Program:**
-- Students build real, deployable macOS apps
-- Experience professional distribution workflow
-- Learn industry-standard practices
-- Apps they build actually work when distributed
-
-**Without Developer Program:**
-- Students learn workarounds, not best practices
-- Apps they build can't be easily distributed
-- Gap between training and professional reality
-
-**Educational value:**
-- Code signing is a key skill for macOS developers
-- Notarization is standard practice (not optional in 2026)
-- Students should learn the real process
+- Distribution limited to technical users who understand overrides
+- Can't professionally share tools beyond organization
+- Missed opportunity for wider impact
 
 ---
 
@@ -155,13 +207,13 @@ xcrun stapler staple Iris.app
 
 ---
 
-## Temporary Fix: `iris sign` Command
+## Current Solution: `iris sign` Command
 
-**Status:** Implemented as stopgap measure
+**Status:** Implemented - best available option without paid program
 
-### What It Is
+### What I've Built
 
-Built-in CLI command for ad-hoc code signing:
+To work within current constraints, I've implemented automated ad-hoc signing:
 
 ```bash
 # After building the app
@@ -174,90 +226,107 @@ iris sign
 bun tauri:sign
 ```
 
-**Implementation:**
+**How it works:**
 - Automated wrapper around `codesign --deep --force --verify --verbose --sign "-" Iris.app`
 - Checks app exists before attempting to sign
 - Works only on macOS (graceful error on other platforms)
 - Zero cost (no Apple Developer Program required)
 
-### What It Solves
+### What This Solves
 
-✅ **Apple Silicon requirement:**
+✅ **Apple Silicon requirement (critical):**
 - macOS on ARM64 (M1/M2/M3) **requires** all code to be signed
 - Without any signature, app won't run at all on Apple Silicon
 - Ad-hoc signing satisfies this minimum requirement
+- **This is mandatory for deployment on modern Macs**
 
-✅ **Development convenience:**
+✅ **Development workflow:**
 - Quick, automated signing for local testing
-- No need to manually run `codesign` commands
-- Integrated into build workflow
+- No manual `codesign` commands needed
+- Integrated into build process
+- Consistent signing across developers
 
-✅ **Immediate deployment:**
-- Can distribute to developers **now** without waiting for approval
-- Developers can run the app after manual security override
+✅ **Immediate availability:**
+- Tools can be distributed right now
+- No waiting for program approval
+- Technical users can run apps (with override)
 
-### What It Doesn't Solve
+### What This Doesn't Solve
+
+The limitations here are imposed by Apple's security model, not by the implementation:
 
 ❌ **Gatekeeper warnings:**
 - Ad-hoc signed apps still show "Unidentified Developer"
-- Users still see scary security warnings
-- Still requires manual override (Right-click → Open)
+- Users see security warnings
+- Requires manual override process (System Settings on Sequoia)
 
 ❌ **Notarization:**
-- Cannot submit ad-hoc signed apps to Apple for notarization
-- App will never be "Verified by Apple"
-- No malware scan or approval
+- Cannot submit ad-hoc signed apps to Apple
+- App will never show "Verified by Apple"
+- No automated malware scanning
 
-❌ **Professional distribution:**
-- Not suitable for non-technical users
-- Support burden remains
-- Looks unprofessional
+❌ **Friction for non-technical users:**
+- Override process confusing for staff
+- Support burden persists
+- Reduces tool adoption
 
-❌ **Trust issues:**
-- macOS marks app as "potentially harmful"
-- Security-conscious users may refuse to override
-- IT departments may block deployment
+❌ **Update behavior:**
+- May re-trigger warnings on updates (Gatekeeper bug)
+- Staff must re-override for some updates
+- Creates ongoing friction
 
 ### User Experience Comparison
 
-**With `iris sign` (Ad-Hoc):**
+**With `iris sign` (Current approach):**
 ```
 1. Download Iris.app
 2. Double-click
 3. ❌ "App is damaged and can't be opened"
 4. System Settings → Privacy & Security → "Open Anyway"
 5. Confirm override: "Open"
-6. App finally launches
+6. App launches
+7. (Updates may repeat steps 3-6 due to Gatekeeper bug)
 ```
 
-**With Developer ID (Paid):**
+**With Developer ID (Paid program):**
 ```
 1. Download Iris.app
 2. Double-click
 3. ✅ App launches immediately
+4. (Updates: same experience)
 ```
 
-### When to Use It
+### When This Works Well
 
-**Use ad-hoc signing (`iris sign`) when:**
-- Testing locally on Apple Silicon
-- Distributing to technical users who understand security overrides
-- Need immediate deployment while awaiting Developer Program approval
-- Building for personal use only
+**Good fit for:**
+- Development and testing (essential for Apple Silicon)
+- Distribution to developers (who understand the override)
+- Personal tools (one-person use)
+- Getting started before program approval
 
-**Don't use ad-hoc signing when:**
-- Distributing to non-technical staff
-- Replacing production tools
-- Building apps for students to distribute
-- Professional or public release
+**Not ideal for:**
+- Non-technical staff (override process is confusing)
+- Production tools (creates support burden)
+- Wider distribution (limits reach and adoption)
+- Professional image (looks untrustworthy)
 
-### Bottom Line
+### Educational Context
 
-**The `iris sign` command is a temporary workaround, not a solution.**
+**For students learning macOS development:**
+- Shows them the difference between ad-hoc and proper signing
+- Real-world experience with Gatekeeper
+- Understands why apps need proper certificates
+- Valuable lesson in production deployment requirements
 
-It solves the immediate problem (Apple Silicon requirement) but doesn't solve the real problem (professional distribution). Think of it as a band-aid until proper code signing is set up.
+But students' apps can't be professionally distributed without proper signing.
 
-**Recommendation:** Use `iris sign` for development/testing **and** invest in Apple Developer Program for production deployment.
+### What This Means
+
+The `iris sign` command provides the best experience possible without the paid Developer Program. It removes the Apple Silicon blocker and streamlines the signing process.
+
+However, it can't eliminate Gatekeeper friction - that requires Apple's approval via notarization, which requires the paid program.
+
+Think of it as: **I've automated everything that's automatable for free. The remaining friction is an Apple policy constraint, not a technical limitation.**
 
 ---
 
@@ -281,93 +350,128 @@ It solves the immediate problem (Apple Silicon requirement) but doesn't solve th
 - Not a solution
 
 ### 4. "Just Tell Users to Override Security"
+**This is the current state with `iris sign`.**
+
+**Pros:**
+- Free (no Developer Program needed)
+- Works for technical users
+
 **Cons:**
-- Support burden
-- Looks unprofessional
-- Security team may block
-- Poor user experience
-- Wastes more than £79 in staff time
+- 7-step process for non-technical users
+- Ongoing support burden
+- Undermines tool adoption
+- May re-trigger on updates (Gatekeeper bug)
 
 ---
 
 ## Recommendation
 
-### Pay the £79/year
+### For Internal Tools: Developer Program Worth It
 
-**Why:**
-1. **Cost is negligible:** Less than 2 hours of developer time at standard rates
-2. **Professional UX:** Apps work as users expect
-3. **Scales:** Certificate covers all macOS apps you build
-4. **Educational:** Students learn real-world practices
-5. **Time savings:** Avoids support burden and manual workarounds
+**The case for £79/year:**
 
-**When to do it:**
-- Before deploying any macOS app to staff
+**1. Eliminates friction**
+- 6.25 hours saved per year across all staff
+- But more importantly: removes psychological barrier to adoption
+- Staff actually use internal tools when they "just work"
+
+**2. Scales across all tools**
+- One certificate covers 6+ tools per year
+- Certificate works for all developers
+- Students' apps can be properly distributed
+
+**3. Enables wider distribution**
+- Can share tools publicly (GitHub, website)
+- Other apprenticeship providers could benefit
+- Builds Founders and Coders' reputation for quality tooling
+
+**4. Professional standards**
+- Students learn real-world deployment practices
+- Code signing is industry standard (not optional in 2026)
+- Aligns with professional software development expectations
+
+**5. Business expense context**
+- £79/year is ~2-3 hours of developer time
+- Saves more time than it costs
+- Avoids reputational cost of "sketchy" internal tools
+
+### When to Do It
+
+**Good timing:**
+- Before Iris MVP deployment to staff
+- When building second or third internal tool (amortize across tools)
 - Before asking students to build distributed macOS apps
-- Before replacing existing Electron tools
 
-**When to skip it:**
-- Personal projects (free ad-hoc signing is fine)
-- Development/testing only (no distribution)
-- Apps that will never leave your personal machine
+**Can wait:**
+- Early prototypes (ad-hoc signing works for testing)
+- Tools with only 1-2 technical users
+- Personal side projects
 
 ---
 
 ## Current State: Iris
 
-**Without Developer Program:**
-```bash
-# Users must do this on first launch:
-# 1. Download Iris.app
-# 2. Try to open → blocked by Gatekeeper
-# 3. System Settings → Privacy & Security → "Open Anyway"
-# 4. Confirm security override
-# 5. App finally opens
-```
+**What's implemented:**
+- `iris sign` command (automated ad-hoc signing)
+- Solves Apple Silicon requirement
+- Works for development and testing
 
-**With Developer Program:**
-```bash
-# Users do this on first launch:
-# 1. Download Iris.app
-# 2. Double-click
-# 3. App opens
-```
+**What's still needed for production:**
+- Developer ID signing (£79/year)
+- Notarization workflow
+- Staff-facing deployment without friction
+
+**The gap:**
+- Ad-hoc: 7 steps to open, support burden, reduced adoption
+- Developer ID: 3 steps to open, no support, high adoption
 
 ---
 
 ## Action Items
 
-**If you approve the cost:**
-1. Sign up for Apple Developer Program (developer.apple.com/programs)
-2. Pay £79/year (recurring)
-3. Generate Developer ID certificate (30 minutes, one-time)
-4. Configure Tauri build process (automated signing)
-5. Document signing workflow for students
+### If You Proceed with Developer Program
 
-**If you don't approve the cost:**
-1. Document manual override process for staff
-2. Prepare for support requests
-3. Accept that apps will look "untrusted"
-4. Budget extra time for troubleshooting
-5. Consider if this impacts training quality
+1. **Sign up:** developer.apple.com/programs (£79/year, business expense)
+2. **Generate certificate:** 30 minutes one-time setup
+3. **Configure Tauri:** Update `tauri.conf.json` with signing identity
+4. **Automate notarization:** Add to build script
+5. **Document for students:** Include in macOS development training
+
+**Timeline:** Can be set up in one afternoon, works for all future builds.
+
+### If You Stay with Ad-Hoc Signing
+
+1. **Document override process:** Create guide for staff
+2. **Set expectations:** Tools will show security warnings
+3. **Budget support time:** ~2 hours/year for override help
+4. **Accept adoption impact:** Some staff may avoid tools due to friction
+5. **Revisit decision:** When tool count reaches 3-4 (amortization improves)
 
 ---
 
 ## Bottom Line
 
-**£79/year buys:**
-- Professional user experience
-- Time savings (avoids support burden)
-- Educational value (real-world practices)
-- Scalability (all apps, all users)
+**Developer Program (£79/year) provides:**
+- Friction-free tool deployment
+- High adoption (staff actually use tools)
+- Professional distribution capability
+- Students learn industry standards
+- Scales across all macOS tools
 
-**£0/year costs:**
-- Support time (likely exceeds £79)
-- Credibility (apps look sketchy)
-- User frustration
-- Reduced tool adoption
+**Ad-hoc signing (free) provides:**
+- Apple Silicon compatibility (required)
+- Development/testing workflow
+- Technical user distribution
+- Starting point while evaluating
 
-**Decision:** This is a "cost of doing business" expense for macOS development. The question isn't "Should we pay?" but "Can we afford **not** to pay?"
+**The decision:**
+- For 1-2 internal tools with technical users: Ad-hoc works
+- For 3+ tools distributed to non-technical staff: Developer Program justifies itself
+- For student education + wider distribution: Developer Program aligns with goals
+
+**Current state:** You have 3 developers building ~6 tools/year for non-technical staff, with educational mission and distribution potential. This fits the "Developer Program justifies itself" profile.
+
+But the choice is yours based on priorities and constraints. The `iris sign` command gives you a functional option either way.
 
 ---
 
