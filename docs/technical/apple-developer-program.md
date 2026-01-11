@@ -70,22 +70,23 @@ Should we pay £79/year ($99 USD) for an Apple Developer Program membership to s
 
 ## Real-World Scenarios
 
-### Scenario 1: Internal Tool (10 Staff Members)
+### Scenario 1: Internal Tool (3 Staff Developers)
 
 **With Developer Program:**
 - Deploy once, works for everyone
-- 2 minutes per user (download, double-click, done)
-- Total: 20 minutes
+- 2 minutes per developer (download, double-click, done)
+- Total: 6 minutes
 
 **Without Developer Program:**
 - Deploy with manual override instructions
-- 10-15 minutes per user (troubleshooting, IT support calls)
-- Total: 100-150 minutes
-- Ongoing support requests
+- 10-15 minutes per developer (troubleshooting, security overrides)
+- Total: 30-45 minutes
+- Ongoing support requests when updates are released
 
 **Cost calculation:**
-- £79/year ÷ 150 minutes saved = **£0.53 per minute saved**
-- If staff time costs £30/hour: 150 minutes = **£75 in wasted time**
+- £79/year ÷ 39 minutes saved = **£2.03 per minute saved**
+- If developer time costs £40/hour: 39 minutes = **£26 in wasted time**
+- Over 12 months with monthly updates: 468 minutes = **£312 in wasted time**
 
 ---
 
@@ -151,6 +152,112 @@ xcrun stapler staple Iris.app
 - Initial setup: 30 minutes (create certificate, configure Xcode)
 - Per app: 5-10 minutes (automated in build process)
 - Can be scripted/automated with Tauri config
+
+---
+
+## Temporary Fix: `iris sign` Command
+
+**Status:** Implemented as stopgap measure
+
+### What It Is
+
+Built-in CLI command for ad-hoc code signing:
+
+```bash
+# After building the app
+bun tauri:build
+
+# Sign with ad-hoc signature
+iris sign
+
+# Or use package script
+bun tauri:sign
+```
+
+**Implementation:**
+- Automated wrapper around `codesign --deep --force --verify --verbose --sign "-" Iris.app`
+- Checks app exists before attempting to sign
+- Works only on macOS (graceful error on other platforms)
+- Zero cost (no Apple Developer Program required)
+
+### What It Solves
+
+✅ **Apple Silicon requirement:**
+- macOS on ARM64 (M1/M2/M3) **requires** all code to be signed
+- Without any signature, app won't run at all on Apple Silicon
+- Ad-hoc signing satisfies this minimum requirement
+
+✅ **Development convenience:**
+- Quick, automated signing for local testing
+- No need to manually run `codesign` commands
+- Integrated into build workflow
+
+✅ **Immediate deployment:**
+- Can distribute to developers **now** without waiting for approval
+- Developers can run the app after manual security override
+
+### What It Doesn't Solve
+
+❌ **Gatekeeper warnings:**
+- Ad-hoc signed apps still show "Unidentified Developer"
+- Users still see scary security warnings
+- Still requires manual override (Right-click → Open)
+
+❌ **Notarization:**
+- Cannot submit ad-hoc signed apps to Apple for notarization
+- App will never be "Verified by Apple"
+- No malware scan or approval
+
+❌ **Professional distribution:**
+- Not suitable for non-technical users
+- Support burden remains
+- Looks unprofessional
+
+❌ **Trust issues:**
+- macOS marks app as "potentially harmful"
+- Security-conscious users may refuse to override
+- IT departments may block deployment
+
+### User Experience Comparison
+
+**With `iris sign` (Ad-Hoc):**
+```
+1. Download Iris.app
+2. Double-click
+3. ❌ "App is damaged and can't be opened"
+4. System Settings → Privacy & Security → "Open Anyway"
+5. Confirm override: "Open"
+6. App finally launches
+```
+
+**With Developer ID (Paid):**
+```
+1. Download Iris.app
+2. Double-click
+3. ✅ App launches immediately
+```
+
+### When to Use It
+
+**Use ad-hoc signing (`iris sign`) when:**
+- Testing locally on Apple Silicon
+- Distributing to technical users who understand security overrides
+- Need immediate deployment while awaiting Developer Program approval
+- Building for personal use only
+
+**Don't use ad-hoc signing when:**
+- Distributing to non-technical staff
+- Replacing production tools
+- Building apps for students to distribute
+- Professional or public release
+
+### Bottom Line
+
+**The `iris sign` command is a temporary workaround, not a solution.**
+
+It solves the immediate problem (Apple Silicon requirement) but doesn't solve the real problem (professional distribution). Think of it as a band-aid until proper code signing is set up.
+
+**Recommendation:** Use `iris sign` for development/testing **and** invest in Apple Developer Program for production deployment.
 
 ---
 
