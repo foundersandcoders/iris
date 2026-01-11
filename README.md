@@ -13,7 +13,7 @@ Iris converts learner data from CSV exports into ILR-compliant XML for ESFA subm
 - Semantic validation beyond structural XML checks
 - Cross-submission consistency checking using historical data
 - Direct commands for automation and scripting
-- Desktop app (post-MVP) for users who prefer GUI
+- Desktop app for users who prefer GUI
 
 ## Quick Start
 
@@ -33,7 +33,7 @@ iris --help
 # Run tests
 bun test
 
-# Desktop app (post-MVP)
+# Desktop app
 bun tauri dev
 ```
 
@@ -43,7 +43,7 @@ Built on a shared TypeScript core with multiple interfaces:
 
 - **TUI** (primary): terminal-kit, full-screen interactive interface
 - **Direct Commands**: Scriptable automation with beautiful output
-- **Desktop** (post-MVP): Tauri + SvelteKit, native macOS app
+- **Desktop**: Tauri + SvelteKit, native macOS app
 
 All interfaces use identical transformation and validation logic from `src/lib/`.
 
@@ -58,8 +58,8 @@ iris/
 │   ├── tui/           # TUI interface (screens, components, workflows)
 │   ├── commands/      # Direct command implementations
 │   ├── cli.ts         # Entry point (routes to TUI or commands)
-│   └── routes/        # SvelteKit desktop UI (post-MVP)
-├── src-tauri/         # Tauri Rust backend (post-MVP)
+│   └── routes/        # SvelteKit desktop UI
+├── src-tauri/         # Tauri Rust backend
 ├── docs/              # Documentation, roadmaps, ADRs, technical specs
 └── tests/             # Vitest tests
 ```

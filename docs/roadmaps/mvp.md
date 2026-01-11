@@ -109,9 +109,9 @@ None currently
 - Comprehensive help text (`--help`)
 - CI/CD compatibility
 
-### Milestone 4: Desktop Interface (Post-MVP)
+### Milestone 4: Desktop Interface
 **Goal:** Native app for users who prefer GUI over terminal
-**Status:** Deprioritized until TUI user testing completed
+**Status:** Follows TUI implementation, informed by TUI user feedback
 
 **Deliverables:**
 - macOS `.app` bundle (Tauri)

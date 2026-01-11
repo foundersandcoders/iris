@@ -122,9 +122,9 @@ iris validate --interactive  # Launch TUI for validation exploration
 ### Positive
 
 1. **Portfolio impact:** TUI demonstrates advanced terminal skills beyond basic CLI scripting
-2. **Single learning curve:** One interface instead of two (CLI commands + desktop GUI)
+2. **Primary interface clarity:** TUI as main UX (not just automation layer)
 3. **Better workflows:** Interactive file browsing, live validation, error exploration
-4. **Reduced initial scope:** Defer desktop GUI to post-MVP without losing UX quality
+4. **Focused development:** Build TUI first, validate with users, then build desktop GUI
 5. **Automation preserved:** Direct commands still available for scripting
 6. **Beautiful output:** Modern terminal aesthetics match quality of desktop apps
 7. **Accessibility:** No GUI framework knowledge required, works over SSH
@@ -147,8 +147,8 @@ iris validate --interactive  # Launch TUI for validation exploration
    - **Fallback:** Keep direct commands fully functional
 
 3. **Users prefer GUI:** Non-technical staff may still want desktop app
-   - **Mitigation:** Desktop GUI still in roadmap, just deprioritized
-   - **Note:** TUI user testing will inform whether GUI is actually needed
+   - **Mitigation:** Desktop GUI development follows TUI (both in MVP)
+   - **Note:** TUI user testing will inform desktop GUI design priorities
 
 ---
 

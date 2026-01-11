@@ -7,7 +7,7 @@
 
 ## Summary
 
-Completed comprehensive design work for Iris's TUI (Text User Interface), shifting from a basic CLI approach to a beautiful, full-screen interactive terminal application. This represents a significant architectural decision that positions the TUI as the primary interface, with the desktop GUI deprioritized to post-MVP.
+Completed comprehensive design work for Iris's TUI (Text User Interface), shifting from a basic CLI approach to a beautiful, full-screen interactive terminal application. This represents a significant architectural decision that positions the TUI as the primary interface, developed first within MVP, with desktop GUI following.
 
 ---
 
@@ -27,7 +27,7 @@ Completed comprehensive design work for Iris's TUI (Text User Interface), shifti
 **Trade-offs:**
 - More complex than basic CLI (more code, harder to test)
 - Requires modern terminal with Unicode and color support
-- Desktop GUI delayed until post-MVP
+- TUI developed first, desktop GUI follows (both in MVP)
 
 **Tool Stack:**
 - Core: `terminal-kit` (full-featured, imperative)
@@ -139,10 +139,10 @@ src/tui/
    - Testing strategy
 
 3. **Updated Roadmap:**
-   - Reprioritized tasks: TUI first, desktop GUI post-MVP
+   - Reprioritized tasks: TUI first, desktop GUI follows
    - New Milestone 2: TUI Interface (Primary)
    - New Milestone 3: Direct Commands (Automation)
-   - Updated Milestone 4: Desktop Interface (deprioritized)
+   - Updated Milestone 4: Desktop Interface (follows TUI)
    - 16 TUI-specific tasks added
    - 6 direct command tasks added
 

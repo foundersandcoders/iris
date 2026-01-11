@@ -11,7 +11,7 @@ Key features:
 - Cross-submission consistency checking
 - Interactive error exploration and validation workflows
 - Direct commands for automation and scripting
-- Desktop app (post-MVP) for users who prefer GUI over terminal
+- Desktop app for users who prefer GUI over terminal
 - Shared processing core ensures identical logic across all interfaces
 
 ## Tech Stack
@@ -19,8 +19,8 @@ Key features:
 - **Runtime:** Bun
 - **TUI Framework:** terminal-kit (primary interface)
 - **TUI Libraries:** consola, chalk, gradient-string, cli-table3, boxen, ora, listr2, figures
-- **Desktop Framework:** Tauri (Rust backend, post-MVP, no Rust code written)
-- **Frontend:** SvelteKit with TypeScript (desktop GUI, post-MVP)
+- **Desktop Framework:** Tauri (Rust backend, no Rust code written)
+- **Frontend:** SvelteKit with TypeScript (desktop GUI)
 - **Storage:** File-based (local filesystem, no database)
 - **XML Generation:** Native TypeScript (no external XML libraries yet)
 - **Testing:** Vitest
@@ -54,7 +54,7 @@ iris validate file.xml   # Direct validation command
 iris --interactive       # Launch TUI from command context
 iris --help              # Show help
 
-# Desktop GUI (post-MVP)
+# Desktop GUI
 bun dev                  # Run SvelteKit dev server
 bun tauri dev            # Run Tauri desktop app in dev mode
 bun tauri build          # Build desktop app (.app bundle for macOS)
@@ -142,11 +142,11 @@ iris/
 │   │
 │   ├── cli.ts             # Entry point (routes to TUI or direct commands)
 │   │
-│   └── routes/            # SvelteKit routes (desktop GUI, post-MVP)
+│   └── routes/            # SvelteKit routes (desktop GUI)
 │       ├── +page.svelte   # Main desktop interface
 │       └── api/           # Server endpoints (if needed)
 │
-├── src-tauri/             # Tauri Rust backend (post-MVP, generated, rarely touched)
+├── src-tauri/             # Tauri Rust backend (generated, rarely touched)
 │   ├── Cargo.toml         # Rust dependencies
 │   ├── tauri.conf.json    # Tauri app configuration
 │   └── src/main.rs        # Rust entry point (boilerplate)
