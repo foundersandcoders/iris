@@ -9,13 +9,14 @@
 ## Table of Contents
 
 1. [Design Philosophy](#design-philosophy)
-2. [Visual Design Language](#visual-design-language)
-3. [Screen Layouts](#screen-layouts)
-4. [Interaction Patterns](#interaction-patterns)
-5. [Code Architecture](#code-architecture)
-6. [Component Library](#component-library)
-7. [Workflows](#workflows)
-8. [Accessibility](#accessibility)
+2. [Architecture Overview](#architecture-overview)
+3. [Visual Design Language](#visual-design-language)
+4. [Screen Layouts](#screen-layouts)
+5. [Interaction Patterns](#interaction-patterns)
+6. [Code Architecture](#code-architecture)
+7. [Component Library](#component-library)
+8. [Workflows](#workflows)
+9. [Accessibility](#accessibility)
 
 ---
 
@@ -49,6 +50,293 @@
    - `?` for contextual help (always visible)
    - `Ctrl+C` emergency exit
    - Never trap users in a state
+
+---
+
+## Architecture Overview
+
+### System Architecture
+
+Iris is built on a **shared core** with **three independent interfaces**:
+
+```
+┌─────────────────────────────────────────────────┐
+│                   src/lib/                      │
+│            (Shared Core Logic)                  │
+│                                                 │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐        │
+│  │parser.ts │ │validator │ │generator │        │
+│  │          │ │   .ts    │ │   .ts    │        │
+│  └──────────┘ └──────────┘ └──────────┘        │
+│                                                 │
+│              ┌──────────┐                       │
+│              │storage   │                       │
+│              │   .ts    │                       │
+│              └──────────┘                       │
+└─────────────────────────────────────────────────┘
+           ▲              ▲              ▲
+           │              │              │
+           │              │              │
+    ┌──────┴───┐   ┌──────┴───┐   ┌─────┴──────┐
+    │   TUI    │   │ Commands │   │ Desktop GUI │
+    │          │   │          │   │             │
+    │ Primary  │   │Automation│   │  Optional   │
+    └──────────┘   └──────────┘   └─────────────┘
+```
+
+### Core Processing (`src/lib/`)
+
+**The single source of truth** - all business logic lives here:
+
+- **`parser.ts`** - CSV parsing with header-based column matching
+- **`validator.ts`** - Semantic validation (beyond XML structure)
+- **`generator.ts`** - ILR XML generation
+- **`storage.ts`** - Cross-submission data persistence
+
+**Critical principle:** Core is **interface-agnostic**. Zero knowledge of TUI, commands, or GUI.
+
+### Three User-Facing Interfaces
+
+**1. TUI (Primary Interface) - `src/tui/`**
+- Full-screen interactive terminal application
+- Default behavior: `iris` launches TUI
+- Provides rich UI for complex workflows
+
+**2. Direct Commands (Automation) - `src/commands/`**
+- Scriptable, non-interactive execution
+- Behavior: `iris convert file.csv` executes and exits
+- Perfect for CI/CD, shell scripts
+
+**3. Desktop GUI (Optional) - `src/routes/` + `src-tauri/`**
+- Native desktop app (macOS, Windows, Linux)
+- Tauri + SvelteKit
+- For users who prefer graphical interface
+
+### Entry Point: `src/cli.ts`
+
+Routes execution to appropriate interface:
+
+```typescript
+if (noArgs) {
+  // Default: Launch TUI
+  const tui = new TUI();
+  await tui.start();
+}
+else if (command && flags.interactive) {
+  // Hybrid: TUI for specific workflow
+  const tui = new TUI({ startCommand: command });
+  await tui.start();
+}
+else if (command) {
+  // Direct command execution
+  await commands[command].execute(args);
+}
+```
+
+---
+
+## Data Flow Examples
+
+### Example 1: CSV Conversion via TUI
+
+```
+User types: iris
+  ↓
+cli.ts detects no arguments
+  ↓
+Launches TUI Application
+  ↓
+Dashboard screen renders
+  ↓
+User selects "1. Convert CSV to ILR XML"
+  ↓
+ConvertWorkflow.execute() starts
+  ↓
+FilePicker screen shows
+  ↓
+User navigates to ~/Downloads/learners.csv
+  ↓
+User presses ENTER
+  ↓
+ProcessingScreen renders with "Parsing CSV..."
+  ↓
+Workflow calls: parse(csvPath, {
+  onProgress: (p) => processingScreen.updateProgress(p),
+  onWarning: (w) => processingScreen.addLog(w)
+})
+  ↓
+lib/parser.ts:
+  - Reads file
+  - Matches headers
+  - Parses rows
+  - Fires progress callbacks (10%, 20%, 30%...)
+  ↓
+ProcessingScreen updates:
+  - Progress bar: ████░░░░░░ 40%
+  - Live log: "Row 42: Missing postcode (optional)"
+  ↓
+Parse completes, returns { success: true, data: [...] }
+  ↓
+ProcessingScreen updates: "Generating ILR XML..."
+  ↓
+Workflow calls: generate(data, {
+  onProgress: (p) => processingScreen.updateProgress(p)
+})
+  ↓
+lib/generator.ts:
+  - Creates XML structure
+  - Writes learner records
+  - Fires progress callbacks
+  ↓
+ProcessingScreen updates:
+  - Progress bar: ████████░░ 80%
+  ↓
+Generate completes, returns { path: '~/.iris/submissions/2026-01.xml' }
+  ↓
+SuccessScreen renders:
+  - ✓ Successfully created ILR XML
+  - Output: ~/.iris/submissions/2026-01.xml
+  - Size: 2.3 MB
+  - Actions: [O]pen, [V]alidate, [R]eturn
+  ↓
+User presses 'R'
+  ↓
+Returns to Dashboard
+```
+
+### Example 2: CSV Conversion via Direct Command
+
+```
+User types: iris convert ~/Downloads/learners.csv
+  ↓
+cli.ts detects command + args
+  ↓
+Routes to commands/convert.ts
+  ↓
+convert.execute(['~/Downloads/learners.csv']) starts
+  ↓
+consola.box displays:
+  ┌─ Iris CSV → XML Conversion ─┐
+  │ Processing: learners.csv     │
+  └──────────────────────────────┘
+  ↓
+Spinner starts: ora('Parsing CSV file...').start()
+  ↓
+Calls: parse(csvPath, {
+  onProgress: (p) => { /* update spinner */ }
+})
+  ↓
+lib/parser.ts processes CSV (same logic as TUI)
+  ↓
+Spinner updates: ⠸ Parsing CSV file... (67%)
+  ↓
+Parse completes
+  ↓
+Spinner.succeed('Parsed 147 learner records')
+  ↓
+New spinner: ora('Generating ILR XML...').start()
+  ↓
+Calls: generate(data)
+  ↓
+lib/generator.ts creates XML (same logic as TUI)
+  ↓
+Spinner.succeed('Created ~/.iris/submissions/2026-01.xml')
+  ↓
+consola.success('Conversion complete!')
+consola.info('Output: ~/.iris/submissions/2026-01.xml')
+consola.info('Size: 2.3 MB')
+  ↓
+If warnings exist:
+consola.warn('3 warnings:')
+consola.warn('  • Row 42: Missing postcode')
+consola.warn('  • Row 89: Future start date')
+  ↓
+Process exits with code 0
+```
+
+### Example 3: CSV Conversion via Desktop GUI
+
+```
+User opens Iris.app (macOS/Windows/Linux)
+  ↓
+Tauri launches SvelteKit frontend
+  ↓
++page.svelte renders:
+  - File picker UI
+  - "Select CSV File" button
+  ↓
+User clicks button
+  ↓
+SvelteKit calls Tauri API: dialog.open({
+  filters: [{ name: 'CSV', extensions: ['csv'] }]
+})
+  ↓
+Native file picker opens (OS-level)
+  ↓
+User selects ~/Downloads/learners.csv
+  ↓
+File path returned to SvelteKit
+  ↓
+Component displays: "Processing learners.csv..."
+  ↓
+SvelteKit server action triggered
+  ↓
+Server-side code imports from lib/:
+  const result = await parse(csvPath)
+  ↓
+lib/parser.ts processes CSV (same logic as TUI/commands)
+  ↓
+Server optionally streams progress to frontend:
+  - WebSocket or server-sent events
+  - Component updates progress bar
+  ↓
+Parse completes
+  ↓
+Server calls: await generate(result.data)
+  ↓
+lib/generator.ts creates XML (same logic)
+  ↓
+Server returns result to frontend
+  ↓
+Component renders success view:
+  - ✓ Conversion successful
+  - Output location
+  - File size
+  - "Open in Finder" button (Tauri shell API)
+  - "Validate" button
+  ↓
+User can continue with next operation
+```
+
+### Key Architectural Principles
+
+1. **Single Source of Truth:** All CSV parsing logic in `lib/parser.ts`
+2. **Identical Logic:** Same validation rules across TUI, commands, and GUI
+3. **Inversion of Control:** Core accepts callbacks (`onProgress`, `onWarning`)
+4. **Interface Segregation:** TUI, commands, GUI never import each other
+5. **No Leakage:** Core never references terminal, console, or GUI concepts
+
+### Why This Matters
+
+**Consistency:**
+- Same CSV → same XML, regardless of interface
+- Validation errors identical everywhere
+- User trust: behavior is predictable
+
+**Testability:**
+- Core logic tested independently
+- Mock callbacks in tests
+- No UI dependencies in business logic
+
+**Maintainability:**
+- Fix parser bug → fixed everywhere
+- Add validation rule → applies to all interfaces
+- Refactor core without touching UI code
+
+**Flexibility:**
+- Add new interface (web app, API) → just consume `lib/`
+- Change TUI framework → core unaffected
+- Replace desktop GUI framework → core unaffected
 
 ---
 

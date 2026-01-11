@@ -127,7 +127,7 @@ iris validate --interactive  # Launch TUI for validation exploration
 4. **Automation preserved:** Direct commands still available for scripting
 5. **Beautiful output:** Modern terminal aesthetics match quality of desktop apps
 6. **Accessibility:** No GUI framework knowledge required, works over SSH
-7. **Lower barrier to entry:** Terminal-based tool easier to distribute than macOS app (no signing, notarization)
+7. **Lower barrier to entry:** Terminal-based tool easier to distribute than desktop apps (no platform-specific signing/notarization)
 
 ### Negative
 

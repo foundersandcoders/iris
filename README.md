@@ -43,7 +43,7 @@ Built on a shared TypeScript core with multiple interfaces:
 
 - **TUI** (primary): terminal-kit, full-screen interactive interface
 - **Direct Commands**: Scriptable automation with beautiful output
-- **Desktop**: Tauri + SvelteKit, native macOS app
+- **Desktop**: Tauri + SvelteKit, cross-platform native app (macOS, Windows, Linux)
 
 All interfaces use identical transformation and validation logic from `src/lib/`.
 

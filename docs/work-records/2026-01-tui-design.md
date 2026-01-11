@@ -21,7 +21,7 @@ Completed comprehensive design work for Iris's TUI (Text User Interface), shifti
 - Modern TUIs (lazygit, k9s, btop) demonstrate that terminal interfaces can be primary, not fallback
 - Provides rich interactive experience for complex workflows (error exploration, validation)
 - Single learning curve instead of CLI + desktop GUI
-- Easier to distribute than desktop app (no macOS signing/notarization required)
+- Easier to distribute than desktop apps (no platform-specific signing/notarization)
 - Maintains automation capabilities through direct commands
 
 **Trade-offs:**

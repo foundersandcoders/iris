@@ -110,11 +110,12 @@ None currently
 - CI/CD compatibility
 
 ### Milestone 4: Desktop Interface
-**Goal:** Native app for users who prefer GUI over terminal
+**Goal:** Native cross-platform app for users who prefer GUI over terminal
 **Status:** Follows TUI implementation, informed by TUI user feedback
+**Platforms:** macOS, Windows, Linux (via Tauri)
 
 **Deliverables:**
-- macOS `.app` bundle (Tauri)
+- Cross-platform builds (macOS `.app`, Windows `.exe`, Linux `.AppImage`)
 - File picker for CSV input
 - XML preview panel
 - Validation results display
@@ -129,7 +130,7 @@ None currently
 - Validation against real Airtable exports
 - All transformation logic from existing tool replicated
 - User acceptance testing with FaC staff
-- Code signing for macOS distribution
+- Code signing/distribution setup for target platforms
 - First production submission using Iris
 
 ---

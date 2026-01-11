@@ -57,7 +57,7 @@ iris --help              # Show help
 # Desktop GUI
 bun dev                  # Run SvelteKit dev server
 bun tauri dev            # Run Tauri desktop app in dev mode
-bun tauri build          # Build desktop app (.app bundle for macOS)
+bun tauri build          # Build desktop app (macOS, Windows, Linux)
 
 # Testing
 bun test                 # Run Vitest tests
