@@ -437,7 +437,7 @@ All screens follow a consistent grid:
 **Layout:**
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  ██╗██████╗ ██╗███████╗                        v0.1.0  ┃
+┃  ██╗██████╗ ██╗███████╗                        v0.4.0  ┃
 ┃  ██║██╔══██╗██║██╔════╝                        Session  ┃
 ┃  ██║██████╔╝██║███████╗                         Active  ┃
 ┃  ██║██╔══██╗██║╚════██║                                 ┃
@@ -794,7 +794,7 @@ if (positionals.length === 0 && !values.version && !values.help) {
 
 // Handle --version, --help
 if (values.version) {
-  consola.info('iris v0.1.0');
+  consola.info('iris v0.4.0');
   process.exit(0);
 }
 

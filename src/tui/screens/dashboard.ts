@@ -55,32 +55,39 @@ export class Dashboard {
 
     // Header
     this.term.moveTo(1, 1);
-    this.term.bold.hex(theme.primary)('IRIS');
+    this.term.bold.colorRgbHex(theme.primary)('IRIS');
+    this.term.styleReset();
+
     this.term.moveTo(50, 1);
-    this.term.hex(theme.textMuted)('v0.1.0');
+    this.term.colorRgbHex(theme.textMuted)('v0.4.0');
+    this.term.styleReset();
 
     // Title
     this.term.moveTo(1, 3);
-    this.term.hex(theme.text)('ILR Toolkit');
+    this.term.colorRgbHex(theme.text)('ILR Toolkit');
+    this.term.styleReset();
 
     // Menu
     this.term.moveTo(1, 5);
-    this.term.hex(theme.text)('Quick Actions');
+    this.term.colorRgbHex(theme.text)('Quick Actions');
+    this.term.styleReset();
 
     this.menuItems.forEach((item, index) => {
       this.term.moveTo(3, 7 + index);
 
       if (index === this.selectedIndex) {
-        this.term.hex(theme.primary)(symbols.arrow + ' ');
-        this.term.bold.hex(theme.text)(`${index + 1}  ${item.label}`);
+        this.term.colorRgbHex(theme.primary)(`${symbols.arrow} `);
+        this.term.bold.colorRgbHex(theme.text)(`${index + 1}  ${item.label}`);
       } else {
-        this.term.hex(theme.textMuted)(`  ${index + 1}  ${item.label}`);
+        this.term.colorRgbHex(theme.textMuted)(`  ${index + 1}  ${item.label}`);
       }
+      this.term.styleReset();
     });
 
     // Status bar
     const height = this.term.height;
     this.term.moveTo(1, height);
-    this.term.hex(theme.textMuted)('[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit');
+    this.term.colorRgbHex(theme.textMuted)('[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit');
+    this.term.styleReset();
   }
 }
