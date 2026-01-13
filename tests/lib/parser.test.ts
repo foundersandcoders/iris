@@ -1,21 +1,58 @@
 import { describe, it, expect } from 'vitest';
-import { parseCSV } from '../../src/lib/parser';
+import { parseCSVContent } from '../../src/lib/parser';
+import * as fixtures from '../fixtures/parser';
 
-describe('parseCSV', () => {
-  it('should parse CSV with headers and rows', async () => {
-    const result = await parseCSV('./tests/fixtures/learners-260109a.csv');
+describe('parseCSVContent', () => {
+  it('parses simple CSV data', () => {
+    const result = parseCSVContent(fixtures.simpleCsv);
 
-    expect(result.headers).toEqual(['Name', 'Age', 'Role']);
-    expect(result.rows).toHaveLength(3);
-    expect(result.rows[0]).toEqual({
-      Name: 'Alice',
-      Age: '30',
-      Role: 'Developer'
-    });
+    expect(result.headers).toEqual(['name', 'age']);
+    expect(result.rows).toEqual([
+      { name: 'Alice', age: '30' },
+      { name: 'Bob', age: '25' },
+    ]);
   });
 
-  it('should throw error for empty CSV', async () => {
-    // TODO: Create empty fixture and test error handling
-    expect(true).toBe(true); // Placeholder
+  it('handles quoted fields with commas', () => {
+    const result = parseCSVContent(fixtures.csvWithQuotedCommas);
+
+    expect(result.rows[0].address).toBe('14 Forty Lane, Wembley Park');
+    expect(result.rows[1].address).toBe('123 Main St, London');
+  });
+
+  it('handles escaped quotes within fields', () => {
+    const result = parseCSVContent(fixtures.csvWithEscapedQuotes);
+
+    expect(result.rows[0].note).toBe('She said "hello"');
+  });
+
+  it('trims whitespace from headers', () => {
+    const result = parseCSVContent(fixtures.csvWithWhitespaceHeaders);
+
+    expect(result.headers).toEqual(['name', 'age', 'city']);
+  });
+
+  it('handles BOM marker at start of file', () => {
+    const result = parseCSVContent(fixtures.csvWithBom);
+
+    expect(result.headers).toEqual(['name', 'age']);
+  });
+
+  it('skips empty lines', () => {
+    const result = parseCSVContent(fixtures.csvWithEmptyLines);
+
+    expect(result.rows).toHaveLength(2);
+  });
+
+  it('throws on empty CSV', () => {
+    expect(() => parseCSVContent('')).toThrow('CSV file is empty');
+    expect(() => parseCSVContent('\n\n')).toThrow('CSV file is empty');
+  });
+
+  it('handles empty field values', () => {
+    const result = parseCSVContent(fixtures.csvWithEmptyFields);
+
+    expect(result.rows[0]).toEqual({ name: 'Alice', age: '', city: 'London' });
+    expect(result.rows[1]).toEqual({ name: '', age: '25', city: '' });
   });
 });
