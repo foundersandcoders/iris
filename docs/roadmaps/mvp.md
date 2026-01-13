@@ -173,38 +173,6 @@ None currently
 
 ---
 
-## 4. Work Record
+## 4. Work Records
 
-### 4a. Completed Milestones
-
-**2026-01-09: Project Initialization**
-- Created Tauri + SvelteKit + bun architecture
-- Set up shared core library structure
-- Configured both CLI and desktop entry points
-- Established development workflow and conventions
-- **Impact:** Foundation in place for dual-interface implementation
-
-### 4b. Completed Tasks
-
-#### 4b1. Record of Past Deadlines
-None yet
-
-#### 4b2. Record of Other Completed Tasks
-
-**2026-01-11:**
-- Designed TUI-first interface architecture (ADR 002)
-- Created comprehensive TUI UX design document
-- Updated roadmap to prioritize TUI over basic CLI
-- Defined visual design language (colors, typography, layouts)
-- Planned screen layouts for all major workflows
-- Specified interaction patterns and keyboard navigation
-- Documented component architecture and code structure
-- **Impact:** TUI becomes primary interface, desktop GUI deprioritized to post-MVP
-
-**2026-01-09:**
-- Configured CLAUDE.md with Iris project details
-- Set up package.json with bun, SvelteKit, Tauri dependencies
-- Created SvelteKit configuration (adapter-static for Tauri)
-- Initialized Tauri project structure
-- Created basic CLI entry point with command structure
-- Updated README with project-specific information
+See [`docs/work-records/`](../work-records/) for detailed development history.
