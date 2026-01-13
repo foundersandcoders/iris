@@ -1,49 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { validateRows, type ValidationResult } from '../../src/lib/validator';
-import type { CSVRow } from '../../src/lib/parser';
+import { validateRows } from '../../src/lib/validator';
+import * as fixtures from '../fixtures/validator';
 
 describe('validator', () => {
   describe('validateRows', () => {
-    const validHeaders = [
-      'LearnRefNumber',
-      'ULN',
-      'DateOfBirth',
-      'Ethnicity',
-      'Sex',
-      'LLDDHealthProb',
-      'PostcodePrior',
-      'Postcode',
-      'LearnAimRef',
-      'AimType',
-      'AimSeqNumber',
-      'LearnStartDate',
-      'LearnPlanEndDate',
-      'FundModel',
-      'DelLocPostCode',
-      'CompStatus',
-    ];
-
-    const validRow: CSVRow = {
-      LearnRefNumber: 'ABC123',
-      ULN: '1234567890',
-      DateOfBirth: '2000-01-15',
-      Ethnicity: '31',
-      Sex: 'M',
-      LLDDHealthProb: '2',
-      PostcodePrior: 'E1 6AN',
-      Postcode: 'E1 6AN',
-      LearnAimRef: '60161533',
-      AimType: '1',
-      AimSeqNumber: '1',
-      LearnStartDate: '2025-09-01',
-      LearnPlanEndDate: '2026-08-31',
-      FundModel: '36',
-      DelLocPostCode: 'E1 6AN',
-      CompStatus: '1',
-    };
-
     it('returns valid result for complete data', () => {
-      const result = validateRows([validRow], validHeaders);
+      const result = validateRows([fixtures.validRow], fixtures.validHeaders);
 
       expect(result.valid).toBe(true);
       expect(result.errorCount).toBe(0);
@@ -52,8 +14,7 @@ describe('validator', () => {
     });
 
     it('detects missing required headers', () => {
-      const incompleteHeaders = ['LearnRefNumber', 'ULN'];
-      const result = validateRows([], incompleteHeaders);
+      const result = validateRows([], fixtures.incompleteHeaders);
 
       expect(result.valid).toBe(false);
       expect(result.errorCount).toBeGreaterThan(0);
@@ -65,12 +26,7 @@ describe('validator', () => {
     });
 
     it('detects empty required fields in rows', () => {
-      const rowWithEmptyField: CSVRow = {
-        ...validRow,
-        ULN: '',
-      };
-
-      const result = validateRows([rowWithEmptyField], validHeaders);
+      const result = validateRows([fixtures.rowWithEmptyULN], fixtures.validHeaders);
 
       expect(result.valid).toBe(false);
       expect(result.errorCount).toBe(1);
@@ -82,12 +38,7 @@ describe('validator', () => {
     });
 
     it('detects whitespace-only fields as empty', () => {
-      const rowWithWhitespace: CSVRow = {
-        ...validRow,
-        LearnRefNumber: '   ',
-      };
-
-      const result = validateRows([rowWithWhitespace], validHeaders);
+      const result = validateRows([fixtures.rowWithWhitespaceLearnRef], fixtures.validHeaders);
 
       expect(result.valid).toBe(false);
       const issue = result.issues.find((i) => i.field === 'LearnRefNumber');
@@ -96,13 +47,7 @@ describe('validator', () => {
     });
 
     it('validates multiple rows independently', () => {
-      const rows: CSVRow[] = [
-        validRow,
-        { ...validRow, ULN: '' },
-        { ...validRow, Sex: '' },
-      ];
-
-      const result = validateRows(rows, validHeaders);
+      const result = validateRows(fixtures.multipleRowsWithErrors, fixtures.validHeaders);
 
       expect(result.valid).toBe(false);
       expect(result.errorCount).toBe(2);
@@ -114,8 +59,7 @@ describe('validator', () => {
     });
 
     it('counts warnings separately from errors', () => {
-      // Currently all issues are errors, but structure supports warnings
-      const result = validateRows([validRow], validHeaders);
+      const result = validateRows([fixtures.validRow], fixtures.validHeaders);
 
       expect(result.errorCount).toBe(0);
       expect(result.warningCount).toBe(0);
