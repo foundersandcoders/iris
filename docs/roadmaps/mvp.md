@@ -1,7 +1,7 @@
 # Iris: MVP
 
 > [!NOTE]
-> Project initialized. Core architecture in place. ILR XML generator implemented with tests.
+> Project initialized. Core architecture in place. CSV parser and ILR XML generator implemented with tests.
 
 ---
 
@@ -15,12 +15,12 @@ None currently
 #### 1a2. Other Tasks
 
 **Core Processing Library**
-- [ ] Implement CSV parser with header-based column matching
+- [x] Implement CSV parser with header-based column matching
 - [x] Create ILR XML generator (minimal valid structure)
 - [ ] Build semantic validator (beyond structural checks)
 - [ ] Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] Add configuration system (user preferences + custom field mappings)
-- [ ] Add unit tests for core transformations
+- [~] Add unit tests for core transformations (parser and generator done)
 
 **TUI Interface (Primary)**
 - [x] Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
