@@ -1,13 +1,15 @@
 # January 2026: TUI Design and Architecture
 
 **Period:** 2026-01-11
-**Focus:** TUI-first interface design and planning
+**Focus:** TUI-first interface design, planning, and initial implementation
 
 ---
 
 ## Summary
 
 Completed comprehensive design work for Iris's TUI (Text User Interface), shifting from a basic CLI approach to a beautiful, full-screen interactive terminal application. This represents a significant architectural decision that positions the TUI as the primary interface, developed first within MVP, with desktop GUI following.
+
+Additionally implemented the foundational TUI structure: theme system, app class, dashboard screen, and CLI entry point refactor. The TUI is now functional and launches by default when running `iris`.
 
 ---
 
@@ -148,16 +150,29 @@ src/tui/
 
 ---
 
+## Implementation Completed
+
+### Phase 1: Foundation (Done)
+- [x] Install TUI dependencies (terminal-kit, consola, chalk, etc.)
+- [x] Create TUI directory structure (`src/tui/`, `screens/`, placeholders for `components/`, `workflows/`, `utils/`)
+- [x] Build theme system (`src/tui/theme.ts`) - colors, borders, symbols, spinners
+- [x] Implement basic dashboard with menu (`src/tui/screens/dashboard.ts`)
+- [x] Set up keyboard event handling (arrow keys, number shortcuts, ESC/q to quit)
+- [x] Refactor CLI entry point to launch TUI by default
+- [x] Add unit tests for theme and app components
+
+### Files Created
+- `src/tui/theme.ts` - Visual design constants (54 lines)
+- `src/tui/app.ts` - Main TUI application class (79 lines)
+- `src/tui/screens/dashboard.ts` - Dashboard screen with menu (86 lines)
+- `src/cli.ts` - Refactored entry point (60 lines, down from 169)
+- `tests/tui/theme.test.ts` - Theme tests
+- `tests/tui/app.test.ts` - App tests
+- `tests/tui/screens/dashboard.test.ts` - Dashboard tests
+
 ## Next Steps
 
-### Phase 1: Foundation (Immediate)
-- [ ] Install TUI dependencies
-- [ ] Create TUI directory structure
-- [ ] Build theme system (colors, borders, symbols)
-- [ ] Implement basic dashboard with menu
-- [ ] Set up keyboard event handling
-
-### Phase 2: Core Workflows (Following)
+### Phase 2: Core Workflows (Next)
 - [ ] Build file picker component
 - [ ] Create processing screen
 - [ ] Implement convert workflow
@@ -232,7 +247,9 @@ src/tui/
 - Research (modern TUI examples, libraries): ~1 hour
 - Design work (screens, interactions, architecture): ~2 hours
 - Documentation (ADR, technical doc, roadmap updates): ~2 hours
-- **Total:** ~5 hours
+- Implementation (theme, app, dashboard, CLI refactor): ~2 hours
+- Testing (theme tests, app tests, dashboard tests): ~1 hour
+- **Total:** ~8 hours
 
 ---
 

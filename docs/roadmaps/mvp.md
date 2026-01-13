@@ -23,9 +23,9 @@ None currently
 - [ ] Add unit tests for core transformations
 
 **TUI Interface (Primary)**
-- [ ] Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
-- [ ] Create TUI application scaffold and theme system
-- [ ] Build dashboard with menu navigation and recent activity
+- [x] Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
+- [x] Create TUI application scaffold and theme system
+- [x] Build dashboard with menu navigation (recent activity panel pending)
 - [ ] Implement interactive file picker for CSV selection
 - [ ] Create processing screen with live progress and log viewer
 - [ ] Build validation results explorer (error/warning navigation)
