@@ -1,7 +1,7 @@
 # Iris: MVP
 
 > [!NOTE]
-> Project initialized. Core architecture in place. Ready to implement shared processing core.
+> Project initialized. Core architecture in place. ILR XML generator implemented with tests.
 
 ---
 
@@ -16,7 +16,7 @@ None currently
 
 **Core Processing Library**
 - [ ] Implement CSV parser with header-based column matching
-- [ ] Create ILR XML generator (minimal valid structure)
+- [x] Create ILR XML generator (minimal valid structure)
 - [ ] Build semantic validator (beyond structural checks)
 - [ ] Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] Add configuration system (user preferences + custom field mappings)
@@ -163,40 +163,16 @@ None currently
 - Template system for different submission patterns
 - Shareable transformation rule sets
 
+**Dynamic Schema Support**
+- Parse uploaded XSD files to extract field definitions and constraints
+- Generate types and validation rules dynamically from schema
+- Schema-driven XML generator (adapts output structure to loaded schema)
+- UI for uploading and managing schema versions (TUI + Desktop)
+- Automatic migration guidance when schema changes affect existing data
+- Store schema files in `~/.iris/schemas/` with version tracking
+
 ---
 
-## 4. Work Record
+## 4. Work Records
 
-### 4a. Completed Milestones
-
-**2026-01-09: Project Initialization**
-- Created Tauri + SvelteKit + bun architecture
-- Set up shared core library structure
-- Configured both CLI and desktop entry points
-- Established development workflow and conventions
-- **Impact:** Foundation in place for dual-interface implementation
-
-### 4b. Completed Tasks
-
-#### 4b1. Record of Past Deadlines
-None yet
-
-#### 4b2. Record of Other Completed Tasks
-
-**2026-01-11:**
-- Designed TUI-first interface architecture (ADR 002)
-- Created comprehensive TUI UX design document
-- Updated roadmap to prioritize TUI over basic CLI
-- Defined visual design language (colors, typography, layouts)
-- Planned screen layouts for all major workflows
-- Specified interaction patterns and keyboard navigation
-- Documented component architecture and code structure
-- **Impact:** TUI becomes primary interface, desktop GUI deprioritized to post-MVP
-
-**2026-01-09:**
-- Configured CLAUDE.md with Iris project details
-- Set up package.json with bun, SvelteKit, Tauri dependencies
-- Created SvelteKit configuration (adapter-static for Tauri)
-- Initialized Tauri project structure
-- Created basic CLI entry point with command structure
-- Updated README with project-specific information
+See [`docs/work-records/`](../work-records/) for detailed development history.
