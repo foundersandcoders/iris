@@ -8,7 +8,6 @@
 import type { CSVRow } from './parser';
 
 // === Types ===
-
 export type ValidationSeverity = 'error' | 'warning' | 'info';
 
 export interface ValidationIssue {
