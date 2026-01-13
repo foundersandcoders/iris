@@ -163,6 +163,14 @@ None currently
 - Template system for different submission patterns
 - Shareable transformation rule sets
 
+**Dynamic Schema Support**
+- Parse uploaded XSD files to extract field definitions and constraints
+- Generate types and validation rules dynamically from schema
+- Schema-driven XML generator (adapts output structure to loaded schema)
+- UI for uploading and managing schema versions (TUI + Desktop)
+- Automatic migration guidance when schema changes affect existing data
+- Store schema files in `~/.iris/schemas/` with version tracking
+
 ---
 
 ## 4. Work Record
