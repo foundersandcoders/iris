@@ -95,7 +95,7 @@ function generateHeader(header: Header): string {
     element('Collection', cd.collection),
     element('Year', cd.year),
     element('FilePreparationDate', cd.filePreparationDate),
-  ], 4);
+  ], undefined, 4);
 
   const source = element('Source', [
     element('ProtectiveMarking', s.protectiveMarking),
@@ -105,15 +105,15 @@ function generateHeader(header: Header): string {
     element('Release', s.release),
     element('SerialNo', s.serialNo),
     element('DateTime', s.dateTime),
-  ], 4);
+  ], undefined, 4);
 
-  return element('Header', [collectionDetails, source], 2);
+  return element('Header', [collectionDetails, source], undefined, 2);
 }
 
 function generateLearningProvider(provider: LearningProvider): string {
   return element('LearningProvider', [
     element('UKPRN', provider.ukprn),
-  ], 2);
+  ], undefined, 2);
 }
 
 function generateLearner(learner: Learner): string {
@@ -133,7 +133,7 @@ function generateLearner(learner: Learner): string {
     element('Postcode', learner.postcode),
     element('Email', learner.email, escapeXml),
     ...deliveries,
-  ], 2);
+  ], undefined, 2);
 }
 
 function generateLearningDelivery(ld: LearningDelivery): string {
@@ -150,7 +150,7 @@ function generateLearningDelivery(ld: LearningDelivery): string {
     element('CompStatus', ld.compStatus),
     element('LearnActEndDate', ld.learnActEndDate),
     element('Outcome', ld.outcome),
-  ], 4);
+  ], undefined, 4);
 }
 
 // === XML Utilities ===
@@ -159,8 +159,8 @@ type Transformer = (value: string) => string;
 function element(
   tag: string,
   content: string | number | undefined | string[],
-  indent: number = 0,
-  transform?: Transformer
+  transform?: Transformer,
+  indent: number = 0
 ): string {
   if (content === undefined || content === null) {
     return '';
