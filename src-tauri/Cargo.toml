@@ -5,8 +5,8 @@ description = "ILR Toolkit: CSV to ILR XML conversion with semantic validation"
 authors = ["you"]
 license = ""
 repository = ""
-edition = "2026"
-rust-version = "1.77.2"
+edition = "2024"
+rust-version = "1.85.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
