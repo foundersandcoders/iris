@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { theme, symbols, borders, spinners } from '../../src/tui/theme';
+import { theme, symbols, borders, spinners } from '../../../src/tui/theme';
 
 describe('theme', () => {
   it('exports status colors', () => {
