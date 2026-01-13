@@ -1,7 +1,7 @@
 # Iris: MVP
 
 > [!NOTE]
-> Project initialized. Core architecture in place. Ready to implement shared processing core.
+> Project initialized. Core architecture in place. ILR XML generator implemented with tests.
 
 ---
 
@@ -16,7 +16,7 @@ None currently
 
 **Core Processing Library**
 - [ ] Implement CSV parser with header-based column matching
-- [ ] Create ILR XML generator (minimal valid structure)
+- [x] Create ILR XML generator (minimal valid structure)
 - [ ] Build semantic validator (beyond structural checks)
 - [ ] Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] Add configuration system (user preferences + custom field mappings)
