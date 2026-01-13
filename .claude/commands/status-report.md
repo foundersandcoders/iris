@@ -29,31 +29,30 @@ Generate a report in this exact format:
 ```markdown
 # Iris Status Update
 ## 1. TL;DR
-{ Brief summary of what's changed since last report in  and what's important to note }
+{ One sentence: what changed and where we are now }
 
 ---
 ## 2. Completed
-- { List completed features, components, and milestones }
-- { Include infrastructure, tests, documentation }
+- { High-level features only, 3-6 bullets max }
 
 ---
 ## 3. Radar
 ### 3a. In Progress
-- { Current milestone with estimated completion percentage }
-- { Active work items }
+- { Current milestone with percentage, one line }
 
 ### 3b. Up Next
-- { Upcoming tasks in priority order }
-- { Features queued for implementation }
+- { 2-4 upcoming tasks, brief }
 
 ---
 ## 4. Blockers
-{ List any blockers, or "None" if clear }
+{ "None" or brief list }
 ```
 
 ## Guidelines
-- Keep the TL;DR to 2-3 sentences max
-- Be specific about completion percentages where possible
-- List completed items in rough chronological order (oldest first)
-- Blockers should include actionable context if present
+- **Brevity is paramount** - this is a status snapshot, not a changelog
+- TL;DR must be exactly one sentence, big-picture only
+- Maximum 5-6 completed items; group related work (e.g. "CSV parser with tests" not separate bullets)
+- One line per in-progress milestone
+- No implementation details (papaparse, RFC 4180, etc.) - just "CSV parser"
+- No sub-bullets or nested lists
 - Use British English
