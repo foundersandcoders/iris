@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
   * CLI Entry Point
   * Routes to TUI (default) or direct commands
