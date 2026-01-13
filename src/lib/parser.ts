@@ -31,6 +31,8 @@ export async function parseCSV(filePath: string): Promise<CSVData> {
   * @returns Parsed CSV data with headers and rows
   */
 export function parseCSVContent(contents: string): CSVData {
+  if (!contents.trim()) throw new Error('CSV file is empty');
+
   const result = Papa.parse<CSVRow>(contents, {
     header: true,
     skipEmptyLines: true,
