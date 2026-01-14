@@ -28,7 +28,12 @@ export class Dashboard implements Screen {
     return new Promise((resolve) => {
       this.drawScreen();
 
-      // Handle keyboard input
+      /* LOG (25-01-14): Keyboard Navigation
+        
+        REALLY? I HAVE TO DO THIS LIKE I'M NAVIGATING AN ARRAY?
+        
+        Take me back to Svelte
+        */
       this.term.on('key', (key: string) => {
         if (key === 'UP' && this.selectedIndex > 0) {
           this.selectedIndex--;
@@ -39,12 +44,13 @@ export class Dashboard implements Screen {
         } else if (key === 'ENTER') {
           const selected = this.menuItems[this.selectedIndex];
           this.term.removeAllListeners('key');
-
           if (selected.key === 'quit') {
             resolve({ action: 'quit' });
           } else {
-            // Future: push to workflows
-            resolve({ action: 'push', screen: selected.key });
+            resolve({ // TODO: push to workflows
+              action: 'push',
+              screen: selected.key
+            });
           }
         } else if (key === 'q' || key === 'ESCAPE') {
           this.term.removeAllListeners('key');
@@ -54,6 +60,7 @@ export class Dashboard implements Screen {
           if (index < this.menuItems.length) {
             this.selectedIndex = index;
             const selected = this.menuItems[this.selectedIndex];
+            
             this.term.removeAllListeners('key');
 
             if (selected.key === 'quit') {
@@ -72,14 +79,12 @@ export class Dashboard implements Screen {
   }
 
   private drawScreen(): void {
-    // Draw layout chrome
     const region = this.layout.draw({
       title: 'ILR Toolkit',
       statusBar: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
       showBack: false,
     });
 
-    // Draw menu in content area
     this.term.moveTo(1, region.contentTop);
     this.term.colorRgbHex(theme.text)('Quick Actions');
     this.term.styleReset();

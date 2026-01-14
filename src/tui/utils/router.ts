@@ -3,7 +3,7 @@
   */
 import type { Terminal } from 'terminal-kit';
 
-/* LOG (25-01-14) Navigation Array
+/* LOG (25-01-14): Navigation Array
  * 
  * OKAY this might be a slightly insane approach? I don't know.
  * 
