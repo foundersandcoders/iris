@@ -1,13 +1,15 @@
-/** Screen Router
+/** ====== Screen Router ======
   * Manages navigation between TUI screens with stack-based history
   */
 import type { Terminal } from 'terminal-kit';
 
-/** LOG: 25-01-14 Navigation Array
- * OKAY this might be a slightly insane approach?
- * I don't know.
+/* LOG (25-01-14) Navigation Array
+ * 
+ * OKAY this might be a slightly insane approach? I don't know.
+ * 
  * But here we go, TUI navigation is henceforth an array of class instances.
  */
+
 export type ScreenData = Record<string, unknown>;
 
 export interface ScreenResult {

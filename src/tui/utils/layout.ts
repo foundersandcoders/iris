@@ -1,4 +1,4 @@
-/** Layout System
+/** ====== Layout System ======
   * Provides consistent structure for all TUI screens
   */
 import type { Terminal } from 'terminal-kit';
