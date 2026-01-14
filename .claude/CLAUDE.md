@@ -1,7 +1,5 @@
 # Iris
-
 ## Project Context
-
 Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders and Coders' existing Electron-based export tool. It converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and transformation logic.
 
 ### Key Features
@@ -36,7 +34,7 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 - **Rationale:** Keeps tests focused on assertions, makes test data reusable, and simplifies maintenance
 
 ### Code Editing Preference
-Do not edit files directly unless explicitly asked. Instead:
+**IMPORTANT:** Do not edit files directly unless explicitly asked. Instead:
 1. Show the proposed code
 2. Wait for the user to make the edit themselves
 

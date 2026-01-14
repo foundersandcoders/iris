@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}} Documentation
+# Iris Documentation
 
 This directory contains all project documentation.
 

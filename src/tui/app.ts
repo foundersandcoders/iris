@@ -1,42 +1,37 @@
-/**
-  * Main TUI Application
+/** ====== TUI Application ======
   * Manages full-screen terminal interface, screen transitions, and workflows
   */
 import terminalKit from 'terminal-kit';
+import { Router } from "./utils/router";
 import { Dashboard } from './screens/dashboard';
-
-const term = terminalKit.terminal;
 
 interface TUIOptions {
   startCommand?: string;
   args?: string[];
 }
 
-export class TUI {
-  private currentScreen: any = null;
+const term = terminalKit.terminal;
 
-  constructor(private options: TUIOptions = {}) {}
+export class TUI {
+  private router: Router;
+  
+  constructor(private options: TUIOptions = {}) {
+    this.router = new Router(term);
+  }
 
   async start() {
     this.initialize();
-
-    if (this.options.startCommand) {
-      // Future: Jump directly to workflow
-      console.log('Direct workflow not yet implemented');
-      await this.showDashboard();
-    } else {
-      // Show dashboard
-      await this.showDashboard();
-    }
+    this.registerScreens();
+    
+    await this.router.push("dashboard");
   }
 
   private initialize() {
-    // Full-screen mode
     term.fullscreen(true);
-    term.hideCursor();
-    term.grabInput({ mouse: false });
+    term.hideCursor(true);
+    term.grabInput(true);
 
-    // Graceful shutdown on Ctrl+C
+    /* Ctrl+C */
     term.on('key', (key: string) => {
       if (key === 'CTRL_C') {
         this.cleanup();
@@ -44,36 +39,20 @@ export class TUI {
       }
     });
 
-    // Handle window resize
     process.stdout.on('resize', () => {
-      this.refresh();
+      /* TODO: Handle this in Router */
     });
   }
-
-  async showDashboard() {
-    const dashboard = new Dashboard(term);
-    const selection = await dashboard.render();
-
-    // Handle selection
-    if (selection === 'quit') {
-      this.cleanup();
-      process.exit(0);
-    }
-
-    // Future: Launch workflows based on selection
-    console.log('Selected:', selection);
+  
+  private registerScreens() {
+    this.router.register('dashboard', (term) => new Dashboard(term));
+    // this.router.register('file-picker', (term) => new FilePicker(term));
+    // this.router.register('processing', (term) => new Processing(term));
   }
 
   private cleanup() {
     term.fullscreen(false);
-    term.showCursor();
+    term.hideCursor(false); // TODO: Check terminalKit.terminal API
     term.grabInput(false);
-  }
-
-  private refresh() {
-    // Re-render current screen on terminal resize
-    if (this.currentScreen) {
-      this.currentScreen.render();
-    }
   }
 }

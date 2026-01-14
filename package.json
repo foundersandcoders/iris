@@ -1,6 +1,6 @@
 {
   "name": "iris",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "ILR (Individualised Learner Record) toolkit - CSV to ILR XML conversion with semantic validation",
   "type": "module",
   "bin": {
@@ -26,6 +26,7 @@
     "@tauri-apps/cli": "^2.1.0",
     "@types/bun": "latest",
     "@types/papaparse": "^5.5.2",
+    "@types/terminal-kit": "^2.5.7",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tslib": "^2.6.2",

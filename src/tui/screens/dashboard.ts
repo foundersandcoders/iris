@@ -1,28 +1,40 @@
-/**
-  * Dashboard Screen
+/** ====== Dashboard Screen ======
+  * 
   * Main menu and entry point for TUI
   */
-import { theme, symbols, borders } from '../theme';
+import type { Terminal } from 'terminal-kit';
+import { Layout } from '../utils/layout';
+import { theme, symbols } from '../theme';
+import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
-export class Dashboard {
+export class Dashboard implements Screen {
+  readonly name = 'dashboard';
+  private layout: Layout;
   private selectedIndex = 0;
+  
   private menuItems = [
-    { key: 'convert', label: 'Convert CSV to ILR XML' },
-    { key: 'validate', label: 'Validate XML Submission' },
-    { key: 'check', label: 'Cross-Submission Check' },
-    { key: 'history', label: 'Browse Submission History' },
-    { key: 'settings', label: 'Settings & Configuration' },
-    { key: 'quit', label: 'Quit' },
+    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: false },
+    { key: 'validate', label: 'Validate XML Submission', implemented: false },
+    { key: 'check', label: 'Cross-Submission Check', implemented: false },
+    { key: 'history', label: 'Browse Submission History', implemented: false },
+    { key: 'settings', label: 'Settings & Configuration', implemented: false },
+    { key: 'quit', label: 'Quit', implemented: true },
   ];
 
-  constructor(private term: any) {}
+  constructor(private term: Terminal) {
+    this.layout = new Layout(term);
+  }
 
-  async render(): Promise<string> {
+  async render(data?: ScreenData): Promise<ScreenResult> {
     return new Promise((resolve) => {
-      this.term.clear();
       this.drawScreen();
 
-      // Handle keyboard input
+      /* LOG (25-01-14): Keyboard Navigation
+        
+        REALLY? I HAVE TO DO THIS LIKE I'M NAVIGATING AN ARRAY?
+        
+        Take me back to Svelte
+        */
       this.term.on('key', (key: string) => {
         if (key === 'UP' && this.selectedIndex > 0) {
           this.selectedIndex--;
@@ -32,48 +44,62 @@ export class Dashboard {
           this.drawScreen();
         } else if (key === 'ENTER') {
           const selected = this.menuItems[this.selectedIndex];
-          this.term.removeAllListeners('key');
-          resolve(selected.key);
+          if (selected.key === 'quit') {
+            this.term.removeAllListeners('key');
+            resolve({ action: 'quit' });
+          } else if (!selected.implemented) {
+            this.drawScreen();
+            this.term.moveTo(1, this.term.height - 2);
+            this.term.colorRgbHex(theme.textMuted)('Patience, Daniel/Jess...');
+            this.term.styleReset();
+          } else {
+            this.term.removeAllListeners('key');
+            resolve({ action: 'push', screen: selected.key });
+          }
         } else if (key === 'q' || key === 'ESCAPE') {
           this.term.removeAllListeners('key');
-          resolve('quit');
+          resolve({ action: 'quit' });
         } else if (key >= '1' && key <= '6') {
           const index = parseInt(key) - 1;
           if (index < this.menuItems.length) {
             this.selectedIndex = index;
             const selected = this.menuItems[this.selectedIndex];
             this.term.removeAllListeners('key');
-            resolve(selected.key);
+            if (selected.key === 'quit') {
+              this.term.removeAllListeners('key');
+              resolve({ action: 'quit' });
+            } else if (!selected.implemented) {
+              this.drawScreen();
+              this.term.moveTo(1, this.term.height - 2);
+              this.term.colorRgbHex(theme.textMuted)('Patience, Daniel/Jess...');
+              this.term.styleReset();
+            } else {
+              this.term.removeAllListeners('key');
+              resolve({ action: 'push', screen: selected.key });
+            }
           }
         }
       });
     });
   }
 
-  private drawScreen() {
-    this.term.clear();
+  cleanup(): void {
+    this.term.removeAllListeners('key');
+  }
 
-    // Header
-    this.term.moveTo(1, 1);
-    this.term.bold.colorRgbHex(theme.primary)('IRIS');
-    this.term.styleReset();
+  private drawScreen(): void {
+    const region = this.layout.draw({
+      title: 'ILR Toolkit',
+      statusBar: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
+      showBack: false,
+    });
 
-    this.term.moveTo(50, 1);
-    this.term.colorRgbHex(theme.textMuted)('v0.4.0');
-    this.term.styleReset();
-
-    // Title
-    this.term.moveTo(1, 3);
-    this.term.colorRgbHex(theme.text)('ILR Toolkit');
-    this.term.styleReset();
-
-    // Menu
-    this.term.moveTo(1, 5);
+    this.term.moveTo(1, region.contentTop);
     this.term.colorRgbHex(theme.text)('Quick Actions');
     this.term.styleReset();
 
     this.menuItems.forEach((item, index) => {
-      this.term.moveTo(3, 7 + index);
+      this.term.moveTo(3, region.contentTop + 2 + index);
 
       if (index === this.selectedIndex) {
         this.term.colorRgbHex(theme.primary)(`${symbols.arrow} `);
@@ -83,11 +109,5 @@ export class Dashboard {
       }
       this.term.styleReset();
     });
-
-    // Status bar
-    const height = this.term.height;
-    this.term.moveTo(1, height);
-    this.term.colorRgbHex(theme.textMuted)('[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit');
-    this.term.styleReset();
   }
 }
