@@ -16,6 +16,12 @@ None currently
 - [ ] 1a2a4. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] 1a2a5. Add configuration system (user preferences + custom field mappings)
 - [x] 1a2a6. Add unit tests for core transformations
+- [ ] 1a2a7. Create workflow abstraction layer (convert, validate, check as generators)
+- [ ] 1a2a8. Define workflow step interfaces (types, status, data, errors)
+- [ ] 1a2a9. Implement convert workflow (parse → validate → generate → save)
+- [ ] 1a2a10. Implement validate workflow (load → validate → report)
+- [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
+- [ ] 1a2a12. Add unit tests for workflows (independent of UI)
 
 ##### 1a2b. TUI Interface (Primary)
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
@@ -74,9 +80,10 @@ None currently
 - CSV parser that tolerates column reordering
 - ILR XML generator producing valid output
 - Semantic validation beyond structural checks
+- Workflow abstraction layer (convert, validate, check as interface-agnostic generators)
 - File-based storage for cross-submission data (designed to support future ESFA response storage)
 - Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- Test coverage for core transformations
+- Test coverage for core transformations and workflows
 
 ### 2b. Milestone 2: TUI Interface (Primary)
 **Goal:** Beautiful, interactive terminal interface as the main user experience
@@ -115,12 +122,14 @@ None currently
 
 **Deliverables:**
 - Cross-platform builds (macOS `.app`, Windows `.exe`, Linux `.AppImage`)
+- SvelteKit routing (/convert, /validate, /check routes)
 - File picker for CSV input
 - XML preview panel
 - Validation results display
 - Configuration UI
 - Cross-submission warnings display
 - Output save location selection
+- Complete workflows: convert, validate, cross-check (using shared workflow layer)
 
 ### 2e. Milestone 5: Production Ready
 **Goal:** Replaces existing Electron tool in production
