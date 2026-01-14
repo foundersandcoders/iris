@@ -21,6 +21,9 @@ None currently
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
 - [x] 1a2b2. Create TUI application scaffold and theme system
 - [x] 1a2b3. Build dashboard with menu navigation (recent activity panel pending)
+- [ ] 1a2b3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
+- [ ] 1a2b3b. Implement consistent layout system (header, content, status bar, borders)
+- [ ] 1a2b3c. Refactor dashboard to use layout system (validate architecture)
 - [ ] 1a2b4. Implement interactive file picker for CSV selection
 - [ ] 1a2b5. Create processing screen with live progress and log viewer
 - [ ] 1a2b6. Build validation results explorer (error/warning navigation)
@@ -80,6 +83,8 @@ None currently
 
 **Deliverables:**
 - Full-screen TUI application (`iris` launches dashboard)
+- Screen routing with navigation stack (back navigation, breadcrumbs)
+- Consistent layout wrapper for all screens (header, content, status bar)
 - Interactive file picker with preview
 - Live processing screen with progress and logs
 - Validation results explorer (navigate errors/warnings)
