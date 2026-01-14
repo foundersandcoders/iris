@@ -38,18 +38,12 @@ export class Router {
 
   constructor(private term: Terminal) {}
 
-  register(
-    name: string,
-    factory: ScreenFactory
-  ): void {
+  register(name: string, factory: ScreenFactory): void {
     this.screens.set(name, factory);
   }
 
   /* Go Forwards */
-  async push(
-    screenName: string,
-    data?: ScreenData
-  ): Promise<void> {
+  async push(screenName: string, data?: ScreenData): Promise<void> {
     const factory = this.screens.get(screenName);
     if (!factory) {
       throw new Error(`Screen not found: ${screenName}`);
@@ -94,10 +88,7 @@ export class Router {
   }
 
   /* Go Sideways */
-  async replace(
-    screenName: string,
-    data?: ScreenData
-  ): Promise<void> {
+  async replace(screenName: string, data?: ScreenData): Promise<void> {
     const factory = this.screens.get(screenName);
     if (!factory) {
       throw new Error(`Screen not found: ${screenName}`);
