@@ -11,13 +11,14 @@ export class Dashboard implements Screen {
   readonly name = 'dashboard';
   private layout: Layout;
   private selectedIndex = 0;
+  
   private menuItems = [
-    { key: 'convert', label: 'Convert CSV to ILR XML' },
-    { key: 'validate', label: 'Validate XML Submission' },
-    { key: 'check', label: 'Cross-Submission Check' },
-    { key: 'history', label: 'Browse Submission History' },
-    { key: 'settings', label: 'Settings & Configuration' },
-    { key: 'quit', label: 'Quit' },
+    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: false },
+    { key: 'validate', label: 'Validate XML Submission', implemented: false },
+    { key: 'check', label: 'Cross-Submission Check', implemented: false },
+    { key: 'history', label: 'Browse Submission History', implemented: false },
+    { key: 'settings', label: 'Settings & Configuration', implemented: false },
+    { key: 'quit', label: 'Quit', implemented: true },
   ];
 
   constructor(private term: Terminal) {
@@ -43,14 +44,17 @@ export class Dashboard implements Screen {
           this.drawScreen();
         } else if (key === 'ENTER') {
           const selected = this.menuItems[this.selectedIndex];
-          this.term.removeAllListeners('key');
           if (selected.key === 'quit') {
+            this.term.removeAllListeners('key');
             resolve({ action: 'quit' });
+          } else if (!selected.implemented) {
+            this.drawScreen();
+            this.term.moveTo(1, this.term.height - 2);
+            this.term.colorRgbHex(theme.textMuted)('Patience, Daniel/Jess...');
+            this.term.styleReset();
           } else {
-            resolve({ // TODO: push to workflows
-              action: 'push',
-              screen: selected.key
-            });
+            this.term.removeAllListeners('key');
+            resolve({ action: 'push', screen: selected.key });
           }
         } else if (key === 'q' || key === 'ESCAPE') {
           this.term.removeAllListeners('key');
@@ -60,12 +64,17 @@ export class Dashboard implements Screen {
           if (index < this.menuItems.length) {
             this.selectedIndex = index;
             const selected = this.menuItems[this.selectedIndex];
-            
             this.term.removeAllListeners('key');
-
             if (selected.key === 'quit') {
+              this.term.removeAllListeners('key');
               resolve({ action: 'quit' });
+            } else if (!selected.implemented) {
+              this.drawScreen();
+              this.term.moveTo(1, this.term.height - 2);
+              this.term.colorRgbHex(theme.textMuted)('Patience, Daniel/Jess...');
+              this.term.styleReset();
             } else {
+              this.term.removeAllListeners('key');
               resolve({ action: 'push', screen: selected.key });
             }
           }
