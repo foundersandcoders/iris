@@ -4,7 +4,7 @@
 
 Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders and Coders' existing Electron-based export tool. It converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and transformation logic.
 
-Key features:
+### Key Features
 - **TUI-first interface:** Beautiful full-screen terminal application as primary UX
 - Header-based CSV parsing (tolerates column reordering)
 - Semantic validation (beyond structural XML validation)
@@ -15,7 +15,6 @@ Key features:
 - Shared processing core ensures identical logic across all interfaces
 
 ## Tech Stack
-
 - **Runtime:** Bun
 - **TUI Framework:** terminal-kit (primary interface)
 - **TUI Libraries:** consola, chalk, gradient-string, cli-table3, boxen, ora, listr2, figures
@@ -26,21 +25,28 @@ Key features:
 - **Testing:** Vitest
 
 ## Development Conventions
-
 - **Package manager:** bun
 - **Testing framework:** Vitest
 - **Commit convention:** Conventional Commits with KSB extraction
 - **Versioning:** Semantic versioning via `svu`
 
-## Database
+### Testing Conventions
+- **Fixtures pattern:** Test data lives in `tests/fixtures/<module>.ts` as named exports
+- **Import style:** `import * as fixtures from '../fixtures/<module>'`
+- **Rationale:** Keeps tests focused on assertions, makes test data reusable, and simplifies maintenance
 
+### Code Editing Preference
+Do not edit files directly unless explicitly asked. Instead:
+1. Show the proposed code
+2. Wait for the user to make the edit themselves
+
+### Database
 No database. File-based storage for:
 - ILR XML outputs (saved to `~/.iris/submissions/`)
 - Cross-submission history for validation
 - User preferences and configuration
 
 ## Key Commands
-
 ```bash
 # Development
 bun install              # Install dependencies
@@ -69,7 +75,6 @@ bun install -g .         # Install globally from project
 ```
 
 ## Git Workflow
-
 ### Branch Naming
 Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 
@@ -117,7 +122,6 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 - See ~/.claude/docs/cli-tools-usage-guide.md#2.1 for full workflow
 
 ## Project Structure
-
 ```
 iris/
 ├── src/
@@ -158,11 +162,15 @@ iris/
 │   └── technical/         # Technical docs (TUI design, ILR spec, validation rules)
 │
 ├── tests/                 # Vitest test files
+│   ├── fixtures/          # Shared test data (named exports per module)
+│   │   ├── parser.ts      # CSV test strings
+│   │   └── validator.ts   # Validation test data
+│   ├── lib/               # Core library tests
+│   └── tui/               # TUI component tests
 └── .claude/               # Claude Code configuration
 ```
 
 ## Development Workflow
-
 1. **Start work:** Check current roadmap milestone
 2. **During development:** Commit with conventional format
 3. **Evidence tracking:** Automatic via `post-commit` hook
@@ -170,11 +178,9 @@ iris/
 5. **Testing:** Run tests before pushing (enforced by `pre-push` hook)
 
 ## Portfolio Evidence
-
 This project uses automated evidence tracking via git hooks. Every commit with KSB-relevant work is automatically analyzed and added to `~/.claude/docs/evidence-tracker.md`.
 
 ## Getting Help
-
 - **Claude Code:** Use `/project/init` to reconfigure
 - **Roadmaps:** See `docs/roadmaps/mvp.md`
 - **Architecture:** See `docs/adrs/`
