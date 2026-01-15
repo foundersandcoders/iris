@@ -48,9 +48,9 @@ export class Layout {
 
   private drawHeader(options: LayoutOptions): void {
     // Row 1: Branding
-    this.term.moveTo(1, 1);
-    this.term.bold.colorRgbHex(theme.primary)('IRIS');
-    this.term.styleReset();
+    // this.term.moveTo(1, 1);
+    // this.term.bold.colorRgbHex(theme.primary)('IRIS');
+    // this.term.styleReset();
 
     this.term.moveTo(this.term.width - 10, 1);
     this.term.colorRgbHex(theme.textMuted)('v0.7.0');

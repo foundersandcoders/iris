@@ -88,20 +88,37 @@ export class Dashboard implements Screen {
   cleanup(): void {
     this.term.removeAllListeners('key');
   }
-
+  
   private drawScreen(): void {
     const region = this.layout.draw({
-      title: 'ILR Toolkit',
+      title: '',
       statusBar: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
       showBack: false,
     });
+    
+    const asciiArt = [
+      '╔╦╦╦╦╦╦╦╦╦╦╦╦╦╦╗',
+      '╠╬╩╩╩╩╩╩╩╩╩╩╩╩╬╣',
+      '╠╣  ╦┬─┐┬┌─┐  ╠╣',
+      '╠╣  ║├┬┘│└─┐  ╠╣',
+      '╠╣  ╩┴└─┴└─┘  ╠╣',
+      '╠╬╦╦╦╦╦╦╦╦╦╦╦╦╬╣',
+      '╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╝',
+    ];
 
-    this.term.moveTo(1, region.contentTop);
+    asciiArt.forEach((line, i) => {
+      this.term.moveTo(1, 2 + i);
+      this.term.colorRgbHex(theme.primary)(line);
+    });
+
+    const contentTop = 2 + asciiArt.length + 1;
+
+    this.term.moveTo(1, contentTop);
     this.term.colorRgbHex(theme.text)('Quick Actions');
     this.term.styleReset();
 
     this.menuItems.forEach((item, index) => {
-      this.term.moveTo(3, region.contentTop + 2 + index);
+      this.term.moveTo(3, contentTop + 2 + index);
       const isSelected = index === this.selectedIndex;
 
       if (isSelected) {
@@ -111,12 +128,10 @@ export class Dashboard implements Screen {
       }
 
       if (item.implemented) {
-        // Dark text for implemented items
         this.term.colorRgbHex(theme.text);
         if (isSelected) this.term.bold;
         this.term(`${index + 1}  ${item.label}`);
       } else {
-        // Light gray text for unimplemented
         this.term.colorRgbHex(theme.textMuted);
         this.term(`${index + 1}  ${item.label}`);
         this.term.colorRgbHex(theme.textMuted)(' (soon)');
