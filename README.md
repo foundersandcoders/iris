@@ -64,10 +64,19 @@ iris/
 └── tests/             # Vitest tests
 ```
 
+---
+
 ## Development
 
-See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions and commands.
+See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions and commands. Primary runtime/tooling and test commands are exposed in [package.json](package.json) scripts.
 
-## License
+---
 
-MIT
+## Resources
+
+- [MVP Roadmap](docs/roadmaps/mvp.md)
+- [Architectural Decision Records](docs/adrs/)
+- [TUI UX Design](docs/technical/tui-ux-design.md)
+- [Work Records & Dev Log](docs/dev-log/work-records/)
+- [Tests and Fixtures](tests/)
+- [ESFA ILR Schema (Included)](docs/schemas/schemafile25.xsd)
