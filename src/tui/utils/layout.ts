@@ -1,8 +1,8 @@
-/** ====== Layout System ======
-  * Provides consistent structure for all TUI screens
-  */
+/** ====== Layout System ====== */
 import type { Terminal } from 'terminal-kit';
-import { theme, symbols } from '../theme';
+import { THEMES, symbols } from '../theme';
+
+const theme = THEMES.themeLight;
 
 export interface LayoutOptions {
   title: string;
@@ -12,17 +12,19 @@ export interface LayoutOptions {
 }
 
 export interface LayoutRegion {
-  /** Y Coordinate */ contentTop: number;
-  /** Y Coordinate */ contentBottom: number;
-  /** Y Range */ contentHeight: number;
-  /** X Range */ contentWidth: number;
+  contentTop: number;
+  contentBottom: number;
+  contentHeight: number;
+  contentWidth: number;
 }
 
 export class Layout {
   constructor(private term: Terminal) {}
 
   draw(options: LayoutOptions): LayoutRegion {
-    this.term.clear();
+    // Just clear. Standard terminals are white-ish by default.
+    // If we want to be safe, we can force white BG, but let's try natural first.
+    this.term.bgDefaultColor().clear();
 
     const width = this.term.width;
     const height = this.term.height;
@@ -45,7 +47,7 @@ export class Layout {
   }
 
   private drawHeader(options: LayoutOptions): void {
-    // Row 1: Branding + version
+    // Row 1: Branding
     this.term.moveTo(1, 1);
     this.term.bold.colorRgbHex(theme.primary)('IRIS');
     this.term.styleReset();
@@ -54,13 +56,13 @@ export class Layout {
     this.term.colorRgbHex(theme.textMuted)('v0.7.0');
     this.term.styleReset();
 
-    // Row 2: Title with optional back indicator
+    // Row 2: Title
     this.term.moveTo(1, 2);
     if (options.showBack) this.term.colorRgbHex(theme.textMuted)(`${symbols.arrow} `);
     this.term.bold.colorRgbHex(theme.text)(options.title);
     this.term.styleReset();
 
-    // Row 3: Breadcrumbs (if provided)
+    // Row 3: Breadcrumbs
     if (options.breadcrumbs && options.breadcrumbs.length > 0) {
       this.term.moveTo(1, 3);
       const breadcrumbText = options.breadcrumbs.join(' › ');

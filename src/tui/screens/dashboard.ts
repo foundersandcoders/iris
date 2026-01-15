@@ -1,17 +1,19 @@
 /** ====== Dashboard Screen ======
-  * 
+  *
   * Main menu and entry point for TUI
   */
 import type { Terminal } from 'terminal-kit';
 import { Layout } from '../utils/layout';
-import { theme, symbols } from '../theme';
+import { THEMES, symbols } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+
+const theme = THEMES.themeLight;
 
 export class Dashboard implements Screen {
   readonly name = 'dashboard';
   private layout: Layout;
   private selectedIndex = 0;
-  
+
   private menuItems = [
     { key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
     { key: 'validate', label: 'Validate XML Submission', implemented: false },
@@ -30,9 +32,9 @@ export class Dashboard implements Screen {
       this.drawScreen();
 
       /* LOG (25-01-14): Keyboard Navigation
-        
+
         REALLY? I HAVE TO DO THIS LIKE I'M NAVIGATING AN ARRAY?
-        
+
         Take me back to Svelte
         */
       this.term.on('key', (key: string) => {
@@ -109,13 +111,15 @@ export class Dashboard implements Screen {
       }
 
       if (item.implemented) {
+        // Dark text for implemented items
         this.term.colorRgbHex(theme.text);
         if (isSelected) this.term.bold;
         this.term(`${index + 1}  ${item.label}`);
       } else {
+        // Light gray text for unimplemented
         this.term.colorRgbHex(theme.textMuted);
         this.term(`${index + 1}  ${item.label}`);
-        this.term.dim(' (soon)');
+        this.term.colorRgbHex(theme.textMuted)(' (soon)');
       }
 
       this.term.styleReset();
