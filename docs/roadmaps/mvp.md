@@ -83,25 +83,25 @@ None currently
 > **Goal:** Working transformation engine used by both interfaces
 
 **Deliverables:**
-- [ ] CSV parser that tolerates column reordering
-- [ ] ILR XML generator producing valid output
-- [ ] Semantic validation beyond structural checks
+- [x] CSV parser that tolerates column reordering
+- [x] ILR XML generator producing valid output
+- [x] Semantic validation beyond structural checks
 - [ ] Workflow abstraction layer (interface-agnostic generators)
       - [ ] convert
       - [ ] validate
       - [ ] check
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- [ ] Test coverage for core transformations and workflows
+- [x] Test coverage for core transformations and workflows
 
 ### 2b. Milestone 2: TUI Interface (Primary)
 > [!NOTE]
 > **Goal:** Beautiful, interactive terminal interface as the main user experience
 
 **Deliverables:**
-- [ ] Full-screen TUI Application (`iris` launches dashboard)
-- [ ] Screen routing with navigation stack (back navigation, breadcrumbs)
-- [ ] Consistent layout wrapper for all screens (header, content, status bar)
+- [x] Full-screen TUI Application (`iris` launches dashboard)
+- [x] Screen routing with navigation stack (back navigation, breadcrumbs)
+- [x] Consistent layout wrapper for all screens (header, content, status bar)
 - [ ] Interactive file picker with preview
 - [ ] Live processing screen with progress and logs
 - [ ] Validation results explorer (navigate errors/warnings)
