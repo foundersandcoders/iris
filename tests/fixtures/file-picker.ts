@@ -1,6 +1,5 @@
 import { vi } from 'vitest';
 
-// Helper to create mock Dirents
 const createDirent = (name: string, isDirectory: boolean) => ({
   name,
   isDirectory: vi.fn(() => isDirectory),
@@ -10,7 +9,7 @@ const createDirent = (name: string, isDirectory: boolean) => ({
   isSymbolicLink: vi.fn(() => false),
   isFIFO: vi.fn(() => false),
   isSocket: vi.fn(() => false),
-  parentPath: '/tmp',
+  parentPath: '/tmp', 
 });
 
 export const mixedDirectory = [

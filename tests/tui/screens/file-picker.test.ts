@@ -1,61 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FilePicker } from '../../../src/tui/screens/file-picker';
 import * as fixtures from '../../fixtures/file-picker';
+import * as tuiFixtures from '../../fixtures/tui';
 import fs from 'node:fs/promises';
 
-vi.mock('node:fs/promises');
-
-const mockTerm = {
-  clear: vi.fn(),
-  moveTo: vi.fn(() => mockTerm),
-  on: vi.fn(),
-  removeAllListeners: vi.fn(),
-  bold: {
-    colorRgbHex: vi.fn(() => vi.fn()),
-  },
-  colorRgbHex: vi.fn(() => vi.fn()),
-  bgColorRgbHex: vi.fn(() => vi.fn()),
-  bgDefaultColor: vi.fn(),
-  eraseLineAfter: vi.fn(),
-  styleReset: vi.fn(),
-  height: 24,
-  width: 80,
-} as any;
-
-const termMock = Object.assign(vi.fn(), mockTerm);
+vi.mock('node:fs/promises', () => ({
+  default: {
+    readdir: vi.fn(),
+  }
+}));
 
 describe('FilePicker', () => {
+  let mockTerm: ReturnType<typeof tuiFixtures.createMockTerminal>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTerm = tuiFixtures.createMockTerminal();
   });
 
   it('can be instantiated', () => {
-    const screen = new FilePicker(termMock);
+    const screen = new FilePicker(mockTerm);
     expect(screen).toBeInstanceOf(FilePicker);
     expect(screen.name).toBe('file-picker');
   });
 
   it('filters for directories and CSV files using mixed fixture', async () => {
-    const screen = new FilePicker(termMock);
-
+    const screen = new FilePicker(mockTerm);
+    
     (fs.readdir as any).mockResolvedValue(fixtures.mixedDirectory);
 
-    await (screen as any).loadDirectory();
-
+    screen.render();
+    
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const entries = (screen as any).entries;
-
+    
     expect(entries).toHaveLength(2);
     expect(entries.map((e: any) => e.name)).toContain('data.csv');
     expect(entries.map((e: any) => e.name)).toContain('nested');
-    expect(entries.map((e: any) => e.name)).not.toContain('styles.css');
   });
 
   it('sorts directories before files', async () => {
-    const screen = new FilePicker(termMock);
-
+    const screen = new FilePicker(mockTerm);
+    
     (fs.readdir as any).mockResolvedValue(fixtures.messyCsvDirectory);
 
-    await (screen as any).loadDirectory();
+    screen.render();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const entries = (screen as any).entries;
 
     expect(entries[0].name).toBe('Folder A');
@@ -66,14 +58,13 @@ describe('FilePicker', () => {
   });
 
   it('renders "No CSV files" message for empty directory', async () => {
-    const screen = new FilePicker(termMock);
-
+    const screen = new FilePicker(mockTerm);
+    
     (fs.readdir as any).mockResolvedValue(fixtures.emptyDirectory);
-
+    
     screen.render();
-
     await new Promise(resolve => setTimeout(resolve, 0));
 
-    expect(termMock.colorRgbHex).toHaveBeenCalledWith(expect.stringContaining('No CSV files found'));
+    expect(mockTerm).toHaveBeenCalledWith(expect.stringContaining('No CSV files found'));
   });
 });

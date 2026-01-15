@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { theme, symbols, borders, spinners } from '../../src/tui/theme';
+import { THEMES, symbols, borders, spinners } from '../../src/tui/theme';
+
+const theme = THEMES.themeLight;
 
 describe('theme', () => {
   it('exports status colors', () => {
