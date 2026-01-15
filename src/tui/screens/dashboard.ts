@@ -13,7 +13,7 @@ export class Dashboard implements Screen {
   private selectedIndex = 0;
   
   private menuItems = [
-    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: false },
+    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
     { key: 'validate', label: 'Validate XML Submission', implemented: false },
     { key: 'check', label: 'Cross-Submission Check', implemented: false },
     { key: 'history', label: 'Browse Submission History', implemented: false },
