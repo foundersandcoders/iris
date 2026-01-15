@@ -100,13 +100,24 @@ export class Dashboard implements Screen {
 
     this.menuItems.forEach((item, index) => {
       this.term.moveTo(3, region.contentTop + 2 + index);
+      const isSelected = index === this.selectedIndex;
 
-      if (index === this.selectedIndex) {
+      if (isSelected) {
         this.term.colorRgbHex(theme.primary)(`${symbols.arrow} `);
-        this.term.bold.colorRgbHex(theme.text)(`${index + 1}  ${item.label}`);
       } else {
-        this.term.colorRgbHex(theme.textMuted)(`  ${index + 1}  ${item.label}`);
+        this.term('  ');
       }
+
+      if (item.implemented) {
+        this.term.colorRgbHex(theme.text);
+        if (isSelected) this.term.bold;
+        this.term(`${index + 1}  ${item.label}`);
+      } else {
+        this.term.colorRgbHex(theme.textMuted);
+        this.term(`${index + 1}  ${item.label}`);
+        this.term.dim(' (soon)');
+      }
+
       this.term.styleReset();
     });
   }
