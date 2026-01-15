@@ -1,19 +1,21 @@
 /** ====== Dashboard Screen ======
-  * 
+  *
   * Main menu and entry point for TUI
   */
 import type { Terminal } from 'terminal-kit';
 import { Layout } from '../utils/layout';
-import { theme, symbols } from '../theme';
+import { THEMES, symbols } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+
+const theme = THEMES.themeLight;
 
 export class Dashboard implements Screen {
   readonly name = 'dashboard';
   private layout: Layout;
   private selectedIndex = 0;
-  
+
   private menuItems = [
-    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: false },
+    { key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
     { key: 'validate', label: 'Validate XML Submission', implemented: false },
     { key: 'check', label: 'Cross-Submission Check', implemented: false },
     { key: 'history', label: 'Browse Submission History', implemented: false },
@@ -30,9 +32,9 @@ export class Dashboard implements Screen {
       this.drawScreen();
 
       /* LOG (25-01-14): Keyboard Navigation
-        
+
         REALLY? I HAVE TO DO THIS LIKE I'M NAVIGATING AN ARRAY?
-        
+
         Take me back to Svelte
         */
       this.term.on('key', (key: string) => {
@@ -86,27 +88,55 @@ export class Dashboard implements Screen {
   cleanup(): void {
     this.term.removeAllListeners('key');
   }
-
+  
   private drawScreen(): void {
     const region = this.layout.draw({
-      title: 'ILR Toolkit',
+      title: '',
       statusBar: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
       showBack: false,
     });
+    
+    const asciiArt = [
+      '╔╦╦╦╦╦╦╦╦╦╦╦╦╦╦╗',
+      '╠╬╩╩╩╩╩╩╩╩╩╩╩╩╬╣',
+      '╠╣  ╦┬─┐┬┌─┐  ╠╣',
+      '╠╣  ║├┬┘│└─┐  ╠╣',
+      '╠╣  ╩┴└─┴└─┘  ╠╣',
+      '╠╬╦╦╦╦╦╦╦╦╦╦╦╦╬╣',
+      '╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╝',
+    ];
 
-    this.term.moveTo(1, region.contentTop);
+    asciiArt.forEach((line, i) => {
+      this.term.moveTo(1, 2 + i);
+      this.term.colorRgbHex(theme.primary)(line);
+    });
+
+    const contentTop = 2 + asciiArt.length + 1;
+
+    this.term.moveTo(1, contentTop);
     this.term.colorRgbHex(theme.text)('Quick Actions');
     this.term.styleReset();
 
     this.menuItems.forEach((item, index) => {
-      this.term.moveTo(3, region.contentTop + 2 + index);
+      this.term.moveTo(3, contentTop + 2 + index);
+      const isSelected = index === this.selectedIndex;
 
-      if (index === this.selectedIndex) {
+      if (isSelected) {
         this.term.colorRgbHex(theme.primary)(`${symbols.arrow} `);
-        this.term.bold.colorRgbHex(theme.text)(`${index + 1}  ${item.label}`);
       } else {
-        this.term.colorRgbHex(theme.textMuted)(`  ${index + 1}  ${item.label}`);
+        this.term('  ');
       }
+
+      if (item.implemented) {
+        this.term.colorRgbHex(theme.text);
+        if (isSelected) this.term.bold;
+        this.term(`${index + 1}  ${item.label}`);
+      } else {
+        this.term.colorRgbHex(theme.textMuted);
+        this.term(`${index + 1}  ${item.label}`);
+        this.term.colorRgbHex(theme.textMuted)(' (soon)');
+      }
+
       this.term.styleReset();
     });
   }
