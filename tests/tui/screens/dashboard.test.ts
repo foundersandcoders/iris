@@ -1,22 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Dashboard } from '../../../src/tui/screens/dashboard';
-
-// Mock terminal
-const mockTerm = {
-  clear: vi.fn(),
-  moveTo: vi.fn(() => mockTerm),
-  on: vi.fn(),
-  removeAllListeners: vi.fn(),
-  bold: {
-    colorRgbHex: vi.fn(() => vi.fn()),
-  },
-  colorRgbHex: vi.fn(() => vi.fn()),
-  styleReset: vi.fn(),
-  height: 24,
-  width: 80,
-};
+import * as fixtures from '../../fixtures/tui';
 
 describe('Dashboard', () => {
+  let mockTerm: ReturnType<typeof fixtures.createMockTerminal>;
+
+  beforeEach(() => {
+    mockTerm = fixtures.createMockTerminal();
+  });
+
   it('can be instantiated with a terminal instance', () => {
     const dashboard = new Dashboard(mockTerm);
     expect(dashboard).toBeInstanceOf(Dashboard);
@@ -33,6 +25,6 @@ describe('Dashboard', () => {
     expect(result).toBeInstanceOf(Promise);
 
     // Clean up the promise to prevent hanging
-    dashboard['term'].removeAllListeners('key');
+    mockTerm.removeAllListeners('key');
   });
 });
