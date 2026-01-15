@@ -1,12 +1,17 @@
 # Iris: MVP
-> [!NOTE]
-> Project initialized. Core architecture in place. CSV parser, ILR XML generator, and semantic validator implemented with tests.
+
+| Area | Implemented                                   | Next Up |
+| ---- | --------------------------------------------- | ------- |
+| Core | CSV parser; XML generator; semantic validator |         |
+| CLI  | `iris` opens TUI                              |         |
+| TUI  | routing & layout architecture                 |         |
+| GUI  | sveltekit configuration                       |         |
 
 ---
 ## 1. Tasks
 ### 1a. Open Tasks
 #### 1a1. Due Tasks
-None currently
+None
 
 #### 1a2. Other Tasks
 ##### 1a2a. Core Processing Library
@@ -27,9 +32,9 @@ None currently
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
 - [x] 1a2b2. Create TUI application scaffold and theme system
 - [x] 1a2b3. Build dashboard with menu navigation (recent activity panel pending)
-- [ ] 1a2b3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
-- [ ] 1a2b3b. Implement consistent layout system (header, content, status bar, borders)
-- [ ] 1a2b3c. Refactor dashboard to use layout system (validate architecture)
+    - [x] 1a2b3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
+    - [x] 1a2b3b. Implement consistent layout system (header, content, status bar, borders)
+    - [x] 1a2b3c. Refactor dashboard to use layout system
 - [ ] 1a2b4. Implement interactive file picker for CSV selection
 - [ ] 1a2b5. Create processing screen with live progress and log viewer
 - [ ] 1a2b6. Build validation results explorer (error/warning navigation)
@@ -74,72 +79,95 @@ None currently
 
 ## 2. MVP Milestones
 ### 2a. Milestone 1: Shared Core Library
-**Goal:** Working transformation engine used by both interfaces
+> [!NOTE]
+> **Goal:** Working transformation engine used by both interfaces
 
 **Deliverables:**
-- CSV parser that tolerates column reordering
-- ILR XML generator producing valid output
-- Semantic validation beyond structural checks
-- Workflow abstraction layer (convert, validate, check as interface-agnostic generators)
-- File-based storage for cross-submission data (designed to support future ESFA response storage)
-- Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- Test coverage for core transformations and workflows
+- [ ] CSV parser that tolerates column reordering
+- [ ] ILR XML generator producing valid output
+- [ ] Semantic validation beyond structural checks
+- [ ] Workflow abstraction layer (interface-agnostic generators)
+      - [ ] convert
+      - [ ] validate
+      - [ ] check
+- [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
+- [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+- [ ] Test coverage for core transformations and workflows
 
 ### 2b. Milestone 2: TUI Interface (Primary)
-**Goal:** Beautiful, interactive terminal interface as the main user experience
+> [!NOTE]
+> **Goal:** Beautiful, interactive terminal interface as the main user experience
 
 **Deliverables:**
-- Full-screen TUI application (`iris` launches dashboard)
-- Screen routing with navigation stack (back navigation, breadcrumbs)
-- Consistent layout wrapper for all screens (header, content, status bar)
-- Interactive file picker with preview
-- Live processing screen with progress and logs
-- Validation results explorer (navigate errors/warnings)
-- Settings management screen
-- Submission history browser
-- Complete workflows: convert, validate, cross-check
-- Keyboard navigation (arrows, vim-style, shortcuts)
-- Help overlay system
-- Visual polish (animations, gradients, transitions)
-- Global installation via `bun link`
+- [ ] Full-screen TUI Application (`iris` launches dashboard)
+- [ ] Screen routing with navigation stack (back navigation, breadcrumbs)
+- [ ] Consistent layout wrapper for all screens (header, content, status bar)
+- [ ] Interactive file picker with preview
+- [ ] Live processing screen with progress and logs
+- [ ] Validation results explorer (navigate errors/warnings)
+- [ ] Settings management screen
+- [ ] Submission history browser
+- [ ] Complete Workflows
+      - [ ] convert
+      - [ ] validate
+      - [ ] cross-check
+- [ ] Keyboard navigation (arrows, vim-style, shortcuts)
+- [ ] Help overlay system
+- [ ] Visual polish (animations, gradients, transitions)
+- [ ] Global installation via `bun link`
 
 ### 2c. Milestone 3: Direct Commands (Automation)
-**Goal:** Scriptable commands for automation and power users
+> [!NOTE]
+> **Goal:** Scriptable commands for automation and power users
 
 **Deliverables:**
-- `iris convert <file>` working end-to-end (non-TUI)
-- `iris validate <file>` for existing XML files
-- `iris check` for cross-submission consistency
-- Beautiful console output (consola, spinners, progress)
-- `--interactive` flag to launch TUI for specific workflows
-- Comprehensive help text (`--help`)
-- CI/CD compatibility
+- [ ] Full Command Suite
+      - [ ] `iris convert <file>` (non-TUI)
+      - [ ] `iris validate <file>` (existing XML files)
+      - [ ] `iris check` (cross-submission consistency)
+- [ ] Arguments
+      - [ ] `--interactive` (launch TUI for specific workflows)
+      - [ ] `--help`: comprehensive help text
+- [ ] Beautiful console output (consola, spinners, progress)
+- [ ] CI/CD compatibility
 
 ### 2d. Milestone 4: Desktop Interface
-**Goal:** Native cross-platform app for users who prefer GUI over terminal
+> [!NOTE]
+> **Goal:** Native cross-platform app for users who prefer GUI over terminal
+
 **Status:** Follows TUI implementation, informed by TUI user feedback
 **Platforms:** macOS, Windows, Linux (via Tauri)
 
 **Deliverables:**
-- Cross-platform builds (macOS `.app`, Windows `.exe`, Linux `.AppImage`)
-- SvelteKit routing (/convert, /validate, /check routes)
-- File picker for CSV input
-- XML preview panel
-- Validation results display
-- Configuration UI
-- Cross-submission warnings display
-- Output save location selection
-- Complete workflows: convert, validate, cross-check (using shared workflow layer)
+- [ ] Cross-Platform Builds
+      - [ ] macOS `.app`
+      - [ ] Windows `.exe`
+      - [ ] Linux `.AppImage`)
+- [ ] SvelteKit Routing
+      - [ ] `/convert`
+      - [ ] `/validate`
+      - [ ] `/check`
+- [ ] File picker for CSV input
+- [ ] XML preview panel
+- [ ] Validation results display
+- [ ] Configuration UI
+- [ ] Cross-submission warnings display
+- [ ] Output save location selection
+- [ ] Complete Workflows (using shared workflow layer)
+      - [ ] convert
+      - [ ] validate
+      - [ ] cross-check
 
 ### 2e. Milestone 5: Production Ready
-**Goal:** Replaces existing Electron tool in production
+> [!NOTE]
+> **Goal:** Replaces existing Electron tool in production
 
 **Deliverables:**
-- Validation against real Airtable exports
-- All transformation logic from existing tool replicated
-- User acceptance testing with FaC staff
-- Code signing/distribution setup for target platforms
-- First production submission using Iris
+- [ ] Validation against real Airtable exports
+- [ ] All transformation logic from existing tool replicated
+- [ ] User acceptance testing with FaC staff
+- [ ] Code signing/distribution setup for target platforms
+- [ ] First production submission using Iris
 
 ---
 
