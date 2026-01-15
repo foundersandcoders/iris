@@ -2,8 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Terminal } from 'terminal-kit';
 import { Layout } from '../utils/layout';
-import { theme } from '../theme';
+import { THEMES } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+
+const theme = THEMES.themeLight;
 
 interface FileEntry {
   name: string;
@@ -26,7 +28,9 @@ export class FilePicker implements Screen {
   }
 
   async render(data?: ScreenData): Promise<ScreenResult> {
-    if (data?.path && typeof data.path === 'string') this.currentPath = data.path;
+    if (data?.path && typeof data.path === 'string') {
+      this.currentPath = data.path;
+    }
 
     await this.loadDirectory();
 
@@ -46,7 +50,8 @@ export class FilePicker implements Screen {
             this.adjustScroll();
             this.drawScreen();
           }
-        } else if (key === 'PAGE_UP') {
+        }
+        else if (key === 'PAGE_UP') {
           const region = this.layout.draw({ title: '' });
           const pageSize = region.contentHeight;
           this.selectedIndex = Math.max(0, this.selectedIndex - pageSize);
@@ -58,7 +63,8 @@ export class FilePicker implements Screen {
           this.selectedIndex = Math.min(this.entries.length - 1, this.selectedIndex + pageSize);
           this.adjustScroll();
           this.drawScreen();
-        } else if (key === 'ENTER') {
+        }
+        else if (key === 'ENTER') {
           const selected = this.entries[this.selectedIndex];
           if (selected) {
             if (selected.isDirectory) {
@@ -162,7 +168,10 @@ export class FilePicker implements Screen {
       this.term.moveTo(1, y);
 
       if (isSelected) {
-        this.term.bgColorRgbHex(theme.highlight).black();
+        // Light highlight background
+        this.term.bgColorRgbHex(theme.highlight);
+        // Dark text on highlight
+        this.term.colorRgbHex(theme.text);
         this.term.eraseLineAfter();
       } else {
         this.term.bgDefaultColor();
@@ -173,12 +182,13 @@ export class FilePicker implements Screen {
 
       this.term('  ');
       if (isSelected) {
-        this.term.black(icon + '  ' + item.name);
+        this.term.colorRgbHex(color)(icon + '  ');
+        this.term.colorRgbHex(theme.text)(item.name);
       } else {
         this.term.colorRgbHex(color)(icon + '  ');
         this.term.colorRgbHex(theme.text)(item.name);
       }
-
+      
       this.term.styleReset();
     });
   }
