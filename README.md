@@ -27,6 +27,8 @@ bun run src/cli.ts
 # Link globally and use TUI
 bun link
 iris                      # Launch full-screen TUI
+
+# Direct command invocation (not yet implemented)
 iris convert file.csv     # Direct command (scriptable)
 iris --help
 
