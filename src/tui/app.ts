@@ -5,6 +5,7 @@ import terminalKit from 'terminal-kit';
 import { Router } from "./utils/router";
 import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
+import { ProcessingScreen } from './screens/processing';
 
 interface TUIOptions {
   startCommand?: string;
@@ -48,7 +49,7 @@ export class TUI {
   private registerScreens() {
     this.router.register('dashboard', (term) => new Dashboard(term));
     this.router.register('convert', (term) => new FilePicker(term));
-    // this.router.register('processing', (term) => new Processing(term));
+    this.router.register('processing', (term) => new ProcessingScreen(term));
   }
 
   private cleanup() {
