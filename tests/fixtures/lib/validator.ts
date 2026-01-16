@@ -1,10 +1,8 @@
-import type { CSVRow } from '../../src/lib/parser';
+import type { CSVRow } from '../../../src/lib/parser';
 
 export const validHeaders = [
   'LearnRefNumber',
   'ULN',
-  'FamilyName',
-  'GivenNames',
   'DateOfBirth',
   'Ethnicity',
   'Sex',
@@ -24,8 +22,6 @@ export const validHeaders = [
 export const validRow: CSVRow = {
   LearnRefNumber: 'ABC123',
   ULN: '1234567890',
-  FamilyName: 'Smith',
-  GivenNames: 'John',
   DateOfBirth: '2000-01-15',
   Ethnicity: '31',
   Sex: 'M',
@@ -42,10 +38,20 @@ export const validRow: CSVRow = {
   CompStatus: '1',
 };
 
-export const validCsvContent = [
-  validHeaders.join(','),
-  Object.values(validRow).join(','),
-].join('\n');
+export const incompleteHeaders = ['LearnRefNumber', 'ULN'];
 
-export const invalidCsvContent = `LearnRefNumber,ULN
-ABC123,`;
+export const rowWithEmptyULN: CSVRow = {
+  ...validRow,
+  ULN: '',
+};
+
+export const rowWithWhitespaceLearnRef: CSVRow = {
+  ...validRow,
+  LearnRefNumber: '   ',
+};
+
+export const multipleRowsWithErrors: CSVRow[] = [
+  validRow,
+  { ...validRow, ULN: '' },
+  { ...validRow, Sex: '' },
+];
