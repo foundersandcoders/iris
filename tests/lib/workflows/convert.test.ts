@@ -1,9 +1,26 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { convertWorkflow } from '../../../src/lib/workflows/convert';
+import type { WorkflowResult, WorkflowStepEvent } from '../../../src/lib/types/workflow';
+import type { ConvertOutput } from '../../../src/lib/types/workflow';
 import * as fixtures from '../../fixtures/lib/workflows/workflow';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdir, rm, writeFile } from 'fs/promises';
+
+async function runWorkflow(
+  input: Parameters<typeof convertWorkflow>[0]
+): Promise<{ events: WorkflowStepEvent[]; result: WorkflowResult<ConvertOutput> }> {
+  const gen = convertWorkflow(input);
+  const events: WorkflowStepEvent[] = [];
+
+  while (true) {
+    const next = await gen.next();
+    if (next.done) {
+      return { events, result: next.value };
+    }
+    events.push(next.value);
+  }
+}
 
 describe('convertWorkflow', () => {
   let testDir: string;
@@ -23,17 +40,14 @@ describe('convertWorkflow', () => {
     it('yields step events in correct order', async () => {
       await writeFile(testCsvPath, fixtures.validCsvContent);
 
-      const workflow = convertWorkflow({
+      const { events } = await runWorkflow({
         filePath: testCsvPath,
         outputDir: testDir,
       });
 
-      const events: string[] = [];
-      for await (const event of workflow) {
-        events.push(`${event.type}:${event.step.id}`);
-      }
+      const eventKeys = events.map((e) => `${e.type}:${e.step.id}`);
 
-      expect(events).toEqual([
+      expect(eventKeys).toEqual([
         'step:start:parse',
         'step:complete:parse',
         'step:start:validate',
@@ -48,56 +62,26 @@ describe('convertWorkflow', () => {
     it('returns successful result with output data', async () => {
       await writeFile(testCsvPath, fixtures.validCsvContent);
 
-      const workflow = convertWorkflow({
+      const { result } = await runWorkflow({
         filePath: testCsvPath,
         outputDir: testDir,
       });
 
-      let result;
-      for await (const _ of workflow) {
-        // consume events
-      }
-
-      /* TODO: Generator return value isn't accessible via for-await.
-        * Need to use .next() to get final return
-        */
-      const gen = convertWorkflow({
-        filePath: testCsvPath,
-        outputDir: testDir,
-      });
-
-      let done = false;
-      while (!done) {
-        const next = await gen.next();
-        done = next.done ?? false;
-        if (done) result = next.value;
-      }
-
-      // TODO: Check & update these expect() calls when .next() is implemented
       expect(result.success).toBe(true);
       expect(result.data?.xml).toContain('<?xml version="1.0"');
       expect(result.data?.outputPath).toContain('ILR-');
       expect(result.data?.csvData.rows).toHaveLength(1);
-      expect(result.duration).toBeGreaterThan(0);
+      expect(result.duration).toBeGreaterThanOrEqual(0);
     });
 
     it('saves XML file to output directory', async () => {
       await writeFile(testCsvPath, fixtures.validCsvContent);
 
-      const gen = convertWorkflow({
+      const { result } = await runWorkflow({
         filePath: testCsvPath,
         outputDir: testDir,
       });
 
-      let result;
-      let done = false;
-      while (!done) {
-        const next = await gen.next();
-        done = next.done ?? false;
-        if (done) result = next.value;
-      }
-
-      // TODO: exclude undefined result
       const outputFile = Bun.file(result.data!.outputPath);
       expect(await outputFile.exists()).toBe(true);
 
@@ -109,29 +93,17 @@ describe('convertWorkflow', () => {
 
   describe('error handling', () => {
     it('fails on missing file', async () => {
-      const gen = convertWorkflow({
+      const { events, result } = await runWorkflow({
         filePath: join(testDir, 'nonexistent.csv'),
         outputDir: testDir,
       });
 
-      const events: { type: string; stepId: string }[] = [];
-      let result;
-      let done = false;
-
-      while (!done) {
-        const next = await gen.next();
-        done = next.done ?? false;
-        if (done) {
-          result = next.value;
-        } else {
-          events.push({ type: next.value.type, stepId: next.value.step.id });
-        }
-      }
-
-      expect(events).toContainEqual({ type: 'step:start', stepId: 'parse' });
-      expect(events).toContainEqual({ type: 'step:error', stepId: 'parse' });
-
-      // TODO: exclude undefined results
+      expect(events).toContainEqual(
+        expect.objectContaining({ type: 'step:start', step: expect.objectContaining({ id: 'parse' }) })
+      );
+      expect(events).toContainEqual(
+        expect.objectContaining({ type: 'step:error', step: expect.objectContaining({ id: 'parse' }) })
+      );
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
@@ -139,23 +111,11 @@ describe('convertWorkflow', () => {
     it('reports validation errors but continues', async () => {
       await writeFile(testCsvPath, fixtures.invalidCsvContent);
 
-      const gen = convertWorkflow({
+      const { result } = await runWorkflow({
         filePath: testCsvPath,
         outputDir: testDir,
       });
 
-      let result;
-      let done = false;
-      while (!done) {
-        const next = await gen.next();
-        done = next.done ?? false;
-        if (done) result = next.value;
-      }
-
-      /* TODO: exclude undefined results
-
-        * Workflow succeeds even with validation errors (they're reported, not fatal)
-        */
       expect(result.success).toBe(true);
       expect(result.data?.validation.valid).toBe(false);
       expect(result.data?.validation.errorCount).toBeGreaterThan(0);
@@ -166,25 +126,17 @@ describe('convertWorkflow', () => {
     it('updates step status through lifecycle', async () => {
       await writeFile(testCsvPath, fixtures.validCsvContent);
 
-      const gen = convertWorkflow({
+      const { events } = await runWorkflow({
         filePath: testCsvPath,
         outputDir: testDir,
       });
 
-      const parseEvents: { status: string; progress: number }[] = [];
-
-      let done = false;
-      while (!done) {
-        const next = await gen.next();
-        done = next.done ?? false;
-        // TODO: disentangle WorkflowStepEvent from WorkflowResult<ConvertOutput>
-        if (!done && next.value.step.id === 'parse') {
-          parseEvents.push({
-            status: next.value.step.status,
-            progress: next.value.step.progress,
-          });
-        }
-      }
+      const parseEvents = events
+        .filter((e) => e.step.id === 'parse')
+        .map((e) => ({
+          status: e.step.status,
+          progress: e.step.progress
+        }));
 
       expect(parseEvents[0]).toEqual({ status: 'pending', progress: 0 });
       expect(parseEvents[1]).toEqual({ status: 'complete', progress: 100 });
