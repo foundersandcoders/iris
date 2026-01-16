@@ -76,14 +76,9 @@ export class ProcessingScreen implements Screen {
         this.cleanup();
 
         if (this.result?.success) {
-          resolve({
-            action: 'push',
-            screen: 'success',
-            data: {
-              outputPath: this.result.data?.outputPath,
-              validation: this.result.data?.validation,
-              duration: this.result.duration,
-            },
+          this.term.on('key', (key: string) => {
+            this.cleanup();
+            resolve({ action: 'pop' });
           });
         } else {
           resolve({ action: 'pop' });
