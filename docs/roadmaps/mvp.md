@@ -27,6 +27,8 @@ None
 - [ ] 1a2a10. Implement validate workflow (load → validate → report)
 - [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
 - [ ] 1a2a12. Add unit tests for workflows (independent of UI)
+- [ ] 1a2a13. Refactor workflow to yield step copies (prevent reference mutation issues)
+- [ ] 1a2a14. Add helper to consume workflow generator and capture return value in single pass
 
 ##### 1a2b. TUI Interface (Primary)
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
