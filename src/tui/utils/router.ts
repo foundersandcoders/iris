@@ -25,9 +25,7 @@ interface StackEntry {
 }
 
 /* LOG (25-01-14): Navigation Array
-  * 
   * OKAY this might be a slightly insane approach? I don't know.
-  * 
   * But here we go, TUI navigation is henceforth an array of class instances.
   */
 export class Router {
