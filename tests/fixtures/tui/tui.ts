@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import type { Screen, ScreenResult } from '../../src/tui/utils/router';
+import type { Screen, ScreenResult } from '../../../src/tui/utils/router';
 
 /**
   * Mock terminal matching terminal-kit API

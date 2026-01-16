@@ -53,7 +53,7 @@ export class Layout {
     // this.term.styleReset();
 
     this.term.moveTo(this.term.width - 10, 1);
-    this.term.colorRgbHex(theme.textMuted)('v0.9.0');
+    this.term.colorRgbHex(theme.textMuted)('v0.10.0');
     this.term.styleReset();
 
     // Row 2: Title

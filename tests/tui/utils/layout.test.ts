@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Layout } from '../../../src/tui/utils/layout';
-import * as fixtures from '../../fixtures/tui';
+import * as fixtures from '../../fixtures/tui/tui';
 
 describe('Layout', () => {
   let layout: Layout;

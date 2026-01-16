@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Dashboard } from '../../../src/tui/screens/dashboard';
-import * as fixtures from '../../fixtures/tui';
+import * as fixtures from '../../fixtures/tui/tui';
 
 describe('Dashboard', () => {
   let mockTerm: ReturnType<typeof fixtures.createMockTerminal>;

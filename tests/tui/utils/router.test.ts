@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Router, type ScreenResult } from '../../../src/tui/utils/router';
-import * as fixtures from '../../fixtures/tui';
+import * as fixtures from '../../fixtures/tui/tui';
 
 describe('Router', () => {
   let router: Router;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FilePicker } from '../../../src/tui/screens/file-picker';
-import * as fixtures from '../../fixtures/file-picker';
-import * as tuiFixtures from '../../fixtures/tui';
+import * as tuiFixtures from '../../fixtures/tui/tui';
+import * as filePickerFixtures from '../../fixtures/tui/screens/file-picker';
 import fs from 'node:fs/promises';
 
 vi.mock('node:fs/promises', () => ({
@@ -27,7 +27,7 @@ describe('FilePicker', () => {
   it('filters for directories and CSV files using mixed fixture', async () => {
     const screen = new FilePicker(mockTerm);
     
-    (fs.readdir as any).mockResolvedValue(fixtures.mixedDirectory);
+    (fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
 
     screen.render();
     
@@ -43,7 +43,7 @@ describe('FilePicker', () => {
   it('sorts directories before files', async () => {
     const screen = new FilePicker(mockTerm);
     
-    (fs.readdir as any).mockResolvedValue(fixtures.messyCsvDirectory);
+    (fs.readdir as any).mockResolvedValue(filePickerFixtures.messyCsvDirectory);
 
     screen.render();
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -60,7 +60,7 @@ describe('FilePicker', () => {
   it('renders "No CSV files" message for empty directory', async () => {
     const screen = new FilePicker(mockTerm);
     
-    (fs.readdir as any).mockResolvedValue(fixtures.emptyDirectory);
+    (fs.readdir as any).mockResolvedValue(filePickerFixtures.emptyDirectory);
     
     screen.render();
     await new Promise(resolve => setTimeout(resolve, 0));

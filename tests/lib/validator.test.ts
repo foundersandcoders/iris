@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateRows } from '../../src/lib/validator';
-import * as fixtures from '../fixtures/validator';
+import * as fixtures from '../fixtures/lib/validator';
 
 describe('validator', () => {
   describe('validateRows', () => {

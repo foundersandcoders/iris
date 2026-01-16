@@ -2,9 +2,9 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; semantic validator |         |
-| CLI  | `iris` opens TUI                              |         |
-| TUI  | routing & layout architecture                 |         |
+| Core | CSV parser; XML generator; semantic validator; convert workflow | validate workflow |
+| CLI  | `iris` opens TUI                              | direct commands |
+| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer |
 | GUI  | sveltekit configuration                       |         |
 
 ---
@@ -21,12 +21,14 @@ None
 - [ ] 1a2a4. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] 1a2a5. Add configuration system (user preferences + custom field mappings)
 - [x] 1a2a6. Add unit tests for core transformations
-- [ ] 1a2a7. Create workflow abstraction layer (convert, validate, check as generators)
-- [ ] 1a2a8. Define workflow step interfaces (types, status, data, errors)
-- [ ] 1a2a9. Implement convert workflow (parse → validate → generate → save)
+- [x] 1a2a7. Create workflow abstraction layer (convert, validate, check as generators)
+- [x] 1a2a8. Define workflow step interfaces (types, status, data, errors)
+- [x] 1a2a9. Implement convert workflow (parse → validate → generate → save)
 - [ ] 1a2a10. Implement validate workflow (load → validate → report)
 - [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
-- [ ] 1a2a12. Add unit tests for workflows (independent of UI)
+- [x] 1a2a12. Add unit tests for workflows (independent of UI)
+- [ ] 1a2a13. Refactor workflow to yield step copies (prevent reference mutation issues)
+- [ ] 1a2a14. Add helper to consume workflow generator and capture return value in single pass
 
 ##### 1a2b. TUI Interface (Primary)
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
@@ -35,8 +37,8 @@ None
     - [x] 1a2b3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
     - [x] 1a2b3b. Implement consistent layout system (header, content, status bar, borders)
     - [x] 1a2b3c. Refactor dashboard to use layout system
-- [ ] 1a2b4. Implement interactive file picker for CSV selection
-- [ ] 1a2b5. Create processing screen with live progress and log viewer
+- [x] 1a2b4. Implement interactive file picker for CSV selection
+- [x] 1a2b5. Create processing screen with live progress and log viewer
 - [ ] 1a2b6. Build validation results explorer (error/warning navigation)
 - [ ] 1a2b7. Implement success/completion screen with next actions
 - [ ] 1a2b8. Add settings management screen
@@ -83,27 +85,27 @@ None currently
 > **Goal:** Working transformation engine used by both interfaces
 
 **Deliverables:**
-- [ ] CSV parser that tolerates column reordering
-- [ ] ILR XML generator producing valid output
-- [ ] Semantic validation beyond structural checks
+- [x] CSV parser that tolerates column reordering
+- [x] ILR XML generator producing valid output
+- [x] Semantic validation beyond structural checks
 - [ ] Workflow abstraction layer (interface-agnostic generators)
-      - [ ] convert
+      - [x] convert
       - [ ] validate
       - [ ] check
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- [ ] Test coverage for core transformations and workflows
+- [x] Test coverage for core transformations and workflows
 
 ### 2b. Milestone 2: TUI Interface (Primary)
 > [!NOTE]
 > **Goal:** Beautiful, interactive terminal interface as the main user experience
 
 **Deliverables:**
-- [ ] Full-screen TUI Application (`iris` launches dashboard)
-- [ ] Screen routing with navigation stack (back navigation, breadcrumbs)
-- [ ] Consistent layout wrapper for all screens (header, content, status bar)
-- [ ] Interactive file picker with preview
-- [ ] Live processing screen with progress and logs
+- [x] Full-screen TUI Application (`iris` launches dashboard)
+- [x] Screen routing with navigation stack (back navigation, breadcrumbs)
+- [x] Consistent layout wrapper for all screens (header, content, status bar)
+- [x] Interactive file picker with preview
+- [x] Live processing screen with progress and logs
 - [ ] Validation results explorer (navigate errors/warnings)
 - [ ] Settings management screen
 - [ ] Submission history browser

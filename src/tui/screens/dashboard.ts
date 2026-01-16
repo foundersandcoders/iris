@@ -32,9 +32,7 @@ export class Dashboard implements Screen {
       this.drawScreen();
 
       /* LOG (25-01-14): Keyboard Navigation
-
         REALLY? I HAVE TO DO THIS LIKE I'M NAVIGATING AN ARRAY?
-
         Take me back to Svelte
         */
       this.term.on('key', (key: string) => {

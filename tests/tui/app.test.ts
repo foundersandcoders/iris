@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TUI } from '../../src/tui/app';
 
-// Mock terminal-kit to avoid actual terminal operations in tests
 vi.mock('terminal-kit', () => ({
   default: {
     terminal: {
