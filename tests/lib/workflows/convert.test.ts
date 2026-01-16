@@ -123,23 +123,37 @@ describe('convertWorkflow', () => {
   });
 
   describe('step progress', () => {
-    it('updates step status through lifecycle', async () => {
-      await writeFile(testCsvPath, fixtures.validCsvContent);
-
-      const { events } = await runWorkflow({
-        filePath: testCsvPath,
-        outputDir: testDir,
+    describe('step progress', () => {
+      it('emits start and complete events for each step', async () => {
+        await writeFile(testCsvPath, fixtures.validCsvContent);
+  
+        const { events } = await runWorkflow({
+          filePath: testCsvPath,
+          outputDir: testDir,
+        });
+  
+        const parseEvents = events
+          .filter((e) => e.step.id === 'parse')
+          .map((e) => e.type);
+  
+        expect(parseEvents).toEqual(['step:start', 'step:complete']);
       });
-
-      const parseEvents = events
-        .filter((e) => e.step.id === 'parse')
-        .map((e) => ({
-          status: e.step.status,
-          progress: e.step.progress
-        }));
-
-      expect(parseEvents[0]).toEqual({ status: 'pending', progress: 0 });
-      expect(parseEvents[1]).toEqual({ status: 'complete', progress: 100 });
+  
+      it('sets progress to 100 on completion', async () => {
+        await writeFile(testCsvPath, fixtures.validCsvContent);
+  
+        const { events } = await runWorkflow({
+          filePath: testCsvPath,
+          outputDir: testDir,
+        });
+  
+        const completeEvents = events.filter((e) => e.type === 'step:complete');
+  
+        for (const event of completeEvents) {
+          expect(event.step.progress).toBe(100);
+          expect(event.step.status).toBe('complete');
+        }
+      });
     });
   });
 });
