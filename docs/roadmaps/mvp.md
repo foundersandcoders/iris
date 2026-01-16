@@ -24,7 +24,7 @@ None
 - [x] 1a2a7. Create workflow abstraction layer (convert, validate, check as generators)
 - [x] 1a2a8. Define workflow step interfaces (types, status, data, errors)
 - [x] 1a2a9. Implement convert workflow (parse → validate → generate → save)
-- [ ] 1a2a10. Implement validate-csv workflow (load → parse → validate → report)
+- [x] 1a2a10. Implement validate-csv workflow (load → parse → validate → report)
 - [ ] 1a2a10b. Add XML parser library (fast-xml-parser or equivalent)
 - [ ] 1a2a10c. Create XML parser module (src/lib/xml-parser.ts)
 - [ ] 1a2a10d. Implement validate-xml workflow (load → parse → validate → report)
@@ -146,7 +146,7 @@ None currently
 - [x] Semantic validation beyond structural checks
 - [ ] Workflow abstraction layer (interface-agnostic generators)
       - [x] convert (CSV → XML)
-      - [ ] validate-csv (pre-conversion validation)
+      - [x] validate-csv (pre-conversion validation)
       - [ ] validate-xml (post-generation verification) **← Required for M1 completion**
       - [ ] check (cross-submission consistency)
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
