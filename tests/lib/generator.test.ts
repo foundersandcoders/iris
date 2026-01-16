@@ -1,3 +1,5 @@
+// TODO: move declarations to fixtures
+
 import { describe, it, expect } from 'vitest';
 import {
   generateILR,
