@@ -2,7 +2,7 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; semantic validator; convert workflow | validate workflow |
+| Core | CSV parser; XML generator; semantic validator; convert workflow | validate-csv; XML parser; validate-xml |
 | CLI  | `iris` opens TUI                              | direct commands |
 | TUI  | routing & layout; file picker; processing screen | success screen; validation explorer |
 | GUI  | sveltekit configuration                       |         |
@@ -24,7 +24,11 @@ None
 - [x] 1a2a7. Create workflow abstraction layer (convert, validate, check as generators)
 - [x] 1a2a8. Define workflow step interfaces (types, status, data, errors)
 - [x] 1a2a9. Implement convert workflow (parse → validate → generate → save)
-- [ ] 1a2a10. Implement validate workflow (load → validate → report)
+- [x] 1a2a10. Implement validate-csv workflow (load → parse → validate → report)
+- [ ] 1a2a10b. Add XML parser library (fast-xml-parser or equivalent)
+- [ ] 1a2a10c. Create XML parser module (src/lib/xml-parser.ts)
+- [ ] 1a2a10d. Implement validate-xml workflow (load → parse → validate → report)
+- [ ] 1a2a10e. Add round-trip tests (CSV → XML → validate-xml → passes)
 - [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
 - [x] 1a2a12. Add unit tests for workflows (independent of UI)
 - [ ] 1a2a13. Refactor workflow to yield step copies (prevent reference mutation issues)
@@ -79,6 +83,58 @@ None currently
 
 ---
 
+## 1c. Architecture Decisions
+
+### 1c1. Workflow Boundaries: CSV vs XML Validation
+
+**Decision Required:** Should CSV validation and XML validation be separate workflows, or unified under a single `validate` workflow?
+
+**Context:**
+- Milestone 1 requires a working transformation engine that can verify its own output
+- We generate XML from CSV (convert workflow) but currently cannot validate the generated XML
+- Without XML validation in the core library, we cannot prove the transformation engine produces compliant ILR submissions
+- The `iris validate <file>` command (Milestone 3) explicitly targets "existing XML files"
+
+**Options:**
+
+**Option A: Unified workflow** (`validate`)
+- Single workflow that detects file type and branches internally
+- Pros: Simple mental model, single entry point for validation
+- Cons: Mixes concerns (pre-conversion CSV checks vs post-generation XML verification)
+
+**Option B: Separate workflows** (`validate-csv`, `validate-xml`)
+- Two distinct workflows with different purposes
+- `validate-csv`: Pre-conversion checks (before XML generation)
+- `validate-xml`: Post-generation verification (round-trip integrity, compliance checks)
+- Pros: Clear separation of concerns, different validation rules for each
+- Cons: More workflows to maintain
+
+**Option C: Separate workflows + facade** (`validate`, `validate-csv`, `validate-xml`)
+- Explicit workflows for each format
+- Generic `validate` workflow delegates to appropriate handler
+- Pros: Best of both worlds - clear separation + convenient unified interface
+- Cons: Additional abstraction layer
+
+**Recommendation:** Option B (separate workflows)
+- CSV validation checks source data quality before transformation
+- XML validation verifies generated output meets ILR compliance
+- Different purposes, different validation rules, different error contexts
+- Clearer for users: "validate my source data" vs "verify my generated submission"
+
+**Milestone 1 Implications:**
+- Milestone 1 **requires** XML parsing and validation to be considered complete
+- Cannot claim "working transformation engine" without ability to verify XML output
+- CSV validation alone is insufficient for production readiness
+
+**Implementation Plan:**
+1. Implement `validate-csv` workflow (current branch)
+2. Add XML parser library (`fast-xml-parser`)
+3. Implement `validate-xml` workflow (separate branch)
+4. Update Milestone 1 deliverables to reflect both workflows
+5. Mark Milestone 1 complete only when both validation workflows exist
+
+---
+
 ## 2. MVP Milestones
 ### 2a. Milestone 1: Shared Core Library
 > [!NOTE]
@@ -89,12 +145,16 @@ None currently
 - [x] ILR XML generator producing valid output
 - [x] Semantic validation beyond structural checks
 - [ ] Workflow abstraction layer (interface-agnostic generators)
-      - [x] convert
-      - [ ] validate
-      - [ ] check
+      - [x] convert (CSV → XML)
+      - [x] validate-csv (pre-conversion validation)
+      - [ ] validate-xml (post-generation verification) **← Required for M1 completion**
+      - [ ] check (cross-submission consistency)
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] Test coverage for core transformations and workflows
+
+> [!IMPORTANT]
+> **XML Validation Prerequisite:** Milestone 1 cannot be considered complete without XML parsing and validation capabilities. The transformation engine must be able to verify its own output to ensure ILR compliance. See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
 
 ### 2b. Milestone 2: TUI Interface (Primary)
 > [!NOTE]
