@@ -2,9 +2,9 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; semantic validator; convert workflow | validate-csv; XML parser; validate-xml |
+| Core | CSV parser; XML generator; semantic validator; convert workflow; validate-csv | **dynamic schema system (XSD-driven)**; validate-xml |
 | CLI  | `iris` opens TUI                              | direct commands |
-| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer |
+| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
 | GUI  | sveltekit configuration                       |         |
 
 ---
@@ -34,6 +34,32 @@ None
 - [ ] 1a2a13. Refactor workflow to yield step copies (prevent reference mutation issues)
 - [ ] 1a2a14. Add helper to consume workflow generator and capture return value in single pass
 
+##### 1a2a-schema. Dynamic Schema System (XSD-Driven)
+> Replaces hardcoded ILR structure with runtime schema loading. Annual ESFA updates require only new XSD file.
+
+**Phase 1: XSD Parser & Schema Registry**
+- [ ] 1a2a-schema1. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
+- [ ] 1a2a-schema2. Add fast-xml-parser dependency
+- [ ] 1a2a-schema3. Implement XSD parser (parse XSD as XML, extract element definitions)
+- [ ] 1a2a-schema4. Implement schema registry builder (transform XSD tree into queryable registry)
+- [ ] 1a2a-schema5. Add tests against actual schemafile25.xsd
+
+**Phase 2: Schema-Driven Validator**
+- [ ] 1a2a-schema6. Create schema validator module (validates data against registry constraints)
+- [ ] 1a2a-schema7. Implement constraint validation (pattern, length, range, cardinality, enumeration)
+- [ ] 1a2a-schema8. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
+
+**Phase 3: Schema-Driven Generator**
+- [ ] 1a2a-schema9. Create schema generator module (generate XML by traversing registry)
+- [ ] 1a2a-schema10. Implement element ordering from xs:sequence
+- [ ] 1a2a-schema11. Migrate existing generator to use schema registry (remove hardcoded interfaces)
+
+**Phase 4: Column Mapping Configuration**
+- [ ] 1a2a-schema12. Create column mapper module (CSV column → XSD path mapping)
+- [ ] 1a2a-schema13. Define mapping configuration schema (ColumnMapping, MappingConfig types)
+- [ ] 1a2a-schema14. Create default FaC Airtable mapping configuration
+- [ ] 1a2a-schema15. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
+
 ##### 1a2b. TUI Interface (Primary)
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
 - [x] 1a2b2. Create TUI application scaffold and theme system
@@ -54,6 +80,12 @@ None
 - [ ] 1a2b14. Build cross-submission check workflow
 - [ ] 1a2b15. Add visual feedback (animations, transitions, spinners)
 - [ ] 1a2b16. Test TUI with real CSV exports from Airtable
+
+**Schema Management (Phase 5 of Dynamic Schema System)**
+- [ ] 1a2b17. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
+- [ ] 1a2b18. Build schema manager TUI screen (upload, list, select active schema)
+- [ ] 1a2b19. Add schema version selection to workflows
+- [ ] 1a2b20. Implement migration guidance when schema changes affect existing mappings
 
 ##### 1a2c. Direct Commands (Automation)
 - [ ] 1a2c1. Implement `iris convert <file>` (non-TUI execution with pretty output)
@@ -152,9 +184,17 @@ None currently
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] Test coverage for core transformations and workflows
+- [ ] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
+      - [ ] XSD parser and schema registry
+      - [ ] Schema-driven validator (replaces hardcoded validation rules)
+      - [ ] Schema-driven generator (replaces hardcoded XML structure)
+      - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
 
 > [!IMPORTANT]
 > **XML Validation Prerequisite:** Milestone 1 cannot be considered complete without XML parsing and validation capabilities. The transformation engine must be able to verify its own output to ensure ILR compliance. See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
+
+> [!IMPORTANT]
+> **Dynamic Schema Prerequisite:** Annual ESFA schema updates must not require code changes. The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime. Phase 5 (TUI schema management) is deferred to Milestone 2.
 
 ### 2b. Milestone 2: TUI Interface (Primary)
 > [!NOTE]
@@ -177,6 +217,11 @@ None currently
 - [ ] Help overlay system
 - [ ] Visual polish (animations, gradients, transitions)
 - [ ] Global installation via `bun link`
+- [ ] **Schema Management (Phase 5)** — see [1a2b17-20 tasks](#schema-management-phase-5-of-dynamic-schema-system)
+      - [ ] Schema loader (load/cache from ~/.iris/schemas/)
+      - [ ] Schema manager TUI screen
+      - [ ] Schema version selection in workflows
+      - [ ] Migration guidance for schema changes
 
 ### 2c. Milestone 3: Direct Commands (Automation)
 > [!NOTE]
@@ -261,12 +306,14 @@ None currently
 - Shareable transformation rule sets
 
 ### 3f. Dynamic Schema Support
-- Parse uploaded XSD files to extract field definitions and constraints
-- Generate types and validation rules dynamically from schema
-- Schema-driven XML generator (adapts output structure to loaded schema)
-- UI for uploading and managing schema versions (TUI + Desktop)
-- Automatic migration guidance when schema changes affect existing data
-- Store schema files in `~/.iris/schemas/` with version tracking
+> [!NOTE]
+> **Moved to MVP:** Core dynamic schema functionality is now part of Milestones 1-2. See [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven) (Phases 1-4, M1) and [Schema Management tasks](#schema-management-phase-5-of-dynamic-schema-system) (Phase 5, M2).
+
+**Remaining future enhancements:**
+- Desktop UI for schema management (mirrors TUI functionality)
+- Schema diff viewer (compare two XSD versions)
+- Automated mapping suggestions when schema changes
+- Schema validation report export
 
 ---
 
