@@ -5,56 +5,43 @@ import {
 	isOptional,
 	DEFAULT_CARDINALITY,
 	EMPTY_CONSTRAINTS,
-	type SchemaElement,
-	type Cardinality,
 } from '../../../src/lib/schema';
-
-function makeElement(cardinality: Cardinality): SchemaElement {
-	return {
-		name: 'Test',
-		path: 'Test',
-		baseType: 'string',
-		constraints: {},
-		cardinality,
-		children: [],
-		isComplex: false,
-	};
-}
+import * as fixtures from '../../fixtures/lib/schema';
 
 describe('Cardinality utility functions', () => {
 	describe('isRequired', () => {
 		it('returns true when min >= 1', () => {
-			expect(isRequired(makeElement({ min: 1, max: 1 }))).toBe(true);
-			expect(isRequired(makeElement({ min: 2, max: 5 }))).toBe(true);
+			expect(isRequired(fixtures.makeElement(fixtures.requiredSingle))).toBe(true);
+			expect(isRequired(fixtures.makeElement(fixtures.requiredMultiple))).toBe(true);
 		});
 
 		it('returns false when min === 0', () => {
-			expect(isRequired(makeElement({ min: 0, max: 1 }))).toBe(false);
-			expect(isRequired(makeElement({ min: 0, max: Infinity }))).toBe(false);
+			expect(isRequired(fixtures.makeElement(fixtures.optionalSingle))).toBe(false);
+			expect(isRequired(fixtures.makeElement(fixtures.optionalUnbounded))).toBe(false);
 		});
 	});
 
 	describe('isOptional', () => {
 		it('returns true when min === 0', () => {
-			expect(isOptional(makeElement({ min: 0, max: 1 }))).toBe(true);
-			expect(isOptional(makeElement({ min: 0, max: Infinity }))).toBe(true);
+			expect(isOptional(fixtures.makeElement(fixtures.optionalSingle))).toBe(true);
+			expect(isOptional(fixtures.makeElement(fixtures.optionalUnbounded))).toBe(true);
 		});
 
 		it('returns false when min >= 1', () => {
-			expect(isOptional(makeElement({ min: 1, max: 1 }))).toBe(false);
-			expect(isOptional(makeElement({ min: 1, max: 10 }))).toBe(false);
+			expect(isOptional(fixtures.makeElement(fixtures.requiredSingle))).toBe(false);
+			expect(isOptional(fixtures.makeElement(fixtures.requiredMultiple))).toBe(false);
 		});
 	});
 
 	describe('isRepeatable', () => {
 		it('returns true when max > 1', () => {
-			expect(isRepeatable(makeElement({ min: 0, max: 2 }))).toBe(true);
-			expect(isRepeatable(makeElement({ min: 1, max: Infinity }))).toBe(true);
+			expect(isRepeatable(fixtures.makeElement(fixtures.requiredMultiple))).toBe(true);
+			expect(isRepeatable(fixtures.makeElement(fixtures.requiredUnbounded))).toBe(true);
 		});
 
 		it('returns false when max === 1', () => {
-			expect(isRepeatable(makeElement({ min: 0, max: 1 }))).toBe(false);
-			expect(isRepeatable(makeElement({ min: 1, max: 1 }))).toBe(false);
+			expect(isRepeatable(fixtures.makeElement(fixtures.optionalSingle))).toBe(false);
+			expect(isRepeatable(fixtures.makeElement(fixtures.requiredSingle))).toBe(false);
 		});
 	});
 });
