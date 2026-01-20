@@ -1,7 +1,7 @@
 /** ====== Dashboard Screen ======
-  *
   * Main menu and entry point for TUI
   */
+import gradient from "gradient-string";
 import type { Terminal } from 'terminal-kit';
 import { Layout } from '../utils/layout';
 import { THEMES, symbols } from '../theme';
@@ -94,19 +94,30 @@ export class Dashboard implements Screen {
       showBack: false,
     });
     
+    // const asciiArt = [
+    //   '╔╦╦╦╦╦╦╦╦╦╦╦╦╦╦╗',
+    //   '╠╬╩╩╩╩╩╩╩╩╩╩╩╩╬╣',
+    //   '╠╣  ╦┬─┐┬┌─┐  ╠╣',
+    //   '╠╣  ║├┬┘│└─┐  ╠╣',
+    //   '╠╣  ╩┴└─┴└─┘  ╠╣',
+    //   '╠╬╦╦╦╦╦╦╦╦╦╦╦╦╬╣',
+    //   '╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╝',
+    // ];
+    
     const asciiArt = [
-      '╔╦╦╦╦╦╦╦╦╦╦╦╦╦╦╗',
-      '╠╬╩╩╩╩╩╩╩╩╩╩╩╩╬╣',
-      '╠╣  ╦┬─┐┬┌─┐  ╠╣',
-      '╠╣  ║├┬┘│└─┐  ╠╣',
-      '╠╣  ╩┴└─┴└─┘  ╠╣',
-      '╠╬╦╦╦╦╦╦╦╦╦╦╦╦╬╣',
-      '╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╝',
+      '░██████         ░██           ',
+      '  ░██                         ',
+      '  ░██  ░██░████ ░██ ░███████  ',
+      '  ░██  ░███     ░██░██        ',
+      '  ░██  ░██      ░██ ░███████  ',
+      '  ░██  ░██      ░██       ░██ ',
+      '░██████░██      ░██ ░███████  '
     ];
 
     asciiArt.forEach((line, i) => {
       this.term.moveTo(1, 2 + i);
-      this.term.colorRgbHex(theme.primary)(line);
+      // this.term.colorRgbHex(theme.primary)(line);
+      console.log(gradient(['cyan', 'pink'])(line))
     });
 
     const contentTop = 2 + asciiArt.length + 1;

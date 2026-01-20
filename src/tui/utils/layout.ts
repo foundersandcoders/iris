@@ -22,8 +22,6 @@ export class Layout {
   constructor(private term: Terminal) {}
 
   draw(options: LayoutOptions): LayoutRegion {
-    // Just clear. Standard terminals are white-ish by default.
-    // If we want to be safe, we can force white BG, but let's try natural first.
     this.term.bgDefaultColor().clear();
 
     const width = this.term.width;
