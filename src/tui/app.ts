@@ -7,12 +7,12 @@ import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
 import { ProcessingScreen } from './screens/processing';
 
+const term = terminalKit.terminal;
+
 interface TUIOptions {
   startCommand?: string;
   args?: string[];
 }
-
-const term = terminalKit.terminal;
 
 export class TUI {
   private router: Router;
