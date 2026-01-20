@@ -1,0 +1,20 @@
+{
+	"dark": {
+		"name": "",
+		"colour": "#0B1416"
+	},
+	"background": {
+		"primary": {
+			"name": "",
+			"main": "#F5F6F4",
+			"subtle": "#EEEFEA",
+			"nav": "#E7E8E3"
+		},
+		"alternate": {
+			"name": "",
+			"main": "#F3F5F7",
+			"subtle": "#ECEFF2",
+			"nav": "#E4E8EC"
+		}
+	}
+}
