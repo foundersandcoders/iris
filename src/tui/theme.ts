@@ -1,77 +1,86 @@
-export const THEMES = {
-  themeLight: {
-    // Status colors
-    success: '#059669',    // Emerald 600
-    warning: '#d97706',    // Amber 600
-    error: '#dc2626',      // Red 600
-    info: '#2563eb',       // Blue 600
-  
-    // UI colors
-    primary: '#7c3aed',    // Violet 600 (brand)
-    secondary: '#4f46e5',  // Indigo 600
-    accent: '#db2777',     // Pink 600
-    highlight: '#ccfbf1',  // Teal 100 (Background highlight)
-  
-    // Neutral colors
-    text: '#111827',       // Gray 900 (Dark text)
-    textMuted: '#6b7280',  // Gray 500 (Dimmed text)
-    border: '#e5e7eb',     // Gray 200 (Borders)
-    background: '#ffffff', // White
-  },
-  themeDark: {
-    // Status colors
-    success: '#10b981',    // Emerald 500
-    warning: '#f59e0b',    // Amber 500
-    error: '#ef4444',      // Red 500
-    info: '#3b82f6',       // Blue 500
-  
-    // UI colors
-    primary: '#8b5cf6',    // Violet 500 (brand)
-    secondary: '#6366f1',  // Indigo 500
-    accent: '#ec4899',     // Pink 500
-    highlight: '#14b8a6',  // Teal 500
-  
-    // Neutral colors
-    text: '#f3f4f6',       // Gray 100 (light text)
-    textMuted: '#9ca3af',  // Gray 400 (dimmed text)
-    border: '#4b5563',     // Gray 600 (borders)
-    background: '#1f2937', // Gray 800 (backgrounds)
-  }
-}
+export const PALETTE = {
+	dark: { name: 'chasm', colour: '#220817' },
+	background: {
+		main: { name: 'rosewash', main: '#FFF1F7', subtle: '#F3D8E6', nav: '#D6A3BF' },
+		alt: { name: 'aether', main: '#F2F6FA', subtle: '#E8EFF6', nav: '#CCDDE6' },
+	},
+	foreground: {
+		main: { name: 'tyrian', dark: '#3A0F28', midi: '#6F2A52', lite: '#A45A84' },
+		alt: { name: 'blueglass', dark: '#1E3A44', midi: '#3E7F96', lite: '#5FA3BA' },
+	},
+	line: {
+		main: { name: 'vein', colour: '#7A2A57' },
+		alt: { name: 'scar', colour: '#3E1026' },
+	},
+};
 
-// export const THEME = THEMES.themeLight;
+export const THEMES = {
+	themeLight: {
+		// Status
+		success: PALETTE.foreground.alt.dark,
+		warning: PALETTE.foreground.main.lite,
+		error: PALETTE.line.alt.colour,
+		info: PALETTE.foreground.alt.midi,
+
+		// UI
+		primary: PALETTE.foreground.main.midi, // Tyrian Midi (Brand)
+		secondary: PALETTE.foreground.alt.midi, // Blueglass Midi
+		accent: PALETTE.line.main.colour, // Vein
+		highlight: PALETTE.background.main.nav, // Rosewash Nav (Selection backgrounds)
+
+		// Neutral
+		text: PALETTE.foreground.main.dark, // Tyrian Dark (Main text)
+		textMuted: PALETTE.foreground.main.lite, // Tyrian Lite (Subtext)
+		border: PALETTE.background.main.nav, // Rosewash Nav
+		background: PALETTE.background.main.main, // Rosewash Main
+	},
+	themeDark: {
+		success: PALETTE.foreground.alt.dark,
+		warning: PALETTE.foreground.main.lite,
+		error: PALETTE.line.alt.colour,
+		info: PALETTE.foreground.alt.midi,
+		primary: PALETTE.foreground.main.midi,
+		secondary: PALETTE.foreground.alt.midi,
+		accent: PALETTE.line.main.colour,
+		highlight: PALETTE.background.main.nav,
+		text: PALETTE.foreground.main.dark,
+		textMuted: PALETTE.foreground.main.lite,
+		border: PALETTE.background.main.nav,
+		background: PALETTE.background.main.main,
+	},
+};
 
 export const symbols = {
-  success: '✓',
-  error: '✗',
-  warning: '⚠',
-  arrow: '→',
-  bullet: '•',
-  loading: '⋯',
-  progressFilled: '█',
-  progressEmpty: '░',
+	success: '✓',
+	error: '✗',
+	warning: '⚠',
+	arrow: '→',
+	bullet: '•',
+	loading: '⋯',
+	progressFilled: '█',
+	progressEmpty: '░',
 };
 
 export const borders = {
-  heavy: {
-    topLeft: '┏',
-    topRight: '┓',
-    bottomLeft: '┗',
-    bottomRight: '┛',
-    horizontal: '━',
-    vertical: '┃',
-  },
-  light: {
-    topLeft: '┌',
-    topRight: '┐',
-    bottomLeft: '└',
-    bottomRight: '┘',
-    horizontal: '─',
-    vertical: '│',
-  },
+	heavy: {
+		topLeft: '┏',
+		topRight: '┓',
+		horizontal: '━',
+		vertical: '┃',
+		bottomLeft: '┗',
+		bottomRight: '┛',
+	},
+	light: {
+		topLeft: '┌',
+		topRight: '┐',
+		horizontal: '─',
+		vertical: '│',
+		bottomLeft: '└',
+		bottomRight: '┘',
+	},
 };
 
 export const spinners = {
-  dots: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
-  arrow: ['←', '↖', '↑', '↗', '→', '↘', '↓', '↙'],
+	dots: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
+	arrow: ['←', '↖', '↑', '↗', '→', '↘', '↓', '↙'],
 };
