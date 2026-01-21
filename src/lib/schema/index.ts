@@ -13,7 +13,7 @@ export type {
 	SchemaRegistry,
 	SchemaRegistryOptions,
 	ElementLookupResult,
-} from './schemaTypes';
+} from './interpreter';
 
 // === Type Utilities ===
 export {
@@ -22,7 +22,7 @@ export {
 	isOptional,
 	DEFAULT_CARDINALITY,
 	EMPTY_CONSTRAINTS,
-} from './schemaTypes';
+} from './interpreter';
 
 // === Validation Types ===
 export type {
@@ -30,7 +30,20 @@ export type {
 	ConstraintViolationType,
 	SchemaValidationIssue,
 	SchemaValidationResult,
-} from './validationTypes';
+} from './validation';
 
 // === Validation Utilities ===
-export { createIssue, createEmptyResult, computeResultStats } from './validationTypes';
+export { createIssue, createEmptyResult, computeResultStats } from './validation';
+
+// === XSD Parser ===
+export {
+	parseXsd,
+	extractNamespace,
+	extractElements,
+	extractNamedSimpleTypes,
+	extractNamedComplexTypes,
+	type RawXsdElement,
+	type RawXsdSimpleType,
+	type RawXsdComplexType,
+	type ParsedXsdRoot,
+} from './xsdParser';

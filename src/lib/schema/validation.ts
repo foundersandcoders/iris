@@ -5,7 +5,7 @@
  *  |==================================================================|
  */
 
-import type { SchemaConstraints, SchemaElement } from './schemaTypes';
+import type { SchemaConstraints, SchemaElement } from './interpreter';
 
 export type SchemaValidationSeverity = 'error' | 'warning' | 'info';
 
@@ -23,6 +23,8 @@ export type ConstraintViolationType =
 	| 'cardinality' // wrong number of occurrences
 	| 'unexpected' // element not defined in schema
 	| 'ordering'; // elements in wrong order (xs:sequence violation)
+
+/* <<--------------------------------------------------------------------->> */
 
 export interface SchemaValidationIssue {
 	severity: SchemaValidationSeverity;
@@ -49,6 +51,8 @@ export interface SchemaValidationResult {
 	duration?: number;
 	validatedPaths?: string[];
 }
+
+/* <<--------------------------------------------------------------------->> */
 
 // TODO: Extract `function createIssue()` to util
 export function createIssue(
@@ -82,6 +86,8 @@ export function createEmptyResult(
 		schemaVersion,
 	};
 }
+
+/* <<--------------------------------------------------------------------->> */
 
 // TODO: Extract `function computeResultStats()` to util
 export function computeResultStats(
