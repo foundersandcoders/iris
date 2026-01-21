@@ -177,4 +177,40 @@ describe('buildSchemaRegistry', () => {
 			expect(Array.isArray(byName)).toBe(true);
 		});
 	});
+
+	describe('deep nesting (ILR-style structure)', () => {
+		it('should build deeply nested element tree', () => {
+			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
+
+			expect(registry.rootElement.name).toBe('Message');
+			expect(registry.rootElement.isComplex).toBe(true);
+		});
+
+		it('should create correct paths for deeply nested elements', () => {
+			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
+
+			expect(
+				registry.elementsByPath.get('Message/Header/CollectionDetails/Collection')
+			).toBeDefined();
+			expect(registry.elementsByPath.get('Message/Header/CollectionDetails/Year')).toBeDefined();
+			expect(registry.elementsByPath.get('Message/Header/Source/UKPRN')).toBeDefined();
+			expect(registry.elementsByPath.get('Message/Learner/ULN')).toBeDefined();
+		});
+
+		it('should preserve constraints in deeply nested elements', () => {
+			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
+			const ukprn = registry.elementsByPath.get('Message/Header/Source/UKPRN');
+
+			expect(ukprn?.baseType).toBe('int');
+			expect(ukprn?.constraints.minInclusive).toBe(10000000);
+			expect(ukprn?.constraints.maxInclusive).toBe(99999999);
+		});
+
+		it('should handle repeating elements in deep structures', () => {
+			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
+			const learner = registry.elementsByPath.get('Message/Learner');
+
+			expect(learner?.cardinality).toEqual({ min: 1, max: Infinity });
+		});
+	});
 });
