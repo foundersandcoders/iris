@@ -145,9 +145,23 @@ describe('inline type handling', () => {
 		const elements = extractElements(parsed);
 		const restriction = elements[0]['xs:simpleType']?.['xs:restriction'];
 
-		expect(restriction?.['xs:pattern']?.['@_value']).toBe('[A-Z]{2}[0-9]{4}');
-		expect(restriction?.['xs:minLength']?.['@_value']).toBe('6');
-		expect(restriction?.['xs:maxLength']?.['@_value']).toBe('6');
+		// Type guard: pattern could be single object or array
+		const pattern = restriction?.['xs:pattern'];
+		const patternValue = Array.isArray(pattern) ? pattern[0]['@_value'] : pattern?.['@_value'];
+
+		const minLength = restriction?.['xs:minLength'];
+		const minLengthValue = Array.isArray(minLength)
+			? minLength[0]['@_value']
+			: minLength?.['@_value'];
+
+		const maxLength = restriction?.['xs:maxLength'];
+		const maxLengthValue = Array.isArray(maxLength)
+			? maxLength[0]['@_value']
+			: maxLength?.['@_value'];
+
+		expect(patternValue).toBe('[A-Z]{2}[0-9]{4}');
+		expect(minLengthValue).toBe('6');
+		expect(maxLengthValue).toBe('6');
 	});
 
 	it('should extract enumeration values', () => {
