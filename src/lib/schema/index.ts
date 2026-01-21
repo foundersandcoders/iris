@@ -13,7 +13,7 @@ export type {
 	SchemaRegistry,
 	SchemaRegistryOptions,
 	ElementLookupResult,
-} from './types';
+} from './schemaTypes';
 
 // === Type Utilities ===
 export {
@@ -22,7 +22,7 @@ export {
 	isOptional,
 	DEFAULT_CARDINALITY,
 	EMPTY_CONSTRAINTS,
-} from './types';
+} from './schemaTypes';
 
 // === Validation Types ===
 export type {
