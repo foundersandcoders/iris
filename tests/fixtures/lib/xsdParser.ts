@@ -9,9 +9,15 @@ export const minimalXsd = `<?xml version="1.0" encoding="utf-8"?>
 export const elementWithCardinality = `<?xml version="1.0" encoding="utf-8"?>
 <xs:schema targetNamespace="http://test.example.com/2025"
             xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="OptionalElement" type="xs:string" minOccurs="0" maxOccurs="1" />
-  <xs:element name="RequiredElement" type="xs:int" minOccurs="1" maxOccurs="1" />
-  <xs:element name="RepeatingElement" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+  <xs:element name="TestContainer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="OptionalElement" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="RequiredElement" type="xs:int" minOccurs="1" maxOccurs="1" />
+        <xs:element name="RepeatingElement" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>`;
 
 // XSD with inline simpleType restriction
