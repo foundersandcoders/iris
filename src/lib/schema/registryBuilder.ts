@@ -1,7 +1,7 @@
-/** |===================|| Schema Registry Builder ||==================|
+/** |===================|| Schema Registry Builder ||===================|
  *  | Main orchestrator: transforms raw XSD parser output into a
  *  | queryable SchemaRegistry with full element trees and lookups.
- *  |====================================================================|
+ *  |===================================================================|
  */
 
 import { parseXsd, extractNamespace, extractElements, extractNamedSimpleTypes } from './xsdParser';
@@ -26,9 +26,12 @@ export function buildSchemaRegistry(
 
 	const namedTypes = buildNamedTypesMap(rawSimpleTypes);
 
-	if (rawElements.length === 0) throw new Error('Invalid XSD: no root element found');
+	if (rawElements.length === 0) {
+		throw new Error('Invalid XSD: no root element found');
+	} else if (rawElements.length > 1) {
+		throw new Error('Multiple root elements not supported. XSD should have a single root element.');
+	}
 
-	// TODO: Check whether this approach works outside ILR use case
 	const rootElement = buildElement(rawElements[0], '', namedTypes);
 
 	const elementsByPath = new Map<string, SchemaElement>();
