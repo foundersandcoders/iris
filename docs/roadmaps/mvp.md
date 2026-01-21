@@ -38,7 +38,7 @@ None
 > Replaces hardcoded ILR structure with runtime schema loading. Annual ESFA updates require only new XSD file.
 
 **Phase 1: XSD Parser & Schema Registry**
-- [ ] 1a2a-schema1. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
+- [x] 1a2a-schema1. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
 - [ ] 1a2a-schema2. Add fast-xml-parser dependency
 - [ ] 1a2a-schema3. Implement XSD parser (parse XSD as XML, extract element definitions)
 - [ ] 1a2a-schema4. Implement schema registry builder (transform XSD tree into queryable registry)
