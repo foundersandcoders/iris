@@ -2,9 +2,9 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; semantic validator; convert workflow | validate-csv; XML parser; validate-xml |
+| Core | CSV parser; XML generator; semantic validator; convert workflow; validate-csv | **dynamic schema system (XSD-driven)**; validate-xml |
 | CLI  | `iris` opens TUI                              | direct commands |
-| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer |
+| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
 | GUI  | sveltekit configuration                       |         |
 
 ---
@@ -217,6 +217,11 @@ None currently
 - [ ] Help overlay system
 - [ ] Visual polish (animations, gradients, transitions)
 - [ ] Global installation via `bun link`
+- [ ] **Schema Management (Phase 5)** — see [1a2b17-20 tasks](#schema-management-phase-5-of-dynamic-schema-system)
+      - [ ] Schema loader (load/cache from ~/.iris/schemas/)
+      - [ ] Schema manager TUI screen
+      - [ ] Schema version selection in workflows
+      - [ ] Migration guidance for schema changes
 
 ### 2c. Milestone 3: Direct Commands (Automation)
 > [!NOTE]
@@ -301,12 +306,14 @@ None currently
 - Shareable transformation rule sets
 
 ### 3f. Dynamic Schema Support
-- Parse uploaded XSD files to extract field definitions and constraints
-- Generate types and validation rules dynamically from schema
-- Schema-driven XML generator (adapts output structure to loaded schema)
-- UI for uploading and managing schema versions (TUI + Desktop)
-- Automatic migration guidance when schema changes affect existing data
-- Store schema files in `~/.iris/schemas/` with version tracking
+> [!NOTE]
+> **Moved to MVP:** Core dynamic schema functionality is now part of Milestones 1-2. See [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven) (Phases 1-4, M1) and [Schema Management tasks](#schema-management-phase-5-of-dynamic-schema-system) (Phase 5, M2).
+
+**Remaining future enhancements:**
+- Desktop UI for schema management (mirrors TUI functionality)
+- Schema diff viewer (compare two XSD versions)
+- Automated mapping suggestions when schema changes
+- Schema validation report export
 
 ---
 
