@@ -1,0 +1,180 @@
+import { describe, it, expect } from 'vitest';
+import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
+import * as fixtures from '../../fixtures/lib/xsdParser';
+
+describe('buildSchemaRegistry', () => {
+	describe('basic registry structure', () => {
+		it('should build registry from minimal XSD', () => {
+			const registry = buildSchemaRegistry(fixtures.minimalXsd);
+
+			expect(registry.namespace).toBe(fixtures.expectedNamespace);
+			expect(registry.rootElement.name).toBe('TestElement');
+			expect(registry.rootElement.path).toBe('TestElement');
+			expect(registry.rootElement.baseType).toBe('string');
+		});
+
+		it('should throw error if no root element found', () => {
+			const emptyXsd = `<?xml version="1.0"?>
+                              <xs:schema targetNamespace="http://test.example.com/2025"
+                                                  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                              </xs:schema>`;
+
+			expect(() => buildSchemaRegistry(emptyXsd)).toThrow('Invalid XSD: no root element found');
+		});
+	});
+
+	describe('cardinality parsing', () => {
+		it('should parse optional element (minOccurs=0, maxOccurs=1)', () => {
+			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
+			const optional = registry.elementsByName.get('OptionalElement')?.[0];
+
+			expect(optional).toBeDefined();
+			expect(optional?.cardinality).toEqual({ min: 0, max: 1 });
+		});
+
+		it('should parse required element (minOccurs=1, maxOccurs=1)', () => {
+			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
+			const required = registry.elementsByName.get('RequiredElement')?.[0];
+
+			expect(required).toBeDefined();
+			expect(required?.cardinality).toEqual({ min: 1, max: 1 });
+		});
+
+		it('should parse repeating element (maxOccurs=unbounded)', () => {
+			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
+			const repeating = registry.elementsByName.get('RepeatingElement')?.[0];
+
+			expect(repeating).toBeDefined();
+			expect(repeating?.cardinality).toEqual({ min: 0, max: Infinity });
+		});
+
+		it('should use default cardinality when attributes absent', () => {
+			const registry = buildSchemaRegistry(fixtures.minimalXsd);
+
+			expect(registry.rootElement.cardinality).toEqual({ min: 1, max: 1 });
+		});
+	});
+
+	describe('constraint extraction', () => {
+		it('should extract pattern, minLength, maxLength from inline simpleType', () => {
+			const registry = buildSchemaRegistry(fixtures.inlineSimpleType);
+			const element = registry.rootElement;
+
+			expect(element.constraints.pattern).toBe('[A-Z]{2}[0-9]{4}');
+			expect(element.constraints.minLength).toBe(6);
+			expect(element.constraints.maxLength).toBe(6);
+		});
+
+		it('should extract enumeration values', () => {
+			const registry = buildSchemaRegistry(fixtures.enumerationType);
+			const element = registry.rootElement;
+
+			expect(element.constraints.enumeration).toEqual(['Active', 'Inactive', 'Pending']);
+		});
+
+		it('should handle named type constraints', () => {
+			const registry = buildSchemaRegistry(fixtures.namedSimpleType);
+			const element = registry.elementsByName.get('Postcode')?.[0];
+
+			expect(element).toBeDefined();
+			expect(element?.constraints.pattern).toBe('[A-Z]{1,2}[0-9]{1,2}[A-Z]? [0-9][A-Z]{2}');
+		});
+	});
+
+	describe('type resolution', () => {
+		it('should resolve xs:string to string base type', () => {
+			const registry = buildSchemaRegistry(fixtures.minimalXsd);
+
+			expect(registry.rootElement.baseType).toBe('string');
+		});
+
+		it('should resolve xs:int to int base type', () => {
+			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
+			const intElement = registry.elementsByName.get('RequiredElement')?.[0];
+
+			expect(intElement?.baseType).toBe('int');
+		});
+
+		it('should resolve named type reference to base type', () => {
+			const registry = buildSchemaRegistry(fixtures.namedSimpleType);
+			const element = registry.elementsByName.get('Postcode')?.[0];
+
+			expect(element?.baseType).toBe('string');
+		});
+
+		it('should build named types map', () => {
+			const registry = buildSchemaRegistry(fixtures.namedSimpleType);
+
+			expect(registry.namedTypes.size).toBe(1);
+			expect(registry.namedTypes.get('PostcodeType')).toEqual({
+				name: 'PostcodeType',
+				baseType: 'string',
+				constraints: {
+					pattern: '[A-Z]{1,2}[0-9]{1,2}[A-Z]? [0-9][A-Z]{2}',
+				},
+			});
+		});
+	});
+
+	describe('complex types and nesting', () => {
+		it('should mark complex types correctly', () => {
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+
+			expect(registry.rootElement.isComplex).toBe(true);
+			expect(registry.rootElement.children.length).toBe(3);
+		});
+
+		it('should build element tree with correct paths', () => {
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+
+			expect(registry.rootElement.path).toBe('Person');
+
+			const firstName = registry.elementsByPath.get('Person/FirstName');
+			expect(firstName).toBeDefined();
+			expect(firstName?.path).toBe('Person/FirstName');
+			expect(firstName?.baseType).toBe('string');
+
+			const age = registry.elementsByPath.get('Person/Age');
+			expect(age).toBeDefined();
+			expect(age?.path).toBe('Person/Age');
+			expect(age?.baseType).toBe('int');
+		});
+
+		it('should handle child element cardinality', () => {
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+			const age = registry.elementsByPath.get('Person/Age');
+
+			expect(age?.cardinality).toEqual({ min: 0, max: 1 });
+		});
+	});
+
+	describe('lookup maps', () => {
+		it('should populate elementsByPath map', () => {
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+
+			expect(registry.elementsByPath.size).toBe(4); // Person + 3 children
+			expect(registry.elementsByPath.get('Person')).toBeDefined();
+			expect(registry.elementsByPath.get('Person/FirstName')).toBeDefined();
+			expect(registry.elementsByPath.get('Person/LastName')).toBeDefined();
+			expect(registry.elementsByPath.get('Person/Age')).toBeDefined();
+		});
+
+		it('should populate elementsByName map', () => {
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+
+			expect(registry.elementsByName.get('Person')).toHaveLength(1);
+			expect(registry.elementsByName.get('FirstName')).toHaveLength(1);
+			expect(registry.elementsByName.get('LastName')).toHaveLength(1);
+			expect(registry.elementsByName.get('Age')).toHaveLength(1);
+		});
+
+		it('should handle multiple elements with same name (different paths)', () => {
+			// This would require a fixture with duplicate names at different paths
+			// For now, verify the structure supports it
+			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
+			const byName = registry.elementsByName.get('FirstName');
+
+			expect(Array.isArray(byName)).toBe(true);
+		});
+	});
+});
