@@ -1,10 +1,11 @@
-/** Schema Validation Types
- * Types for validation results when validating data against a schema.
- * These are separate from the existing validator types to provide
- * richer context about schema-specific validation failures.
+/** |===================|| Schema Validation Types ||==================|
+ *  | Types for validation results when validating data against a
+ *  | schema. These are separate from the existing validator types to
+ *  | provide richer context about schema-specific validation failures.
+ *  |==================================================================|
  */
 
-import type { SchemaConstraints, SchemaElement } from './types';
+import type { SchemaConstraints, SchemaElement } from './interpreter';
 
 export type SchemaValidationSeverity = 'error' | 'warning' | 'info';
 
@@ -22,6 +23,8 @@ export type ConstraintViolationType =
 	| 'cardinality' // wrong number of occurrences
 	| 'unexpected' // element not defined in schema
 	| 'ordering'; // elements in wrong order (xs:sequence violation)
+
+/* <<--------------------------------------------------------------------->> */
 
 export interface SchemaValidationIssue {
 	severity: SchemaValidationSeverity;
@@ -49,6 +52,9 @@ export interface SchemaValidationResult {
 	validatedPaths?: string[];
 }
 
+/* <<--------------------------------------------------------------------->> */
+
+// TODO: Extract `function createIssue()` to util
 export function createIssue(
 	type: ConstraintViolationType,
 	elementPath: string,
@@ -65,6 +71,7 @@ export function createIssue(
 	};
 }
 
+// TODO: Extract `function createEmptyResult()` to util
 export function createEmptyResult(
 	schemaNamespace: string,
 	schemaVersion?: string
@@ -80,6 +87,9 @@ export function createEmptyResult(
 	};
 }
 
+/* <<--------------------------------------------------------------------->> */
+
+// TODO: Extract `function computeResultStats()` to util
 export function computeResultStats(
 	issues: SchemaValidationIssue[],
 	schemaNamespace: string,
