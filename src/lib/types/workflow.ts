@@ -27,24 +27,24 @@ export interface WorkflowResult<T = unknown> {
 	duration: number; // milliseconds
 }
 
-// |------------|| Convert Workflow ||------------|
+// |------------|| CONVERSION ||------------|
 export interface ConvertInput {
 	filePath: string;
 	outputDir?: string;
 	registry: SchemaRegistry;
 }
 
-export interface ValidateInput {
-	filePath: string;
-	registry: SchemaRegistry;
-}
-
-// |------------|| Validate Workflow ||------------|
 export interface ConvertOutput {
 	xml: string;
 	outputPath: string;
 	csvData: CSVData;
 	validation: ValidationResult;
+}
+
+// |------------|| VALIDATION ||------------|
+export interface ValidateInput {
+	filePath: string;
+	registry: SchemaRegistry;
 }
 
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`
