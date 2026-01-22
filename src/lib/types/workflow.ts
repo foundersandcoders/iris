@@ -1,22 +1,11 @@
 /** |===================|| Workflow Abstraction Layer ||===================|
- * | Defines interface-agnostic workflow types that can be consumed by
- * | TUI, CLI commands, and Desktop GUI.
- * |======================================================================|
+ *  | Defines interface-agnostic workflow types that can be consumed by
+ *  | TUI, CLI commands, and Desktop GUI.
+ *  |======================================================================|
  */
 import type { CSVData, CSVRow } from '../parser';
 import type { ValidationResult } from '../validator';
 import type { SchemaRegistry } from '../schema/interpreter';
-
-export interface ConvertInput {
-	filePath: string;
-	outputDir?: string;
-	registry: SchemaRegistry;
-}
-
-export interface ValidateInput {
-	filePath: string;
-	registry: SchemaRegistry;
-}
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
@@ -41,14 +30,13 @@ export interface WorkflowResult<T = unknown> {
 // |------------|| Convert Workflow ||------------|
 export interface ConvertInput {
 	filePath: string;
-	outputDir?: string; // defaults to ~/.iris/submissions/
+	outputDir?: string;
+	registry: SchemaRegistry;
 }
 
-export interface ConvertOutput {
-	xml: string;
-	outputPath: string;
-	csvData: CSVData;
-	validation: ValidationResult;
+export interface ValidateInput {
+	filePath: string;
+	registry: SchemaRegistry;
 }
 
 // |------------|| Validate Workflow ||------------|
