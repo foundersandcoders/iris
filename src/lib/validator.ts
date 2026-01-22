@@ -19,6 +19,7 @@ export interface ValidationIssue {
 	/** Row index (0-based) where issue occurred */ row?: number;
 	/** Human-readable error message */ message: string;
 	/** Machine-readable error code */ code: string;
+	/** Actual value that caused the issue */ actualValue?: unknown;
 }
 
 export interface ValidationResult {
@@ -151,5 +152,6 @@ function convertSchemaIssue(
 		row: rowIndex,
 		message: schemaIssue.message,
 		code: schemaIssue.code,
+		actualValue: schemaIssue.actualValue,
 	};
 }

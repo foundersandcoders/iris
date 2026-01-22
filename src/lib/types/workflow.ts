@@ -1,22 +1,11 @@
 /** |===================|| Workflow Abstraction Layer ||===================|
- * | Defines interface-agnostic workflow types that can be consumed by
- * | TUI, CLI commands, and Desktop GUI.
- * |======================================================================|
+ *  | Defines interface-agnostic workflow types that can be consumed by
+ *  | TUI, CLI commands, and Desktop GUI.
+ *  |======================================================================|
  */
 import type { CSVData, CSVRow } from '../parser';
 import type { ValidationResult } from '../validator';
 import type { SchemaRegistry } from '../schema/interpreter';
-
-export interface ConvertInput {
-	filePath: string;
-	outputDir?: string;
-	registry: SchemaRegistry;
-}
-
-export interface ValidateInput {
-	filePath: string;
-	registry: SchemaRegistry;
-}
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
@@ -38,10 +27,11 @@ export interface WorkflowResult<T = unknown> {
 	duration: number; // milliseconds
 }
 
-// |------------|| Convert Workflow ||------------|
+// |------------|| CONVERSION ||------------|
 export interface ConvertInput {
 	filePath: string;
-	outputDir?: string; // defaults to ~/.iris/submissions/
+	outputDir?: string;
+	registry: SchemaRegistry;
 }
 
 export interface ConvertOutput {
@@ -51,10 +41,10 @@ export interface ConvertOutput {
 	validation: ValidationResult;
 }
 
-// |------------|| Validate Workflow ||------------|
-// TODO: Reconcile `interface ValidateInput` with `src/lib/schema/validationTypes`
+// |------------|| VALIDATION ||------------|
 export interface ValidateInput {
 	filePath: string;
+	registry: SchemaRegistry;
 }
 
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`

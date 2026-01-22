@@ -48,7 +48,7 @@ export class Layout {
 	private drawHeader(options: LayoutOptions): void {
 		// Row 1: Version (Top Right)
 		this.term.moveTo(this.term.width - 10, 1);
-		this.term.colorRgbHex(theme.textMuted)('v1.0.0');
+		this.term.colorRgbHex(theme.textMuted)('v1.0.1');
 		this.term.styleReset();
 
 		// Row 2: Title
