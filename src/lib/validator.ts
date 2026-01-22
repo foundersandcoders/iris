@@ -1,122 +1,155 @@
 /**
-  * Semantic Validator for ILR Data
-  *
-  * Validates parsed CSV data beyond structural checks.
-  * Checks field presence, formats, value ranges, and business rules.
-  */
+ * Semantic Validator for ILR Data
+ *
+ * Validates parsed CSV data against schema constraints.
+ * Uses SchemaRegistry for dynamic validation rules.
+ */
 
 import type { CSVRow } from './parser';
+import type { SchemaRegistry, SchemaElement } from './schema/interpreter';
+import { validateValue } from './schema/schemaValidator';
+import type { SchemaValidationIssue } from './schema/validation';
 
 // === Types ===
 export type ValidationSeverity = 'error' | 'warning' | 'info';
 
 export interface ValidationIssue {
-  /** Severity level */ severity: ValidationSeverity;
-  /** Field that failed validation (if applicable) */ field?: string;
-  /** Row index (0-based) where issue occurred */ row?: number;
-  /** Human-readable error message */ message: string;
-  /** Machine-readable error code */ code: string;
+	/** Severity level */ severity: ValidationSeverity;
+	/** Field that failed validation (if applicable) */ field?: string;
+	/** Row index (0-based) where issue occurred */ row?: number;
+	/** Human-readable error message */ message: string;
+	/** Machine-readable error code */ code: string;
 }
 
 export interface ValidationResult {
-  /** Whether validation passed with no errors */ valid: boolean;
-  /** All issues found during validation */ issues: ValidationIssue[];
-  /** Count of errors */ errorCount: number;
-  /** Count of warnings */ warningCount: number;
+	/** Whether validation passed with no errors */ valid: boolean;
+	/** All issues found during validation */ issues: ValidationIssue[];
+	/** Count of errors */ errorCount: number;
+	/** Count of warnings */ warningCount: number;
 }
 
-// === Required Fields ===
-
-const REQUIRED_FIELDS = [
-  'LearnRefNumber',
-  'ULN',
-  'DateOfBirth',
-  'Ethnicity',
-  'Sex',
-  'LLDDHealthProb',
-  'PostcodePrior',
-  'Postcode',
-  'LearnAimRef',
-  'AimType',
-  'AimSeqNumber',
-  'LearnStartDate',
-  'LearnPlanEndDate',
-  'FundModel',
-  'DelLocPostCode',
-  'CompStatus',
-] as const;
+// === Field to Schema Path Mapping ===
+// Maps CSV column names to schema element paths
+// TODO: Move to column mapping configuration (Phase 4)
+const FIELD_TO_PATH: Record<string, string> = {
+	LearnRefNumber: 'Message/Learner/LearnRefNumber',
+	ULN: 'Message/Learner/ULN',
+	DateOfBirth: 'Message/Learner/DateOfBirth',
+	Ethnicity: 'Message/Learner/Ethnicity',
+	Sex: 'Message/Learner/Sex',
+	LLDDHealthProb: 'Message/Learner/LLDDHealthProb',
+	PostcodePrior: 'Message/Learner/PostcodePrior',
+	Postcode: 'Message/Learner/Postcode',
+	LearnAimRef: 'Message/Learner/LearningDelivery/LearnAimRef',
+	AimType: 'Message/Learner/LearningDelivery/AimType',
+	AimSeqNumber: 'Message/Learner/LearningDelivery/AimSeqNumber',
+	LearnStartDate: 'Message/Learner/LearningDelivery/LearnStartDate',
+	LearnPlanEndDate: 'Message/Learner/LearningDelivery/LearnPlanEndDate',
+	FundModel: 'Message/Learner/LearningDelivery/FundModel',
+	DelLocPostCode: 'Message/Learner/LearningDelivery/DelLocPostCode',
+	CompStatus: 'Message/Learner/LearningDelivery/CompStatus',
+};
 
 // === Validation Functions ===
 
 /**
-  * Validate parsed CSV rows against ILR requirements
-  * @param rows - Parsed CSV rows to validate
-  * @param headers - CSV headers from the file
-  * @returns Validation result with all issues found
-  */
-export function validateRows(rows: CSVRow[], headers: string[]): ValidationResult {
-  const issues: ValidationIssue[] = [];
+ * Validate parsed CSV rows against schema constraints
+ * @param rows - Parsed CSV rows to validate
+ * @param headers - CSV headers from the file
+ * @param registry - Schema registry for validation rules
+ * @returns Validation result with all issues found
+ */
+export function validateRows(
+	rows: CSVRow[],
+	headers: string[],
+	registry: SchemaRegistry
+): ValidationResult {
+	const issues: ValidationIssue[] = [];
 
-  // Check for missing required headers
-  const missingHeaders = validateRequiredHeaders(headers);
-  issues.push(...missingHeaders);
+	// Check for missing required headers (based on schema)
+	const missingHeaders = validateRequiredHeaders(headers, registry);
+	issues.push(...missingHeaders);
 
-  // Validate each row
-  rows.forEach((row, index) => {
-    const rowIssues = validateRow(row, index);
-    issues.push(...rowIssues);
-  });
+	// Validate each row against schema
+	rows.forEach((row, index) => {
+		const rowIssues = validateRow(row, index, registry);
+		issues.push(...rowIssues);
+	});
 
-  const errorCount = issues.filter((i) => i.severity === 'error').length;
-  const warningCount = issues.filter((i) => i.severity === 'warning').length;
+	const errorCount = issues.filter((i) => i.severity === 'error').length;
+	const warningCount = issues.filter((i) => i.severity === 'warning').length;
 
-  return {
-    valid: errorCount === 0,
-    issues,
-    errorCount,
-    warningCount,
-  };
+	return {
+		valid: errorCount === 0,
+		issues,
+		errorCount,
+		warningCount,
+	};
 }
 
 /**
-  * Check that all required headers are present
-  */
-function validateRequiredHeaders(headers: string[]): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const headerSet = new Set(headers);
+ * Check that all required headers are present based on schema
+ */
+function validateRequiredHeaders(headers: string[], registry: SchemaRegistry): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	const headerSet = new Set(headers);
 
-  for (const field of REQUIRED_FIELDS) {
-    if (!headerSet.has(field)) {
-      issues.push({
-        severity: 'error',
-        field,
-        message: `Required column "${field}" is missing from CSV`,
-        code: 'MISSING_REQUIRED_HEADER',
-      });
-    }
-  }
+	for (const [field, path] of Object.entries(FIELD_TO_PATH)) {
+		const element = registry.elementsByPath.get(path);
+		if (!element) continue;
 
-  return issues;
+		// Check if field is required (cardinality.min >= 1)
+		if (element.cardinality.min >= 1 && !headerSet.has(field)) {
+			issues.push({
+				severity: 'error',
+				field,
+				message: `Required column "${field}" is missing from CSV`,
+				code: 'MISSING_REQUIRED_HEADER',
+			});
+		}
+	}
+
+	return issues;
 }
 
 /**
-  * Validate a single row for required field presence
-  */
-function validateRow(row: CSVRow, rowIndex: number): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
+ * Validate a single row against schema constraints
+ */
+function validateRow(row: CSVRow, rowIndex: number, registry: SchemaRegistry): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
 
-  for (const field of REQUIRED_FIELDS) {
-    const value = row[field];
-    if (value === undefined || value === null || value.trim() === '') {
-      issues.push({
-        severity: 'error',
-        field,
-        row: rowIndex,
-        message: `Required field "${field}" is empty`,
-        code: 'MISSING_REQUIRED_VALUE',
-      });
-    }
-  }
+	for (const [field, path] of Object.entries(FIELD_TO_PATH)) {
+		const element = registry.elementsByPath.get(path);
+		if (!element) continue;
 
-  return issues;
+		const value = row[field];
+		const schemaIssues = validateValue(value, element, {
+			rowIndex,
+			sourceField: field,
+		});
+
+		// Convert schema validation issues to ValidationIssue format
+		for (const schemaIssue of schemaIssues) {
+			issues.push(convertSchemaIssue(schemaIssue, field, rowIndex));
+		}
+	}
+
+	return issues;
+}
+
+/**
+ * Convert SchemaValidationIssue to ValidationIssue
+ */
+function convertSchemaIssue(
+	schemaIssue: SchemaValidationIssue,
+	field: string,
+	rowIndex: number
+): ValidationIssue {
+	return {
+		severity: schemaIssue.severity,
+		field,
+		row: rowIndex,
+		message: schemaIssue.message,
+		code: schemaIssue.code,
+	};
 }

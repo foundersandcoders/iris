@@ -45,8 +45,8 @@ None
 - [x] 1a2a-schema5. Add tests against actual schemafile25.xsd
 
 **Phase 2: Schema-Driven Validator**
-- [ ] 1a2a-schema6. Create schema validator module (validates data against registry constraints)
-- [ ] 1a2a-schema7. Implement constraint validation (pattern, length, range, cardinality, enumeration)
+- [x] 1a2a-schema6. Create schema validator module (validates data against registry constraints)
+- [x] 1a2a-schema7. Implement constraint validation (pattern, length, range, cardinality, enumeration)
 - [ ] 1a2a-schema8. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
 
 **Phase 3: Schema-Driven Generator**
@@ -134,7 +134,7 @@ None currently
 - [x] Test coverage for core transformations and workflows
 - [ ] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
     - [x] XSD parser and schema registry
-    - [ ] Schema-driven validator (replaces hardcoded validation rules)
+    - [x] Schema-driven validator (replaces hardcoded validation rules)
     - [ ] Schema-driven generator (replaces hardcoded XML structure)
     - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
 
