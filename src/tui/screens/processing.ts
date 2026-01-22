@@ -13,6 +13,7 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/convert';
 import type { WorkflowStepEvent, WorkflowResult, ConvertOutput } from '../../lib/types/workflow';
+import type { ValidationResult } from '../../lib/validator';
 
 const theme = THEMES.themeLight;
 
@@ -21,6 +22,7 @@ interface StepDisplay {
 	name: string;
 	status: 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 	message?: string;
+	errorSamples?: string[];
 }
 
 export class ProcessingScreen implements Screen {
@@ -104,9 +106,37 @@ export class ProcessingScreen implements Screen {
 		if (event.type === 'step:start') {
 			step.status = 'running';
 			step.message = undefined;
+			step.errorSamples = undefined;
 		} else if (event.type === 'step:complete') {
 			step.status = 'complete';
-			step.message = event.step.message;
+
+			// Special handling for validate step to show error samples
+			if (step.id === 'validate' && event.step.data) {
+				const validation = event.step.data as ValidationResult;
+				const errorCount = validation.errorCount;
+				const warningCount = validation.warningCount;
+
+				// Show count + sample of first few errors
+				const sampleSize = 3;
+				const sampleErrors = validation.issues
+					.filter((i) => i.severity === 'error')
+					.slice(0, sampleSize);
+
+				step.message = validation.valid
+					? 'No errors found'
+					: `${errorCount} errors, ${warningCount} warnings`;
+
+				step.errorSamples = sampleErrors.map((e) => {
+					const rowDisplay = e.row !== undefined ? ` (row ${e.row})` : '';
+					const valueDisplay =
+						e.actualValue !== undefined
+							? ` [value: ${JSON.stringify(e.actualValue)}]`
+							: '';
+					return `${e.field || 'general'}: ${e.message}${rowDisplay}${valueDisplay}`;
+				});
+			} else {
+				step.message = event.step.message;
+			}
 		} else if (event.type === 'step:error') {
 			step.status = 'failed';
 			step.message = event.step.error?.message;
@@ -133,6 +163,14 @@ export class ProcessingScreen implements Screen {
 			if (step.message) {
 				this.term.moveTo(8, y + 1);
 				this.term.colorRgbHex(theme.textMuted)(step.message);
+			}
+
+			// Show error samples if present
+			if (step.errorSamples && step.errorSamples.length > 0) {
+				step.errorSamples.forEach((sample, idx) => {
+					this.term.moveTo(8, y + 2 + idx);
+					this.term.colorRgbHex(theme.error)(`  • ${sample}`);
+				});
 			}
 		});
 
