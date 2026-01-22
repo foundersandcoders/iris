@@ -5,6 +5,18 @@
  */
 import type { CSVData, CSVRow } from '../parser';
 import type { ValidationResult } from '../validator';
+import type { SchemaRegistry } from '../schema/interpreter';
+
+export interface ConvertInput {
+	filePath: string;
+	outputDir?: string;
+	registry: SchemaRegistry;
+}
+
+export interface ValidateInput {
+	filePath: string;
+	registry: SchemaRegistry;
+}
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
