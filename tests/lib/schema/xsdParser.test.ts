@@ -59,21 +59,34 @@ describe('extractElements', () => {
 		const parsed = parseXsd(fixtures.elementWithCardinality);
 		const elements = extractElements(parsed);
 
-		expect(elements).toHaveLength(3);
-		expect(elements[0]['@_name']).toBe('OptionalElement');
-		expect(elements[1]['@_name']).toBe('RequiredElement');
-		expect(elements[2]['@_name']).toBe('RepeatingElement');
+		// Now has single root with 3 children in xs:sequence
+		expect(elements).toHaveLength(1);
+		expect(elements[0]['@_name']).toBe('TestContainer');
+
+		// Verify children exist in sequence
+		const sequence = elements[0]['xs:complexType']?.['xs:sequence'];
+		const children = sequence?.['xs:element'];
+		expect(Array.isArray(children)).toBe(true);
+		expect(children).toHaveLength(3);
 	});
 
-	it('should extract minOccurs and maxOccurs attributes', () => {
+	it('should extract minOccurs and maxOccurs attributes from child elements', () => {
 		const parsed = parseXsd(fixtures.elementWithCardinality);
 		const elements = extractElements(parsed);
 
-		const optional = elements[0];
+		// Get children from the container
+		const sequence = elements[0]['xs:complexType']?.['xs:sequence'];
+		const children = Array.isArray(sequence?.['xs:element'])
+			? sequence!['xs:element']
+			: [sequence!['xs:element']!];
+
+		const optional = children[0];
+		expect(optional['@_name']).toBe('OptionalElement');
 		expect(optional['@_minOccurs']).toBe('0');
 		expect(optional['@_maxOccurs']).toBe('1');
 
-		const repeating = elements[2];
+		const repeating = children[2];
+		expect(repeating['@_name']).toBe('RepeatingElement');
 		expect(repeating['@_minOccurs']).toBe('0');
 		expect(repeating['@_maxOccurs']).toBe('unbounded');
 	});
@@ -81,7 +94,7 @@ describe('extractElements', () => {
 	it('should return empty array if no elements', () => {
 		const emptyXsd = `<?xml version="1.0"?>
         <xs:schema targetNamespace="http://test.example.com/2025"
-                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema">
         </xs:schema>`;
 
 		const parsed = parseXsd(emptyXsd);

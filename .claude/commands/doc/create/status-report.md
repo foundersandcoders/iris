@@ -1,6 +1,13 @@
+---
+description: "{{ Iris • Haiku }} Create a status report that knows what you've done since the last one"
+argument-hint: [version number]
+model: claude-haiku-4-5
+disable-model-invocation: true
+---
+
 # Project Status Report
 
-Generate a project status report for Iris by analyzing the current state of the codebase, roadmaps, and recent work. Save it to `docs/dev-log/status-reports/`
+Generate a project status report for Iris by analyzing the current state of the codebase, roadmaps, and recent work. Save it to `docs/status-reports/`
 
 ## Filename Format
 
