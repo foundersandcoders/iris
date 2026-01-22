@@ -40,9 +40,11 @@ export interface ValidateInput {
 }
 
 // |------------|| Validate Workflow ||------------|
-// TODO: Reconcile `interface ValidateInput` with `src/lib/schema/validationTypes`
-export interface ValidateInput {
-	filePath: string;
+export interface ConvertOutput {
+	xml: string;
+	outputPath: string;
+	csvData: CSVData;
+	validation: ValidationResult;
 }
 
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`
