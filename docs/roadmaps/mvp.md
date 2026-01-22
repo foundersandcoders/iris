@@ -47,7 +47,7 @@ None
 **Phase 2: Schema-Driven Validator**
 - [x] 1a2a-schema6. Create schema validator module (validates data against registry constraints)
 - [x] 1a2a-schema7. Implement constraint validation (pattern, length, range, cardinality, enumeration)
-- [ ] 1a2a-schema8. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
+- [x] 1a2a-schema8. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
 
 **Phase 3: Schema-Driven Generator**
 - [ ] 1a2a-schema9. Create schema generator module (generate XML by traversing registry)
