@@ -10,10 +10,16 @@ import { buildNamedTypesMap } from './utils/typeResolver';
 import { buildElement, populateLookupMaps } from './utils/elementBuilder';
 
 /**
- * Build a queryable SchemaRegistry from XSD content
- * @param xsdContent - Raw XSD file content as string
- * @param options - Optional configuration
- * @returns Complete SchemaRegistry with lookup maps
+ * Create a SchemaRegistry from raw XSD content.
+ *
+ * Parses the provided XSD, resolves named simple types, builds the element tree,
+ * and populates lookup maps for elements by path and by name.
+ *
+ * @param xsdContent - Raw XSD file content as a string
+ * @param options - Optional configuration for registry construction
+ * @returns A SchemaRegistry containing `namespace`, `rootElement`, `elementsByPath`, `elementsByName`, and `namedTypes`
+ * @throws Error if no root element is found in the XSD
+ * @throws Error if the XSD contains more than one root element
  */
 export function buildSchemaRegistry(
 	xsdContent: string,

@@ -8,9 +8,10 @@ import type { RawXsdSimpleType } from '../xsdParser';
 import { EMPTY_CONSTRAINTS } from '../interpreter';
 
 /**
- * Extract constraints from xs:restriction element
- * @param restriction - Raw restriction object from XSD
- * @returns SchemaConstraints object
+ * Builds a SchemaConstraints object from an XSD xs:restriction facet object.
+ *
+ * @param restriction - The xs:restriction object containing facets (e.g., `xs:pattern`, `xs:minLength`, `xs:enumeration`). If omitted, no facets are applied.
+ * @returns The SchemaConstraints mapped from the provided restriction, or `EMPTY_CONSTRAINTS` when `restriction` is not provided.
  */
 export function extractConstraints(
 	restriction?: RawXsdSimpleType['xs:restriction']

@@ -12,11 +12,12 @@ import { extractConstraints } from './constraints';
 import { resolveBaseType } from './typeResolver';
 
 /**
- * Build a SchemaElement from a raw XSD element (recursive)
- * @param rawElement - Raw XSD element
- * @param parentPath - Parent element path (empty for root)
- * @param namedTypesMap - Map of named simple types
- * @returns SchemaElement with full tree
+ * Constructs a SchemaElement representing a raw XSD element and its descendants.
+ *
+ * @param rawElement - Raw XSD element to convert
+ * @param parentPath - Parent element path (empty string for root)
+ * @param namedTypesMap - Map of named simple types used to resolve type references and inherit constraints
+ * @returns The resulting SchemaElement including computed path, cardinality, baseType, constraints, children, and isComplex flag
  */
 export function buildElement(
 	rawElement: RawXsdElement,
@@ -95,10 +96,11 @@ export function buildElement(
 }
 
 /**
- * Populate lookup maps by walking element tree
- * @param element - Root element or current element in traversal
- * @param elementsByPath - Map to populate with path -> element
- * @param elementsByName - Map to populate with name -> elements[]
+ * Populate lookup maps with schema elements keyed by their path and name.
+ *
+ * @param element - The current SchemaElement to index (root or subtree node)
+ * @param elementsByPath - Map receiving entries keyed by `element.path`
+ * @param elementsByName - Map receiving arrays of elements grouped by `element.name`
  */
 export function populateLookupMaps(
 	element: SchemaElement,

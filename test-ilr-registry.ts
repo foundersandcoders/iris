@@ -2,9 +2,19 @@ import { readFileSync } from 'fs';
 import { buildSchemaRegistry } from './src/lib/schema/registryBuilder';
 import { SchemaRegistry } from './src/lib/schema/interpreter';
 
+/**
+ * Opens a console group with a decorative header that includes the provided name to mark a new logging section.
+ */
 function zoomIn(name: string): void {
 	console.group(`|•|======|| ${name} ||====>>`);
 }
+/**
+ * Ends the current console group and prints a decorative separator sized to `name`.
+ *
+ * Closes the active console group, logs a horizontal separator line whose length is derived from the length of `name`, and then logs an empty line via `loggy` for spacing.
+ *
+ * @param name - Label used to determine the length of the separator line
+ */
 function zoomOut(name: string): void {
 	let filler = '';
 	let x = 0;
@@ -18,10 +28,20 @@ function zoomOut(name: string): void {
 	console.log(`|•|————————${filler}————————|`);
 	loggy('');
 }
+/**
+ * Logs a single-line message prefixed with a vertical bar and space.
+ *
+ * @param msg - The message text to log
+ */
 function loggy(msg: string): void {
 	console.log(`| ${msg}`);
 }
 
+/**
+ * Runs a sample end-to-end test that builds a SchemaRegistry from a local XSD and logs inspection results.
+ *
+ * Builds a registry from 'docs/schemas/schemafile25.xsd', performs example element and named-type lookups, and emits structured console output summarizing the registry contents.
+ */
 function realWorldTest() {
 	zoomIn('Real World Test');
 
@@ -31,6 +51,12 @@ function realWorldTest() {
 	zoomOut('Real World Test');
 }
 
+/**
+ * Builds a SchemaRegistry from a predefined XSD file and logs summary metadata.
+ *
+ * @param filepath - Ignored by this function; the XSD is read from 'docs/schemas/schemafile25.xsd'.
+ * @returns The constructed SchemaRegistry
+ */
 function buildEmUp(filepath: string) {
 	zoomIn('Building Registry');
 	const xsd = readFileSync('docs/schemas/schemafile25.xsd', 'utf-8');
@@ -49,6 +75,15 @@ function buildEmUp(filepath: string) {
 	return registry;
 }
 
+/**
+ * Performs sample lookups against a SchemaRegistry and logs discovered element and type metadata.
+ *
+ * Conducts path-based queries for several predefined elements and a named type, logging whether each
+ * item was found and key observable properties such as base type, relevant constraints, complexity,
+ * cardinality, and child count.
+ *
+ * @param registry - The SchemaRegistry to inspect; lookup results are written to the console.
+ */
 function lookEmUp(registry: SchemaRegistry) {
 	zoomIn('Sample Element Lookups');
 	zoomIn('Message > Learner > ULN');

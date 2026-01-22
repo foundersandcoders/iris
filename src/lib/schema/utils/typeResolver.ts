@@ -9,10 +9,13 @@ import type { RawXsdSimpleType } from '../xsdParser';
 import { extractConstraints } from './constraints';
 
 /**
- * Resolve a type reference to its base XSD type
- * @param typeRef - Type reference (e.g., "xs:string", "PostcodeType")
- * @param namedTypesMap - Map of named simple types
- * @returns Resolved XsdBaseType
+ * Resolve a type reference to its underlying XSD base type.
+ *
+ * If the reference is undefined or not recognized, defaults to `string`.
+ *
+ * @param typeRef - Type reference to resolve (e.g., "xs:string" or a named type); may be undefined
+ * @param namedTypesMap - Map of named simple types keyed by their declared name
+ * @returns The resolved XSD base type; `string` if the reference is undefined or not found
  */
 export function resolveBaseType(
 	typeRef: string | undefined,
@@ -34,9 +37,12 @@ export function resolveBaseType(
 }
 
 /**
- * Build map of named simple types from raw XSD types
- * @param rawSimpleTypes - Array of raw simple type definitions
- * @returns Map of type name to NamedSimpleType
+ * Constructs a registry mapping named XSD simple type names to their resolved NamedSimpleType definitions.
+ *
+ * For each input type, extracts the name, resolves a base XSD type (stripping the "xs:" prefix or using the baseType of a previously defined named type), and extracts constraints; entries without a name are ignored.
+ *
+ * @param rawSimpleTypes - Array of raw simple type definitions parsed from an XSD
+ * @returns A Map where keys are type names and values are their corresponding NamedSimpleType
  */
 export function buildNamedTypesMap(
 	rawSimpleTypes: RawXsdSimpleType[]

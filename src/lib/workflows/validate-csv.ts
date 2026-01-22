@@ -140,6 +140,12 @@ export async function* validateWorkflow(
 	};
 }
 
+/**
+ * Create a workflow step object initialized in the pending state.
+ *
+ * @param def - Object containing the step `id` (unique identifier) and `name` (display label)
+ * @returns A `WorkflowStep` with `status` set to `pending` and `progress` set to `0`
+ */
 function createStep(def: { id: string; name: string }): WorkflowStep {
 	return {
 		id: def.id,
@@ -149,6 +155,13 @@ function createStep(def: { id: string; name: string }): WorkflowStep {
 	};
 }
 
+/**
+ * Create a workflow step event object for the given step and event type.
+ *
+ * @param type - The event type (for example 'step:start', 'step:complete', or 'step:error')
+ * @param step - The workflow step instance to include in the event
+ * @returns The constructed WorkflowStepEvent containing the provided `type`, `step`, and a timestamp
+ */
 function stepEvent<T>(
 	type: WorkflowStepEvent['type'],
 	step: WorkflowStep<T>
@@ -156,6 +169,14 @@ function stepEvent<T>(
 	return { type, step, timestamp: Date.now() };
 }
 
+/**
+ * Construct a failed workflow result containing the error, recorded steps, and elapsed duration.
+ *
+ * @param steps - The workflow steps collected up to the failure
+ * @param error - The error that caused the workflow to fail
+ * @param startTime - The timestamp (milliseconds since epoch) when the workflow started
+ * @returns A WorkflowResult with `success` set to `false`, the provided `error` and `steps`, and `duration` as the elapsed milliseconds since `startTime`
+ */
 function failedResult(
 	steps: WorkflowStep[],
 	error: Error,

@@ -134,7 +134,12 @@ export async function* convertWorkflow(
 	};
 }
 
-// === Helpers ===
+/**
+ * Create a workflow step object initialized to the pending state.
+ *
+ * @param def - Object with `id` (unique step identifier) and `name` (human-readable step name)
+ * @returns A `WorkflowStep` with the provided `id` and `name`, `status` set to `'pending'`, and `progress` set to `0`
+ */
 function createStep(def: { id: string; name: string }): WorkflowStep {
 	return {
 		id: def.id,
@@ -144,6 +149,13 @@ function createStep(def: { id: string; name: string }): WorkflowStep {
 	};
 }
 
+/**
+ * Create a workflow step event combining an event type, a step snapshot, and a timestamp.
+ *
+ * @param type - The event type (e.g., 'step:start', 'step:complete', 'step:error')
+ * @param step - The workflow step state to include in the event
+ * @returns A WorkflowStepEvent containing the provided `type` and `step` and a `timestamp` (milliseconds since the UNIX epoch)
+ */
 function stepEvent<T>(
 	type: WorkflowStepEvent['type'],
 	step: WorkflowStep<T>
@@ -151,6 +163,14 @@ function stepEvent<T>(
 	return { type, step, timestamp: Date.now() };
 }
 
+/**
+ * Build a failed workflow result object containing the provided steps, error, and elapsed duration.
+ *
+ * @param steps - The workflow steps recorded up to the failure
+ * @param error - The error that caused the workflow to fail
+ * @param startTime - The workflow start time in milliseconds since the epoch; used to compute duration
+ * @returns A WorkflowResult with `success` set to `false`, the provided `error` and `steps`, and `duration` set to the elapsed milliseconds since `startTime`
+ */
 function failedResult(
 	steps: WorkflowStep[],
 	error: Error,
@@ -164,7 +184,12 @@ function failedResult(
 	};
 }
 
-// === CSV --> ILR Message Mapping ===
+/**
+ * Builds an ILR message object from parsed CSV data.
+ *
+ * @param csvData - Parsed CSV payload containing `headers` and `rows`; each row is converted into a learner entry
+ * @returns An `ILRMessage` containing a `header` (collection details with today's date as `filePreparationDate` and current timestamp), `source` metadata, `learningProvider` info, and `learners` mapped from the CSV rows
+ */
 function buildILRMessage(csvData: CSVData): ILRMessage {
 	const now = new Date();
 
@@ -192,6 +217,14 @@ function buildILRMessage(csvData: CSVData): ILRMessage {
 	};
 }
 
+/**
+ * Builds a Learner object from a CSV row mapping expected ILR CSV columns to domain fields.
+ *
+ * Numeric columns (ULN, Ethnicity, LLDDHealthProb) are parsed to numbers with 0 used when absent; string columns fall back to empty string when appropriate. The returned learner includes a single `learningDeliveries` entry produced from the same row.
+ *
+ * @param row - A record representing a parsed CSV row with keys like `LearnRefNumber`, `ULN`, `FamilyName`, `GivenNames`, `DateOfBirth`, `Ethnicity`, `Sex`, `LLDDHealthProb`, `NINumber`, `PostcodePrior`, `Postcode`, and `Email`.
+ * @returns A populated `Learner` object derived from the CSV row
+ */
 function rowToLearner(row: Record<string, string>): Learner {
 	return {
 		learnRefNumber: row['LearnRefNumber'] ?? '',
@@ -210,6 +243,24 @@ function rowToLearner(row: Record<string, string>): Learner {
 	};
 }
 
+/**
+ * Convert a parsed CSV row into a LearningDelivery object for the ILR message.
+ *
+ * @param row - CSV row values keyed by column header names
+ * @returns A LearningDelivery with fields populated from the row:
+ * - `learnAimRef`: aim reference string
+ * - `aimType`: aim type as a number
+ * - `aimSeqNumber`: aim sequence number as a number
+ * - `learnStartDate`: learning start date string
+ * - `learnPlanEndDate`: planned end date string
+ * - `fundModel`: funding model as a number
+ * - `progType`: programme type as a number, or `undefined` if not provided
+ * - `stdCode`: standard code as a number, or `undefined` if not provided
+ * - `delLocPostCode`: delivery location postcode string
+ * - `compStatus`: completion status as a number
+ * - `learnActEndDate`: actual end date string or `undefined`
+ * - `outcome`: outcome as a number, or `undefined` if not provided
+ */
 function rowToDelivery(row: Record<string, string>): LearningDelivery {
 	return {
 		learnAimRef: row['LearnAimRef'] ?? '',

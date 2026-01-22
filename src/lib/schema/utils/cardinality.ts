@@ -8,9 +8,10 @@ import type { RawXsdElement } from '../xsdParser';
 import { DEFAULT_CARDINALITY } from '../interpreter';
 
 /**
- * Parse cardinality from XSD element attributes
- * @param rawElement - Raw XSD element with minOccurs/maxOccurs
- * @returns Cardinality object with min/max values
+ * Parse an XSD element's occurrence constraints into a Cardinality object.
+ *
+ * @param rawElement - Raw XSD element that may contain `@_minOccurs` and `@_maxOccurs` attributes
+ * @returns An object `{ min, max }` where `min` and `max` are numeric occurrence bounds; `max` is `Infinity` when the attribute value is `"unbounded"`, and missing attributes fall back to the module's default cardinality values
  */
 export function parseCardinality(rawElement: RawXsdElement): Cardinality {
 	const minOccurs = rawElement['@_minOccurs'];

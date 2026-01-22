@@ -95,7 +95,13 @@ export function validateValue(
 /* <<--------------------------------------------------------------------->> */
 
 /**
- * Validate value matches expected base type
+ * Ensure a value conforms to the schema element's expected XSD base type.
+ *
+ * @param value - The value to validate
+ * @param baseType - The expected XSD base type (e.g., 'string', 'int', 'decimal', 'boolean', 'date', 'dateTime')
+ * @param element - Schema element metadata used to construct validation issues (name, path, etc.)
+ * @param options - Optional context (rowIndex, sourceField) included in issue metadata
+ * @returns A SchemaValidationIssue describing the type mismatch, or `null` if the value matches the expected base type
  */
 function validateType(
 	value: unknown,
@@ -213,7 +219,15 @@ function validateType(
 /* <<--------------------------------------------------------------------->> */
 
 /**
- * Validate string matches pattern constraint
+ * Ensure a string value matches the provided regular expression pattern.
+ *
+ * If the value does not match, returns a `pattern` validation issue that includes contextual metadata.
+ *
+ * @param value - The string to validate
+ * @param pattern - The regular expression (without anchors) the value must match
+ * @param element - Schema element metadata used to populate the issue (name, path, etc.)
+ * @param options - Optional context such as `rowIndex` and `sourceField`
+ * @returns A `SchemaValidationIssue` describing the pattern violation, or `null` if the value matches or the pattern is invalid
  */
 function validatePattern(
 	value: string,
@@ -250,7 +264,13 @@ function validatePattern(
 /* <<--------------------------------------------------------------------->> */
 
 /**
- * Validate string length constraints
+ * Validate a string's length against an element's minLength and maxLength constraints.
+ *
+ * @param value - The string to validate
+ * @param constraints - Schema constraints that may include `minLength` and/or `maxLength`
+ * @param element - Schema element metadata used to populate issue details (name, path)
+ * @param options - Validation context (e.g., `rowIndex`, `sourceField`)
+ * @returns An array of `SchemaValidationIssue` entries for each violated length constraint; empty if `value` satisfies the length constraints
  */
 function validateLength(
 	value: string,
@@ -301,7 +321,13 @@ function validateLength(
 /* <<--------------------------------------------------------------------->> */
 
 /**
- * Validate numeric range constraints
+ * Validate a numeric value against inclusive and exclusive range constraints.
+ *
+ * @param value - The numeric value to validate.
+ * @param constraints - Schema constraints which may include `minInclusive`, `maxInclusive`, `minExclusive`, and `maxExclusive`.
+ * @param element - Schema element metadata used when constructing validation issues.
+ * @param options - Optional contextual information (e.g., `rowIndex`, `sourceField`) included in created issues.
+ * @returns An array of SchemaValidationIssue objects for each violated range constraint; empty if no violations.
  */
 function validateRange(
 	value: number,
@@ -386,7 +412,13 @@ function validateRange(
 /* <<--------------------------------------------------------------------->> */
 
 /**
- * Validate value is in enumeration list
+ * Check that a string value is one of the allowed enumeration values.
+ *
+ * @param value - The string value to validate
+ * @param enumeration - The list of allowed string values
+ * @param element - Schema element metadata used to build issue context
+ * @param options - Optional validation context (e.g., `rowIndex`, `sourceField`)
+ * @returns A SchemaValidationIssue describing the enumeration violation, or `null` if the value is allowed
  */
 function validateEnumeration(
 	value: string,

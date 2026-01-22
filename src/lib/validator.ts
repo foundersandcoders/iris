@@ -88,7 +88,11 @@ export function validateRows(
 }
 
 /**
- * Check that all required headers are present based on schema
+ * Identify schema-required CSV headers that are missing from the provided header list.
+ *
+ * @param headers - The list of CSV column names present in the file.
+ * @param registry - SchemaRegistry used to determine which fields are required via element cardinalities.
+ * @returns An array of `ValidationIssue` objects for each required header that is not present; each issue has severity `error` and code `MISSING_REQUIRED_HEADER`.
  */
 function validateRequiredHeaders(headers: string[], registry: SchemaRegistry): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
@@ -113,7 +117,11 @@ function validateRequiredHeaders(headers: string[], registry: SchemaRegistry): V
 }
 
 /**
- * Validate a single row against schema constraints
+ * Validate a single CSV row against schema constraints and return any validation issues.
+ *
+ * @param rowIndex - Zero-based index of the row being validated
+ * @param registry - SchemaRegistry used to resolve schema elements and rules for validation
+ * @returns An array of ValidationIssue objects found for the provided row (empty if none)
  */
 function validateRow(row: CSVRow, rowIndex: number, registry: SchemaRegistry): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
@@ -138,7 +146,12 @@ function validateRow(row: CSVRow, rowIndex: number, registry: SchemaRegistry): V
 }
 
 /**
- * Convert SchemaValidationIssue to ValidationIssue
+ * Translate a SchemaValidationIssue into a ValidationIssue associated with a CSV field and row.
+ *
+ * @param schemaIssue - The schema-level validation issue to translate.
+ * @param field - The CSV column name to associate with the returned issue.
+ * @param rowIndex - The zero-based index of the CSV row where the issue occurred.
+ * @returns A ValidationIssue with `severity`, `message`, and `code` taken from `schemaIssue` and `field`/`row` set from the provided arguments.
  */
 function convertSchemaIssue(
 	schemaIssue: SchemaValidationIssue,
