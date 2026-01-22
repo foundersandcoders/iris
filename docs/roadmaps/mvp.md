@@ -41,8 +41,8 @@ None
 - [x] 1a2a-schema1. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
 - [x] 1a2a-schema2. Add fast-xml-parser dependency
 - [x] 1a2a-schema3. Implement XSD parser (parse XSD as XML, extract element definitions)
-- [ ] 1a2a-schema4. Implement schema registry builder (transform XSD tree into queryable registry)
-- [ ] 1a2a-schema5. Add tests against actual schemafile25.xsd
+- [x] 1a2a-schema4. Implement schema registry builder (transform XSD tree into queryable registry)
+- [x] 1a2a-schema5. Add tests against actual schemafile25.xsd
 
 **Phase 2: Schema-Driven Validator**
 - [ ] 1a2a-schema6. Create schema validator module (validates data against registry constraints)
@@ -133,7 +133,7 @@ None currently
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] Test coverage for core transformations and workflows
 - [ ] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
-    - [ ] XSD parser and schema registry
+    - [x] XSD parser and schema registry
     - [ ] Schema-driven validator (replaces hardcoded validation rules)
     - [ ] Schema-driven generator (replaces hardcoded XML structure)
     - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
