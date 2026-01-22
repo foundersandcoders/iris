@@ -33,8 +33,11 @@ export function validateValue(
 	const issues: SchemaValidationIssue[] = [];
 	const { rowIndex, sourceField } = options;
 
+	// Trim strings to detect whitespace-only values as empty
+	const trimmedValue = typeof value === 'string' ? value.trim() : value;
+
 	// Check for required value
-	if (value === undefined || value === null || value === '') {
+	if (trimmedValue === undefined || trimmedValue === null || trimmedValue === '') {
 		if (isRequired(element)) {
 			issues.push(
 				createIssue('required', element.path, `Required field "${element.name}" is missing`, {
@@ -49,7 +52,7 @@ export function validateValue(
 	}
 
 	// Validate type
-	const typeIssue = validateType(value, element.baseType, element, options);
+	const typeIssue = validateType(trimmedValue, element.baseType, element, options);
 	if (typeIssue) {
 		issues.push(typeIssue);
 		// If type is wrong, skip constraint validation
@@ -60,24 +63,29 @@ export function validateValue(
 	const constraints = element.constraints;
 
 	// String constraints
-	if (typeof value === 'string') {
+	if (typeof trimmedValue === 'string') {
 		if (constraints.pattern) {
-			const patternIssue = validatePattern(value, constraints.pattern, element, options);
+			const patternIssue = validatePattern(trimmedValue, constraints.pattern, element, options);
 			if (patternIssue) issues.push(patternIssue);
 		}
 
-		const lengthIssues = validateLength(value, constraints, element, options);
+		const lengthIssues = validateLength(trimmedValue, constraints, element, options);
 		issues.push(...lengthIssues);
 
 		if (constraints.enumeration) {
-			const enumIssue = validateEnumeration(value, constraints.enumeration, element, options);
+			const enumIssue = validateEnumeration(
+				trimmedValue,
+				constraints.enumeration,
+				element,
+				options
+			);
 			if (enumIssue) issues.push(enumIssue);
 		}
 	}
 
 	// Numeric constraints
-	if (typeof value === 'number') {
-		const rangeIssues = validateRange(value, constraints, element, options);
+	if (typeof trimmedValue === 'number') {
+		const rangeIssues = validateRange(trimmedValue, constraints, element, options);
 		issues.push(...rangeIssues);
 	}
 
