@@ -59,7 +59,7 @@ export const missingMessageXml = `<?xml version="1.0" encoding="utf-8"?>
   <NotAMessage>true</NotAMessage>
 </SomethingElse>`;
 
-export const multiplLearnersXml = `<?xml version="1.0" encoding="utf-8"?>
+export const multipleLearnersXml = `<?xml version="1.0" encoding="utf-8"?>
 <Message xmlns="ESFA/ILR/2025-26">
   <Header>
     <CollectionDetails>

@@ -4,7 +4,7 @@ import { join } from 'path';
 import { validateRows } from '../../../../src/lib/utils/csv/csvValidator';
 import { buildSchemaRegistry } from '../../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../../src/lib/schema/interpreter';
-import * as fixtures from '../../../fixtures/lib/validator';
+import * as fixtures from '../../../fixtures/lib/utils/csv/csvValidator';
 
 describe('validator', () => {
 	let registry: SchemaRegistry;

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseILR } from '../../../../src/lib/utils/xml/xmlParser';
 import { generateILR } from '../../../../src/lib/utils/xml/xmlGenerator';
 import type { ILRMessage } from '../../../../src/lib/utils/xml/xmlGenerator';
-import * as fixtures from '../../../fixtures/lib/xmlParser';
+import * as fixtures from '../../../fixtures/lib/utils/xml/xmlParser';
 
 describe('parseILR', () => {
 	describe('valid XML', () => {
@@ -57,7 +57,7 @@ describe('parseILR', () => {
 		});
 
 		it('handles multiple learners', () => {
-			const result = parseILR(fixtures.multiplLearnersXml);
+			const result = parseILR(fixtures.multipleLearnersXml);
 
 			expect(result.success).toBe(true);
 			if (!result.success) return;
