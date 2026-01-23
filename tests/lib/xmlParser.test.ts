@@ -87,6 +87,16 @@ describe('parseILR', () => {
 			expect(result.error.code).toBe('MISSING_ELEMENT');
 			expect(result.error.message).toContain('Message');
 		});
+
+		it('returns error for missing required learner fields', () => {
+			const result = parseILR(fixtures.missingRequiredFieldsXml);
+
+			expect(result.success).toBe(false);
+			if (result.success) return;
+
+			expect(result.error.code).toBe('INVALID_STRUCTURE');
+			expect(result.error.message).toContain('ULN');
+		});
 	});
 
 	describe('round-trip', () => {

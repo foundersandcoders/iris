@@ -17,6 +17,13 @@ export interface ParseError {
 
 export type ParseResult = ParseSuccess | ParseError;
 
+class StructureError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'StructureError';
+	}
+}
+
 export function parseILR(xml: string): ParseResult {
 	const parser = new XMLParser({
 		ignoreAttributes: false,
@@ -58,6 +65,15 @@ export function parseILR(xml: string): ParseResult {
 			},
 		};
 	} catch (err) {
+		if (err instanceof StructureError) {
+			return {
+				success: false,
+				error: {
+					code: 'INVALID_STRUCTURE',
+					message: err.message,
+				},
+			};
+		}
 		return {
 			success: false,
 			error: {
@@ -96,15 +112,22 @@ function extractLearner(raw: unknown): Learner {
 	const l = raw as Record<string, unknown>;
 	const deliveries = (l?.LearningDelivery as unknown[]) ?? [];
 
+	const requiredFields = ['ULN', 'Ethnicity', 'LLDDHealthProb'] as const;
+	for (const field of requiredFields) {
+		if (l?.[field] === undefined) {
+			throw new StructureError(`Missing required learner field: ${field}`);
+		}
+	}
+
 	return {
 		learnRefNumber: String(l?.LearnRefNumber ?? ''),
-		uln: Number(l?.ULN),
+		uln: Number(l.ULN),
 		familyName: l?.FamilyName as string | undefined,
 		givenNames: l?.GivenNames as string | undefined,
 		dateOfBirth: l?.DateOfBirth as string | undefined,
-		ethnicity: Number(l?.Ethnicity),
+		ethnicity: Number(l.Ethnicity),
 		sex: String(l?.Sex ?? ''),
-		llddHealthProb: Number(l?.LLDDHealthProb),
+		llddHealthProb: Number(l.LLDDHealthProb),
 		niNumber: l?.NINumber as string | undefined,
 		postcodePrior: String(l?.PostcodePrior ?? ''),
 		postcode: String(l?.Postcode ?? ''),
@@ -116,17 +139,24 @@ function extractLearner(raw: unknown): Learner {
 function extractLearningDelivery(raw: unknown): LearningDelivery {
 	const ld = raw as Record<string, unknown>;
 
+	const requiredFields = ['AimType', 'AimSeqNumber', 'FundModel', 'CompStatus'] as const;
+	for (const field of requiredFields) {
+		if (ld?.[field] === undefined) {
+			throw new StructureError(`Missing required delivery field: ${field}`);
+		}
+	}
+
 	return {
 		learnAimRef: String(ld?.LearnAimRef ?? ''),
-		aimType: Number(ld?.AimType),
-		aimSeqNumber: Number(ld?.AimSeqNumber),
+		aimType: Number(ld.AimType),
+		aimSeqNumber: Number(ld.AimSeqNumber),
 		learnStartDate: String(ld?.LearnStartDate ?? ''),
 		learnPlanEndDate: String(ld?.LearnPlanEndDate ?? ''),
-		fundModel: Number(ld?.FundModel),
+		fundModel: Number(ld.FundModel),
 		progType: ld?.ProgType !== undefined ? Number(ld.ProgType) : undefined,
 		stdCode: ld?.StdCode !== undefined ? Number(ld.StdCode) : undefined,
 		delLocPostCode: String(ld?.DelLocPostCode ?? ''),
-		compStatus: Number(ld?.CompStatus),
+		compStatus: Number(ld.CompStatus),
 		learnActEndDate: ld?.LearnActEndDate as string | undefined,
 		outcome: ld?.Outcome !== undefined ? Number(ld.Outcome) : undefined,
 	};

@@ -116,3 +116,40 @@ export const multiplLearnersXml = `<?xml version="1.0" encoding="utf-8"?>
     </LearningDelivery>
   </Learner>
 </Message>`;
+
+export const missingRequiredFieldsXml = `<?xml version="1.0" encoding="utf-8"?>
+<Message xmlns="ESFA/ILR/2025-26">
+  <Header>
+    <CollectionDetails>
+      <Collection>ILR</Collection>
+      <Year>2526</Year>
+      <FilePreparationDate>2026-01-23</FilePreparationDate>
+    </CollectionDetails>
+    <Source>
+      <ProtectiveMarking>OFFICIAL-SENSITIVE-Personal</ProtectiveMarking>
+      <UKPRN>10000001</UKPRN>
+      <SerialNo>01</SerialNo>
+      <DateTime>2026-01-23T10:00:00</DateTime>
+    </Source>
+  </Header>
+  <LearningProvider>
+    <UKPRN>10000001</UKPRN>
+  </LearningProvider>
+  <Learner>
+    <LearnRefNumber>L001</LearnRefNumber>
+    <!-- Missing ULN, Ethnicity, LLDDHealthProb -->
+    <Sex>M</Sex>
+    <PostcodePrior>E1 6AN</PostcodePrior>
+    <Postcode>E1 6AN</Postcode>
+    <LearningDelivery>
+      <LearnAimRef>ZPROG001</LearnAimRef>
+      <AimType>1</AimType>
+      <AimSeqNumber>1</AimSeqNumber>
+      <LearnStartDate>2025-09-01</LearnStartDate>
+      <LearnPlanEndDate>2026-08-31</LearnPlanEndDate>
+      <FundModel>36</FundModel>
+      <DelLocPostCode>E1 6AN</DelLocPostCode>
+      <CompStatus>1</CompStatus>
+    </LearningDelivery>
+  </Learner>
+</Message>`;
