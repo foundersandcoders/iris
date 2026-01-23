@@ -1,9 +1,14 @@
+/** |===================|| CSV Validation Workflow ||==================|
+ *  | Validates CSV files before conversion to XML. Yields step events
+ *  | for UI consumption.
+ *  |
+ *  | NOTE: XML validation is separate (see validate-xml workflow)
+ *  |==================================================================|
+ */
+
 /** Validate Workflow (CSV)
  *
- * Validates CSV files before conversion to XML.
- * Yields step events for UI consumption.
  *
- * NOTE: XML validation is separate (see validate-xml workflow)
  */
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';

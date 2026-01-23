@@ -1,3 +1,8 @@
+/** |===================|| Human-Friendly Name ||==================|
+ *  | Explanation
+ *  |==============================================================|
+ */
+
 /** Convert Workflow
  *
  * Orchestrates CSV → XML conversion with validation.

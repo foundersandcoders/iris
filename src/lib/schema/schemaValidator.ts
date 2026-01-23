@@ -4,10 +4,10 @@
  *  |=============================================================|
  */
 
-import type { SchemaElement, SchemaConstraints, XsdBaseType } from './interpreter';
-import { isRequired } from './interpreter';
-import type { SchemaValidationIssue } from './validation';
-import { createIssue } from './validation';
+import type { SchemaElement, SchemaConstraints, XsdBaseType } from './schemaInterpreter';
+import { isRequired } from './schemaInterpreter';
+import type { SchemaValidationIssue } from '../types/schemaValidation';
+import { createIssue } from '../types/schemaValidation';
 
 /* <<--------------------------------------------------------------------->> */
 

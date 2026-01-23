@@ -1,3 +1,8 @@
+/** |===================|| Human-Friendly Name ||==================|
+ *  | Explanation
+ *  |==============================================================|
+ */
+
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import type { ILRMessage, Header, Learner, LearningDelivery } from './xmlGenerator';
 
