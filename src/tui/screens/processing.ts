@@ -129,9 +129,7 @@ export class ProcessingScreen implements Screen {
 				step.errorSamples = sampleErrors.map((e) => {
 					const rowDisplay = e.row !== undefined ? ` (row ${e.row})` : '';
 					const valueDisplay =
-						e.actualValue !== undefined
-							? ` [value: ${JSON.stringify(e.actualValue)}]`
-							: '';
+						e.actualValue !== undefined ? ` [value: ${JSON.stringify(e.actualValue)}]` : '';
 					return `${e.field || 'general'}: ${e.message}${rowDisplay}${valueDisplay}`;
 				});
 			} else {
@@ -149,33 +147,36 @@ export class ProcessingScreen implements Screen {
 			statusBar: this.result ? '[Any key] Continue' : 'Processing...',
 		});
 
-		const startY = region.contentTop + 1;
+		let currentY = region.contentTop + 1;
 
-		this.steps.forEach((step, index) => {
-			const y = startY + index * 2;
-			this.term.moveTo(4, y);
+		this.steps.forEach((step) => {
+			this.term.moveTo(4, currentY);
 
 			const icon = this.getStatusIcon(step.status);
 			const color = this.getStatusColor(step.status);
 
 			this.term.colorRgbHex(color)(`${icon}  ${step.name}`);
+			currentY++;
 
 			if (step.message) {
-				this.term.moveTo(8, y + 1);
+				this.term.moveTo(8, currentY);
 				this.term.colorRgbHex(theme.textMuted)(step.message);
+				currentY++;
 			}
 
-			// Show error samples if present
 			if (step.errorSamples && step.errorSamples.length > 0) {
-				step.errorSamples.forEach((sample, idx) => {
-					this.term.moveTo(8, y + 2 + idx);
+				step.errorSamples.forEach((sample) => {
+					this.term.moveTo(8, currentY);
 					this.term.colorRgbHex(theme.error)(`  • ${sample}`);
+					currentY++;
 				});
 			}
+
+			currentY++;
 		});
 
 		if (this.result) {
-			const summaryY = startY + this.steps.length * 2 + 2;
+			const summaryY = currentY + 1;
 			this.term.moveTo(4, summaryY);
 
 			if (this.result.success) {
@@ -192,7 +193,7 @@ export class ProcessingScreen implements Screen {
 		}
 
 		if (this.error) {
-			const errorY = startY + this.steps.length * 2 + 2;
+			const errorY = currentY + 1;
 			this.term.moveTo(4, errorY);
 			this.term.colorRgbHex(theme.error)(`Error: ${this.error.message}`);
 		}

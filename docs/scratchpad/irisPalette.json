@@ -1,0 +1,15 @@
+{
+	"dark": { "name": "chasm", "colour": "#220817" },
+	"background": {
+		"primary": { "name": "rosewash", "main": "#FFF1F7", "subtle": "#F3D8E6", "nav": "#D6A3BF" },
+		"alternate": { "name": "aether", "main": "#F2F6FA", "subtle": "#E8EFF6", "nav": "#CCDDE6" }
+	},
+	"foreground": {
+		"primary": { "name": "tyrian", "dark": "#3A0F28", "midi": "#6F2A52", "lite": "#A45A84" },
+		"alternate": { "name": "blueglass", "dark": "#1E3A44", "midi": "#3E7F96", "lite": "#5FA3BA" }
+	},
+	"line": {
+		"primary": { "name": "vein", "colour": "#7A2A57" },
+		"alternate": { "name": "scar", "colour": "#3E1026" }
+	}
+}
