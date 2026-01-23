@@ -2,7 +2,7 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; semantic validator; convert workflow; validate-csv | **dynamic schema system (XSD-driven)**; validate-xml |
+| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv | **dynamic schema system (XSD-driven)**; validate-xml |
 | CLI  | `iris` opens TUI                              | direct commands |
 | TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
 | GUI  | sveltekit configuration                       |         |
@@ -26,7 +26,7 @@ None
 - [x] 1a2a9. Implement convert workflow (parse → validate → generate → save)
 - [x] 1a2a10. Implement validate-csv workflow (load → parse → validate → report)
 - [x] 1a2a10b. Add XML parser library (fast-xml-parser or equivalent)
-- [ ] 1a2a10c. Create XML parser module (src/lib/xml-parser.ts)
+- [x] 1a2a10c. Create XML parser module (src/lib/xml-parser.ts)
 - [ ] 1a2a10d. Implement validate-xml workflow (load → parse → validate → report)
 - [ ] 1a2a10e. Add round-trip tests (CSV → XML → validate-xml → passes)
 - [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
