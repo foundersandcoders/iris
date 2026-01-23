@@ -18,14 +18,12 @@ export interface ParseError {
 export type ParseResult = ParseSuccess | ParseError;
 
 export function parseILR(xml: string): ParseResult {
-	// 1. Configure parser (preserve attributes, handle arrays correctly)
 	const parser = new XMLParser({
 		ignoreAttributes: false,
 		attributeNamePrefix: '@_',
 		isArray: (name) => ['Learner', 'LearningDelivery'].includes(name),
 	});
 
-	// 2. Parse XML string
 	const parsed = parser.parse(xml);
 	const message = parsed?.Message;
 
@@ -70,8 +68,24 @@ function extractHeader(raw: unknown): Header {
 }
 
 function extractLearner(raw: unknown): Learner {
-	// Map fields (LearnRefNumber → learnRefNumber, etc.)
-	// Extract nested LearningDelivery array
+	const l = raw as Record<string, unknown>;
+	const deliveries = (l?.LearningDelivery as unknown[]) ?? [];
+
+	return {
+		learnRefNumber: String(l?.LearnRefNumber ?? ''),
+		uln: Number(l?.ULN),
+		familyName: l?.FamilyName as string | undefined,
+		givenNames: l?.GivenNames as string | undefined,
+		dateOfBirth: l?.DateOfBirth as string | undefined,
+		ethnicity: Number(l?.Ethnicity),
+		sex: String(l?.Sex ?? ''),
+		llddHealthProb: Number(l?.LLDDHealthProb),
+		niNumber: l?.NINumber as string | undefined,
+		postcodePrior: String(l?.PostcodePrior ?? ''),
+		postcode: String(l?.Postcode ?? ''),
+		email: l?.Email as string | undefined,
+		learningDeliveries: deliveries.map(extractLearningDelivery),
+	};
 }
 
 function extractLearningDelivery(raw: unknown): LearningDelivery {
