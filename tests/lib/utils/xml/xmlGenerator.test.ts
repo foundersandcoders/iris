@@ -6,7 +6,7 @@ import {
 	type ILRMessage,
 	type Learner,
 	type LearningDelivery,
-} from '../../src/lib/utils/xml/xmlGenerator';
+} from '../../../../src/lib/utils/xml/xmlGenerator';
 
 describe('generateILR', () => {
 	const minimalMessage: ILRMessage = {

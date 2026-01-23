@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractConstraints } from '../../../../src/lib/schema/utils/constraints';
-import type { RawXsdSimpleType } from '../../../../src/lib/schema/parser';
+import type { RawXsdSimpleType } from '../../../../src/lib/schema/schemaParser';
 
 describe('extractConstraints', () => {
 	it('should return empty constraints when restriction undefined', () => {

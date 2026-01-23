@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { parseILR } from '../../src/lib/utils/xml/xmlParser';
-import { generateILR } from '../../src/lib/utils/xml/xmlGenerator';
-import type { ILRMessage } from '../../src/lib/utils/xml/xmlGenerator';
-import * as fixtures from '../fixtures/lib/xmlParser';
+import { parseILR } from '../../../../src/lib/utils/xml/xmlParser';
+import { generateILR } from '../../../../src/lib/utils/xml/xmlGenerator';
+import type { ILRMessage } from '../../../../src/lib/utils/xml/xmlGenerator';
+import * as fixtures from '../../../fixtures/lib/xmlParser';
 
 describe('parseILR', () => {
 	describe('valid XML', () => {

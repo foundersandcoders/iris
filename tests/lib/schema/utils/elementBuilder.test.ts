@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildElement, populateLookupMaps } from '../../../../src/lib/schema/utils/elementBuilder';
-import type { RawXsdElement } from '../../../../src/lib/schema/parser';
+import type { RawXsdElement } from '../../../../src/lib/schema/schemaParser';
 import type { NamedSimpleType, SchemaElement } from '../../../../src/lib/schema/schema-interpreter';
 
 describe('buildElement', () => {

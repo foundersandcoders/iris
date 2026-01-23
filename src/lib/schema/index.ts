@@ -46,4 +46,4 @@ export {
 	type RawXsdSimpleType,
 	type RawXsdComplexType,
 	type ParsedXsdRoot,
-} from './parser';
+} from './schemaParser';
