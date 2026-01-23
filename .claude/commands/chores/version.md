@@ -6,7 +6,7 @@ model: claude-haiku-4-5
 
 # Version Checker
 
-Check the following properties and update to the value show (coercing type if necessary)
+Check the following properties and update to the specified value (coercing type if necessary)
 
 - `README.md` - `# Iris v$ARGUMENTS`
 - `package.json` - `"version": "$ARGUMENTS"`

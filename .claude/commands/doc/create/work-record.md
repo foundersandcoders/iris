@@ -6,7 +6,7 @@ model: claude-haiku-4-5
 <task overview="Create a work record by analyzing today's git commits, code changes, and session context.">
 <template location=".claude/doc-templates/work-record.md" />
 <steps>
-1. Read the work record template from ~/.claude/doc-templates/work-record.md
+1. Read the work record template
 2. Establish period of work you need to cover
     - Check docs/work-records/ to see when last work record was created
     - Check date and time now

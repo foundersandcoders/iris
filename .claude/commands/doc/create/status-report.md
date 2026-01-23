@@ -19,7 +19,7 @@ To determine PROJECT-REPORT-NUMBER, check existing reports in the output directo
 4. **Identify blockers** from any TODO comments, failing tests, or documented issues
 5. **Read the previous status report** in `docs/dev-log/status-reports/` to understand what was last reported as completed, in progress, and upcoming
 </instructions>
-<output-format template-path="~/doc-templates/doc/create/status-report.md">
+<output-format template-path="~/.claude/doc-templates/doc/create/status-report.md">
 Report should exactly mirror template structure.
 </output-format>
 <guidelines>

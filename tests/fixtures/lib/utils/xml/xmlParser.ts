@@ -1,3 +1,5 @@
+import type { ILRMessage } from '../../../../../src/lib/utils/xml/xmlGenerator';
+
 export const validMinimalXml = `<?xml version="1.0" encoding="utf-8"?>
 <Message xmlns="ESFA/ILR/2025-26">
   <Header>
@@ -153,3 +155,49 @@ export const missingRequiredFieldsXml = `<?xml version="1.0" encoding="utf-8"?>
     </LearningDelivery>
   </Learner>
 </Message>`;
+
+export const roundTripMessage: ILRMessage = {
+	header: {
+		collectionDetails: {
+			collection: 'ILR',
+			year: '2526',
+			filePreparationDate: '2026-01-23',
+		},
+		source: {
+			protectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
+			ukprn: 10000001,
+			softwareSupplier: 'Iris',
+			softwarePackage: 'Iris',
+			release: '1.0.0',
+			serialNo: '01',
+			dateTime: '2026-01-23T10:00:00',
+		},
+	},
+	learningProvider: { ukprn: 10000001 },
+	learners: [
+		{
+			learnRefNumber: 'TEST001',
+			uln: 9876543210,
+			familyName: 'Warren',
+			givenNames: 'Jason',
+			dateOfBirth: '1990-05-15',
+			ethnicity: 31,
+			sex: 'M',
+			llddHealthProb: 2,
+			postcodePrior: 'E1 6AN',
+			postcode: 'E1 6AN',
+			learningDeliveries: [
+				{
+					learnAimRef: 'ZPROG001',
+					aimType: 1,
+					aimSeqNumber: 1,
+					learnStartDate: '2025-09-01',
+					learnPlanEndDate: '2026-08-31',
+					fundModel: 36,
+					delLocPostCode: 'E1 6AN',
+					compStatus: 1,
+				},
+			],
+		},
+	],
+};
