@@ -25,6 +25,18 @@ export function parseILR(xml: string): ParseResult {
 	});
 
 	try {
+		const validation = XMLValidator.validate(xml);
+		if (validation !== true) {
+			return {
+				success: false,
+				error: {
+					code: 'INVALID_XML',
+					message: validation.err?.msg ?? 'Invalid XML structure',
+					details: validation.err,
+				},
+			};
+		}
+
 		const parsed = parser.parse(xml);
 		const message = parsed?.Message;
 
