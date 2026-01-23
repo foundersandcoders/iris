@@ -5,7 +5,7 @@
  * Uses SchemaRegistry for dynamic validation rules.
  */
 
-import type { CSVRow } from './csv-parser';
+import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../schema/interpreter';
 import { validateValue } from '../../schema/validator';
 import type { SchemaValidationIssue } from '../../schema/validation';

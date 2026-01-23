@@ -1,4 +1,4 @@
-import type { CSVRow } from '../../../src/lib/utils/csv/csv-parser';
+import type { CSVRow } from '../../../src/lib/utils/csv/csvParser';
 
 export const validHeaders = [
 	'LearnRefNumber',

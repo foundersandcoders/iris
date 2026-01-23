@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseCSVContent } from '../../src/lib/utils/csv/csv-parser';
-import * as fixtures from '../fixtures/lib/csv-parser';
+import { parseCSVContent } from '../../src/lib/utils/csv/csvParser';
+import * as fixtures from '../fixtures/lib/csvParser';
 
 describe('parseCSVContent', () => {
 	it('parses simple CSV data', () => {

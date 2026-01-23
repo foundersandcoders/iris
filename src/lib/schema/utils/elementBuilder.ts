@@ -4,9 +4,9 @@
  *  |===========================================================|
  */
 
-import type { SchemaElement, NamedSimpleType, SchemaConstraints } from '../schema-interpreter';
+import type { SchemaElement, NamedSimpleType, SchemaConstraints } from '../interpreter';
 import type { RawXsdElement } from '../parser';
-import { EMPTY_CONSTRAINTS } from '../schema-interpreter';
+import { EMPTY_CONSTRAINTS } from '../interpreter';
 import { parseCardinality } from './cardinality';
 import { extractConstraints } from './constraints';
 import { resolveBaseType } from './typeResolver';

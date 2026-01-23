@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSchemaRegistry } from '../../../src/lib/schema/registry-builder';
+import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import * as fixtures from '../../fixtures/lib/xsdParser';
 
 describe('buildSchemaRegistry', () => {

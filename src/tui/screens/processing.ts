@@ -10,10 +10,10 @@ import type { Terminal } from 'terminal-kit';
 import { THEMES } from '../theme';
 import { Layout } from '../utils/layout';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { buildSchemaRegistry } from '../../lib/schema/registry-builder';
-import { convertWorkflow } from '../../lib/workflows/csv-convert';
+import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
+import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import type { WorkflowStepEvent, WorkflowResult, ConvertOutput } from '../../lib/types/workflow';
-import type { ValidationResult } from '../../lib/utils/csv/csv-validator';
+import type { ValidationResult } from '../../lib/utils/csv/csvValidator';
 
 const theme = THEMES.themeLight;
 

@@ -5,8 +5,8 @@
  *
  * NOTE: XML validation is separate (see validate-xml workflow)
  */
-import { parseCSV, type CSVData } from '../utils/csv/csv-parser';
-import { validateRows, type ValidationResult } from '../utils/csv/csv-validator';
+import { parseCSV, type CSVData } from '../utils/csv/csvParser';
+import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import type {
 	ValidateInput,
 	ValidateOutput,
