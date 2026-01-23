@@ -36,18 +36,6 @@ export function parseILR(xml: string): ParseResult {
 		};
 	}
 
-	// 3. Extract and transform to ILRMessage structure
-	extractHeader(message);
-
-	function extractLearner(raw: unknown): Learner {
-		// Map fields (LearnRefNumber → learnRefNumber, etc.)
-		// Extract nested LearningDelivery array
-	}
-
-	function extractLearningDelivery(raw: unknown): LearningDelivery {
-		// Map delivery fields
-	}
-
 	return {
 		success: true,
 		data: {
@@ -78,5 +66,29 @@ function extractHeader(raw: unknown): Header {
 			serialNo: String(s?.SerialNo ?? ''),
 			dateTime: String(s?.DateTime ?? ''),
 		},
+	};
+}
+
+function extractLearner(raw: unknown): Learner {
+	// Map fields (LearnRefNumber → learnRefNumber, etc.)
+	// Extract nested LearningDelivery array
+}
+
+function extractLearningDelivery(raw: unknown): LearningDelivery {
+	const ld = raw as Record<string, unknown>;
+
+	return {
+		learnAimRef: String(ld?.LearnAimRef ?? ''),
+		aimType: Number(ld?.AimType),
+		aimSeqNumber: Number(ld?.AimSeqNumber),
+		learnStartDate: String(ld?.LearnStartDate ?? ''),
+		learnPlanEndDate: String(ld?.LearnPlanEndDate ?? ''),
+		fundModel: Number(ld?.FundModel),
+		progType: ld?.ProgType !== undefined ? Number(ld.ProgType) : undefined,
+		stdCode: ld?.StdCode !== undefined ? Number(ld.StdCode) : undefined,
+		delLocPostCode: String(ld?.DelLocPostCode ?? ''),
+		compStatus: Number(ld?.CompStatus),
+		learnActEndDate: ld?.LearnActEndDate as string | undefined,
+		outcome: ld?.Outcome !== undefined ? Number(ld.Outcome) : undefined,
 	};
 }
