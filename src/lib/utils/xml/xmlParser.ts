@@ -24,6 +24,11 @@ class StructureError extends Error {
 	}
 }
 
+/**
+ * Convert an ILR XML string into a structured parse result containing header, learning provider and learners, or an explicit error.
+ *
+ * @returns On success, `data` contains the extracted `header`, `learningProvider.ukprn` and `learners`. On failure, `error` contains a `code` (one of `INVALID_XML`, `MISSING_ELEMENT`, `INVALID_STRUCTURE`), a human-readable `message`, and optional `details`.
+ */
 export function parseILR(xml: string): ParseResult {
 	const parser = new XMLParser({
 		ignoreAttributes: false,
@@ -85,6 +90,12 @@ export function parseILR(xml: string): ParseResult {
 	}
 }
 
+/**
+ * Build a typed Header object from a raw parsed XML Header node.
+ *
+ * @param raw - The raw Header node parsed from the ILR XML (untyped).
+ * @returns A Header with collection details and source metadata (UKPRN, protective marking, software info, serial number and timestamp).
+ */
 function extractHeader(raw: unknown): Header {
 	const h = raw as Record<string, unknown>;
 	const cd = h?.CollectionDetails as Record<string, unknown>;
@@ -108,6 +119,17 @@ function extractHeader(raw: unknown): Header {
 	};
 }
 
+/**
+ * Convert a raw learner XML node into a typed Learner object.
+ *
+ * Coerces and maps XML properties into the Learner shape, converting numeric fields to numbers
+ * and leaving optional textual fields as strings or undefined. Required learner fields
+ * 'ULN', 'Ethnicity' and 'LLDDHealthProb' must be present.
+ *
+ * @param raw - Raw parsed XML node representing a learner
+ * @returns A Learner object with typed properties (numeric fields converted to numbers; optional text fields as strings or `undefined`)
+ * @throws {StructureError} If any required learner field ('ULN', 'Ethnicity', 'LLDDHealthProb') is missing
+ */
 function extractLearner(raw: unknown): Learner {
 	const l = raw as Record<string, unknown>;
 	const deliveries = (l?.LearningDelivery as unknown[]) ?? [];
@@ -136,6 +158,13 @@ function extractLearner(raw: unknown): Learner {
 	};
 }
 
+/**
+ * Constructs a LearningDelivery object from a raw parsed XML node.
+ *
+ * @param raw - The raw parsed XML node representing a single learning delivery
+ * @returns A LearningDelivery populated from `raw` with numeric fields converted to numbers; optional numeric fields are `undefined` when absent and string fields default to empty string when missing
+ * @throws StructureError if any required delivery field (`AimType`, `AimSeqNumber`, `FundModel`, `CompStatus`) is missing
+ */
 function extractLearningDelivery(raw: unknown): LearningDelivery {
 	const ld = raw as Record<string, unknown>;
 
