@@ -39,7 +39,7 @@ bun test
 bun tauri dev
 ```
 
-## Architecture
+## Iris' Architecture
 
 Built on a shared TypeScript core with multiple interfaces:
 
