@@ -37,10 +37,7 @@ export function parseILR(xml: string): ParseResult {
 	}
 
 	// 3. Extract and transform to ILRMessage structure
-	function extractHeader(raw: unknown): Header | null {
-		// Map: CollectionDetails, Source
-		// Handle nested structure from XML
-	}
+	extractHeader(message);
 
 	function extractLearner(raw: unknown): Learner {
 		// Map fields (LearnRefNumber → learnRefNumber, etc.)
@@ -57,6 +54,29 @@ export function parseILR(xml: string): ParseResult {
 			header: extractHeader(message.Header),
 			learningProvider: { ukprn: message.LearningProvider?.UKPRN },
 			learners: message.Learner?.map(extractLearner) ?? [],
+		},
+	};
+}
+
+function extractHeader(raw: unknown): Header {
+	const h = raw as Record<string, unknown>;
+	const cd = h?.CollectionDetails as Record<string, unknown>;
+	const s = h?.Source as Record<string, unknown>;
+
+	return {
+		collectionDetails: {
+			collection: cd?.Collection as 'ILR',
+			year: String(cd?.Year ?? ''),
+			filePreparationDate: String(cd?.FilePreparationDate ?? ''),
+		},
+		source: {
+			protectiveMarking: s?.ProtectiveMarking as 'OFFICIAL-SENSITIVE-Personal',
+			ukprn: Number(s?.UKPRN),
+			softwareSupplier: s?.SoftwareSupplier as string | undefined,
+			softwarePackage: s?.SoftwarePackage as string | undefined,
+			release: s?.Release as string | undefined,
+			serialNo: String(s?.SerialNo ?? ''),
+			dateTime: String(s?.DateTime ?? ''),
 		},
 	};
 }
