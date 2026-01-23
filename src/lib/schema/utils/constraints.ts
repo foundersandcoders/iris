@@ -3,9 +3,9 @@
  *  |=================================================================|
  */
 
-import type { SchemaConstraints } from '../interpreter';
-import type { RawXsdSimpleType } from '../xsdParser';
 import { EMPTY_CONSTRAINTS } from '../interpreter';
+import type { SchemaConstraints } from '../interpreter';
+import type { RawXsdSimpleType } from '../schemaParser';
 
 /**
  * Extract constraints from xs:restriction element

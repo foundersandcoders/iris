@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { validateWorkflow } from '../../../src/lib/workflows/validate-csv';
+import { validateWorkflow } from '../../../src/lib/workflows/csvValidate';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/schema/interpreter';
 import type {

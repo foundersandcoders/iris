@@ -1,12 +1,12 @@
-# Iris `v1.0.1`
+# Iris `v1.1.0`
 
 **ILR toolkit for apprenticeship data submission**
 
 Iris converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and cross-submission consistency checking.
 
-## What It Does
+## What Iris Does
 
-- **Beautiful TUI**: Full-screen interactive terminal interface (primary UX)
+- Full-screen interactive terminal interface (primary UX)
 - Parses CSV exports using header-based matching (tolerates column reordering)
 - Generates ILR-compliant XML for ESFA submission
 - Interactive error exploration and validation workflows
@@ -39,7 +39,7 @@ bun test
 bun tauri dev
 ```
 
-## Architecture
+## Iris' Architecture
 
 Built on a shared TypeScript core with multiple interfaces:
 

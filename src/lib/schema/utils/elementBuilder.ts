@@ -5,7 +5,7 @@
  */
 
 import type { SchemaElement, NamedSimpleType, SchemaConstraints } from '../interpreter';
-import type { RawXsdElement } from '../xsdParser';
+import type { RawXsdElement } from '../schemaParser';
 import { EMPTY_CONSTRAINTS } from '../interpreter';
 import { parseCardinality } from './cardinality';
 import { extractConstraints } from './constraints';

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { convertWorkflow } from '../../../src/lib/workflows/convert';
+import { convertWorkflow } from '../../../src/lib/workflows/csvConvert';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/schema/interpreter';
 import type { WorkflowResult, WorkflowStepEvent } from '../../../src/lib/types/workflow';

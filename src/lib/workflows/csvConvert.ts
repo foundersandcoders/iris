@@ -3,9 +3,14 @@
  * Orchestrates CSV → XML conversion with validation.
  * Yields step events for UI consumption.
  */
-import { parseCSV, type CSVData } from '../parser';
-import { validateRows, type ValidationResult } from '../validator';
-import { generateILR, type ILRMessage, type Learner, type LearningDelivery } from '../generator';
+import { parseCSV, type CSVData } from '../utils/csv/csvParser';
+import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
+import {
+	generateILR,
+	type ILRMessage,
+	type Learner,
+	type LearningDelivery,
+} from '../utils/xml/xmlGenerator';
 import type {
 	ConvertInput,
 	ConvertOutput,

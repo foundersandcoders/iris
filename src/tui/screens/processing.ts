@@ -11,9 +11,9 @@ import { THEMES } from '../theme';
 import { Layout } from '../utils/layout';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
-import { convertWorkflow } from '../../lib/workflows/convert';
+import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import type { WorkflowStepEvent, WorkflowResult, ConvertOutput } from '../../lib/types/workflow';
-import type { ValidationResult } from '../../lib/validator';
+import type { ValidationResult } from '../../lib/utils/csv/csvValidator';
 
 const theme = THEMES.themeLight;
 

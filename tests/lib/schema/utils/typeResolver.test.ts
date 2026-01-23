@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveBaseType, buildNamedTypesMap } from '../../../../src/lib/schema/utils/typeResolver';
-import type { RawXsdSimpleType } from '../../../../src/lib/schema/xsdParser';
-import type { NamedSimpleType } from '../../../../src/lib/schema/interpreter';
+import type { RawXsdSimpleType } from '../../../../src/lib/schema/schemaParser';
+import type { NamedSimpleType } from '../../../../src/lib/schema/schema-interpreter';
 
 describe('resolveBaseType', () => {
 	it('should default to string when typeRef undefined', () => {

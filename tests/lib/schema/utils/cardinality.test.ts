@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseCardinality } from '../../../../src/lib/schema/utils/cardinality';
-import type { RawXsdElement } from '../../../../src/lib/schema/xsdParser';
+import type { RawXsdElement } from '../../../../src/lib/schema/schemaParser';
 
 describe('parseCardinality', () => {
 	it('should parse minOccurs and maxOccurs from element', () => {
