@@ -3,7 +3,7 @@
  *  | TUI, CLI commands, and Desktop GUI.
  *  |======================================================================|
  */
-import type { CSVData, CSVRow } from '../parser';
+import type { CSVData, CSVRow } from '../csv-parser';
 import type { ValidationResult } from '../validator';
 import type { SchemaRegistry } from '../schema/interpreter';
 
