@@ -24,24 +24,38 @@ export function parseILR(xml: string): ParseResult {
 		isArray: (name) => ['Learner', 'LearningDelivery'].includes(name),
 	});
 
-	const parsed = parser.parse(xml);
-	const message = parsed?.Message;
+	try {
+		const parsed = parser.parse(xml);
+		const message = parsed?.Message;
 
-	if (!message) {
+		if (!message) {
+			return {
+				success: false,
+				error: { code: 'MISSING_ELEMENT', message: 'Missing root Message element' },
+			};
+		}
+
+		// Move the extract functions outside parseILR or keep them here - your call
+		// ... extractHeader, extractLearner, extractLearningDelivery ...
+
+		return {
+			success: true,
+			data: {
+				header: extractHeader(message.Header),
+				learningProvider: { ukprn: Number(message.LearningProvider?.UKPRN) },
+				learners: (message.Learner ?? []).map(extractLearner),
+			},
+		};
+	} catch (err) {
 		return {
 			success: false,
-			error: { code: 'MISSING_ELEMENT', message: 'Missing root Message element' },
+			error: {
+				code: 'INVALID_XML',
+				message: 'Failed to parse XML',
+				details: err instanceof Error ? err.message : err,
+			},
 		};
 	}
-
-	return {
-		success: true,
-		data: {
-			header: extractHeader(message.Header),
-			learningProvider: { ukprn: message.LearningProvider?.UKPRN },
-			learners: message.Learner?.map(extractLearner) ?? [],
-		},
-	};
 }
 
 function extractHeader(raw: unknown): Header {
