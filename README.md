@@ -6,7 +6,7 @@ Iris converts learner data from CSV exports into ILR-compliant XML for ESFA subm
 
 ## What It Does
 
-- **Beautiful TUI**: Full-screen interactive terminal interface (primary UX)
+- Full-screen interactive terminal interface (primary UX)
 - Parses CSV exports using header-based matching (tolerates column reordering)
 - Generates ILR-compliant XML for ESFA submission
 - Interactive error exploration and validation workflows
