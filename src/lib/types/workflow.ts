@@ -3,8 +3,8 @@
  *  | TUI, CLI commands, and Desktop GUI.
  *  |======================================================================|
  */
-import type { CSVData, CSVRow } from '../csv-parser';
-import type { ValidationResult } from '../validator';
+import type { CSVData, CSVRow } from '../utils/csv/csv-parser';
+import type { ValidationResult } from '../utils/csv/csv-validator';
 import type { SchemaRegistry } from '../schema/interpreter';
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateValue } from '../../../src/lib/schema/schemaValidator';
+import { validateValue } from '../../../src/lib/schema/validator';
 import type { SchemaElement } from '../../../src/lib/schema/interpreter';
 
 // Helper to create test elements

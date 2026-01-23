@@ -4,7 +4,7 @@
  *  |===================================================================|
  */
 
-import { parseXsd, extractNamespace, extractElements, extractNamedSimpleTypes } from './xsdParser';
+import { parseXsd, extractNamespace, extractElements, extractNamedSimpleTypes } from './parser';
 import type { SchemaRegistry, SchemaRegistryOptions, SchemaElement } from './interpreter';
 import { buildNamedTypesMap } from './utils/typeResolver';
 import { buildElement, populateLookupMaps } from './utils/elementBuilder';

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { validateWorkflow } from '../../../src/lib/workflows/validate-csv';
-import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
+import { validateWorkflow } from '../../../src/lib/workflows/csv-validate';
+import { buildSchemaRegistry } from '../../../src/lib/schema/registry-builder';
 import type { SchemaRegistry } from '../../../src/lib/schema/interpreter';
 import type {
 	WorkflowResult,

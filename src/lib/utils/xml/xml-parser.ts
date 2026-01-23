@@ -1,5 +1,5 @@
-import { XMLParser } from 'fast-xml-parser';
-import type { ILRMessage, Header, Learner, LearningDelivery } from './generator';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import type { ILRMessage, Header, Learner, LearningDelivery } from './xml-generator';
 
 export interface ParseSuccess {
 	success: true;
@@ -28,15 +28,14 @@ export function parseILR(xml: string): ParseResult {
 		const parsed = parser.parse(xml);
 		const message = parsed?.Message;
 
-		if (!message) {
+		if (!message)
 			return {
 				success: false,
-				error: { code: 'MISSING_ELEMENT', message: 'Missing root Message element' },
+				error: {
+					code: 'MISSING_ELEMENT',
+					message: 'Missing root Message element',
+				},
 			};
-		}
-
-		// Move the extract functions outside parseILR or keep them here - your call
-		// ... extractHeader, extractLearner, extractLearningDelivery ...
 
 		return {
 			success: true,

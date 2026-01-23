@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
-import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
+import { buildSchemaRegistry } from '../../../src/lib/schema/registry-builder';
 import { join } from 'path';
 
 describe('schemafile25.xsd (ILR 2025-26)', () => {

@@ -5,7 +5,7 @@ import {
 	extractElements,
 	extractNamedSimpleTypes,
 	extractNamedComplexTypes,
-} from '../../../src/lib/schema/xsdParser';
+} from '../../../src/lib/schema/parser';
 import * as fixtures from '../../fixtures/lib/xsdParser';
 
 describe('parseXsd', () => {
