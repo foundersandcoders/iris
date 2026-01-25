@@ -6,9 +6,9 @@
  *  |==================================================================|
  */
 
+import { createStep, stepEvent, failedResult } from './utils';
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
-import { createStep, stepEvent, failedResult } from './utils';
 import type {
 	ValidateInput,
 	ValidateOutput,

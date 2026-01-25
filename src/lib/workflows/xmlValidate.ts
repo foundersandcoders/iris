@@ -35,5 +35,65 @@ export async function* xmlValidateWorkflow(
 	const startTime = Date.now();
 	const steps: WorkflowStep[] = [];
 
-	// LA LA LA DO SOME BORING SHIT TO AN XML FILE LA LA LA
+	// --- Step 1: Load File ---
+	let xmlContent: string;
+	const loadStep = createStep(STEPS.load);
+
+	steps.push(loadStep);
+	yield stepEvent('step:start', loadStep);
+
+	try {
+		if (!input.filePath.toLowerCase().endsWith('.xml')) {
+			throw new Error(
+				'Only XML files are supported. For CSV validation, use csvValidate workflow.'
+			);
+		}
+
+		xmlContent = readFileSync(input.filePath, 'utf-8');
+		const size = Buffer.byteLength(xmlContent, 'utf-8');
+
+		loadStep.status = 'complete';
+		loadStep.progress = 100;
+		loadStep.message = `Loaded ${(size / 1024).toFixed(1)} KB`;
+
+		yield stepEvent('step:complete', loadStep);
+	} catch (error) {
+		loadStep.status = 'failed';
+		loadStep.error = error instanceof Error ? error : new Error(String(error));
+
+		yield stepEvent('step:error', loadStep);
+
+		return failedResult<ValidateOutput>(steps, loadStep.error, startTime);
+	}
+
+	// --- Step 2: Parse XML ---
+	let message: ILRMessage;
+	const parseStep = createStep(STEPS.parse);
+
+	steps.push(parseStep);
+	yield stepEvent('step:start', parseStep);
+
+	try {
+		const parseResult = parseILR(xmlContent);
+
+		if (!parseResult.success) throw new Error(parseResult.error.message);
+
+		message = parseResult.data;
+
+		parseStep.status = 'complete';
+		parseStep.progress = 100;
+		parseStep.message = `Parsed ${message.learners.length} learners`;
+
+		yield stepEvent('step:complete', parseStep);
+	} catch (error) {
+		parseStep.status = 'failed';
+		parseStep.error = error instanceof Error ? error : new Error(String(error));
+
+		yield stepEvent('step:error', parseStep);
+
+		return failedResult<ValidateOutput>(steps, parseStep.error, startTime);
+	}
+
+	// Temporary - remove when complete
+	return failedResult<ValidateOutput>(steps, new Error('Not implemented'), startTime);
 }
