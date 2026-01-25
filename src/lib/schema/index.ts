@@ -1,3 +1,8 @@
+/** |===================|| Human-Friendly Name ||==================|
+ *  | Explanation
+ *  |==============================================================|
+ */
+
 /** ====== Schema Module ======
  * XSD-driven schema system for dynamic ILR validation and generation.
  * Exports types, utilities, and (eventually) parser/registry/validator.
@@ -13,7 +18,7 @@ export type {
 	SchemaRegistry,
 	SchemaRegistryOptions,
 	ElementLookupResult,
-} from './interpreter';
+} from './schemaInterpreter';
 
 // === Type Utilities ===
 export {
@@ -22,7 +27,7 @@ export {
 	isOptional,
 	DEFAULT_CARDINALITY,
 	EMPTY_CONSTRAINTS,
-} from './interpreter';
+} from './schemaInterpreter';
 
 // === Validation Types ===
 export type {
@@ -30,10 +35,10 @@ export type {
 	ConstraintViolationType,
 	SchemaValidationIssue,
 	SchemaValidationResult,
-} from './validation';
+} from '../types/schemaValidation';
 
 // === Validation Utilities ===
-export { createIssue, createEmptyResult, computeResultStats } from './validation';
+export { createIssue, createEmptyResult, computeResultStats } from '../types/schemaValidation';
 
 // === XSD Parser ===
 export {

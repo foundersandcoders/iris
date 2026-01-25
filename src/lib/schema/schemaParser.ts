@@ -1,9 +1,9 @@
-/** |===================|| XSD Parser Types ||==================|
+/** |===================|| Schema Parser Types ||==================|
  *  | Parses XSD schema files into raw element structures. This
  *  | module handles the low-level parsing of XSD XML files
  *  | using fast-xml-parser. The raw structures are then
  *  | transformed into SchemaRegistry by the registry builder.
- *  |===========================================================|
+ *  |==============================================================|
  */
 
 import { XMLParser } from 'fast-xml-parser';

@@ -4,7 +4,7 @@
  *  |===========================================================|
  */
 
-import type { XsdBaseType, NamedSimpleType } from '../interpreter';
+import type { XsdBaseType, NamedSimpleType } from '../schemaInterpreter';
 import type { RawXsdSimpleType } from '../schemaParser';
 import { extractConstraints } from './constraints';
 

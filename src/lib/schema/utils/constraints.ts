@@ -3,8 +3,8 @@
  *  |=================================================================|
  */
 
-import { EMPTY_CONSTRAINTS } from '../interpreter';
-import type { SchemaConstraints } from '../interpreter';
+import { EMPTY_CONSTRAINTS } from '../schemaInterpreter';
+import type { SchemaConstraints } from '../schemaInterpreter';
 import type { RawXsdSimpleType } from '../schemaParser';
 
 /**

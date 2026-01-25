@@ -1,10 +1,12 @@
-/** Validate Workflow (CSV)
- *
- * Validates CSV files before conversion to XML.
- * Yields step events for UI consumption.
- *
- * NOTE: XML validation is separate (see validate-xml workflow)
+/** |===================|| CSV Validation Workflow ||==================|
+ *  | Validates CSV files before conversion to XML. Yields step events
+ *  | for UI consumption.
+ *  |
+ *  | NOTE: XML validation is separate (see validate-xml workflow)
+ *  |==================================================================|
  */
+
+import { createStep, stepEvent, failedResult } from './utils';
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import type {
@@ -135,35 +137,6 @@ export async function* validateWorkflow(
 	return {
 		success: true,
 		data: { validation, sourceData: csvData },
-		steps,
-		duration: Date.now() - startTime,
-	};
-}
-
-function createStep(def: { id: string; name: string }): WorkflowStep {
-	return {
-		id: def.id,
-		name: def.name,
-		status: 'pending',
-		progress: 0,
-	};
-}
-
-function stepEvent<T>(
-	type: WorkflowStepEvent['type'],
-	step: WorkflowStep<T>
-): WorkflowStepEvent<T> {
-	return { type, step, timestamp: Date.now() };
-}
-
-function failedResult(
-	steps: WorkflowStep[],
-	error: Error,
-	startTime: number
-): WorkflowResult<ValidateOutput> {
-	return {
-		success: false,
-		error,
 		steps,
 		duration: Date.now() - startTime,
 	};
