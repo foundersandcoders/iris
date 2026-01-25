@@ -94,6 +94,45 @@ export async function* xmlValidateWorkflow(
 		return failedResult<ValidateOutput>(steps, parseStep.error, startTime);
 	}
 
-	// Temporary - remove when complete
-	return failedResult<ValidateOutput>(steps, new Error('Not implemented'), startTime);
+	// --- Step 3: Validate Against Schema ---
+	const validateStep = createStep(STEPS.validate);
+
+	steps.push(validateStep);
+	yield stepEvent('step:start', validateStep);
+
+	try {
+		const issues = validateMessage(message, input.registry);
+		const errorCount = issues.filter((i) => i.severity === 'error').length;
+		const warningCount = issues.filter((i) => i.severity === 'warning').length;
+
+		const validation = {
+			valid: errorCount === 0,
+			issues,
+			errorCount,
+			warningCount,
+		};
+
+		validateStep.status = 'complete';
+		validateStep.progress = 100;
+		validateStep.data = validation;
+		validateStep.message = validation.valid
+			? 'No errors found'
+			: `Found ${errorCount} errors, ${warningCount} warnings`;
+
+		yield stepEvent('step:complete', validateStep);
+
+		return {
+			success: true,
+			data: { validation, sourceData: xmlContent },
+			steps,
+			duration: Date.now() - startTime,
+		};
+	} catch (error) {
+		validateStep.status = 'failed';
+		validateStep.error = error instanceof Error ? error : new Error(String(error));
+
+		yield stepEvent('step:error', validateStep);
+
+		return failedResult<ValidateOutput>(steps, validateStep.error, startTime);
+	}
 }
