@@ -136,3 +136,28 @@ export async function* xmlValidateWorkflow(
 		return failedResult<ValidateOutput>(steps, validateStep.error, startTime);
 	}
 }
+
+/** Validate an ILRMessage against schema constraints */
+function validateMessage(message: ILRMessage, registry: SchemaRegistry): SchemaValidationIssue[] {
+	const issues: SchemaValidationIssue[] = [];
+
+	// We'll add field validation here
+
+	return issues;
+}
+
+/** Validate a single field against its schema element */
+function validateField(
+	path: string,
+	value: unknown,
+	registry: SchemaRegistry,
+	rowIndex?: number
+): SchemaValidationIssue[] {
+	const element = registry.elementsByPath.get(path);
+	if (!element) {
+		// Element not in schema - skip validation
+		return [];
+	}
+
+	return validateValue(value, element, { rowIndex });
+}
