@@ -2,7 +2,7 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv | **dynamic schema system (XSD-driven)**; validate-xml |
+| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv; validate-xml | **dynamic schema system (XSD-driven)** |
 | CLI  | `iris` opens TUI                              | direct commands |
 | TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
 | GUI  | sveltekit configuration                       |         |
@@ -27,7 +27,7 @@ None
 - [x] 1a2a10. Implement validate-csv workflow (load → parse → validate → report)
 - [x] 1a2a10b. Add XML parser library (fast-xml-parser or equivalent)
 - [x] 1a2a10c. Create XML parser module (src/lib/xml-parser.ts)
-- [ ] 1a2a10d. Implement validate-xml workflow (load → parse → validate → report)
+- [x] 1a2a10d. Implement validate-xml workflow (load → parse → validate → report)
 - [ ] 1a2a10e. Add round-trip tests (CSV → XML → validate-xml → passes)
 - [ ] 1a2a11. Implement cross-check workflow (load history → compare → report)
 - [x] 1a2a12. Add unit tests for workflows (independent of UI)
@@ -127,7 +127,7 @@ None currently
 - [ ] Workflow abstraction layer (interface-agnostic generators)
     - [x] convert (CSV → XML)
     - [x] validate-csv (pre-conversion validation)
-    - [ ] validate-xml (post-generation verification) **← Required for M1 completion**
+    - [x] validate-xml (post-generation verification)
     - [ ] check (cross-submission consistency)
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
