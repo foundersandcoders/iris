@@ -141,7 +141,154 @@ export async function* xmlValidateWorkflow(
 function validateMessage(message: ILRMessage, registry: SchemaRegistry): SchemaValidationIssue[] {
 	const issues: SchemaValidationIssue[] = [];
 
-	// We'll add field validation here
+	// Validate Header - CollectionDetails
+	issues.push(
+		...validateField(
+			'Message.Header.CollectionDetails.Collection',
+			message.header.collectionDetails.collection,
+			registry
+		)
+	);
+	issues.push(
+		...validateField(
+			'Message.Header.CollectionDetails.Year',
+			message.header.collectionDetails.year,
+			registry
+		)
+	);
+	issues.push(
+		...validateField(
+			'Message.Header.CollectionDetails.FilePreparationDate',
+			message.header.collectionDetails.filePreparationDate,
+			registry
+		)
+	);
+
+	// Validate Header - Source
+	issues.push(
+		...validateField(
+			'Message.Header.Source.ProtectiveMarking',
+			message.header.source.protectiveMarking,
+			registry
+		)
+	);
+	issues.push(
+		...validateField('Message.Header.Source.UKPRN', message.header.source.ukprn, registry)
+	);
+	issues.push(
+		...validateField(
+			'Message.Header.Source.SoftwareSupplier',
+			message.header.source.softwareSupplier,
+			registry
+		)
+	);
+	issues.push(
+		...validateField(
+			'Message.Header.Source.SoftwarePackage',
+			message.header.source.softwarePackage,
+			registry
+		)
+	);
+	issues.push(
+		...validateField('Message.Header.Source.Release', message.header.source.release, registry)
+	);
+	issues.push(
+		...validateField('Message.Header.Source.SerialNo', message.header.source.serialNo, registry)
+	);
+	issues.push(
+		...validateField('Message.Header.Source.DateTime', message.header.source.dateTime, registry)
+	);
+
+	// Validate LearningProvider
+	issues.push(
+		...validateField('Message.LearningProvider.UKPRN', message.learningProvider.ukprn, registry)
+	);
+
+	// Validate each Learner
+	message.learners.forEach((learner, learnerIndex) => {
+		const prefix = 'Message.Learner';
+
+		issues.push(
+			...validateField(`${prefix}.LearnRefNumber`, learner.learnRefNumber, registry, learnerIndex)
+		);
+		issues.push(...validateField(`${prefix}.ULN`, learner.uln, registry, learnerIndex));
+		issues.push(
+			...validateField(`${prefix}.FamilyName`, learner.familyName, registry, learnerIndex)
+		);
+		issues.push(
+			...validateField(`${prefix}.GivenNames`, learner.givenNames, registry, learnerIndex)
+		);
+		issues.push(
+			...validateField(`${prefix}.DateOfBirth`, learner.dateOfBirth, registry, learnerIndex)
+		);
+		issues.push(...validateField(`${prefix}.Ethnicity`, learner.ethnicity, registry, learnerIndex));
+		issues.push(...validateField(`${prefix}.Sex`, learner.sex, registry, learnerIndex));
+		issues.push(
+			...validateField(`${prefix}.LLDDHealthProb`, learner.llddHealthProb, registry, learnerIndex)
+		);
+		issues.push(...validateField(`${prefix}.NINumber`, learner.niNumber, registry, learnerIndex));
+		issues.push(
+			...validateField(`${prefix}.PostcodePrior`, learner.postcodePrior, registry, learnerIndex)
+		);
+		issues.push(...validateField(`${prefix}.Postcode`, learner.postcode, registry, learnerIndex));
+		issues.push(...validateField(`${prefix}.Email`, learner.email, registry, learnerIndex));
+
+		// Validate each LearningDelivery
+		learner.learningDeliveries.forEach((delivery) => {
+			const dPrefix = `${prefix}.LearningDelivery`;
+
+			issues.push(
+				...validateField(`${dPrefix}.LearnAimRef`, delivery.learnAimRef, registry, learnerIndex)
+			);
+			issues.push(...validateField(`${dPrefix}.AimType`, delivery.aimType, registry, learnerIndex));
+			issues.push(
+				...validateField(`${dPrefix}.AimSeqNumber`, delivery.aimSeqNumber, registry, learnerIndex)
+			);
+			issues.push(
+				...validateField(
+					`${dPrefix}.LearnStartDate`,
+					delivery.learnStartDate,
+					registry,
+					learnerIndex
+				)
+			);
+			issues.push(
+				...validateField(
+					`${dPrefix}.LearnPlanEndDate`,
+					delivery.learnPlanEndDate,
+					registry,
+					learnerIndex
+				)
+			);
+			issues.push(
+				...validateField(`${dPrefix}.FundModel`, delivery.fundModel, registry, learnerIndex)
+			);
+			issues.push(
+				...validateField(`${dPrefix}.ProgType`, delivery.progType, registry, learnerIndex)
+			);
+			issues.push(...validateField(`${dPrefix}.StdCode`, delivery.stdCode, registry, learnerIndex));
+			issues.push(
+				...validateField(
+					`${dPrefix}.DelLocPostCode`,
+					delivery.delLocPostCode,
+					registry,
+					learnerIndex
+				)
+			);
+			issues.push(
+				...validateField(`${dPrefix}.CompStatus`, delivery.compStatus, registry, learnerIndex)
+			);
+			issues.push(
+				...validateField(
+					`${dPrefix}.LearnActEndDate`,
+					delivery.learnActEndDate,
+					registry,
+					learnerIndex
+				)
+			);
+			issues.push(...validateField(`${dPrefix}.Outcome`, delivery.outcome, registry, learnerIndex));
+		});
+	});
 
 	return issues;
 }
