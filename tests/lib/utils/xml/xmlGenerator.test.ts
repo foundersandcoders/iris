@@ -1,193 +1,121 @@
-// TODO: move declarations to fixtures
+/** Test Schema-Driven XML Generator
+ *
+ * Tests the new generateFromSchema function that uses SchemaRegistry
+ * to dynamically generate XML instead of hardcoded interfaces.
+ */
 
 import { describe, it, expect } from 'vitest';
-import {
-	generateILR,
-	type ILRMessage,
-	type Learner,
-	type LearningDelivery,
-} from '../../../../src/lib/utils/xml/xmlGenerator.legacy';
-import {
-	minimalMessage,
-	minimalLearner,
-	minimalDelivery,
-} from '../../../fixtures/lib/utils/xml/xmlGenerator';
+import { generateFromSchema } from '../../../../src/lib/utils/xml/xmlGenerator';
+import { buildSchemaRegistry } from '../../../../src/lib/schema/registryBuilder';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import * as fixtures from '../../../fixtures/lib/utils/xml/xmlGenerator';
 
-describe('generateILR', () => {
-	it('should generate valid XML declaration and root element', () => {
-		const xml = generateILR(minimalMessage);
+// Load the actual ILR XSD schema
+const xsdPath = join(__dirname, '../../../fixtures/schemafile25.xsd');
+const xsdContent = readFileSync(xsdPath, 'utf-8');
+const registry = buildSchemaRegistry(xsdContent);
 
-		expect(xml).toContain('<?xml version="1.0" encoding="utf-8"?>');
-		expect(xml).toContain('<Message xmlns="ESFA/ILR/2025-26">');
-		expect(xml).toContain('</Message>');
+describe('generateFromSchema', () => {
+	it('should generate valid XML declaration and root element with namespace', () => {
+		const result = generateFromSchema(fixtures.minimalSchemaMessage, registry);
+
+		expect(result.xml).toContain('<?xml version="1.0" encoding="utf-8"?>');
+		expect(result.xml).toContain('<Message xmlns="ESFA/ILR/2025-26">');
+		expect(result.xml).toContain('</Message>');
 	});
 
-	it('should generate header with collection details', () => {
-		const xml = generateILR(minimalMessage);
+	it('should generate elements in schema-defined order', () => {
+		const result = generateFromSchema(fixtures.messageWithWrongOrder, registry);
 
-		expect(xml).toContain('<Collection>ILR</Collection>');
-		expect(xml).toContain('<Year>2526</Year>');
-		expect(xml).toContain('<FilePreparationDate>2026-01-13</FilePreparationDate>');
+		// Header should come before LearningProvider in output
+		const headerIndex = result.xml.indexOf('<Header>');
+		const providerIndex = result.xml.indexOf('<LearningProvider>');
+		expect(headerIndex).toBeLessThan(providerIndex);
+
+		// Within Header, CollectionDetails should come before Source
+		const collectionIndex = result.xml.indexOf('<CollectionDetails>');
+		const sourceIndex = result.xml.indexOf('<Source>');
+		expect(collectionIndex).toBeLessThan(sourceIndex);
 	});
 
-	it('should generate header with source details', () => {
-		const xml = generateILR(minimalMessage);
+	it('should handle repeatable elements (arrays)', () => {
+		const result = generateFromSchema(fixtures.messageWithLearners, registry);
 
-		expect(xml).toContain('<ProtectiveMarking>OFFICIAL-SENSITIVE-Personal</ProtectiveMarking>');
-		expect(xml).toContain('<UKPRN>10000001</UKPRN>');
-		expect(xml).toContain('<SerialNo>01</SerialNo>');
+		expect(result.xml).toContain('<LearnRefNumber>L001</LearnRefNumber>');
+		expect(result.xml).toContain('<LearnRefNumber>L002</LearnRefNumber>');
+		expect((result.xml.match(/<Learner>/g) || []).length).toBe(2);
 	});
 
-	it('should include optional source fields when provided', () => {
-		const message: ILRMessage = {
-			...minimalMessage,
-			header: {
-				...minimalMessage.header,
-				source: {
-					...minimalMessage.header.source,
-					softwareSupplier: 'Founders and Coders',
-					softwarePackage: 'Iris',
-					release: '1.0.0',
-				},
-			},
-		};
+	it('should omit optional elements when not provided', () => {
+		const result = generateFromSchema(fixtures.minimalSchemaMessage, registry);
 
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<SoftwareSupplier>Founders and Coders</SoftwareSupplier>');
-		expect(xml).toContain('<SoftwarePackage>Iris</SoftwarePackage>');
-		expect(xml).toContain('<Release>1.0.0</Release>');
+		expect(result.xml).not.toContain('<SoftwareSupplier>');
+		expect(result.xml).not.toContain('<SoftwarePackage>');
+		expect(result.xml).not.toContain('<Release>');
 	});
 
-	it('should omit optional source fields when not provided', () => {
-		const xml = generateILR(minimalMessage);
+	it('should include optional elements when provided', () => {
+		const result = generateFromSchema(fixtures.messageWithOptionalFields, registry);
 
-		expect(xml).not.toContain('<SoftwareSupplier>');
-		expect(xml).not.toContain('<SoftwarePackage>');
-		expect(xml).not.toContain('<Release>');
+		expect(result.xml).toContain('<SoftwareSupplier>Founders and Coders</SoftwareSupplier>');
+		expect(result.xml).toContain('<SoftwarePackage>Iris</SoftwarePackage>');
+		expect(result.xml).toContain('<Release>1.0.0</Release>');
 	});
 
-	it('should generate learning provider', () => {
-		const xml = generateILR(minimalMessage);
+	it('should escape XML special characters', () => {
+		const result = generateFromSchema(fixtures.messageWithSpecialChars, registry);
 
-		expect(xml).toContain('<LearningProvider>');
-		expect(xml).toContain('</LearningProvider>');
+		expect(result.xml).toContain('O&apos;Brien &amp; Co &lt;Test&gt;');
+		expect(result.xml).not.toContain("O'Brien & Co <Test>");
 	});
 
-	it('should generate learner with required fields', () => {
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [minimalLearner],
-		};
+	it('should warn when required elements are missing', () => {
+		const result = generateFromSchema(fixtures.messageMissingRequired, registry);
 
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<LearnRefNumber>ABC123</LearnRefNumber>');
-		expect(xml).toContain('<ULN>1234567890</ULN>');
-		expect(xml).toContain('<Ethnicity>31</Ethnicity>');
-		expect(xml).toContain('<Sex>M</Sex>');
-		expect(xml).toContain('<LLDDHealthProb>2</LLDDHealthProb>');
-		expect(xml).toContain('<PostcodePrior>SW1A 1AA</PostcodePrior>');
-		expect(xml).toContain('<Postcode>SW1A 1AA</Postcode>');
+		expect(result.warnings.length).toBeGreaterThan(0);
+		expect(result.warnings).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: expect.stringContaining('Year'),
+					message: expect.stringContaining('missing'),
+				}),
+			])
+		);
 	});
 
-	it('should include optional learner fields when provided', () => {
-		const learner: Learner = {
-			...minimalLearner,
-			familyName: 'Smith',
-			givenNames: 'John',
-			dateOfBirth: '1990-05-15',
-			email: 'john@example.com',
-		};
+	it('should warn when data structure does not match schema', () => {
+		const result = generateFromSchema(fixtures.messageWithWrongType, registry);
 
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [learner],
-		};
-
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<FamilyName>Smith</FamilyName>');
-		expect(xml).toContain('<GivenNames>John</GivenNames>');
-		expect(xml).toContain('<DateOfBirth>1990-05-15</DateOfBirth>');
-		expect(xml).toContain('<Email>john@example.com</Email>');
+		expect(result.warnings.length).toBeGreaterThan(0);
+		expect(result.warnings).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: expect.stringContaining('Header'),
+					message: expect.stringContaining('Expected object'),
+				}),
+			])
+		);
 	});
 
-	it('should generate learning delivery with required fields', () => {
-		const learner: Learner = {
-			...minimalLearner,
-			learningDeliveries: [minimalDelivery],
-		};
+	it('should warn when array expected but single value provided', () => {
+		const result = generateFromSchema(fixtures.messageWithNonArrayRepeatable, registry);
 
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [learner],
-		};
-
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<LearnAimRef>ZPROG001</LearnAimRef>');
-		expect(xml).toContain('<AimType>1</AimType>');
-		expect(xml).toContain('<AimSeqNumber>1</AimSeqNumber>');
-		expect(xml).toContain('<LearnStartDate>2025-09-01</LearnStartDate>');
-		expect(xml).toContain('<LearnPlanEndDate>2026-08-31</LearnPlanEndDate>');
-		expect(xml).toContain('<FundModel>36</FundModel>');
-		expect(xml).toContain('<DelLocPostCode>SW1A 1AA</DelLocPostCode>');
-		expect(xml).toContain('<CompStatus>1</CompStatus>');
+		expect(result.warnings).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: expect.stringContaining('Learner'),
+					message: expect.stringContaining('Expected array'),
+				}),
+			])
+		);
 	});
 
-	it('should escape XML special characters in text fields', () => {
-		const learner: Learner = {
-			...minimalLearner,
-			familyName: "O'Brien & Sons",
-			givenNames: '<Test>',
-		};
+	it('should respect custom indent option', () => {
+		const result = generateFromSchema(fixtures.minimalSchemaMessage, registry, { indent: 4 });
 
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [learner],
-		};
-
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<FamilyName>O&apos;Brien &amp; Sons</FamilyName>');
-		expect(xml).toContain('<GivenNames>&lt;Test&gt;</GivenNames>');
-	});
-
-	it('should handle multiple learners', () => {
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [
-				{ ...minimalLearner, learnRefNumber: 'L001' },
-				{ ...minimalLearner, learnRefNumber: 'L002' },
-			],
-		};
-
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<LearnRefNumber>L001</LearnRefNumber>');
-		expect(xml).toContain('<LearnRefNumber>L002</LearnRefNumber>');
-		expect((xml.match(/<Learner>/g) || []).length).toBe(2);
-	});
-
-	it('should handle multiple learning deliveries per learner', () => {
-		const learner: Learner = {
-			...minimalLearner,
-			learningDeliveries: [
-				{ ...minimalDelivery, aimSeqNumber: 1 },
-				{ ...minimalDelivery, aimSeqNumber: 2 },
-			],
-		};
-
-		const message: ILRMessage = {
-			...minimalMessage,
-			learners: [learner],
-		};
-
-		const xml = generateILR(message);
-
-		expect(xml).toContain('<AimSeqNumber>1</AimSeqNumber>');
-		expect(xml).toContain('<AimSeqNumber>2</AimSeqNumber>');
-		expect((xml.match(/<LearningDelivery>/g) || []).length).toBe(2);
+		// With 4-space indent, nested elements should have 4 spaces
+		expect(result.xml).toContain('    <Header>');
+		expect(result.xml).toContain('        <CollectionDetails>');
 	});
 });
