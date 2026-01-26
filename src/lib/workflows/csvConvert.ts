@@ -10,12 +10,9 @@
  */
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
-import {
-	generateILR,
-	type ILRMessage,
-	type Learner,
-	type LearningDelivery,
-} from '../utils/xml/xmlGenerator.legacy';
+import { generateFromSchema } from '../utils/xml/xmlGenerator';
+import { getConfig } from '../types/config';
+import type { ILRMessage, Learner, LearningDelivery } from '../utils/xml/xmlGenerator.legacy';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -95,7 +92,12 @@ export async function* convertWorkflow(
 
 	try {
 		const message = buildILRMessage(csvData);
-		xml = generateILR(message);
+		const result = generateFromSchema(message, input.registry);
+		xml = result.xml;
+
+		if (result.warnings.length > 0)
+			generateStep.message = `Generated with ${result.warnings.length} warning(s)`;
+
 		generateStep.status = 'complete';
 		generateStep.progress = 100;
 		generateStep.message = 'XML generated';
@@ -177,6 +179,7 @@ function failedResult(
 // === CSV --> ILR Message Mapping ===
 function buildILRMessage(csvData: CSVData): ILRMessage {
 	const now = new Date();
+	const config = getConfig();
 
 	return {
 		header: {
@@ -187,16 +190,16 @@ function buildILRMessage(csvData: CSVData): ILRMessage {
 			},
 			source: {
 				protectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
-				ukprn: 10000000, // TODO: Get from config
-				softwareSupplier: 'Founders and Coders',
-				softwarePackage: 'Iris',
-				release: '0.9.0',
+				ukprn: config.provider.ukprn,
+				softwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
+				softwarePackage: config.submission.softwarePackage ?? 'Iris',
+				release: config.submission.release ?? '1.3.0',
 				serialNo: '01',
 				dateTime: now.toISOString(),
 			},
 		},
 		learningProvider: {
-			ukprn: 10000000, // TODO: Get from config
+			ukprn: config.provider.ukprn,
 		},
 		learners: csvData.rows.map(rowToLearner),
 	};
