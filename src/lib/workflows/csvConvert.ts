@@ -1,12 +1,7 @@
-/** |===================|| Human-Friendly Name ||==================|
- *  | Explanation
- *  |==============================================================|
- */
-
-/** Convert Workflow
- *
- * Orchestrates CSV → XML conversion with validation.
- * Yields step events for UI consumption.
+/** |===================|| Convert Workflow ||==================|
+ *  | Orchestrates CSV → XML conversion with validation. Yields
+ *  | step events for UI consumption.
+ *  |===========================================================|
  */
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
@@ -92,15 +87,18 @@ export async function* convertWorkflow(
 
 	try {
 		const message = buildILRMessage(csvData);
-		const result = generateFromSchema(message, input.registry);
+		const result = generateFromSchema(
+			message as unknown as Record<string, unknown>,
+			input.registry
+		);
 		xml = result.xml;
-
-		if (result.warnings.length > 0)
-			generateStep.message = `Generated with ${result.warnings.length} warning(s)`;
 
 		generateStep.status = 'complete';
 		generateStep.progress = 100;
-		generateStep.message = 'XML generated';
+		generateStep.message =
+			result.warnings.length > 0
+				? `Generated with ${result.warnings.length} warning(s)`
+				: 'XML generated';
 		yield stepEvent('step:complete', generateStep);
 	} catch (error) {
 		generateStep.status = 'failed';
@@ -193,7 +191,7 @@ function buildILRMessage(csvData: CSVData): ILRMessage {
 				ukprn: config.provider.ukprn,
 				softwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
 				softwarePackage: config.submission.softwarePackage ?? 'Iris',
-				release: config.submission.release ?? '1.3.0',
+				release: config.submission.release ?? 'Unspecified Release',
 				serialNo: '01',
 				dateTime: now.toISOString(),
 			},
