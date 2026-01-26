@@ -1,4 +1,4 @@
-import type { ILRMessage } from '../../../../../src/lib/utils/xml/xmlGenerator';
+import type { ILRMessage } from '../../../../../src/lib/utils/xml/xmlGenerator.legacy';
 
 export const validMinimalXml = `<?xml version="1.0" encoding="utf-8"?>
 <Message xmlns="ESFA/ILR/2025-26">

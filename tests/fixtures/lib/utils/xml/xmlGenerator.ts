@@ -2,7 +2,7 @@ import type {
 	ILRMessage,
 	Learner,
 	LearningDelivery,
-} from '../../../../../src/lib/utils/xml/xmlGenerator';
+} from '../../../../../src/lib/utils/xml/xmlGenerator.legacy';
 
 export const minimalMessage: ILRMessage = {
 	header: {
