@@ -15,7 +15,7 @@ import {
 	type ILRMessage,
 	type Learner,
 	type LearningDelivery,
-} from '../utils/xml/xmlGenerator';
+} from '../utils/xml/xmlGenerator.legacy';
 import type {
 	ConvertInput,
 	ConvertOutput,

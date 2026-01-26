@@ -1,9 +1,9 @@
 ---
-description: "{{ Iris • Haiku }} Generate a work record summarizing today's development session"
+description: "{{ Iris • Haiku }} Generate a work record summarizing recent development"
 model: claude-haiku-4-5
 ---
 
-<task overview="Create a work record by analyzing today's git commits, code changes, and session context.">
+<task overview="Create a work record by analyzing recent git commits, code changes, and session context.">
 <template location=".claude/doc-templates/work-record.md" />
 <steps>
 1. Read the work record template

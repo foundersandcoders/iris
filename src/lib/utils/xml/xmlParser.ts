@@ -4,7 +4,7 @@
  */
 
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
-import type { ILRMessage, Header, Learner, LearningDelivery } from './xmlGenerator';
+import type { ILRMessage, Header, Learner, LearningDelivery } from './xmlGenerator.legacy';
 
 export interface ParseSuccess {
 	success: true;

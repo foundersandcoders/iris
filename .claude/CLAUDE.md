@@ -12,6 +12,8 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 - Desktop app for users who prefer GUI over terminal
 - Shared processing core ensures identical logic across all interfaces
 
+---
+
 ## Tech Stack
 - **Runtime:** Bun
 - **TUI Framework:** terminal-kit (primary interface)
@@ -22,18 +24,24 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 - **XML Generation:** Native TypeScript (no external XML libraries yet)
 - **Testing:** Vitest
 
-## Development Conventions
+---
+
+## Conventions
 - **Package manager:** bun
 - **Testing framework:** Vitest
 - **Commit convention:** Conventional Commits with KSB extraction
 - **Versioning:** Semantic versioning via `svu`
 
-### Testing Conventions
+### Plans
+- Make the plan extremely concise; sacrifice grammar in favour of concision.
+- At the end of the plan, present me with a list of unresolved questions (if any)
+
+### Testing
 - **Fixtures pattern:** Test data lives in `tests/fixtures/<module>.ts` as named exports
 - **Import style:** `import * as fixtures from '../fixtures/<module>'`
 - **Rationale:** Keeps tests focused on assertions, makes test data reusable, and simplifies maintenance
 
-### Code Editing Preference
+### Code Editing
 **IMPORTANT:** Do not edit files directly unless explicitly asked. Instead:
 1. Show the proposed code
 2. Wait for the user to make the edit themselves
@@ -43,6 +51,8 @@ No database. File-based storage for:
 - ILR XML outputs (saved to `~/.iris/submissions/`)
 - Cross-submission history for validation
 - User preferences and configuration
+
+---
 
 ## Key Commands
 ```bash
