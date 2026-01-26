@@ -175,65 +175,65 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(csvData: CSVData): ILRMessage {
+function buildILRMessage(csvData: CSVData): Record<string, unknown> {
 	const now = new Date();
 	const config = getConfig();
 
 	return {
-		header: {
-			collectionDetails: {
-				collection: 'ILR',
-				year: '2526',
-				filePreparationDate: now.toISOString().split('T')[0],
+		Header: {
+			CollectionDetails: {
+				Collection: 'ILR',
+				Year: '2526',
+				FilePreparationDate: now.toISOString().split('T')[0],
 			},
-			source: {
-				protectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
-				ukprn: config.provider.ukprn,
-				softwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
-				softwarePackage: config.submission.softwarePackage ?? 'Iris',
-				release: config.submission.release ?? 'Unspecified Release',
-				serialNo: '01',
-				dateTime: now.toISOString(),
+			Source: {
+				ProtectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
+				UKPRN: config.provider.ukprn,
+				SoftwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
+				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
+				Release: config.submission.release ?? 'Unspecified Release',
+				SerialNo: '01',
+				DateTime: now.toISOString(),
 			},
 		},
-		learningProvider: {
-			ukprn: config.provider.ukprn,
+		LearningProvider: {
+			UKPRN: config.provider.ukprn,
 		},
-		learners: csvData.rows.map(rowToLearner),
+		Learner: csvData.rows.map(rowToLearner),
 	};
 }
 
-function rowToLearner(row: Record<string, string>): Learner {
+function rowToLearner(row: Record<string, string>): Record<string, unknown> {
 	return {
-		learnRefNumber: row['LearnRefNumber'] ?? '',
-		uln: parseInt(row['ULN'] ?? '0', 10),
-		familyName: row['FamilyName'],
-		givenNames: row['GivenNames'],
-		dateOfBirth: row['DateOfBirth'],
-		ethnicity: parseInt(row['Ethnicity'] ?? '0', 10),
-		sex: row['Sex'] ?? '',
-		llddHealthProb: parseInt(row['LLDDHealthProb'] ?? '0', 10),
-		niNumber: row['NINumber'],
-		postcodePrior: row['PostcodePrior'] ?? '',
-		postcode: row['Postcode'] ?? '',
-		email: row['Email'],
-		learningDeliveries: [rowToDelivery(row)],
+		LearnRefNumber: row['LearnRefNumber'] ?? '',
+		ULN: parseInt(row['ULN'] ?? '0', 10),
+		FamilyName: row['FamilyName'],
+		GivenNames: row['GivenNames'],
+		DateOfBirth: row['DateOfBirth'],
+		Ethnicity: parseInt(row['Ethnicity'] ?? '0', 10),
+		Sex: row['Sex'] ?? '',
+		LLDDHealthProb: parseInt(row['LLDDHealthProb'] ?? '0', 10),
+		NINumber: row['NINumber'],
+		PostcodePrior: row['PostcodePrior'] ?? '',
+		Postcode: row['Postcode'] ?? '',
+		Email: row['Email'],
+		LearningDelivery: [rowToDelivery(row)],
 	};
 }
 
-function rowToDelivery(row: Record<string, string>): LearningDelivery {
+function rowToDelivery(row: Record<string, string>): Record<string, unknown> {
 	return {
-		learnAimRef: row['LearnAimRef'] ?? '',
-		aimType: parseInt(row['AimType'] ?? '0', 10),
-		aimSeqNumber: parseInt(row['AimSeqNumber'] ?? '1', 10),
-		learnStartDate: row['LearnStartDate'] ?? '',
-		learnPlanEndDate: row['LearnPlanEndDate'] ?? '',
-		fundModel: parseInt(row['FundModel'] ?? '0', 10),
-		progType: row['ProgType'] ? parseInt(row['ProgType'], 10) : undefined,
-		stdCode: row['StdCode'] ? parseInt(row['StdCode'], 10) : undefined,
-		delLocPostCode: row['DelLocPostCode'] ?? '',
-		compStatus: parseInt(row['CompStatus'] ?? '0', 10),
-		learnActEndDate: row['LearnActEndDate'],
-		outcome: row['Outcome'] ? parseInt(row['Outcome'], 10) : undefined,
+		LearnAimRef: row['LearnAimRef'] ?? '',
+		AimType: parseInt(row['AimType'] ?? '0', 10),
+		AimSeqNumber: parseInt(row['AimSeqNumber'] ?? '1', 10),
+		LearnStartDate: row['LearnStartDate'] ?? '',
+		LearnPlanEndDate: row['LearnPlanEndDate'] ?? '',
+		FundModel: parseInt(row['FundModel'] ?? '0', 10),
+		ProgType: row['ProgType'] ? parseInt(row['ProgType'], 10) : undefined,
+		StdCode: row['StdCode'] ? parseInt(row['StdCode'], 10) : undefined,
+		DelLocPostCode: row['DelLocPostCode'] ?? '',
+		CompStatus: parseInt(row['CompStatus'] ?? '0', 10),
+		LearnActEndDate: row['LearnActEndDate'],
+		Outcome: row['Outcome'] ? parseInt(row['Outcome'], 10) : undefined,
 	};
 }
