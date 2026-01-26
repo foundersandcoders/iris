@@ -12,7 +12,7 @@ import { join } from 'path';
 import * as fixtures from '../../../fixtures/lib/utils/xml/xmlGenerator';
 
 // Load the actual ILR XSD schema
-const xsdPath = join(__dirname, '../../../fixtures/schemafile25.xsd');
+const xsdPath = join(process.cwd(), 'docs/schemas/schemafile25.xsd');
 const xsdContent = readFileSync(xsdPath, 'utf-8');
 const registry = buildSchemaRegistry(xsdContent);
 
