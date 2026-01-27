@@ -1,21 +1,17 @@
-/** |===================|| Human-Friendly Name ||==================|
- *  | Explanation
- *  |==============================================================|
+/** |===================|| ILR XML Generator ||==================|
+ *  | Generates ILR-compliant XML from parsed CSV data. Based on
+ *  | ESFA ILR 2025-26 specification (schemafile25.xsd)
+ *  |============================================================|
  */
 
-/**
- * ILR XML Generator
- *
- * Generates ILR-compliant XML from parsed CSV data.
- * Based on ESFA ILR 2025-26 specification (schemafile25.xsd)
- */
-
+/** @deprecated */
 export interface CollectionDetails {
 	/** Fixed value: "ILR" */ collection: 'ILR';
 	/** Academic year: "2526" for 2025-26 */ year: string;
 	/** File preparation date (YYYY-MM-DD) */ filePreparationDate: string;
 }
 
+/** @deprecated */
 export interface Source {
 	/** Fixed: "OFFICIAL-SENSITIVE-Personal" */ protectiveMarking: 'OFFICIAL-SENSITIVE-Personal';
 	/** UKPRN (8 digits, 10000000-99999999) */ ukprn: number;
@@ -26,11 +22,13 @@ export interface Source {
 	/** Submission datetime (ISO 8601) */ dateTime: string;
 }
 
+/** @deprecated */
 export interface Header {
 	collectionDetails: CollectionDetails;
 	source: Source;
 }
 
+/** @deprecated */
 export interface Learner {
 	/** Provider's learner reference (max 12 chars) */ learnRefNumber: string;
 	/** Unique Learner Number (10 digits) */ uln: number;
@@ -47,6 +45,7 @@ export interface Learner {
 	/** Learning deliveries for this learner */ learningDeliveries: LearningDelivery[];
 }
 
+/** @deprecated */
 export interface LearningDelivery {
 	/** Learning aim reference (max 8 chars) */ learnAimRef: string;
 	/** Aim type code (1 digit) */ aimType: number;
@@ -62,10 +61,12 @@ export interface LearningDelivery {
 	/** Outcome code (1 digit) */ outcome?: number;
 }
 
+/** @deprecated */
 export interface LearningProvider {
 	/** UKPRN (8 digits) */ ukprn: number;
 }
 
+/** @deprecated */
 export interface ILRMessage {
 	header: Header;
 	learningProvider: LearningProvider;
@@ -77,6 +78,7 @@ const XML_NAMESPACE = 'ESFA/ILR/2025-26';
 
 /**
  * Generate ILR XML from message data
+ * @deprecated
  * @param message - Complete ILR message with header, provider, and learners
  * @returns XML string ready for submission
  */

@@ -1,6 +1,6 @@
 {
   "name": "iris",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "ILR (Individualised Learner Record) toolkit - CSV to ILR XML conversion with semantic validation",
   "type": "module",
   "bin": {
@@ -17,7 +17,12 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:sign": "codesign --deep --force --verify --verbose --sign \"-\" src-tauri/target/release/bundle/macos/Iris.app"
+    "tauri:sign": "codesign --deep --force --verify --verbose --sign \"-\" src-tauri/target/release/bundle/macos/Iris.app",
+    "version:set": "bun run scripts/update-version.ts",
+    "version:next": "bun run scripts/update-version.ts $(svu next)",
+    "version:patch": "bun run scripts/update-version.ts $(svu patch)",
+    "version:minor": "bun run scripts/update-version.ts $(svu minor)",
+    "version:major": "bun run scripts/update-version.ts $(svu major)"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",

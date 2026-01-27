@@ -1,21 +1,12 @@
-/** |===================|| Human-Friendly Name ||==================|
- *  | Explanation
- *  |==============================================================|
- */
-
-/** Convert Workflow
- *
- * Orchestrates CSV → XML conversion with validation.
- * Yields step events for UI consumption.
+/** |===================|| Convert Workflow ||==================|
+ *  | Orchestrates CSV → XML conversion with validation. Yields
+ *  | step events for UI consumption.
+ *  |===========================================================|
  */
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
-import {
-	generateILR,
-	type ILRMessage,
-	type Learner,
-	type LearningDelivery,
-} from '../utils/xml/xmlGenerator.legacy';
+import { generateFromSchema } from '../utils/xml/xmlGenerator';
+import { getConfig } from '../types/config';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -95,10 +86,15 @@ export async function* convertWorkflow(
 
 	try {
 		const message = buildILRMessage(csvData);
-		xml = generateILR(message);
+		const result = generateFromSchema(message, input.registry);
+		xml = result.xml;
+
 		generateStep.status = 'complete';
 		generateStep.progress = 100;
-		generateStep.message = 'XML generated';
+		generateStep.message =
+			result.warnings.length > 0
+				? `Generated with ${result.warnings.length} warning(s)`
+				: 'XML generated';
 		yield stepEvent('step:complete', generateStep);
 	} catch (error) {
 		generateStep.status = 'failed';
@@ -175,64 +171,65 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(csvData: CSVData): ILRMessage {
+function buildILRMessage(csvData: CSVData): Record<string, unknown> {
 	const now = new Date();
+	const config = getConfig();
 
 	return {
-		header: {
-			collectionDetails: {
-				collection: 'ILR',
-				year: '2526',
-				filePreparationDate: now.toISOString().split('T')[0],
+		Header: {
+			CollectionDetails: {
+				Collection: 'ILR',
+				Year: '2526',
+				FilePreparationDate: now.toISOString().split('T')[0],
 			},
-			source: {
-				protectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
-				ukprn: 10000000, // TODO: Get from config
-				softwareSupplier: 'Founders and Coders',
-				softwarePackage: 'Iris',
-				release: '0.9.0',
-				serialNo: '01',
-				dateTime: now.toISOString(),
+			Source: {
+				ProtectiveMarking: 'OFFICIAL-SENSITIVE-Personal',
+				UKPRN: config.provider.ukprn,
+				SoftwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
+				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
+				Release: config.submission.release ?? 'Unspecified Release',
+				SerialNo: '01',
+				DateTime: now.toISOString(),
 			},
 		},
-		learningProvider: {
-			ukprn: 10000000, // TODO: Get from config
+		LearningProvider: {
+			UKPRN: config.provider.ukprn,
 		},
-		learners: csvData.rows.map(rowToLearner),
+		Learner: csvData.rows.map(rowToLearner),
 	};
 }
 
-function rowToLearner(row: Record<string, string>): Learner {
+function rowToLearner(row: Record<string, string>): Record<string, unknown> {
 	return {
-		learnRefNumber: row['LearnRefNumber'] ?? '',
-		uln: parseInt(row['ULN'] ?? '0', 10),
-		familyName: row['FamilyName'],
-		givenNames: row['GivenNames'],
-		dateOfBirth: row['DateOfBirth'],
-		ethnicity: parseInt(row['Ethnicity'] ?? '0', 10),
-		sex: row['Sex'] ?? '',
-		llddHealthProb: parseInt(row['LLDDHealthProb'] ?? '0', 10),
-		niNumber: row['NINumber'],
-		postcodePrior: row['PostcodePrior'] ?? '',
-		postcode: row['Postcode'] ?? '',
-		email: row['Email'],
-		learningDeliveries: [rowToDelivery(row)],
+		LearnRefNumber: row['LearnRefNumber'] ?? '',
+		ULN: parseInt(row['ULN'] ?? '0', 10),
+		FamilyName: row['FamilyName'],
+		GivenNames: row['GivenNames'],
+		DateOfBirth: row['DateOfBirth'],
+		Ethnicity: parseInt(row['Ethnicity'] ?? '0', 10),
+		Sex: row['Sex'] ?? '',
+		LLDDHealthProb: parseInt(row['LLDDHealthProb'] ?? '0', 10),
+		NINumber: row['NINumber'],
+		PostcodePrior: row['PostcodePrior'] ?? '',
+		Postcode: row['Postcode'] ?? '',
+		Email: row['Email'],
+		LearningDelivery: [rowToDelivery(row)],
 	};
 }
 
-function rowToDelivery(row: Record<string, string>): LearningDelivery {
+function rowToDelivery(row: Record<string, string>): Record<string, unknown> {
 	return {
-		learnAimRef: row['LearnAimRef'] ?? '',
-		aimType: parseInt(row['AimType'] ?? '0', 10),
-		aimSeqNumber: parseInt(row['AimSeqNumber'] ?? '1', 10),
-		learnStartDate: row['LearnStartDate'] ?? '',
-		learnPlanEndDate: row['LearnPlanEndDate'] ?? '',
-		fundModel: parseInt(row['FundModel'] ?? '0', 10),
-		progType: row['ProgType'] ? parseInt(row['ProgType'], 10) : undefined,
-		stdCode: row['StdCode'] ? parseInt(row['StdCode'], 10) : undefined,
-		delLocPostCode: row['DelLocPostCode'] ?? '',
-		compStatus: parseInt(row['CompStatus'] ?? '0', 10),
-		learnActEndDate: row['LearnActEndDate'],
-		outcome: row['Outcome'] ? parseInt(row['Outcome'], 10) : undefined,
+		LearnAimRef: row['LearnAimRef'] ?? '',
+		AimType: parseInt(row['AimType'] ?? '0', 10),
+		AimSeqNumber: parseInt(row['AimSeqNumber'] ?? '1', 10),
+		LearnStartDate: row['LearnStartDate'] ?? '',
+		LearnPlanEndDate: row['LearnPlanEndDate'] ?? '',
+		FundModel: parseInt(row['FundModel'] ?? '0', 10),
+		ProgType: row['ProgType'] ? parseInt(row['ProgType'], 10) : undefined,
+		StdCode: row['StdCode'] ? parseInt(row['StdCode'], 10) : undefined,
+		DelLocPostCode: row['DelLocPostCode'] ?? '',
+		CompStatus: parseInt(row['CompStatus'] ?? '0', 10),
+		LearnActEndDate: row['LearnActEndDate'],
+		Outcome: row['Outcome'] ? parseInt(row['Outcome'], 10) : undefined,
 	};
 }
