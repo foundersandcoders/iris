@@ -52,7 +52,7 @@ None
 **Phase 3: Schema-Driven Generator**
 - [x] 1a2a-schema9. Create schema generator module (generate XML by traversing registry)
 - [x] 1a2a-schema10. Implement element ordering from xs:sequence
-- [ ] 1a2a-schema11. Migrate existing generator to use schema registry (remove hardcoded interfaces)
+- [x] 1a2a-schema11. Migrate existing generator to use schema registry (remove hardcoded interfaces)
 
 **Phase 4: Column Mapping Configuration**
 - [ ] 1a2a-schema12. Create column mapper module (CSV column → XSD path mapping)
@@ -135,7 +135,7 @@ None currently
 - [ ] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
     - [x] XSD parser and schema registry
     - [x] Schema-driven validator (replaces hardcoded validation rules)
-    - [ ] Schema-driven generator (partially complete: module exists but not yet integrated into workflows)
+    - [x] Schema-driven generator (fully integrated: csvConvert uses generateFromSchema, legacy types removed)
     - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
 
 > [!IMPORTANT]
