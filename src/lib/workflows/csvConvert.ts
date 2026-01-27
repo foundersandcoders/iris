@@ -7,7 +7,6 @@ import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/config';
-import type { ILRMessage, Learner, LearningDelivery } from '../utils/xml/xmlGenerator.legacy';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -87,10 +86,7 @@ export async function* convertWorkflow(
 
 	try {
 		const message = buildILRMessage(csvData);
-		const result = generateFromSchema(
-			message as unknown as Record<string, unknown>,
-			input.registry
-		);
+		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
 		generateStep.status = 'complete';
