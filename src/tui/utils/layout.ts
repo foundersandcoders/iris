@@ -1,6 +1,7 @@
 /** ====== Layout System ====== */
 import type { Terminal } from 'terminal-kit';
 import { THEMES, symbols } from '../theme';
+import packageJson from '../../../package.json';
 
 const theme = THEMES.themeLight;
 
@@ -48,7 +49,7 @@ export class Layout {
 	private drawHeader(options: LayoutOptions): void {
 		// Row 1: Version (Top Right)
 		this.term.moveTo(this.term.width - 10, 1);
-		this.term.colorRgbHex(theme.textMuted)('v1.3.0');
+		this.term.colorRgbHex(theme.textMuted)(`v${packageJson.version}`);
 		this.term.styleReset();
 
 		// Row 2: Title

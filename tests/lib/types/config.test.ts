@@ -9,6 +9,7 @@ import {
 	type ProviderConfig,
 	type SubmissionConfig,
 } from '$lib/types/config';
+import packageJson from '../../../package.json';
 
 describe('config types', () => {
 	describe('getConfig', () => {
@@ -32,7 +33,7 @@ describe('config types', () => {
 
 			expect(config.submission.softwareSupplier).toBe('Founders and Coders');
 			expect(config.submission.softwarePackage).toBe('Iris');
-			expect(config.submission.release).toBe('1.3.0');
+			expect(config.submission.release).toBe(packageJson.version);
 		});
 
 		it('returns consistent results across multiple calls', () => {

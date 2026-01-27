@@ -4,6 +4,8 @@
  *  |==============================================================|
  */
 
+import packageJson from '../../../package.json';
+
 export interface ProviderConfig {
 	ukprn: number;
 	name?: string;
@@ -52,7 +54,7 @@ export function getConfig(): IrisConfig {
 		submission: {
 			softwareSupplier: 'Founders and Coders',
 			softwarePackage: 'Iris',
-			release: '1.3.0',
+			release: packageJson.version,
 		},
 	};
 }

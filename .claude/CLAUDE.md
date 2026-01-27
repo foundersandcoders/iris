@@ -30,7 +30,39 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 - **Package manager:** bun
 - **Testing framework:** Vitest
 - **Commit convention:** Conventional Commits with KSB extraction
-- **Versioning:** Semantic versioning via `svu`
+- **Versioning:** Semantic versioning via `svu` and automated scripts
+
+### Version Management
+Version is managed from a single source of truth (`package.json`) with automated synchronization:
+
+**Single source of truth:**
+- `package.json` - npm/bun version (source)
+
+**Auto-synced at runtime (imports package.json):**
+- `src/lib/types/config.ts` - ILR submission metadata
+- `src/tui/utils/layout.ts` - TUI header display
+
+**Auto-synced at build time (via script):**
+- `src-tauri/Cargo.toml` - Rust package version
+- `src-tauri/tauri.conf.json` - Tauri app version
+- `README.md` - Documentation header
+
+**Workflow:**
+```bash
+# After merging to main, check next version
+svu next                    # Shows what version should be next
+
+# Update all files to new version (choose one)
+bun run version:set 1.5.0   # Manual version
+bun run version:next        # Auto-detect from commits (recommended)
+bun run version:patch       # Force patch bump
+bun run version:minor       # Force minor bump
+bun run version:major       # Force major bump
+
+# Create git tag
+git tag v$(cat package.json | grep version | cut -d'"' -f4)
+git push --tags
+```
 
 ### Plans
 - Make the plan extremely concise; sacrifice grammar in favour of concision.
@@ -76,6 +108,13 @@ bun tauri build          # Build desktop app (macOS, Windows, Linux)
 # Testing
 bun test                 # Run Vitest tests
 bun test:watch          # Run tests in watch mode
+
+# Version Management
+bun run version:set 1.5.0   # Manually set version across all files
+bun run version:next        # Auto-bump based on conventional commits (uses svu)
+bun run version:patch       # Bump patch version (X.Y.Z -> X.Y.Z+1)
+bun run version:minor       # Bump minor version (X.Y.Z -> X.Y+1.0)
+bun run version:major       # Bump major version (X.Y.Z -> X+1.0.0)
 
 # Global Install
 bun link                 # Link for local development (iris command available)
