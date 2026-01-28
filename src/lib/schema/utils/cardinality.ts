@@ -3,9 +3,9 @@
  *  |=================================================================|
  */
 
-import type { Cardinality } from '../schemaInterpreter';
+import type { Cardinality } from '../../types/interpreterTypes';
 import type { RawXsdElement } from '../schemaParser';
-import { DEFAULT_CARDINALITY } from '../schemaInterpreter';
+import { DEFAULT_CARDINALITY } from '../../types/interpreterTypes';
 
 /**
  * Parse cardinality from XSD element attributes

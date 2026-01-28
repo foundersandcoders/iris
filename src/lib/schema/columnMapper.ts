@@ -1,5 +1,5 @@
-import type { ColumnMapping, MappingConfig } from '../types/schema.js';
-import type { SchemaRegistry } from './types.js';
+import type { ColumnMapping, MappingConfig } from '../types/schemaTypes';
+import type { SchemaRegistry } from '../types/interpreterTypes';
 
 /**
  * Maps a single CSV row to a partial ILR structure using column mappings

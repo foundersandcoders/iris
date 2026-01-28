@@ -4,8 +4,8 @@
  *  |=============================================================|
  */
 
-import type { SchemaElement, SchemaConstraints, XsdBaseType } from './schemaInterpreter';
-import { isRequired } from './schemaInterpreter';
+import type { SchemaElement, SchemaConstraints, XsdBaseType } from '../types/interpreterTypes';
+import { isRequired } from '../types/interpreterTypes';
 import type { SchemaValidationIssue } from '../types/schemaTypes';
 import { createIssue } from '../types/schemaTypes';
 

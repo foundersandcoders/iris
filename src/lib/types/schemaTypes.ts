@@ -5,7 +5,7 @@
  *  |==================================================================|
  */
 
-import type { SchemaConstraints, SchemaElement } from '../schema/schemaInterpreter';
+import type { SchemaConstraints, SchemaElement } from './interpreterTypes';
 
 export type SchemaValidationSeverity = 'error' | 'warning' | 'info';
 

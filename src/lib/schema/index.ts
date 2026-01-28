@@ -18,7 +18,7 @@ export type {
 	SchemaRegistry,
 	SchemaRegistryOptions,
 	ElementLookupResult,
-} from './schemaInterpreter';
+} from '../types/interpreterTypes';
 
 // === Type Utilities ===
 export {
@@ -27,7 +27,7 @@ export {
 	isOptional,
 	DEFAULT_CARDINALITY,
 	EMPTY_CONSTRAINTS,
-} from './schemaInterpreter';
+} from '../types/interpreterTypes';
 
 // === Validation Types ===
 export type {

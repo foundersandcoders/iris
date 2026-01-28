@@ -5,7 +5,7 @@
  */
 import type { CSVData, CSVRow } from '../utils/csv/csvParser';
 import type { ValidationResult } from '../utils/csv/csvValidator';
-import type { SchemaRegistry } from '../schema/schemaInterpreter';
+import type { SchemaRegistry } from './interpreterTypes';
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
