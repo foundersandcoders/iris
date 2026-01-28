@@ -19,10 +19,10 @@
     "tauri:build": "tauri build",
     "tauri:sign": "codesign --deep --force --verify --verbose --sign \"-\" src-tauri/target/release/bundle/macos/Iris.app",
     "version:set": "bun run scripts/update-version.ts",
-    "version:next": "bun run scripts/update-version.ts $(svu next)",
-    "version:patch": "bun run scripts/update-version.ts $(svu patch)",
-    "version:minor": "bun run scripts/update-version.ts $(svu minor)",
-    "version:major": "bun run scripts/update-version.ts $(svu major)"
+    "version:next": "bun run scripts/update-version.ts $(svu next | sed 's/^v//')",
+    "version:patch": "bun run scripts/update-version.ts $(svu patch | sed 's/^v//')",
+    "version:minor": "bun run scripts/update-version.ts $(svu minor | sed 's/^v//')",
+    "version:major": "bun run scripts/update-version.ts $(svu major | sed 's/^v//')"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",
