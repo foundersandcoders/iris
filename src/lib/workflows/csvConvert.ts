@@ -7,6 +7,8 @@ import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/configTypes';
+import { mapCsvToSchema } from '../schema/columnMapper';
+import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -85,7 +87,7 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', generateStep);
 
 	try {
-		const message = buildILRMessage(csvData);
+		const message = buildILRMessage(csvData, input.registry);
 		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
@@ -171,11 +173,12 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(csvData: CSVData): Record<string, unknown> {
+function buildILRMessage(csvData: CSVData, registry: any): Record<string, unknown> {
 	const now = new Date();
 	const config = getConfig();
 
-	return {
+	// Build header and provider sections (not from CSV)
+	const baseStructure: Record<string, unknown> = {
 		Header: {
 			CollectionDetails: {
 				Collection: 'ILR',
@@ -195,41 +198,25 @@ function buildILRMessage(csvData: CSVData): Record<string, unknown> {
 		LearningProvider: {
 			UKPRN: config.provider.ukprn,
 		},
-		Learner: csvData.rows.map(rowToLearner),
+		Learner: [],
 	};
-}
 
-function rowToLearner(row: Record<string, string>): Record<string, unknown> {
-	return {
-		LearnRefNumber: row['LearnRefNumber'] ?? '',
-		ULN: parseInt(row['ULN'] ?? '0', 10),
-		FamilyName: row['FamilyName'],
-		GivenNames: row['GivenNames'],
-		DateOfBirth: row['DateOfBirth'],
-		Ethnicity: parseInt(row['Ethnicity'] ?? '0', 10),
-		Sex: row['Sex'] ?? '',
-		LLDDHealthProb: parseInt(row['LLDDHealthProb'] ?? '0', 10),
-		NINumber: row['NINumber'],
-		PostcodePrior: row['PostcodePrior'] ?? '',
-		Postcode: row['Postcode'] ?? '',
-		Email: row['Email'],
-		LearningDelivery: [rowToDelivery(row)],
-	};
-}
+	// Map each CSV row to a Learner using column mapper
+	const learners: Record<string, unknown>[] = [];
 
-function rowToDelivery(row: Record<string, string>): Record<string, unknown> {
-	return {
-		LearnAimRef: row['LearnAimRef'] ?? '',
-		AimType: parseInt(row['AimType'] ?? '0', 10),
-		AimSeqNumber: parseInt(row['AimSeqNumber'] ?? '1', 10),
-		LearnStartDate: row['LearnStartDate'] ?? '',
-		LearnPlanEndDate: row['LearnPlanEndDate'] ?? '',
-		FundModel: parseInt(row['FundModel'] ?? '0', 10),
-		ProgType: row['ProgType'] ? parseInt(row['ProgType'], 10) : undefined,
-		StdCode: row['StdCode'] ? parseInt(row['StdCode'], 10) : undefined,
-		DelLocPostCode: row['DelLocPostCode'] ?? '',
-		CompStatus: parseInt(row['CompStatus'] ?? '0', 10),
-		LearnActEndDate: row['LearnActEndDate'],
-		Outcome: row['Outcome'] ? parseInt(row['Outcome'], 10) : undefined,
-	};
+	for (const row of csvData.rows) {
+		const mappedData = mapCsvToSchema(row, facAirtableMapping.mappings, registry);
+
+		// Extract the Learner data from Message.Learner path
+		if (mappedData.Message && typeof mappedData.Message === 'object') {
+			const messageData = mappedData.Message as Record<string, unknown>;
+			if (messageData.Learner && typeof messageData.Learner === 'object') {
+				learners.push(messageData.Learner as Record<string, unknown>);
+			}
+		}
+	}
+
+	baseStructure.Learner = learners;
+
+	return baseStructure;
 }
