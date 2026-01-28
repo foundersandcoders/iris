@@ -3,7 +3,7 @@ import {
 	createIssue,
 	createEmptyResult,
 	computeResultStats,
-} from '../../../src/lib/types/schemaValidation';
+} from '../../../src/lib/types/schemaTypes';
 
 // Note: Full test coverage is in tests/lib/schema/schemaValidation.test.ts
 // This file ensures the types module is directly testable

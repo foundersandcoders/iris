@@ -15,7 +15,7 @@ import type {
 	WorkflowStep,
 	WorkflowStepEvent,
 	WorkflowResult,
-} from '../types/workflow';
+} from '../types/workflowTypes';
 
 const STEPS = {
 	load: { id: 'load', name: 'Load File' },

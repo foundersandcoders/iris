@@ -6,8 +6,8 @@
 
 import type { SchemaElement, SchemaConstraints, XsdBaseType } from './schemaInterpreter';
 import { isRequired } from './schemaInterpreter';
-import type { SchemaValidationIssue } from '../types/schemaValidation';
-import { createIssue } from '../types/schemaValidation';
+import type { SchemaValidationIssue } from '../types/schemaTypes';
+import { createIssue } from '../types/schemaTypes';
 
 /* <<--------------------------------------------------------------------->> */
 

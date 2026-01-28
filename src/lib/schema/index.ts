@@ -35,10 +35,10 @@ export type {
 	ConstraintViolationType,
 	SchemaValidationIssue,
 	SchemaValidationResult,
-} from '../types/schemaValidation';
+} from '../types/schemaTypes';
 
 // === Validation Utilities ===
-export { createIssue, createEmptyResult, computeResultStats } from '../types/schemaValidation';
+export { createIssue, createEmptyResult, computeResultStats } from '../types/schemaTypes';
 
 // === XSD Parser ===
 export {

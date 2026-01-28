@@ -6,14 +6,14 @@
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
-import { getConfig } from '../types/config';
+import { getConfig } from '../types/configTypes';
 import type {
 	ConvertInput,
 	ConvertOutput,
 	WorkflowStep,
 	WorkflowStepEvent,
 	WorkflowResult,
-} from '../types/workflow';
+} from '../types/workflowTypes';
 import { homedir } from 'os';
 import { join } from 'path';
 

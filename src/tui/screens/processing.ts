@@ -12,7 +12,11 @@ import { Layout } from '../utils/layout';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
-import type { WorkflowStepEvent, WorkflowResult, ConvertOutput } from '../../lib/types/workflow';
+import type {
+	WorkflowStepEvent,
+	WorkflowResult,
+	ConvertOutput,
+} from '../../lib/types/workflowTypes';
 import type { ValidationResult } from '../../lib/utils/csv/csvValidator';
 
 const theme = THEMES.themeLight;

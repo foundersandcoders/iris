@@ -12,14 +12,14 @@ import type { ILRMessage } from '../utils/xml/xmlGenerator.legacy';
 import type { SchemaRegistry } from '../schema/schemaInterpreter';
 import { validateValue } from '../schema/schemaValidator';
 
-import type { SchemaValidationIssue } from '../types/schemaValidation';
+import type { SchemaValidationIssue } from '../types/schemaTypes';
 import type {
 	ValidateInput,
 	ValidateOutput,
 	WorkflowStep,
 	WorkflowStepEvent,
 	WorkflowResult,
-} from '../types/workflow';
+} from '../types/workflowTypes';
 
 // |==================================================================|
 

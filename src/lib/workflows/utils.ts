@@ -3,7 +3,7 @@
  *  |=============================================================|
  */
 
-import type { WorkflowStep, WorkflowStepEvent, WorkflowResult } from '../types/workflow';
+import type { WorkflowStep, WorkflowStepEvent, WorkflowResult } from '../types/workflowTypes';
 
 export function createStep(def: { id: string; name: string }): WorkflowStep {
 	return {

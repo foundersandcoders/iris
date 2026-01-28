@@ -8,7 +8,7 @@ import {
 	type IrisConfig,
 	type ProviderConfig,
 	type SubmissionConfig,
-} from '$lib/types/config';
+} from '$lib/types/configTypes';
 import packageJson from '../../../package.json';
 
 describe('config types', () => {
