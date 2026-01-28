@@ -7,6 +7,7 @@
 import {
 	parseXsd,
 	extractNamespace,
+	extractVersion,
 	extractElements,
 	extractNamedSimpleTypes,
 } from './schemaParser';
@@ -30,6 +31,7 @@ export function buildSchemaRegistry(
 ): SchemaRegistry {
 	const parsed = parseXsd(xsdContent);
 	const namespace = extractNamespace(parsed);
+	const version = extractVersion(parsed);
 	const rawElements = extractElements(parsed);
 	const rawSimpleTypes = extractNamedSimpleTypes(parsed);
 
@@ -50,6 +52,7 @@ export function buildSchemaRegistry(
 
 	return {
 		namespace,
+		version, // ADD THIS LINE
 		rootElement,
 		elementsByPath,
 		elementsByName,

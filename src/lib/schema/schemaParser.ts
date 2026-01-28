@@ -78,6 +78,10 @@ export function extractNamespace(xsdRoot: ParsedXsdRoot): string {
 	return namespace;
 }
 
+export function extractVersion(xsdRoot: ParsedXsdRoot): string | undefined {
+	return xsdRoot['xs:schema']['@_version'];
+}
+
 export function extractElements(xsdRoot: ParsedXsdRoot): RawXsdElement[] {
 	const elements = xsdRoot['xs:schema']['xs:element'];
 

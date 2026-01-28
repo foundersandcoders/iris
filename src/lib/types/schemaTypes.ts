@@ -121,6 +121,16 @@ export interface ColumnMapping {
 	transform?: (value: string) => unknown;
 }
 
+/** Schema reference for mapping compatibility validation */
+export interface SchemaReference {
+	/** Expected namespace (e.g., "ESFA/ILR/2025-26") */
+	namespace: string;
+	/** Expected XSD version attribute (e.g., "1.0") */
+	version?: string;
+	/** Human-readable schema identifier (e.g., "ILR 2025-26") */
+	displayName?: string;
+}
+
 /** Complete mapping configuration for CSV→ILR conversion */
 export interface MappingConfig {
 	/** Unique identifier for this mapping (e.g., "fac-airtable-2025") */
@@ -129,8 +139,8 @@ export interface MappingConfig {
 	name: string;
 	/** Mapping version (semver) */
 	version: string;
-	/** Target ILR schema version */
-	targetSchemaVersion: string;
+	/** Target ILR schema reference */
+	targetSchema: SchemaReference;
 	/** Column mappings */
 	mappings: ColumnMapping[];
 }
