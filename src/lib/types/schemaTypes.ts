@@ -118,7 +118,7 @@ export interface ColumnMapping {
 	/** XSD path in dot notation (e.g., "Message.Learner.LearnRefNumber") */
 	xsdPath: string;
 	/** Optional transformation function applied before validation */
-	transform?: (value: string) => unknown;
+	transform?: string;
 }
 
 /** Schema reference for mapping compatibility validation */
