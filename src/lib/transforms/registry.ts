@@ -85,6 +85,13 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		category: 'string',
 	},
 
+	uppercaseNoSpaces: {
+		fn: (v: string) => v.toUpperCase().replace(/\s+/g, ''),
+		description: 'Convert to uppercase and remove all spaces',
+		example: "'sw1a 1aa' → 'SW1A1AA'",
+		category: 'string',
+	},
+
 	// === Conditional ===
 	nullIfEmpty: {
 		fn: (v: string) => (v.trim() === '' ? null : v),
