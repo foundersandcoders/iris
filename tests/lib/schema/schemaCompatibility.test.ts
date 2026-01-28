@@ -141,7 +141,7 @@ describe('schema/schemaCompatibility', () => {
                       };
 
                       const result = validateSchemaCompatibility(incompatibleMapping, mockRegistry);
-                      const formatted = formatCompatibilityError(incompatibleMapping, mockRegistry, resul
+                      const formatted = formatCompatibilityError(incompatibleMapping, mockRegistry, result);
 
                       expect(formatted).toContain('Mapping Incompatibility Error');
                       expect(formatted).toContain('Test Mapping');
@@ -160,7 +160,7 @@ describe('schema/schemaCompatibility', () => {
                       };
 
                       const result = validateSchemaCompatibility(versionMismatchMapping, mockRegistry);
-                      const formatted = formatCompatibilityError(versionMismatchMapping, mockRegistry, re
+                      const formatted = formatCompatibilityError(versionMismatchMapping, mockRegistry, result);
 
                       expect(formatted).toContain('Warnings:');
                       expect(formatted).toContain('Version mismatch');

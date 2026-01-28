@@ -61,7 +61,7 @@ describe('mappings/fac-airtable-2025', () => {
                   const numericFields = ['ULN', 'Ethnicity', 'AimType', 'FundModel'];
 
                   for (const fieldName of numericFields) {
-                          const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === field
+                          const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
                           expect(mapping?.transform).toMatch(/stringToInt/);
                   }
           });
@@ -70,7 +70,7 @@ describe('mappings/fac-airtable-2025', () => {
                   const postcodeFields = ['Postcode', 'PostcodePrior', 'DelLocPostCode'];
 
                   for (const fieldName of postcodeFields) {
-                          const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === field
+                          const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
                           expect(mapping?.transform).toBe('uppercase');
                   }
           });

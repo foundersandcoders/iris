@@ -35,7 +35,7 @@ describe('transforms/registry', () => {
           });
 
           it('should throw error for unknown transform', () => {
-                  expect(() => getTransform('nonexistent')).toThrow('Unknown transform: "nonexistent"
+                  expect(() => getTransform('nonexistent')).toThrow(/Unknown transform/);
           });
   });
 
