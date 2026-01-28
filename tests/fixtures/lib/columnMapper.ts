@@ -19,12 +19,12 @@ export const mappingsWithTransform: ColumnMapping[] = [
 	{
 		csvColumn: 'Birth Date',
 		xsdPath: 'Message.Learner.DateOfBirth',
-		transform: (value: string) => new Date(value).toISOString().split('T')[0],
+		transform: 'isoDate',
 	},
 	{
 		csvColumn: 'Postcode',
 		xsdPath: 'Message.Learner.Postcode',
-		transform: (value: string) => value.toUpperCase().replace(/\s+/g, ''),
+		transform: 'uppercase',
 	},
 ];
 
@@ -40,6 +40,10 @@ export const mockMappingConfig: MappingConfig = {
 	id: 'test-mapping',
 	name: 'Test Mapping Configuration',
 	version: '1.0.0',
-	targetSchemaVersion: '25',
+	targetSchema: {
+		namespace: 'ESFA/ILR/2025-26',
+		version: '1.0',
+		displayName: 'Test Schema',
+	},
 	mappings: simpleMappings,
 };
