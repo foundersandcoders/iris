@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateValue } from '../../../src/lib/schema/schemaValidator';
-import type { SchemaElement } from '../../../src/lib/schema/schemaInterpreter';
+import type { SchemaElement } from '../../../src/lib/types/interpreterTypes';
 
 // Helper to create test elements
 function createElement(overrides: Partial<SchemaElement> = {}): SchemaElement {

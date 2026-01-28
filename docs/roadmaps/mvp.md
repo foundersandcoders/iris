@@ -2,7 +2,7 @@
 
 | Area | Implemented                                   | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv; validate-xml | **dynamic schema system (XSD-driven)** |
+| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv; validate-xml; column mapper | **mapping config + workflow migration** |
 | CLI  | `iris` opens TUI                              | direct commands |
 | TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
 | GUI  | sveltekit configuration                       |         |
@@ -55,8 +55,8 @@ None
 - [x] 1a2a-schema11. Migrate existing generator to use schema registry (remove hardcoded interfaces)
 
 **Phase 4: Column Mapping Configuration**
-- [ ] 1a2a-schema12. Create column mapper module (CSV column → XSD path mapping)
-- [ ] 1a2a-schema13. Define mapping configuration schema (ColumnMapping, MappingConfig types)
+- [x] 1a2a-schema12. Create column mapper module (CSV column → XSD path mapping)
+- [x] 1a2a-schema13. Define mapping configuration schema (ColumnMapping, MappingConfig types)
 - [ ] 1a2a-schema14. Create default FaC Airtable mapping configuration
 - [ ] 1a2a-schema15. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
 
@@ -137,6 +137,9 @@ None currently
     - [x] Schema-driven validator (replaces hardcoded validation rules)
     - [x] Schema-driven generator (fully integrated: csvConvert uses generateFromSchema, legacy types removed)
     - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
+        - [x] Column mapper module with types
+        - [ ] Default FaC Airtable mapping
+        - [ ] Workflow migration
 
 > [!IMPORTANT]
 > **XML Validation Prerequisite:** Milestone 1 cannot be considered complete without XML parsing and validation capabilities. The transformation engine must be able to verify its own output to ensure ILR compliance. See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.

@@ -5,7 +5,7 @@ import { tmpdir } from 'os';
 
 import { xmlValidateWorkflow } from '../../../src/lib/workflows/xmlValidate';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
-import type { SchemaRegistry } from '../../../src/lib/schema/schemaInterpreter';
+import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 import * as fixtures from '../../fixtures/lib/workflows/xmlValidate';
 
 describe('xmlValidateWorkflow', () => {

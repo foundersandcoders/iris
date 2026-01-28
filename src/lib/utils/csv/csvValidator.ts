@@ -11,9 +11,9 @@
  */
 
 import type { CSVRow } from './csvParser';
-import type { SchemaRegistry, SchemaElement } from '../../schema/schemaInterpreter';
+import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
-import type { SchemaValidationIssue } from '../../types/schemaValidation';
+import type { SchemaValidationIssue } from '../../types/schemaTypes';
 
 // === Types ===
 export type ValidationSeverity = 'error' | 'warning' | 'info';

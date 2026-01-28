@@ -5,7 +5,7 @@
  *  |==================================================================|
  */
 
-import type { SchemaConstraints, SchemaElement } from '../schema/schemaInterpreter';
+import type { SchemaConstraints, SchemaElement } from './interpreterTypes';
 
 export type SchemaValidationSeverity = 'error' | 'warning' | 'info';
 
@@ -24,7 +24,7 @@ export type ConstraintViolationType =
 	| 'unexpected' // element not defined in schema
 	| 'ordering'; // elements in wrong order (xs:sequence violation)
 
-/* <<--------------------------------------------------------------------->> */
+// |------------------------|| xxx ||-------------------------|
 
 export interface SchemaValidationIssue {
 	severity: SchemaValidationSeverity;
@@ -52,7 +52,7 @@ export interface SchemaValidationResult {
 	validatedPaths?: string[];
 }
 
-/* <<--------------------------------------------------------------------->> */
+// |------------------------|| xxx ||-------------------------|
 
 // TODO: Extract `function createIssue()` to util
 export function createIssue(
@@ -87,7 +87,7 @@ export function createEmptyResult(
 	};
 }
 
-/* <<--------------------------------------------------------------------->> */
+// |------------------------|| xxx ||-------------------------|
 
 // TODO: Extract `function computeResultStats()` to util
 export function computeResultStats(
@@ -108,4 +108,29 @@ export function computeResultStats(
 		schemaNamespace,
 		schemaVersion,
 	};
+}
+
+// |------------------------|| CSV -> XML Mapping ||-------------------------|
+/** Maps a CSV column to an XSD path in the schema registry */
+export interface ColumnMapping {
+	/** CSV column header (case-insensitive match) */
+	csvColumn: string;
+	/** XSD path in dot notation (e.g., "Message.Learner.LearnRefNumber") */
+	xsdPath: string;
+	/** Optional transformation function applied before validation */
+	transform?: (value: string) => unknown;
+}
+
+/** Complete mapping configuration for CSV→ILR conversion */
+export interface MappingConfig {
+	/** Unique identifier for this mapping (e.g., "fac-airtable-2025") */
+	id: string;
+	/** Human-readable name */
+	name: string;
+	/** Mapping version (semver) */
+	version: string;
+	/** Target ILR schema version */
+	targetSchemaVersion: string;
+	/** Column mappings */
+	mappings: ColumnMapping[];
 }
