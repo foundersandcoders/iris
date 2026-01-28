@@ -44,6 +44,7 @@ export interface RawXsdComplexType {
 export interface ParsedXsdRoot {
 	'xs:schema': {
 		'@_targetNamespace': string;
+		'@_version'?: string;
 		'@_xmlns:xs': string;
 		'xs:element'?: RawXsdElement | RawXsdElement[];
 		'xs:simpleType'?: RawXsdSimpleType | RawXsdSimpleType[];
