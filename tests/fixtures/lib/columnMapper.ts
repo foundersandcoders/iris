@@ -24,7 +24,7 @@ export const mappingsWithTransform: ColumnMapping[] = [
 	{
 		csvColumn: 'Postcode',
 		xsdPath: 'Message.Learner.Postcode',
-		transform: 'uppercase',
+		transform: 'uppercaseNoSpaces',
 	},
 ];
 

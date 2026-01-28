@@ -71,6 +71,13 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		category: 'string',
 	},
 
+	uppercaseNoSpaces: {
+		fn: (v: string) => v.toUpperCase().replace(/\s+/g, ''),
+		description: 'Convert to uppercase and remove all spaces',
+		example: "'sw1a 1aa' → 'SW1A1AA'",
+		category: 'string',
+	},
+
 	lowercase: {
 		fn: (v: string) => v.toLowerCase(),
 		description: 'Convert to lowercase',
@@ -82,13 +89,6 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		fn: (v: string) => v.replace(/\s+/g, ''),
 		description: 'Strip all whitespace',
 		example: "'AB 123 CD' → 'AB123CD'",
-		category: 'string',
-	},
-
-	uppercaseNoSpaces: {
-		fn: (v: string) => v.toUpperCase().replace(/\s+/g, ''),
-		description: 'Convert to uppercase and remove all spaces',
-		example: "'sw1a 1aa' → 'SW1A1AA'",
 		category: 'string',
 	},
 
