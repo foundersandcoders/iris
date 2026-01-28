@@ -1,5 +1,6 @@
 description='Update project roadmaps from .gemini/roadmaps.json config'
-prompt='Process roadmaps defined in @.gemini/roadmaps.json. If arguments are provided, process only the matching roadmap ID; otherwise process all active roadmaps.
+prompt="""
+Process roadmaps defined in @.gemini/roadmaps.json. If arguments are provided, process only the matching roadmap ID; otherwise process all active roadmaps.
 
 ## Logic
 1. Read the roadmap Markdown file at the configured "path".
@@ -15,4 +16,5 @@ prompt='Process roadmaps defined in @.gemini/roadmaps.json. If arguments are pro
 3. Do not remove descriptions or metadata associated with moved tasks.
 
 ## Inputs
-{{args}}'
+{{args}}
+"""
