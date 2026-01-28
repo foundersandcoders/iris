@@ -1,5 +1,6 @@
 import type { ColumnMapping, MappingConfig } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
+import { getTransform } from '../transforms/registry';
 
 /**
  * Maps a single CSV row to a partial ILR structure using column mappings
@@ -24,7 +25,9 @@ export function mapCsvToSchema(
 		if (!columnKey) continue;
 
 		const rawValue = csvRow[columnKey];
-		const value = mapping.transform ? mapping.transform(rawValue) : rawValue;
+
+		// Resolve transform by name if specified
+		const value = mapping.transform ? getTransform(mapping.transform)(rawValue) : rawValue;
 
 		setNestedValue(result, mapping.xsdPath, value);
 	}
@@ -33,8 +36,8 @@ export function mapCsvToSchema(
 }
 
 /**
- * Sets a value in a nested object using dot notation path
- * Creates intermediate objects as needed
+ * - Sets a value in a nested object using dot notation path
+ * - Creates intermediate objects as needed
  *
  * @example
  * setNestedValue({}, "Message.Learner.LearnRefNumber", "12345")
@@ -57,8 +60,8 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
 }
 
 /**
- * Loads a mapping configuration by ID
- * (Placeholder - will load from ~/.iris/mappings/<id>.json in future)
+ * - Loads a mapping configuration by ID
+ * - Placeholder: will load from `~/.iris/mappings/<id>.json` in future)
  */
 export function loadMappingConfig(id: string): MappingConfig | null {
 	// TODO: Implement file-based loading
