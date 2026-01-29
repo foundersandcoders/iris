@@ -1,2 +1,49 @@
-description='Create a pull request for current branch'
-prompt='## Steps\n1. Look at the commits on this branch\n2. Analyse the overall effect of these changes if merged into `main`\n3. Use "Template" to write the pull request content\n4. Check for my approval\n5. If approved, create the PR to `main`\n## Steps\n### Title Rules\n1. Brief & descriptive\n2. Use title case\n3. Be understandable to non-devs\n### TLDR Rules\nList any steps devs must take after pulling this down\n\n### Changes Rules\n- Break changes into files or categories depending on PR scope. Use collapsible details.\n\n### Summary Rules\n- Describe the PR with a non-technical, absurd metaphor.\n\n## Template\n```md\n\n# {{ title }}\n\n## Overview\n{{ overview }}\n> [!TIP]\n> {{ tldr }}\n\n## Changes\n{{ changes with collapsible details }}\n\n---\n\n## Summary\n\n{{ absurd metaphor }}'
+description='{{ IRIS }} Create a pull request for current branch'
+prompt="""
+<steps>
+1. Look at the commits on this branch
+2. Analyse the overall effect of these changes if merged into `main`
+3. Use "Template" to write the pull request content
+4. Check for my approval
+5. If approved, create the PR to `main`
+</steps>
+<rules>
+### Title Rules
+1. Brief & descriptive
+2. Use title case
+3. Be understandable to non-devs
+
+### TLDR Rules
+List any steps devs must take after pulling this down
+### Changes Rules
+- Break changes into files or categories depending on PR scope. Use collapsible details.
+
+### Summary Rules
+- Describe the PR with a non-technical, absurd metaphor.
+</rules>
+<template>
+```md
+# {{ title }}
+
+## Overview
+{{ overview }}
+
+---
+
+> [!TIP]
+> {{ tldr }}
+
+---
+
+## Changes
+
+{{ changes with collapsible details }}
+
+---
+
+## Summary
+
+{{ absurd metaphor }}
+```
+</template>
+"""
