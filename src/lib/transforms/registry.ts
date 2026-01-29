@@ -21,7 +21,12 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 	},
 
 	stringToIntOptional: {
-		fn: (v: string) => (v ? parseInt(v, 10) : undefined),
+		fn: (v: string) => {
+			const trimmed = v.trim();
+			if (trimmed === '') return undefined;
+			const parsed = parseInt(trimmed, 10);
+			return Number.isNaN(parsed) ? undefined : parsed;
+		},
 		description: 'Convert to integer, or undefined if empty',
 		example: "'' → undefined, '123' → 123",
 		category: 'type',
