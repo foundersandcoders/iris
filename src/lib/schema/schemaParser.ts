@@ -44,6 +44,7 @@ export interface RawXsdComplexType {
 export interface ParsedXsdRoot {
 	'xs:schema': {
 		'@_targetNamespace': string;
+		'@_version'?: string;
 		'@_xmlns:xs': string;
 		'xs:element'?: RawXsdElement | RawXsdElement[];
 		'xs:simpleType'?: RawXsdSimpleType | RawXsdSimpleType[];
@@ -76,6 +77,10 @@ export function extractNamespace(xsdRoot: ParsedXsdRoot): string {
 	if (!namespace) throw new Error('Invalid XSD: missing targetNamespace attribute');
 
 	return namespace;
+}
+
+export function extractVersion(xsdRoot: ParsedXsdRoot): string | undefined {
+	return xsdRoot['xs:schema']['@_version'];
 }
 
 export function extractElements(xsdRoot: ParsedXsdRoot): RawXsdElement[] {

@@ -118,7 +118,17 @@ export interface ColumnMapping {
 	/** XSD path in dot notation (e.g., "Message.Learner.LearnRefNumber") */
 	xsdPath: string;
 	/** Optional transformation function applied before validation */
-	transform?: (value: string) => unknown;
+	transform?: string;
+}
+
+/** Schema reference for mapping compatibility validation */
+export interface SchemaReference {
+	/** Expected namespace (e.g., "ESFA/ILR/2025-26") */
+	namespace: string;
+	/** Expected XSD version attribute (e.g., "1.0") */
+	version?: string;
+	/** Human-readable schema identifier (e.g., "ILR 2025-26") */
+	displayName?: string;
 }
 
 /** Complete mapping configuration for CSV→ILR conversion */
@@ -129,8 +139,8 @@ export interface MappingConfig {
 	name: string;
 	/** Mapping version (semver) */
 	version: string;
-	/** Target ILR schema version */
-	targetSchemaVersion: string;
+	/** Target ILR schema reference */
+	targetSchema: SchemaReference;
 	/** Column mappings */
 	mappings: ColumnMapping[];
 }

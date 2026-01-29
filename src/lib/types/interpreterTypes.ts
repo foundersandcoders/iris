@@ -50,8 +50,12 @@ export interface NamedSimpleType {
 }
 
 export interface SchemaRegistry {
-	namespace: string; // e.g., "ESFA/ILR/2025-26"
-	version?: string; // Schema version
+	/** "ESFA/ILR/2025-26" */
+	namespace: string;
+	/** Schema version from XSD (e.g., "1.0") */
+	version?: string;
+	/** Optional: filename of loaded XSD (e.g., "schemafile25.xsd") */
+	sourceFile?: string;
 	rootElement: SchemaElement;
 	elementsByPath: Map<string, SchemaElement>;
 	elementsByName: Map<string, SchemaElement[]>;

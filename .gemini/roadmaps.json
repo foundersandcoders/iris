@@ -1,0 +1,17 @@
+{
+  "roadmaps": [
+    {
+      "id": "mvp",
+      "name": "MVP",
+      "path": "docs/roadmaps/mvp.md",
+      "structure": {
+        "open_tasks": "1a. Open Tasks",
+        "due_tasks": "1a1. Due Tasks",
+        "blocked_tasks": "1b. Blocked Tasks",
+        "completed_tasks": "1c. Completed Tasks",
+        "milestones": "2. MVP Milestones",
+        "completed_milestones": "2-completed. Completed Milestones"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+description='Update project roadmaps from .gemini/roadmaps.json config'
+prompt="""
+Process roadmaps defined in @.gemini/roadmaps.json. If arguments are provided, process only the matching roadmap ID; otherwise process all active roadmaps.
+
+## Logic
+1. Read the roadmap Markdown file at the configured "path".
+2. Move completed tasks (checked boxes `[x]`) from "Open" or "Due" sections to the "Completed Tasks" section.
+3. Move tasks that are no longer blocked from "Blocked Tasks" to "Open Tasks".
+4. Move completed milestones to the "Completed Milestones" section.
+5. If the roadmap structure has changed, update the summary table in the project README.md if applicable.
+6. Report a summary of all tasks and milestones moved.
+
+## Rules
+1. Maintain the existing header hierarchy and numbering where possible.
+2. Ensure the "Completed Tasks" section is created if it does not exist.
+3. Do not remove descriptions or metadata associated with moved tasks.
+
+## Inputs
+{{args}}
+"""
