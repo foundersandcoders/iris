@@ -66,7 +66,7 @@ describe('validator', () => {
 			);
 
 			expect(result.valid).toBe(false);
-			const issue = result.issues.find((i) => i.field === 'LearnRefNumber');
+			const issue = result.issues.find((i) => i.field === 'LearnRefNum');
 			expect(issue).toBeDefined();
 		});
 
