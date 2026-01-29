@@ -40,8 +40,11 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 	},
 
 	stringToBoolean: {
-		fn: (v: string) => v.toLowerCase() === 'true',
+		fn: (v: string) => v.trim().toLowerCase() === 'true',
 		description: "Convert 'true'/'false' strings to boolean",
+		example: "'true' → true, 'false' → false",
+		category: 'type',
+	},
 		example: "'true' → true, 'false' → false",
 		category: 'type',
 	},
