@@ -1,4 +1,4 @@
-# Iris `v1.6.0`
+# Iris `v1.6.1`
 
 **ILR toolkit for apprenticeship data submission**
 
