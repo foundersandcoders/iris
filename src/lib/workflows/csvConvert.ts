@@ -8,7 +8,6 @@ import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/configTypes';
 import { mapCsvToSchema } from '../schema/columnMapper';
-import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -19,6 +18,7 @@ import type {
 import { homedir } from 'os';
 import { join } from 'path';
 import type { SchemaRegistry } from '$lib/schema';
+import type { MappingConfig } from '../types/schemaTypes';
 
 const STEPS = {
 	parse: { id: 'parse', name: 'Parse CSV' },
@@ -65,7 +65,7 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', validateStep);
 
 	try {
-		validation = validateRows(csvData.rows, csvData.headers, input.registry);
+		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping);
 		validateStep.status = 'complete';
 		validateStep.progress = 100;
 		validateStep.data = validation;
@@ -88,7 +88,7 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', generateStep);
 
 	try {
-		const message = buildILRMessage(csvData, input.registry);
+		const message = buildILRMessage(csvData, input.registry, input.mapping);
 		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
@@ -174,7 +174,11 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(csvData: CSVData, registry: SchemaRegistry): Record<string, unknown> {
+function buildILRMessage(
+	csvData: CSVData,
+	registry: SchemaRegistry,
+	mapping: MappingConfig
+): Record<string, unknown> {
 	const now = new Date();
 	const config = getConfig();
 
@@ -206,7 +210,7 @@ function buildILRMessage(csvData: CSVData, registry: SchemaRegistry): Record<str
 	const learners: Record<string, unknown>[] = [];
 
 	for (const row of csvData.rows) {
-		const mappedData = mapCsvToSchema(row, facAirtableMapping.mappings, registry);
+		const mappedData = mapCsvToSchema(row, mapping.mappings, registry);
 
 		// Extract the Learner data from Message.Learner path
 		if (mappedData.Message && typeof mappedData.Message === 'object') {
