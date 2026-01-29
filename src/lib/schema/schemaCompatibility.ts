@@ -88,13 +88,13 @@ export function formatCompatibilityError(
 
 	if (result.errors.length > 0) {
 		lines.push('Errors:');
-		result.errors.forEach((err) => lines.push(`  • ${err}`));
+		for (const err of result.errors) lines.push(`  • ${err}`);
 		lines.push('');
 	}
 
 	if (result.warnings.length > 0) {
 		lines.push('Warnings:');
-		result.warnings.forEach((warn) => lines.push(`  ⚠ ${warn}`));
+		for (const warn of result.warnings) lines.push(`  ⚠ ${warn}`);
 		lines.push('');
 	}
 
