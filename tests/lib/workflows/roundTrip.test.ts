@@ -83,7 +83,7 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 
 	it('should produce invalid XML if CSV contains schema-violating data', async () => {
 		// 1. Setup CSV with invalid LearnRefNumber (too long: 13 chars, max is 12)
-		const invalidRow = { ...fixtures.validRow, LearnRefNumber: 'TOOLONGREF123' };
+		const invalidRow = { ...fixtures.validRow, LearnRefNum: 'TOOLONGREF123' };
 		const invalidCsvContent = [
 			fixtures.validHeaders.join(','),
 			Object.values(invalidRow).join(','),

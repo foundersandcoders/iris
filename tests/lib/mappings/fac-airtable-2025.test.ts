@@ -5,8 +5,8 @@ describe('mappings/fac-airtable-2025', () => {
   describe('facAirtableMapping', () => {
           it('should have correct metadata', () => {
                   expect(facAirtableMapping.id).toBe('fac-airtable-2025');
-                  expect(facAirtableMapping.name).toBe('Founders and Coders Airtable Export');
-                  expect(facAirtableMapping.version).toBe('1.0.0');
+                  expect(facAirtableMapping.name).toBe('Founders and Coders Airtable Export (2025-26)');
+                  expect(facAirtableMapping.version).toBe('2.0.0');
           });
 
           it('should target correct schema', () => {
@@ -33,15 +33,15 @@ describe('mappings/fac-airtable-2025', () => {
 
           it('should include learner fields', () => {
                   const learnerFields = facAirtableMapping.mappings.filter(
-                          m => m.xsdPath.includes('Message.Learner')
+                          m => m.xsdPath.includes('Message.Learner') && !m.xsdPath.includes('LearningDelivery')
                   );
 
                   expect(learnerFields.length).toBeGreaterThan(0);
 
                   const fieldNames = learnerFields.map(f => f.csvColumn);
-                  expect(fieldNames).toContain('LearnRefNumber');
+                  expect(fieldNames).toContain('LearnRefNum');
                   expect(fieldNames).toContain('ULN');
-                  expect(fieldNames).toContain('FamilyName');
+                  expect(fieldNames).toContain('Family name');
           });
 
           it('should include learning delivery fields', () => {
