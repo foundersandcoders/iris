@@ -12,6 +12,7 @@ import { Layout } from '../utils/layout';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
+import { facAirtableMapping } from '../../lib/mappings/fac-airtable-2025';
 import type {
 	WorkflowStepEvent,
 	WorkflowResult,
@@ -56,7 +57,7 @@ export class ProcessingScreen implements Screen {
 		this.drawScreen();
 
 		try {
-			const workflow = convertWorkflow({ filePath, registry });
+			const workflow = convertWorkflow({ filePath, registry, mapping: facAirtableMapping });
 
 			for await (const event of workflow) {
 				this.handleEvent(event);
@@ -67,7 +68,7 @@ export class ProcessingScreen implements Screen {
 			 *
 			 * Get final result - need to run again to capture return value (for-await doesn't give us the return)
 			 */
-			const gen = convertWorkflow({ filePath, registry });
+			const gen = convertWorkflow({ filePath, registry, mapping: facAirtableMapping });
 
 			let done = false;
 			while (!done) {

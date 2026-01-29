@@ -93,7 +93,7 @@ export async function* validateWorkflow(
 	yield stepEvent('step:start', validateStep);
 
 	try {
-		validation = validateRows(csvData.rows, csvData.headers, input.registry);
+		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping);
 
 		validateStep.status = 'complete';
 		validateStep.progress = 100;

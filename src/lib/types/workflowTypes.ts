@@ -6,6 +6,7 @@
 import type { CSVData, CSVRow } from '../utils/csv/csvParser';
 import type { ValidationResult } from '../utils/csv/csvValidator';
 import type { SchemaRegistry } from './interpreterTypes';
+import type { MappingConfig } from './schemaTypes';
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
@@ -32,6 +33,7 @@ export interface ConvertInput {
 	filePath: string;
 	outputDir?: string;
 	registry: SchemaRegistry;
+	mapping: MappingConfig;
 }
 
 export interface ConvertOutput {
@@ -45,6 +47,7 @@ export interface ConvertOutput {
 export interface ValidateInput {
 	filePath: string;
 	registry: SchemaRegistry;
+	mapping: MappingConfig;
 }
 
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`
