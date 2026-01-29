@@ -1,6 +1,6 @@
 /** |===================|| FaC Airtable Mapping ||==================|
- *  | Default column mapping for Founders and Coders Airtable exports
- *  | Maps CSV columns to ILR XSD paths with transforms
+ *  | Column mapping for Founders and Coders Airtable 2025-26 Export
+ *  | Based on real Airtable export structure (224 columns)
  *  |================================================================|
  */
 
@@ -8,136 +8,64 @@ import type { MappingConfig } from '../types/schemaTypes';
 
 export const facAirtableMapping: MappingConfig = {
 	id: 'fac-airtable-2025',
-	name: 'Founders and Coders Airtable Export',
-	version: '1.0.0',
+	name: 'Founders and Coders Airtable Export (2025-26)',
+	version: '2.0.0',
 	targetSchema: {
 		namespace: 'ESFA/ILR/2025-26',
 		version: '1.0',
 		displayName: 'ILR 2025-26 Schema',
 	},
+	aimDetectionField: 'Programme aim {n} Learning ref ',
 	mappings: [
-		// === Learner ===
+		// ==================== LEARNER: Required Fields ====================
+
+		// Column 224: LearnRefNum
 		{
-			csvColumn: 'LearnRefNumber',
+			csvColumn: 'LearnRefNum',
 			xsdPath: 'Message.Learner.LearnRefNumber',
 			transform: 'trim',
 		},
+
+		// Column 3: ULN
 		{
 			csvColumn: 'ULN',
 			xsdPath: 'Message.Learner.ULN',
 			transform: 'stringToInt',
 		},
+
+		// Column 9: Ethnic group
 		{
-			csvColumn: 'FamilyName',
-			xsdPath: 'Message.Learner.FamilyName',
-			transform: 'trim',
-		},
-		{
-			csvColumn: 'GivenNames',
-			xsdPath: 'Message.Learner.GivenNames',
-			transform: 'trim',
-		},
-		{
-			csvColumn: 'DateOfBirth',
-			xsdPath: 'Message.Learner.DateOfBirth',
-			transform: 'isoDate',
-		},
-		{
-			csvColumn: 'Ethnicity',
+			csvColumn: 'Ethnic group',
 			xsdPath: 'Message.Learner.Ethnicity',
 			transform: 'stringToInt',
 		},
+
+		// Column 6: Sex (note: has trailing space in CSV!)
 		{
-			csvColumn: 'Sex',
+			csvColumn: 'Sex ',
 			xsdPath: 'Message.Learner.Sex',
 			transform: 'uppercase',
 		},
+
+		// Column 14: Primary additional needs
 		{
-			csvColumn: 'LLDDHealthProb',
+			csvColumn: 'Primary additional needs',
 			xsdPath: 'Message.Learner.LLDDHealthProb',
 			transform: 'stringToInt',
 		},
+
+		// Column 10: Prior post code
 		{
-			csvColumn: 'NINumber',
-			xsdPath: 'Message.Learner.NINumber',
-			transform: 'uppercase',
-		},
-		{
-			csvColumn: 'PostcodePrior',
+			csvColumn: 'Prior post code',
 			xsdPath: 'Message.Learner.PostcodePrior',
-			transform: 'uppercase',
-		},
-		{
-			csvColumn: 'Postcode',
-			xsdPath: 'Message.Learner.Postcode',
-			transform: 'uppercase',
-		},
-		{
-			csvColumn: 'Email',
-			xsdPath: 'Message.Learner.ContactDetails.Email',
-			transform: 'trim',
+			transform: 'uppercaseNoSpaces',
 		},
 
-		// === LearningDelivery ===
+		// Column 11: Post code
 		{
-			csvColumn: 'LearnAimRef',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-			transform: 'uppercase',
-		},
-		{
-			csvColumn: 'AimType',
-			xsdPath: 'Message.Learner.LearningDelivery.AimType',
-			transform: 'stringToInt',
-		},
-		{
-			csvColumn: 'AimSeqNumber',
-			xsdPath: 'Message.Learner.LearningDelivery.AimSeqNumber',
-			transform: 'stringToInt',
-		},
-		{
-			csvColumn: 'LearnStartDate',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
-			transform: 'isoDate',
-		},
-		{
-			csvColumn: 'LearnPlanEndDate',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnPlanEndDate',
-			transform: 'isoDate',
-		},
-		{
-			csvColumn: 'FundModel',
-			xsdPath: 'Message.Learner.LearningDelivery.FundModel',
-			transform: 'stringToInt',
-		},
-		{
-			csvColumn: 'ProgType',
-			xsdPath: 'Message.Learner.LearningDelivery.ProgType',
-			transform: 'stringToIntOptional',
-		},
-		{
-			csvColumn: 'StdCode',
-			xsdPath: 'Message.Learner.LearningDelivery.StdCode',
-			transform: 'stringToIntOptional',
-		},
-		{
-			csvColumn: 'DelLocPostCode',
-			xsdPath: 'Message.Learner.LearningDelivery.DelLocPostCode',
-			transform: 'uppercase',
-		},
-		{
-			csvColumn: 'CompStatus',
-			xsdPath: 'Message.Learner.LearningDelivery.CompStatus',
-			transform: 'stringToInt',
-		},
-		{
-			csvColumn: 'LearnActEndDate',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnActEndDate',
-			transform: 'isoDate',
-		},
-		{
-			csvColumn: 'Outcome',
-			xsdPath: 'Message.Learner.LearningDelivery.Outcome',
-			transform: 'stringToIntOptional',
+			csvColumn: 'Post code',
+			xsdPath: 'Message.Learner.Postcode',
+			transform: 'uppercaseNoSpaces',
 		},
 	],
 };
