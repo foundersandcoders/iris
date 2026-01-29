@@ -5,6 +5,7 @@
  */
 
 import type { MappingConfig } from '../types/schemaTypes';
+import { generateAimMappings } from './utils';
 
 export const facAirtableMapping: MappingConfig = {
 	id: 'fac-airtable-2025',
@@ -119,62 +120,44 @@ export const facAirtableMapping: MappingConfig = {
 			transform: 'digitsOnly',
 		},
 
-		// ==================== LEARNING DELIVERY: Aim 1 Fields ====================
+		// ==================== LEARNER: Prior Attainment ====================
 
-		// Column 35: Aim type (programme aim 1)
+		// Column 15: Prior attainment date applies to
 		{
-			csvColumn: 'Aim type (programme aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.AimType',
-			transform: 'stringToInt',
-			aimNumber: 1,
-		},
-
-		// Column 36: Programme aim 1 Learning ref (with trailing space!)
-		{
-			csvColumn: 'Programme aim 1 Learning ref ',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-			transform: 'uppercase',
-			aimNumber: 1,
-		},
-
-		// Column 37: Start date (aim 1)
-		{
-			csvColumn: 'Start date (aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
+			csvColumn: 'Prior attainment date applies to',
+			xsdPath: 'Message.Learner.PriorAttain.DateLevelApp',
 			transform: 'isoDate',
-			aimNumber: 1,
 		},
 
-		// Column 38: Planned end date (aim 1)
+		// Column 16: Prior attainment
 		{
-			csvColumn: 'Planned end date (aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.LearnPlanEndDate',
-			transform: 'isoDate',
-			aimNumber: 1,
-		},
-
-		// Column 39: Funding module (aim 1)
-		{
-			csvColumn: 'Funding module (aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.FundModel',
+			csvColumn: 'Prior attainment',
+			xsdPath: 'Message.Learner.PriorAttain.PriorLevel',
 			transform: 'stringToInt',
-			aimNumber: 1,
 		},
 
-		// Column 42: Delivery postcode (aim 1)
-		{
-			csvColumn: 'Delivery postcode (aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.DelLocPostCode',
-			transform: 'uppercaseNoSpaces',
-			aimNumber: 1,
-		},
+		// ==================== LEARNING DELIVERY: Aims 1-5 ====================
+		// Generated mappings for all 5 aims (columns 35-194)
 
-		// Column 61: Completion status (aim 1)
-		{
-			csvColumn: 'Completion status (aim 1)',
-			xsdPath: 'Message.Learner.LearningDelivery.CompStatus',
-			transform: 'stringToInt',
-			aimNumber: 1,
-		},
+		...generateAimMappings([
+			{ csv: 'Aim type (programme aim {n})', xsd: 'Message.Learner.LearningDelivery.AimType', transform: 'stringToInt' },
+			{ csv: 'Programme aim {n} Learning ref ', xsd: 'Message.Learner.LearningDelivery.LearnAimRef', transform: 'uppercase' },
+			{ csv: 'Start date (aim {n})', xsd: 'Message.Learner.LearningDelivery.LearnStartDate', transform: 'isoDate' },
+			{ csv: 'Planned end date (aim {n})', xsd: 'Message.Learner.LearningDelivery.LearnPlanEndDate', transform: 'isoDate' },
+			{ csv: 'Funding module (aim {n})', xsd: 'Message.Learner.LearningDelivery.FundModel', transform: 'stringToInt' },
+			{ csv: 'Programme type (aim {n})', xsd: 'Message.Learner.LearningDelivery.ProgType', transform: 'stringToIntOptional' },
+			{ csv: 'Apprentice standard (aim {n})', xsd: 'Message.Learner.LearningDelivery.StdCode', transform: 'stringToIntOptional' },
+			{ csv: 'Delivery postcode (aim {n})', xsd: 'Message.Learner.LearningDelivery.DelLocPostCode', transform: 'uppercaseNoSpaces' },
+			{ csv: 'Planned hours (aim {n})', xsd: 'Message.Learner.LearningDelivery.PHours', transform: 'stringToIntOptional' },
+			{ csv: 'Actual hours (aim {n})', xsd: 'Message.Learner.LearningDelivery.OTJActHours', transform: 'stringToIntOptional' },
+			{ csv: 'Contract Ref (aim {n})', xsd: 'Message.Learner.LearningDelivery.ConRefNumber', transform: 'trim' },
+			{ csv: 'EPAO ID (aim {n})', xsd: 'Message.Learner.LearningDelivery.EPAOrgID', transform: 'trim' },
+			{ csv: 'Completion status (aim {n})', xsd: 'Message.Learner.LearningDelivery.CompStatus', transform: 'stringToInt' },
+			{ csv: 'Actual end date (aim {n})', xsd: 'Message.Learner.LearningDelivery.LearnActEndDate', transform: 'isoDate' },
+			{ csv: 'Achievement date (aim {n})', xsd: 'Message.Learner.LearningDelivery.AchDate', transform: 'isoDate' },
+			{ csv: 'Outcome (aim {n})', xsd: 'Message.Learner.LearningDelivery.Outcome', transform: 'stringToIntOptional' },
+			{ csv: 'Withdrawal reason (aim {n})', xsd: 'Message.Learner.LearningDelivery.WithdrawReason', transform: 'stringToIntOptional' },
+			{ csv: 'Outcome grade (aim {n})', xsd: 'Message.Learner.LearningDelivery.OutGrade', transform: 'trim' },
+		]),
 	],
 };
