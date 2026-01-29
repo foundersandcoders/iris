@@ -52,13 +52,13 @@ describe('mappings/fac-airtable-2025', () => {
                   expect(deliveryFields.length).toBeGreaterThan(0);
 
                   const fieldNames = deliveryFields.map(f => f.csvColumn);
-                  expect(fieldNames).toContain('LearnAimRef');
-                  expect(fieldNames).toContain('AimType');
-                  expect(fieldNames).toContain('LearnStartDate');
+                  expect(fieldNames).toContain('Programme aim 1 Learning ref ');
+                  expect(fieldNames).toContain('Aim type (programme aim 1)');
+                  expect(fieldNames).toContain('Start date (aim 1)');
           });
 
           it('should use appropriate transforms for numeric fields', () => {
-                  const numericFields = ['ULN', 'Ethnicity', 'AimType', 'FundModel'];
+                  const numericFields = ['ULN', 'Ethnic group', 'Aim type (programme aim 1)', 'Funding module (aim 1)'];
 
                   for (const fieldName of numericFields) {
                           const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
@@ -66,12 +66,12 @@ describe('mappings/fac-airtable-2025', () => {
                   }
           });
 
-          it('should use uppercase transform for postcode fields', () => {
-                  const postcodeFields = ['Postcode', 'PostcodePrior', 'DelLocPostCode'];
+          it('should use uppercaseNoSpaces transform for postcode fields', () => {
+                  const postcodeFields = ['Post code', 'Prior post code', 'Delivery postcode (aim 1)'];
 
                   for (const fieldName of postcodeFields) {
                           const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
-                          expect(mapping?.transform).toBe('uppercase');
+                          expect(mapping?.transform).toBe('uppercaseNoSpaces');
                   }
           });
   });
