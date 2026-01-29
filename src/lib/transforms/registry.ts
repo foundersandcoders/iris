@@ -97,6 +97,25 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		category: 'string',
 	},
 
+	digitsOnly: {
+		fn: (v: string) => v.replace(/\D/g, ''),
+		description: 'Extract only digit characters',
+		example: "'Tel: 020-1234-5678' → '02012345678'",
+		category: 'string',
+	},
+
+	// === Type Conversions (Additional) ===
+	boolToInt: {
+		fn: (v: string) => {
+			const trimmed = v.trim().toLowerCase();
+			if (trimmed === 'true' || trimmed === '1' || trimmed === 'yes') return 1;
+			return 0;
+		},
+		description: 'Convert boolean/checkbox to 0 or 1',
+		example: "'true' → 1, 'false' → 0, '1' → 1, '' → 0",
+		category: 'type',
+	},
+
 	// === Conditional ===
 	nullIfEmpty: {
 		fn: (v: string) => (v.trim() === '' ? null : v),
