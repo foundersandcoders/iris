@@ -45,9 +45,6 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		example: "'true' → true, 'false' → false",
 		category: 'type',
 	},
-		example: "'true' → true, 'false' → false",
-		category: 'type',
-	},
 
 	// === Date/Time ===
 	isoDate: {
