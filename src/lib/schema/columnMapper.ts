@@ -3,6 +3,7 @@ import type { SchemaRegistry } from '../types/interpreterTypes';
 import { isRepeatable } from '../types/interpreterTypes';
 import { getTransform } from '../transforms/registry';
 import { hasAimData } from '../mappings/utils';
+import { buildFamEntries, buildAppFinRecords, buildEmploymentStatuses } from '../mappings/builders';
 
 /**
  * Maps a single CSV row to a partial ILR structure using column mappings
@@ -83,20 +84,27 @@ export function mapCsvToSchemaWithAims(
 		setNestedValue(result, mapping.xsdPath, value, registry);
 	}
 
+	// Build employment status entries
+	const statuses = buildEmploymentStatuses(csvRow, config.employmentStatuses);
+	if (statuses.length > 0) {
+		// Navigate to Learner element and inject LearnerEmploymentStatus array
+		const messagePart = result.Message as Record<string, unknown>;
+		if (messagePart && messagePart.Learner) {
+			const learnerArray = messagePart.Learner as Record<string, unknown>[];
+			if (learnerArray.length > 0) learnerArray[0].LearnerEmploymentStatus = statuses;
+		}
+	}
+
 	// Detect which aims have data and build LearningDelivery elements
 	const detectionField = config.aimDetectionField || 'Programme aim {n} Learning ref';
 	const learningDeliveries: Record<string, unknown>[] = [];
 
 	for (const [aimNumber, mappings] of aimGroups.entries()) {
 		// Check if this aim has data
-		if (!hasAimData(csvRow, aimNumber, detectionField)) {
-			continue;
-		}
+		if (!hasAimData(csvRow, aimNumber, detectionField)) continue;
 
 		// Build LearningDelivery object for this aim
-		const delivery: Record<string, unknown> = {
-			AimSeqNumber: aimNumber,
-		};
+		const delivery: Record<string, unknown> = { AimSeqNumber: aimNumber };
 
 		for (const mapping of mappings) {
 			const columnKey = Object.keys(csvRow).find(
@@ -114,6 +122,14 @@ export function mapCsvToSchemaWithAims(
 			const fieldName = pathParts[pathParts.length - 1];
 
 			delivery[fieldName] = value;
+
+			// Build FAM entries for this aim
+			const fams = buildFamEntries(csvRow, config.famTemplates, aimNumber);
+			if (fams.length > 0) delivery.LearningDeliveryFAM = fams;
+
+			// Build AppFinRecord entries for this aim
+			const fins = buildAppFinRecords(csvRow, config.appFinTemplates, aimNumber);
+			if (fins.length > 0) delivery.AppFinRecord = fins;
 		}
 
 		learningDeliveries.push(delivery);
