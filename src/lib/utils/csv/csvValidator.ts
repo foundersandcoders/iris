@@ -13,7 +13,7 @@
 import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
-import type { SchemaValidationIssue } from '../../types/schemaTypes';
+import type { SchemaValidationIssue, MappingConfig } from '../../types/schemaTypes';
 
 // === Types ===
 export type ValidationSeverity = 'error' | 'warning' | 'info';
@@ -34,28 +34,6 @@ export interface ValidationResult {
 	/** Count of warnings */ warningCount: number;
 }
 
-// === Field to Schema Path Mapping ===
-// Maps CSV column names to schema element paths
-// TODO: Move to column mapping configuration (Phase 4)
-const FIELD_TO_PATH: Record<string, string> = {
-	LearnRefNumber: 'Message/Learner/LearnRefNumber',
-	ULN: 'Message/Learner/ULN',
-	DateOfBirth: 'Message/Learner/DateOfBirth',
-	Ethnicity: 'Message/Learner/Ethnicity',
-	Sex: 'Message/Learner/Sex',
-	LLDDHealthProb: 'Message/Learner/LLDDHealthProb',
-	PostcodePrior: 'Message/Learner/PostcodePrior',
-	Postcode: 'Message/Learner/Postcode',
-	LearnAimRef: 'Message/Learner/LearningDelivery/LearnAimRef',
-	AimType: 'Message/Learner/LearningDelivery/AimType',
-	AimSeqNumber: 'Message/Learner/LearningDelivery/AimSeqNumber',
-	LearnStartDate: 'Message/Learner/LearningDelivery/LearnStartDate',
-	LearnPlanEndDate: 'Message/Learner/LearningDelivery/LearnPlanEndDate',
-	FundModel: 'Message/Learner/LearningDelivery/FundModel',
-	DelLocPostCode: 'Message/Learner/LearningDelivery/DelLocPostCode',
-	CompStatus: 'Message/Learner/LearningDelivery/CompStatus',
-};
-
 // === Validation Functions ===
 
 /**
@@ -63,22 +41,24 @@ const FIELD_TO_PATH: Record<string, string> = {
  * @param rows - Parsed CSV rows to validate
  * @param headers - CSV headers from the file
  * @param registry - Schema registry for validation rules
+ * @param mapping - Mapping configuration to use
  * @returns Validation result with all issues found
  */
 export function validateRows(
 	rows: CSVRow[],
 	headers: string[],
-	registry: SchemaRegistry
+	registry: SchemaRegistry,
+	mapping: MappingConfig
 ): ValidationResult {
 	const issues: ValidationIssue[] = [];
 
-	// Check for missing required headers (based on schema)
-	const missingHeaders = validateRequiredHeaders(headers, registry);
+	// Check for missing required headers (based on mapping and schema)
+	const missingHeaders = validateRequiredHeaders(headers, registry, mapping);
 	issues.push(...missingHeaders);
 
 	// Validate each row against schema
 	rows.forEach((row, index) => {
-		const rowIssues = validateRow(row, index, registry);
+		const rowIssues = validateRow(row, index, registry, mapping);
 		issues.push(...rowIssues);
 	});
 
@@ -94,22 +74,27 @@ export function validateRows(
 }
 
 /**
- * Check that all required headers are present based on schema
+ * Check that all required headers are present based on mapping and schema
  */
-function validateRequiredHeaders(headers: string[], registry: SchemaRegistry): ValidationIssue[] {
+function validateRequiredHeaders(
+	headers: string[],
+	registry: SchemaRegistry,
+	mapping: MappingConfig
+): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
-	const headerSet = new Set(headers);
+	const headerSet = new Set(headers.map((h) => h.toLowerCase()));
 
-	for (const [field, path] of Object.entries(FIELD_TO_PATH)) {
+	for (const m of mapping.mappings) {
+		const path = m.xsdPath.replace(/\./g, '/');
 		const element = registry.elementsByPath.get(path);
 		if (!element) continue;
 
 		// Check if field is required (cardinality.min >= 1)
-		if (element.cardinality.min >= 1 && !headerSet.has(field)) {
+		if (element.cardinality.min >= 1 && !headerSet.has(m.csvColumn.toLowerCase())) {
 			issues.push({
 				severity: 'error',
-				field,
-				message: `Required column "${field}" is missing from CSV`,
+				field: m.csvColumn,
+				message: `Required column "${m.csvColumn}" is missing from CSV`,
 				code: 'MISSING_REQUIRED_HEADER',
 			});
 		}
@@ -121,22 +106,31 @@ function validateRequiredHeaders(headers: string[], registry: SchemaRegistry): V
 /**
  * Validate a single row against schema constraints
  */
-function validateRow(row: CSVRow, rowIndex: number, registry: SchemaRegistry): ValidationIssue[] {
+function validateRow(
+	row: CSVRow,
+	rowIndex: number,
+	registry: SchemaRegistry,
+	mapping: MappingConfig
+): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 
-	for (const [field, path] of Object.entries(FIELD_TO_PATH)) {
+	for (const m of mapping.mappings) {
+		const path = m.xsdPath.replace(/\./g, '/');
 		const element = registry.elementsByPath.get(path);
 		if (!element) continue;
 
-		const value = row[field];
+		// Case-insensitive column lookup
+		const actualHeader = Object.keys(row).find((h) => h.toLowerCase() === m.csvColumn.toLowerCase());
+		const value = actualHeader ? row[actualHeader] : undefined;
+
 		const schemaIssues = validateValue(value, element, {
 			rowIndex,
-			sourceField: field,
+			sourceField: m.csvColumn,
 		});
 
 		// Convert schema validation issues to ValidationIssue format
 		for (const schemaIssue of schemaIssues) {
-			issues.push(convertSchemaIssue(schemaIssue, field, rowIndex));
+			issues.push(convertSchemaIssue(schemaIssue, m.csvColumn, rowIndex));
 		}
 	}
 
