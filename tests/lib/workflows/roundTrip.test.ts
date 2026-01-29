@@ -75,6 +75,10 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(validateResult.success).toBe(true);
 		expect(validateResult.data?.validation.valid).toBe(true);
 		expect(validateResult.data?.validation.errorCount).toBe(0);
+
+		// 5. Verify LearningDelivery exists in generated XML
+		const xmlContent = convertResult.data?.xml || '';
+		expect(xmlContent).toContain('<LearningDelivery>');
 	});
 
 	it('should produce invalid XML if CSV contains schema-violating data', async () => {

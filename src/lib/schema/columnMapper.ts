@@ -1,5 +1,6 @@
 import type { ColumnMapping, MappingConfig } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
+import { isRepeatable } from '../types/interpreterTypes';
 import { getTransform } from '../transforms/registry';
 
 /**
@@ -29,7 +30,7 @@ export function mapCsvToSchema(
 		// Resolve transform by name if specified
 		const value = mapping.transform ? getTransform(mapping.transform)(rawValue) : rawValue;
 
-		setNestedValue(result, mapping.xsdPath, value);
+		setNestedValue(result, mapping.xsdPath, value, registry);
 	}
 
 	return result;
@@ -38,21 +39,43 @@ export function mapCsvToSchema(
 /**
  * - Sets a value in a nested object using dot notation path
  * - Creates intermediate objects as needed
+ * - Uses registry to determine if an element should be an array
  *
  * @example
- * setNestedValue({}, "Message.Learner.LearnRefNumber", "12345")
- * // Returns: { Message: { Learner: { LearnRefNumber: "12345" } } }
+ * setNestedValue({}, "Message.Learner.LearnRefNumber", "12345", registry)
+ * // Returns: { Message: { Learner: [{ LearnRefNumber: "12345" }] } }
  */
-function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+function setNestedValue(
+	obj: Record<string, unknown>,
+	path: string,
+	value: unknown,
+	registry: SchemaRegistry
+): void {
 	const parts = path.split('.');
 	let current = obj;
+	let currentPath = '';
 
 	for (let i = 0; i < parts.length - 1; i++) {
 		const part = parts[i];
+		currentPath = currentPath ? `${currentPath}.${part}` : part;
 
-		if (!(part in current)) current[part] = {};
+		const element = registry.elementsByPath.get(currentPath);
+		const repeatable = element ? isRepeatable(element) : false;
 
-		current = current[part] as Record<string, unknown>;
+		if (repeatable) {
+			if (!(part in current)) {
+				current[part] = [{}];
+			}
+			// For CSV mapping, we currently assume a single repeatable item per row
+			// We reuse the first element in the array to build up the complex object
+			const arr = current[part] as Record<string, unknown>[];
+			current = arr[0];
+		} else {
+			if (!(part in current)) {
+				current[part] = {};
+			}
+			current = current[part] as Record<string, unknown>;
+		}
 	}
 
 	const lastPart = parts[parts.length - 1];
