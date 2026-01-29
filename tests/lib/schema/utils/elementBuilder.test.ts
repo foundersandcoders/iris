@@ -29,7 +29,7 @@ describe('buildElement', () => {
 
 		const result = buildElement(rawElement, 'Parent', emptyNamedTypes);
 
-		expect(result.path).toBe('Parent/Child');
+		expect(result.path).toBe('Parent.Child');
 	});
 
 	it('should handle inline simpleType with constraints', () => {
@@ -70,9 +70,9 @@ describe('buildElement', () => {
 		expect(result.isComplex).toBe(true);
 		expect(result.children).toHaveLength(2);
 		expect(result.children[0].name).toBe('Name');
-		expect(result.children[0].path).toBe('Person/Name');
+		expect(result.children[0].path).toBe('Person.Name');
 		expect(result.children[1].name).toBe('Age');
-		expect(result.children[1].path).toBe('Person/Age');
+		expect(result.children[1].path).toBe('Person.Age');
 	});
 
 	it('should handle single child element (not array)', () => {
@@ -153,7 +153,7 @@ describe('populateLookupMaps', () => {
 	it('should recursively populate maps for element tree', () => {
 		const child: SchemaElement = {
 			name: 'Child',
-			path: 'Parent/Child',
+			path: 'Parent.Child',
 			baseType: 'string',
 			constraints: {},
 			cardinality: { min: 1, max: 1 },
@@ -178,7 +178,7 @@ describe('populateLookupMaps', () => {
 
 		expect(elementsByPath.size).toBe(2);
 		expect(elementsByPath.get('Parent')).toBe(parent);
-		expect(elementsByPath.get('Parent/Child')).toBe(child);
+		expect(elementsByPath.get('Parent.Child')).toBe(child);
 		expect(elementsByName.get('Parent')).toEqual([parent]);
 		expect(elementsByName.get('Child')).toEqual([child]);
 	});
@@ -186,7 +186,7 @@ describe('populateLookupMaps', () => {
 	it('should handle multiple elements with same name', () => {
 		const child1: SchemaElement = {
 			name: 'Field',
-			path: 'Parent1/Field',
+			path: 'Parent1.Field',
 			baseType: 'string',
 			constraints: {},
 			cardinality: { min: 1, max: 1 },
@@ -196,7 +196,7 @@ describe('populateLookupMaps', () => {
 
 		const child2: SchemaElement = {
 			name: 'Field',
-			path: 'Parent2/Field',
+			path: 'Parent2.Field',
 			baseType: 'int',
 			constraints: {},
 			cardinality: { min: 1, max: 1 },

@@ -28,7 +28,7 @@ export function buildElement(
 	namedTypesMap: Map<string, NamedSimpleType>
 ): SchemaElement {
 	const name = rawElement['@_name'];
-	const path = parentPath ? `${parentPath}/${name}` : name;
+	const path = parentPath ? `${parentPath}.${name}` : name;
 	const cardinality = parseCardinality(rawElement);
 
 	let constraints: SchemaConstraints = { ...EMPTY_CONSTRAINTS };

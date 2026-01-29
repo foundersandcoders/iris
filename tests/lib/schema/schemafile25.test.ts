@@ -47,21 +47,21 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 	describe('Header structure', () => {
 		it('should have Header element', () => {
-			const header = registry.elementsByPath.get('Message/Header');
+			const header = registry.elementsByPath.get('Message.Header');
 
 			expect(header).toBeDefined();
 			expect(header?.isComplex).toBe(true);
 		});
 
 		it('should have CollectionDetails within Header', () => {
-			const collectionDetails = registry.elementsByPath.get('Message/Header/CollectionDetails');
+			const collectionDetails = registry.elementsByPath.get('Message.Header.CollectionDetails');
 
 			expect(collectionDetails).toBeDefined();
 			expect(collectionDetails?.isComplex).toBe(true);
 		});
 
 		it('should have Collection field with enumeration constraint', () => {
-			const collection = registry.elementsByPath.get('Message/Header/CollectionDetails/Collection');
+			const collection = registry.elementsByPath.get('Message.Header.CollectionDetails.Collection');
 
 			expect(collection).toBeDefined();
 			expect(collection?.baseType).toBe('string');
@@ -69,7 +69,7 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have Year field with enumeration constraint', () => {
-			const year = registry.elementsByPath.get('Message/Header/CollectionDetails/Year');
+			const year = registry.elementsByPath.get('Message.Header.CollectionDetails.Year');
 
 			expect(year).toBeDefined();
 			expect(year?.baseType).toBe('string');
@@ -78,7 +78,7 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 		it('should have FilePreparationDate as date type', () => {
 			const fileDate = registry.elementsByPath.get(
-				'Message/Header/CollectionDetails/FilePreparationDate'
+				'Message.Header.CollectionDetails.FilePreparationDate'
 			);
 
 			expect(fileDate).toBeDefined();
@@ -86,14 +86,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have Source within Header', () => {
-			const source = registry.elementsByPath.get('Message/Header/Source');
+			const source = registry.elementsByPath.get('Message.Header.Source');
 
 			expect(source).toBeDefined();
 			expect(source?.isComplex).toBe(true);
 		});
 
 		it('should have UKPRN with numeric range constraints', () => {
-			const ukprn = registry.elementsByPath.get('Message/Header/Source/UKPRN');
+			const ukprn = registry.elementsByPath.get('Message.Header.Source.UKPRN');
 
 			expect(ukprn).toBeDefined();
 			expect(ukprn?.baseType).toBe('int');
@@ -103,7 +103,7 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 		it('should have optional SoftwareSupplier with length constraints', () => {
 			const softwareSupplier = registry.elementsByPath.get(
-				'Message/Header/Source/SoftwareSupplier'
+				'Message.Header.Source.SoftwareSupplier'
 			);
 
 			expect(softwareSupplier).toBeDefined();
@@ -113,14 +113,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have DateTime as dateTime type', () => {
-			const dateTime = registry.elementsByPath.get('Message/Header/Source/DateTime');
+			const dateTime = registry.elementsByPath.get('Message.Header.Source.DateTime');
 
 			expect(dateTime).toBeDefined();
 			expect(dateTime?.baseType).toBe('dateTime');
 		});
 
 		it('should have SerialNo with pattern constraint', () => {
-			const serialNo = registry.elementsByPath.get('Message/Header/Source/SerialNo');
+			const serialNo = registry.elementsByPath.get('Message.Header.Source.SerialNo');
 
 			expect(serialNo).toBeDefined();
 			expect(serialNo?.baseType).toBe('string');
@@ -130,14 +130,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 	describe('LearningProvider structure', () => {
 		it('should have LearningProvider element', () => {
-			const learningProvider = registry.elementsByPath.get('Message/LearningProvider');
+			const learningProvider = registry.elementsByPath.get('Message.LearningProvider');
 
 			expect(learningProvider).toBeDefined();
 			expect(learningProvider?.isComplex).toBe(true);
 		});
 
 		it('should have UKPRN within LearningProvider', () => {
-			const ukprn = registry.elementsByPath.get('Message/LearningProvider/UKPRN');
+			const ukprn = registry.elementsByPath.get('Message.LearningProvider.UKPRN');
 
 			expect(ukprn).toBeDefined();
 			expect(ukprn?.baseType).toBe('int');
@@ -148,7 +148,7 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 	describe('Learner structure', () => {
 		it('should have Learner as repeating element', () => {
-			const learner = registry.elementsByPath.get('Message/Learner');
+			const learner = registry.elementsByPath.get('Message.Learner');
 
 			expect(learner).toBeDefined();
 			expect(learner?.cardinality.min).toBe(1);
@@ -156,14 +156,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have Learner as complex type with children', () => {
-			const learner = registry.elementsByPath.get('Message/Learner');
+			const learner = registry.elementsByPath.get('Message.Learner');
 
 			expect(learner?.isComplex).toBe(true);
 			expect(learner?.children.length).toBeGreaterThan(10);
 		});
 
 		it('should have LearnRefNumber with pattern and length', () => {
-			const learnRef = registry.elementsByPath.get('Message/Learner/LearnRefNumber');
+			const learnRef = registry.elementsByPath.get('Message.Learner.LearnRefNumber');
 
 			expect(learnRef).toBeDefined();
 			expect(learnRef?.baseType).toBe('string');
@@ -171,14 +171,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have ULN field', () => {
-			const uln = registry.elementsByPath.get('Message/Learner/ULN');
+			const uln = registry.elementsByPath.get('Message.Learner.ULN');
 
 			expect(uln).toBeDefined();
 			expect(uln?.baseType).toBe('long');
 		});
 
 		it('should have optional PrevLearnRefNumber', () => {
-			const prevRef = registry.elementsByPath.get('Message/Learner/PrevLearnRefNumber');
+			const prevRef = registry.elementsByPath.get('Message.Learner.PrevLearnRefNumber');
 
 			expect(prevRef).toBeDefined();
 			expect(prevRef?.cardinality.min).toBe(0);
@@ -186,7 +186,7 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 		});
 
 		it('should have optional PrevUKPRN with range constraints', () => {
-			const prevUkprn = registry.elementsByPath.get('Message/Learner/PrevUKPRN');
+			const prevUkprn = registry.elementsByPath.get('Message.Learner.PrevUKPRN');
 
 			expect(prevUkprn).toBeDefined();
 			expect(prevUkprn?.cardinality.min).toBe(0);
@@ -197,14 +197,14 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 
 	describe('lookup maps', () => {
 		it('should find elements by path', () => {
-			expect(registry.elementsByPath.get('Message/Learner/ULN')).toBeDefined();
-			expect(registry.elementsByPath.get('Message/Header/Source/UKPRN')).toBeDefined();
+			expect(registry.elementsByPath.get('Message.Learner.ULN')).toBeDefined();
+			expect(registry.elementsByPath.get('Message.Header.Source.UKPRN')).toBeDefined();
 		});
 
 		it('should find elements by name (returns array)', () => {
 			const ukprnElements = registry.elementsByName.get('UKPRN');
 
-			// UKPRN appears in multiple places (Header/Source, LearningProvider, Learner/PrevUKPRN)
+			// UKPRN appears in multiple places (Header.Source, LearningProvider, Learner.PrevUKPRN)
 			expect(ukprnElements).toBeDefined();
 			expect(Array.isArray(ukprnElements)).toBe(true);
 			expect(ukprnElements!.length).toBeGreaterThan(1);
@@ -214,28 +214,28 @@ describe('schemafile25.xsd (ILR 2025-26)', () => {
 			const ukprnElements = registry.elementsByName.get('UKPRN');
 			const paths = ukprnElements?.map((el) => el.path);
 
-			expect(paths).toContain('Message/Header/Source/UKPRN');
-			expect(paths).toContain('Message/LearningProvider/UKPRN');
+			expect(paths).toContain('Message.Header.Source.UKPRN');
+			expect(paths).toContain('Message.LearningProvider.UKPRN');
 		});
 	});
 
 	describe('SourceFiles structure (optional repeating container)', () => {
 		it('should have optional SourceFiles element', () => {
-			const sourceFiles = registry.elementsByPath.get('Message/SourceFiles');
+			const sourceFiles = registry.elementsByPath.get('Message.SourceFiles');
 
 			expect(sourceFiles).toBeDefined();
 			expect(sourceFiles?.cardinality.min).toBe(0);
 		});
 
 		it('should have repeating SourceFile within SourceFiles', () => {
-			const sourceFile = registry.elementsByPath.get('Message/SourceFiles/SourceFile');
+			const sourceFile = registry.elementsByPath.get('Message.SourceFiles.SourceFile');
 
 			expect(sourceFile).toBeDefined();
 			expect(sourceFile?.cardinality.max).toBe(Infinity);
 		});
 
 		it('should have SourceFileName with length constraints', () => {
-			const fileName = registry.elementsByPath.get('Message/SourceFiles/SourceFile/SourceFileName');
+			const fileName = registry.elementsByPath.get('Message.SourceFiles.SourceFile.SourceFileName');
 
 			expect(fileName).toBeDefined();
 			expect(fileName?.constraints.minLength).toBe(1);
