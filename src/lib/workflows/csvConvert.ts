@@ -7,7 +7,7 @@ import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/configTypes';
-import { mapCsvToSchema } from '../schema/columnMapper';
+import { mapCsvToSchemaWithAims } from '../schema/columnMapper';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -210,10 +210,10 @@ function buildILRMessage(
 	const learners: Record<string, unknown>[] = [];
 
 	for (const row of csvData.rows) {
-		const mappedData = mapCsvToSchema(row, mapping.mappings, registry);
+		const mappedData = mapCsvToSchemaWithAims(row, mapping, registry);
 
 		// Extract the Learner data from Message.Learner path
-		// Note: mapCsvToSchema returns Learner as an array since it's a repeatable element
+		// Note: mapCsvToSchemaWithAims returns Learner as an array since it's a repeatable element
 		if (mappedData.Message && typeof mappedData.Message === 'object') {
 			const messageData = mappedData.Message as Record<string, unknown>;
 			if (Array.isArray(messageData.Learner) && messageData.Learner.length > 0) {
