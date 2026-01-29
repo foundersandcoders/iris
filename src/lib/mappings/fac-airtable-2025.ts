@@ -270,7 +270,7 @@ export const facAirtableMapping: MappingConfig = {
 				{
 					csvColumn: 'Has the learner been made redundant? #1',
 					esmType: 'REI',
-					transform: 'boolTo',
+					transform: 'boolToInt',
 				},
 				{ csvColumn: 'Length of employment #1', esmType: 'LOE', transform: 'stringToInt' },
 				{
@@ -292,7 +292,7 @@ export const facAirtableMapping: MappingConfig = {
 				{
 					csvColumn: 'Has the learner been made redundant? #2',
 					esmType: 'REI',
-					transform: 'boolTo',
+					transform: 'boolToInt',
 				},
 				{ csvColumn: 'Length of employment #2', esmType: 'LOE', transform: 'stringToInt' },
 				{

@@ -22,7 +22,7 @@ export function mapCsvToSchema(
 
 	for (const mapping of mappings) {
 		const columnKey = Object.keys(csvRow).find(
-			(key) => key.toLowerCase() === mapping.csvColumn.toLowerCase()
+			(key) => key.trim().toLowerCase() === mapping.csvColumn.trim().toLowerCase()
 		);
 
 		if (!columnKey) continue;
@@ -122,15 +122,15 @@ export function mapCsvToSchemaWithAims(
 			const fieldName = pathParts[pathParts.length - 1];
 
 			delivery[fieldName] = value;
-
-			// Build FAM entries for this aim
-			const fams = buildFamEntries(csvRow, config.famTemplates, aimNumber);
-			if (fams.length > 0) delivery.LearningDeliveryFAM = fams;
-
-			// Build AppFinRecord entries for this aim
-			const fins = buildAppFinRecords(csvRow, config.appFinTemplates, aimNumber);
-			if (fins.length > 0) delivery.AppFinRecord = fins;
 		}
+
+		// Build FAM entries for this aim
+		const fams = buildFamEntries(csvRow, config.famTemplates, aimNumber);
+		if (fams.length > 0) delivery.LearningDeliveryFAM = fams;
+
+		// Build AppFinRecord entries for this aim
+		const fins = buildAppFinRecords(csvRow, config.appFinTemplates, aimNumber);
+		if (fins.length > 0) delivery.AppFinRecord = fins;
 
 		learningDeliveries.push(delivery);
 	}
