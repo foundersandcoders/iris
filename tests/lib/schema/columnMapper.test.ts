@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { mapCsvToSchema } from '../../../src/lib/schema/columnMapper';
+import { mapCsvToSchema, mapCsvToSchemaWithAims } from '../../../src/lib/schema/columnMapper';
 import * as fixtures from '../../fixtures/lib/columnMapper';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import { parseXsd } from '../../../src/lib/schema/schemaParser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
 
 describe('columnMapper', () => {
 	// Load actual schema for path validation
