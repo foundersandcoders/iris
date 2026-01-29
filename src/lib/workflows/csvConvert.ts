@@ -18,6 +18,7 @@ import type {
 } from '../types/workflowTypes';
 import { homedir } from 'os';
 import { join } from 'path';
+import type { SchemaRegistry } from '$lib/schema';
 
 const STEPS = {
 	parse: { id: 'parse', name: 'Parse CSV' },
@@ -173,7 +174,7 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(csvData: CSVData, registry: any): Record<string, unknown> {
+function buildILRMessage(csvData: CSVData, registry: SchemaRegistry): Record<string, unknown> {
 	const now = new Date();
 	const config = getConfig();
 
