@@ -18,11 +18,13 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearnRefNumber: 'L12345',
-						GivenNames: 'Jane',
-						FamilyName: 'Smith',
-					},
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+							GivenNames: 'Jane',
+							FamilyName: 'Smith',
+						},
+					],
 				},
 			});
 		});
@@ -36,10 +38,12 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						DateOfBirth: '1995-06-15',
-						Postcode: 'SW1A1AA',
-					},
+					Learner: [
+						{
+							DateOfBirth: '1995-06-15',
+							Postcode: 'SW1A1AA',
+						},
+					],
 				},
 			});
 		});
@@ -58,8 +62,8 @@ describe('columnMapper', () => {
 			const result = mapCsvToSchema(csvRow, mappings, registry);
 
 			expect(result.Message).toBeDefined();
-			expect((result.Message as any).Learner.LearnRefNumber).toBe('L12345');
-			expect((result.Message as any).Learner.GivenNames).toBe('Jane');
+			expect((result.Message as any).Learner[0].LearnRefNumber).toBe('L12345');
+			expect((result.Message as any).Learner[0].GivenNames).toBe('Jane');
 		});
 
 		it('should skip mappings for missing CSV columns', () => {
@@ -72,9 +76,11 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearnRefNumber: 'L12345',
-					},
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+						},
+					],
 				},
 			});
 		});
@@ -93,11 +99,15 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearningDelivery: {
-							AimSeqNumber: '1',
+					Learner: [
+						{
+							LearningDelivery: [
+								{
+									AimSeqNumber: '1',
+								},
+							],
 						},
-					},
+					],
 				},
 			});
 		});

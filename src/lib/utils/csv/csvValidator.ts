@@ -85,8 +85,7 @@ function validateRequiredHeaders(
 	const headerSet = new Set(headers.map((h) => h.toLowerCase()));
 
 	for (const m of mapping.mappings) {
-		const path = m.xsdPath.replace(/\./g, '/');
-		const element = registry.elementsByPath.get(path);
+		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
 		// Check if field is required (cardinality.min >= 1)
@@ -115,8 +114,7 @@ function validateRow(
 	const issues: ValidationIssue[] = [];
 
 	for (const m of mapping.mappings) {
-		const path = m.xsdPath.replace(/\./g, '/');
-		const element = registry.elementsByPath.get(path);
+		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
 		// Case-insensitive column lookup

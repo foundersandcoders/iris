@@ -26,7 +26,7 @@ describe('buildSchemaRegistry', () => {
 	describe('cardinality parsing', () => {
 		it('should parse optional element (minOccurs=0, maxOccurs=1)', () => {
 			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
-			const optional = registry.elementsByPath.get('TestContainer/OptionalElement');
+			const optional = registry.elementsByPath.get('TestContainer.OptionalElement');
 
 			expect(optional).toBeDefined();
 			expect(optional?.cardinality).toEqual({ min: 0, max: 1 });
@@ -34,7 +34,7 @@ describe('buildSchemaRegistry', () => {
 
 		it('should parse required element (minOccurs=1, maxOccurs=1)', () => {
 			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
-			const required = registry.elementsByPath.get('TestContainer/RequiredElement');
+			const required = registry.elementsByPath.get('TestContainer.RequiredElement');
 
 			expect(required).toBeDefined();
 			expect(required?.cardinality).toEqual({ min: 1, max: 1 });
@@ -42,7 +42,7 @@ describe('buildSchemaRegistry', () => {
 
 		it('should parse repeating element (maxOccurs=unbounded)', () => {
 			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
-			const repeating = registry.elementsByPath.get('TestContainer/RepeatingElement');
+			const repeating = registry.elementsByPath.get('TestContainer.RepeatingElement');
 
 			expect(repeating).toBeDefined();
 			expect(repeating?.cardinality).toEqual({ min: 0, max: Infinity });
@@ -90,7 +90,7 @@ describe('buildSchemaRegistry', () => {
 
 		it('should resolve xs:int to int base type', () => {
 			const registry = buildSchemaRegistry(fixtures.elementWithCardinality);
-			const intElement = registry.elementsByPath.get('TestContainer/RequiredElement');
+			const intElement = registry.elementsByPath.get('TestContainer.RequiredElement');
 
 			expect(intElement?.baseType).toBe('int');
 		});
@@ -111,20 +111,20 @@ describe('buildSchemaRegistry', () => {
 
 			expect(registry.rootElement.path).toBe('Person');
 
-			const firstName = registry.elementsByPath.get('Person/FirstName');
+			const firstName = registry.elementsByPath.get('Person.FirstName');
 			expect(firstName).toBeDefined();
-			expect(firstName?.path).toBe('Person/FirstName');
+			expect(firstName?.path).toBe('Person.FirstName');
 			expect(firstName?.baseType).toBe('string');
 
-			const age = registry.elementsByPath.get('Person/Age');
+			const age = registry.elementsByPath.get('Person.Age');
 			expect(age).toBeDefined();
-			expect(age?.path).toBe('Person/Age');
+			expect(age?.path).toBe('Person.Age');
 			expect(age?.baseType).toBe('int');
 		});
 
 		it('should handle child element cardinality', () => {
 			const registry = buildSchemaRegistry(fixtures.complexTypeWithSequence);
-			const age = registry.elementsByPath.get('Person/Age');
+			const age = registry.elementsByPath.get('Person.Age');
 
 			expect(age?.cardinality).toEqual({ min: 0, max: 1 });
 		});
@@ -136,9 +136,9 @@ describe('buildSchemaRegistry', () => {
 
 			expect(registry.elementsByPath.size).toBe(4); // Person + 3 children
 			expect(registry.elementsByPath.get('Person')).toBeDefined();
-			expect(registry.elementsByPath.get('Person/FirstName')).toBeDefined();
-			expect(registry.elementsByPath.get('Person/LastName')).toBeDefined();
-			expect(registry.elementsByPath.get('Person/Age')).toBeDefined();
+			expect(registry.elementsByPath.get('Person.FirstName')).toBeDefined();
+			expect(registry.elementsByPath.get('Person.LastName')).toBeDefined();
+			expect(registry.elementsByPath.get('Person.Age')).toBeDefined();
 		});
 
 		it('should populate elementsByName map', () => {
@@ -172,16 +172,16 @@ describe('buildSchemaRegistry', () => {
 			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
 
 			expect(
-				registry.elementsByPath.get('Message/Header/CollectionDetails/Collection')
+				registry.elementsByPath.get('Message.Header.CollectionDetails.Collection')
 			).toBeDefined();
-			expect(registry.elementsByPath.get('Message/Header/CollectionDetails/Year')).toBeDefined();
-			expect(registry.elementsByPath.get('Message/Header/Source/UKPRN')).toBeDefined();
-			expect(registry.elementsByPath.get('Message/Learner/ULN')).toBeDefined();
+			expect(registry.elementsByPath.get('Message.Header.CollectionDetails.Year')).toBeDefined();
+			expect(registry.elementsByPath.get('Message.Header.Source.UKPRN')).toBeDefined();
+			expect(registry.elementsByPath.get('Message.Learner.ULN')).toBeDefined();
 		});
 
 		it('should preserve constraints in deeply nested elements', () => {
 			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
-			const ukprn = registry.elementsByPath.get('Message/Header/Source/UKPRN');
+			const ukprn = registry.elementsByPath.get('Message.Header.Source.UKPRN');
 
 			expect(ukprn?.baseType).toBe('int');
 			expect(ukprn?.constraints.minInclusive).toBe(10000000);
@@ -190,7 +190,7 @@ describe('buildSchemaRegistry', () => {
 
 		it('should handle repeating elements in deep structures', () => {
 			const registry = buildSchemaRegistry(fixtures.deeplyNestedStructure);
-			const learner = registry.elementsByPath.get('Message/Learner');
+			const learner = registry.elementsByPath.get('Message.Learner');
 
 			expect(learner?.cardinality).toEqual({ min: 1, max: Infinity });
 		});

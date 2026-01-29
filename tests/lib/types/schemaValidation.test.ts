@@ -11,9 +11,9 @@ import {
 describe('schemaValidation types module', () => {
 	describe('createIssue', () => {
 		it('creates an issue with required fields', () => {
-			const issue = createIssue('required', 'Message/Learner/ULN', 'ULN is required');
+			const issue = createIssue('required', 'Message.Learner.ULN', 'ULN is required');
 			expect(issue.type).toBe('required');
-			expect(issue.elementPath).toBe('Message/Learner/ULN');
+			expect(issue.elementPath).toBe('Message.Learner.ULN');
 			expect(issue.message).toBe('ULN is required');
 		});
 	});

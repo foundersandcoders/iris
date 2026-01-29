@@ -347,7 +347,7 @@ describe('validateValue', () => {
 		it('should return no issues for fully valid value', () => {
 			const element = createElement({
 				name: 'UKPRN',
-				path: 'Message/Header/Source/UKPRN',
+				path: 'Message.Header/Source/UKPRN',
 				baseType: 'int',
 				constraints: {
 					minInclusive: 10000000,
@@ -363,7 +363,7 @@ describe('validateValue', () => {
 		it('should validate ILR Collection field correctly', () => {
 			const element = createElement({
 				name: 'Collection',
-				path: 'Message/Header/CollectionDetails/Collection',
+				path: 'Message.Header/CollectionDetails/Collection',
 				baseType: 'string',
 				constraints: { enumeration: ['ILR'] },
 			});
@@ -375,7 +375,7 @@ describe('validateValue', () => {
 		it('should validate LearnRefNumber pattern', () => {
 			const element = createElement({
 				name: 'LearnRefNumber',
-				path: 'Message/Learner/LearnRefNumber',
+				path: 'Message.Learner.LearnRefNumber',
 				baseType: 'string',
 				constraints: { pattern: '[A-Za-z0-9 ]{1,12}' },
 			});

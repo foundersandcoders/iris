@@ -31,7 +31,7 @@ export function makeElement(cardinality: Cardinality): SchemaElement {
 export const errorIssue1: SchemaValidationIssue = {
 	severity: 'error',
 	type: 'required',
-	elementPath: 'Message/Learner/ULN',
+	elementPath: 'Message.Learner.ULN',
 	message: 'ULN is required',
 	code: 'SCHEMA_REQUIRED',
 };
@@ -39,7 +39,7 @@ export const errorIssue1: SchemaValidationIssue = {
 export const errorIssue2: SchemaValidationIssue = {
 	severity: 'error',
 	type: 'required',
-	elementPath: 'Message/Learner/LearnRefNumber',
+	elementPath: 'Message.Learner.LearnRefNumber',
 	message: 'LearnRefNumber is required',
 	code: 'SCHEMA_REQUIRED',
 };
@@ -47,7 +47,7 @@ export const errorIssue2: SchemaValidationIssue = {
 export const warningIssue: SchemaValidationIssue = {
 	severity: 'warning',
 	type: 'pattern',
-	elementPath: 'Message/Learner/Email',
+	elementPath: 'Message.Learner.Email',
 	message: 'Email format looks unusual',
 	code: 'SCHEMA_PATTERN',
 };
@@ -55,7 +55,7 @@ export const warningIssue: SchemaValidationIssue = {
 export const infoIssue: SchemaValidationIssue = {
 	severity: 'info',
 	type: 'maxLength',
-	elementPath: 'Message/Learner/FamilyName',
+	elementPath: 'Message.Learner.FamilyName',
 	message: 'Name approaching max length',
 	code: 'SCHEMA_MAXLENGTH',
 };

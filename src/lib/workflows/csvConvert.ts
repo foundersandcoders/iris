@@ -213,10 +213,12 @@ function buildILRMessage(
 		const mappedData = mapCsvToSchema(row, mapping.mappings, registry);
 
 		// Extract the Learner data from Message.Learner path
+		// Note: mapCsvToSchema returns Learner as an array since it's a repeatable element
 		if (mappedData.Message && typeof mappedData.Message === 'object') {
 			const messageData = mappedData.Message as Record<string, unknown>;
-			if (messageData.Learner && typeof messageData.Learner === 'object') {
-				learners.push(messageData.Learner as Record<string, unknown>);
+			if (Array.isArray(messageData.Learner) && messageData.Learner.length > 0) {
+				// Extract the first (and only) learner from the array
+				learners.push(messageData.Learner[0] as Record<string, unknown>);
 			}
 		}
 	}
