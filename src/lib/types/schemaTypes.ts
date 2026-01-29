@@ -119,6 +119,8 @@ export interface ColumnMapping {
 	xsdPath: string;
 	/** Optional transformation function applied before validation */
 	transform?: string;
+	/** Aim group number (1-5) for multi-aim handling (optional) */
+	aimNumber?: number;
 }
 
 /** Schema reference for mapping compatibility validation */
@@ -143,4 +145,6 @@ export interface MappingConfig {
 	targetSchema: SchemaReference;
 	/** Column mappings */
 	mappings: ColumnMapping[];
+	/** Field to check for aim data presence (supports {n} placeholder for aim number) */
+	aimDetectionField?: string;
 }
