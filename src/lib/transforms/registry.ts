@@ -34,8 +34,8 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 
 	stringToFloat: {
 		fn: (v: string) => parseFloat(v) || 0,
-		description: 'Convert string to floating point number',
-		example: "'123.45' → 123.45",
+		description: 'Convert string to floating point number (defaults to 0 if invalid)',
+		example: "'123.45' → 123.45, 'invalid' → 0",
 		category: 'type',
 	},
 
