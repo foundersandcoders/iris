@@ -9,6 +9,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { readFileSync } from 'fs';
+import { facAirtableMapping } from '../../../src/lib/mappings/fac-airtable-2025';
 
 let registry: SchemaRegistry;
 
@@ -55,6 +56,7 @@ describe('convertWorkflow', () => {
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
+				mapping: facAirtableMapping,
 			});
 
 			const eventKeys = events.map((e) => `${e.type}:${e.step.id}`);
@@ -78,6 +80,7 @@ describe('convertWorkflow', () => {
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
+				mapping: facAirtableMapping,
 			});
 
 			expect(result.success).toBe(true);
@@ -94,6 +97,7 @@ describe('convertWorkflow', () => {
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
+				mapping: facAirtableMapping,
 			});
 
 			const outputFile = Bun.file(result.data!.outputPath);
@@ -111,6 +115,7 @@ describe('convertWorkflow', () => {
 				filePath: join(testDir, 'nonexistent.csv'),
 				outputDir: testDir,
 				registry,
+				mapping: facAirtableMapping,
 			});
 
 			expect(events).toContainEqual(
@@ -136,6 +141,7 @@ describe('convertWorkflow', () => {
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
+				mapping: facAirtableMapping,
 			});
 
 			expect(result.success).toBe(true);
@@ -153,6 +159,7 @@ describe('convertWorkflow', () => {
 					filePath: testCsvPath,
 					outputDir: testDir,
 					registry,
+				mapping: facAirtableMapping,
 				});
 
 				const parseEvents = events.filter((e) => e.step.id === 'parse').map((e) => e.type);
@@ -167,6 +174,7 @@ describe('convertWorkflow', () => {
 					filePath: testCsvPath,
 					outputDir: testDir,
 					registry,
+				mapping: facAirtableMapping,
 				});
 
 				const completeEvents = events.filter((e) => e.type === 'step:complete');

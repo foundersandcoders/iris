@@ -5,6 +5,7 @@ import { validateRows } from '../../../../src/lib/utils/csv/csvValidator';
 import { buildSchemaRegistry } from '../../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../../src/lib/types/interpreterTypes';
 import * as fixtures from '../../../fixtures/lib/utils/csv/csvValidator';
+import { facAirtableMapping } from '../../../../src/lib/mappings/fac-airtable-2025';
 
 describe('validator', () => {
 	let registry: SchemaRegistry;
@@ -17,7 +18,12 @@ describe('validator', () => {
 
 	describe('validateRows', () => {
 		it('returns valid result for complete data', () => {
-			const result = validateRows([fixtures.validRow], fixtures.validHeaders, registry);
+			const result = validateRows(
+				[fixtures.validRow],
+				fixtures.validHeaders,
+				registry,
+				facAirtableMapping
+			);
 
 			expect(result.valid).toBe(true);
 			expect(result.errorCount).toBe(0);
@@ -26,7 +32,7 @@ describe('validator', () => {
 		});
 
 		it('detects missing required headers', () => {
-			const result = validateRows([], fixtures.incompleteHeaders, registry);
+			const result = validateRows([], fixtures.incompleteHeaders, registry, facAirtableMapping);
 
 			expect(result.valid).toBe(false);
 			expect(result.errorCount).toBeGreaterThan(0);
@@ -36,7 +42,12 @@ describe('validator', () => {
 		});
 
 		it('detects empty required fields in rows', () => {
-			const result = validateRows([fixtures.rowWithEmptyULN], fixtures.validHeaders, registry);
+			const result = validateRows(
+				[fixtures.rowWithEmptyULN],
+				fixtures.validHeaders,
+				registry,
+				facAirtableMapping
+			);
 
 			expect(result.valid).toBe(false);
 			expect(result.errorCount).toBeGreaterThan(0);
@@ -50,7 +61,8 @@ describe('validator', () => {
 			const result = validateRows(
 				[fixtures.rowWithWhitespaceLearnRef],
 				fixtures.validHeaders,
-				registry
+				registry,
+				facAirtableMapping
 			);
 
 			expect(result.valid).toBe(false);
@@ -59,7 +71,12 @@ describe('validator', () => {
 		});
 
 		it('validates multiple rows independently', () => {
-			const result = validateRows(fixtures.multipleRowsWithErrors, fixtures.validHeaders, registry);
+			const result = validateRows(
+				fixtures.multipleRowsWithErrors,
+				fixtures.validHeaders,
+				registry,
+				facAirtableMapping
+			);
 
 			expect(result.valid).toBe(false);
 			expect(result.errorCount).toBeGreaterThan(0);
@@ -71,7 +88,12 @@ describe('validator', () => {
 		});
 
 		it('counts warnings separately from errors', () => {
-			const result = validateRows([fixtures.validRow], fixtures.validHeaders, registry);
+			const result = validateRows(
+				[fixtures.validRow],
+				fixtures.validHeaders,
+				registry,
+				facAirtableMapping
+			);
 
 			expect(result.errorCount).toBe(0);
 			expect(result.warningCount).toBe(0);
