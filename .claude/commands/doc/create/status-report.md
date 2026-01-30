@@ -21,11 +21,16 @@ disable-model-invocation: true
 <output template-path="~/.claude/doc-templates/doc/create/status-report.md" format="Report should exactly mirror template structure" />
 <guidelines>
 - **Brevity is paramount** - this is a status snapshot, not a changelog
-- TL;DR must be exactly one sentence, big-picture only
-- Maximum 5-6 completed items; group related work (e.g. "CSV parser with tests" not separate bullets)
+- TL;DR must be exactly one sentence, big-picture only (milestone completed, NOT technical implementation)
+- Maximum 5-6 completed items; group related work aggressively
+- Use **bold labels** for categories in Completed section (e.g. "**Column Matcher:**", "**Test Coverage:**")
+- Put implementation details in parentheses after category labels when needed
 - One line per in-progress milestone
-- No implementation details (papaparse, RFC 4180, etc.) - just "CSV parser"
+- No implementation details in main text (papaparse, RFC 4180, etc.) - use category labels instead
+- Omit version bumps unless they represent major releases
 - No sub-bullets or nested lists
+- For workflow descriptions, show explicit steps with arrows (Upload CSV → Validator → Generator)
 - Use British English
+- Skip obvious details (fixtures, typo fixes) unless they're significant milestones
 </guidelines>
 </task>
