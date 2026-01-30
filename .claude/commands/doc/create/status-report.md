@@ -4,14 +4,13 @@ model: claude-haiku-4-5
 disable-model-invocation: true
 ---
 <task overview="Generate a project status report by analyzing the current state of the codebase, roadmaps, and recent work." destination="docs/status-reports/" >
-<filename format="{PROJECT-REPORT-NUMBER}_{YY-MM-DD-HHMM}_{RECENT}.md" example="003_26-01-13-1545_xml-validation-added.md" >
-| Component | Description | Example |
-|-----------|-------------|---------|
-| PROJECT-REPORT-NUMBER | 3-digit incrementing number across all reports | `001`, `002`, `015` |
-| YY-MM-DD-HHMM | Date and time (24hr) | `26-01-13-1430` |
-| RECENT | Most significant change, max 3 words, kebab-case | `csv-parser-complete` |
-To determine PROJECT-REPORT-NUMBER, check existing reports in the output directory.
-</filename>
+<file-name format="{PROJECT-REPORT-NUMBER}_{YY-MM-DD-HHMM}_{RECENT}.md" example="003_26-01-13-1545_xml-validation-added.md" >
+    <file-name-part name="PROJECT-REPORT-NUMBER" desc="3-digit incrementing number across all reports" examples="`001`, `002`, `015`" >
+    To determine `PROJECT-REPORT-NUMBER`, check existing reports in the output directory.
+    </file-name-part>
+    <file-name-part name="YY-MM-DD-HHMM" desc="Date and time (24hr)" examples="`26-01-13-1430`" />
+    <file-name-part name="RECENT" desc="Most significant change, max 3 words, kebab-case" examples="`csv-parser-complete`" />
+</file-name>
 <instructions>
 1. **Read the roadmap** at `docs/roadmaps/mvp.md` to understand milestones and progress
 2. **Check recent work records** in `docs/dev-log/work-records/` for recent activity
@@ -19,9 +18,7 @@ To determine PROJECT-REPORT-NUMBER, check existing reports in the output directo
 4. **Identify blockers** from any TODO comments, failing tests, or documented issues
 5. **Read the previous status report** in `docs/dev-log/status-reports/` to understand what was last reported as completed, in progress, and upcoming
 </instructions>
-<output-format template-path="~/.claude/doc-templates/doc/create/status-report.md">
-Report should exactly mirror template structure.
-</output-format>
+<output template-path="~/.claude/doc-templates/doc/create/status-report.md" format="Report should exactly mirror template structure" />
 <guidelines>
 - **Brevity is paramount** - this is a status snapshot, not a changelog
 - TL;DR must be exactly one sentence, big-picture only

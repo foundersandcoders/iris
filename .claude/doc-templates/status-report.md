@@ -1,6 +1,6 @@
 # Iris Status Update
 ## 1. TL;DR
-{ One sentence: what changed and where we are now }
+{ One sentence: what changed since the last report }
 
 ---
 ## 2. Completed
