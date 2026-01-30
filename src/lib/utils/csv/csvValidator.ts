@@ -77,6 +77,8 @@ export function validateRows(
 
 /**
  * Check that all required headers are present based on mapping and schema
+ * Note: Only validates learner-level fields. Aim-specific fields are validated
+ * per-row based on whether that aim exists.
  */
 function validateRequiredHeaders(
 	headers: string[],
@@ -87,6 +89,9 @@ function validateRequiredHeaders(
 	const headerSet = new Set(headers.map((h) => h.trim().toLowerCase()));
 
 	for (const m of mapping.mappings) {
+		// Skip aim-specific mappings - these are validated per-row based on aim existence
+		if (m.aimNumber) continue;
+
 		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
