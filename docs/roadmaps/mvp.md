@@ -10,11 +10,11 @@
 ---
 
 - [Milestones](#milestones)
-	- [Milestone 1: Shared Core Library](#m1)
-	- [Milestone 2: TUI Interface](#m2)
-	- [Milestone 3: Direct Commands](#m3)
-	- [Milestone 4: Desktop Interface](#m4)
-	- [Milestone 5: Production Ready](#m5)
+  - [Milestone 1: Shared Core Library](`#m1`)
+  - [Milestone 2: TUI Interface](`#m2`)
+  - [Milestone 3: Direct Commands](`#milestone-3`)
+  - [Milestone 4: Desktop Interface](`#milestone-4`)
+  - [Milestone 5: Production Ready](`#milestone-5`)
 - [Beyond MVP](#post-mvp)
 
 ---
