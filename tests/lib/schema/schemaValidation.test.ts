@@ -4,19 +4,19 @@ import * as fixtures from '../../fixtures/lib/schema';
 
 describe('createIssue', () => {
 	it('creates an issue with required fields', () => {
-		const issue = createIssue('required', 'Message/Learner/ULN', 'ULN is required');
+		const issue = createIssue('required', 'Message.Learner.ULN', 'ULN is required');
 
 		expect(issue).toMatchObject({
 			severity: 'error',
 			type: 'required',
-			elementPath: 'Message/Learner/ULN',
+			elementPath: 'Message.Learner.ULN',
 			message: 'ULN is required',
 			code: 'SCHEMA_REQUIRED',
 		});
 	});
 
 	it('uses provided severity instead of default', () => {
-		const issue = createIssue('pattern', 'Message/Learner/Sex', 'Invalid sex code', {
+		const issue = createIssue('pattern', 'Message.Learner.Sex', 'Invalid sex code', {
 			severity: 'warning',
 		});
 
@@ -24,7 +24,7 @@ describe('createIssue', () => {
 	});
 
 	it('uses provided code instead of generated one', () => {
-		const issue = createIssue('enumeration', 'Message/Header/Collection', 'Invalid collection', {
+		const issue = createIssue('enumeration', 'Message.Header.Collection', 'Invalid collection', {
 			code: 'CUSTOM_CODE',
 		});
 
@@ -32,7 +32,7 @@ describe('createIssue', () => {
 	});
 
 	it('includes optional fields when provided', () => {
-		const issue = createIssue('maxLength', 'Message/Learner/FamilyName', 'Name too long', {
+		const issue = createIssue('maxLength', 'Message.Learner.FamilyName', 'Name too long', {
 			actualValue: 'A very long name that exceeds the limit',
 			rowIndex: 5,
 			sourceField: 'FamilyName',

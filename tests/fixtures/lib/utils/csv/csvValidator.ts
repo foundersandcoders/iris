@@ -1,44 +1,46 @@
 import type { CSVRow } from '../../../../../src/lib/utils/csv/csvParser';
 
 export const validHeaders = [
-	'LearnRefNumber',
+	'LearnRefNum',
 	'ULN',
-	'DateOfBirth',
-	'Ethnicity',
-	'Sex',
-	'LLDDHealthProb',
-	'PostcodePrior',
-	'Postcode',
-	'LearnAimRef',
-	'AimType',
-	'AimSeqNumber',
-	'LearnStartDate',
-	'LearnPlanEndDate',
-	'FundModel',
-	'DelLocPostCode',
-	'CompStatus',
+	'Date of birth',
+	'Ethnic group',
+	'Sex ',
+	'Primary additional needs',
+	'Prior post code',
+	'Post code',
+	'Prior attainment date applies to',
+	'Prior attainment',
+	'Programme aim 1 Learning ref ',
+	'Aim type (programme aim 1)',
+	'Start date (aim 1)',
+	'Planned end date (aim 1)',
+	'Funding module (aim 1)',
+	'Delivery postcode (aim 1)',
+	'Completion status (aim 1)',
 ];
 
 export const validRow: CSVRow = {
-	LearnRefNumber: 'ABC123',
-	ULN: '1234567890',
-	DateOfBirth: '2000-01-15',
-	Ethnicity: '31',
-	Sex: 'M',
-	LLDDHealthProb: '2',
-	PostcodePrior: 'E1 6AN',
-	Postcode: 'E1 6AN',
-	LearnAimRef: '60161533',
-	AimType: '1',
-	AimSeqNumber: '1',
-	LearnStartDate: '2025-09-01',
-	LearnPlanEndDate: '2026-08-31',
-	FundModel: '36',
-	DelLocPostCode: 'E1 6AN',
-	CompStatus: '1',
+	'LearnRefNum': 'ABC123',
+	'ULN': '1234567890',
+	'Date of birth': '2000-01-15',
+	'Ethnic group': '31',
+	'Sex ': 'M',
+	'Primary additional needs': '2',
+	'Prior post code': 'E1 6AN',
+	'Post code': 'E1 6AN',
+	'Prior attainment date applies to': '2025-09-01',
+	'Prior attainment': '2',
+	'Programme aim 1 Learning ref ': '60161533',
+	'Aim type (programme aim 1)': '1',
+	'Start date (aim 1)': '2025-09-01',
+	'Planned end date (aim 1)': '2026-08-31',
+	'Funding module (aim 1)': '36',
+	'Delivery postcode (aim 1)': 'E1 6AN',
+	'Completion status (aim 1)': '1',
 };
 
-export const incompleteHeaders = ['LearnRefNumber', 'ULN'];
+export const incompleteHeaders = ['LearnRefNum', 'ULN'];
 
 export const rowWithEmptyULN: CSVRow = {
 	...validRow,
@@ -47,11 +49,11 @@ export const rowWithEmptyULN: CSVRow = {
 
 export const rowWithWhitespaceLearnRef: CSVRow = {
 	...validRow,
-	LearnRefNumber: '   ',
+	LearnRefNum: '   ',
 };
 
 export const multipleRowsWithErrors: CSVRow[] = [
 	validRow,
 	{ ...validRow, ULN: '' },
-	{ ...validRow, Sex: '' },
+	{ ...validRow, 'Sex ': '' },
 ];

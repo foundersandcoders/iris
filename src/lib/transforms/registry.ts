@@ -97,6 +97,25 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		category: 'string',
 	},
 
+	digitsOnly: {
+		fn: (v: string) => v.replace(/\D/g, ''),
+		description: 'Extract only digit characters',
+		example: "'Tel: 020-1234-5678' → '02012345678'",
+		category: 'string',
+	},
+
+	// === Type Conversions (Additional) ===
+	boolToInt: {
+		fn: (v: string) => {
+			const trimmed = v.trim().toLowerCase();
+			if (trimmed === 'true' || trimmed === '1' || trimmed === 'yes') return 1;
+			return 0;
+		},
+		description: 'Convert boolean/checkbox to 0 or 1',
+		example: "'true' → 1, 'false' → 0, '1' → 1, '' → 0",
+		category: 'type',
+	},
+
 	// === Conditional ===
 	nullIfEmpty: {
 		fn: (v: string) => (v.trim() === '' ? null : v),
@@ -107,14 +126,49 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 };
 
 /**
- * Resolve a transform function by name
- * @throws Error if transform name not found
+ * Parse a transform string that may include parameters
+ * Examples:
+ *   - "trim" → { name: "trim", args: [] }
+ *   - "constant(1)" → { name: "constant", args: ["1"] }
+ *   - "constant(SEI)" → { name: "constant", args: ["SEI"] }
  */
-export function getTransform(name: string): TransformMetadata['fn'] {
+function parseTransform(transformStr: string): { name: string; args: string[] } {
+	const match = transformStr.match(/^(\w+)(?:\((.*)\))?$/);
+	if (!match) {
+		throw new Error(`Invalid transform format: "${transformStr}"`);
+	}
+
+	const [, name, argsStr] = match;
+	const args = argsStr ? [argsStr.trim()] : [];
+
+	return { name, args };
+}
+
+/**
+ * Resolve a transform function by name (with optional parameters)
+ * Supports both simple transforms ("trim") and parameterized ones ("constant(1)")
+ * @throws Error if transform name not found or parameters invalid
+ */
+export function getTransform(transformStr: string): TransformMetadata['fn'] {
+	const { name, args } = parseTransform(transformStr);
+
+	// Handle parameterized transforms
+	if (name === 'constant') {
+		if (args.length === 0) {
+			throw new Error('constant() transform requires an argument');
+		}
+		const constantValue = args[0];
+		// Try to parse as number, otherwise return as string
+		const numValue = Number(constantValue);
+		const value = Number.isNaN(numValue) ? constantValue : numValue;
+		return () => value;
+	}
+
+	// Handle standard transforms
 	const transform = TRANSFORMS[name];
 	if (!transform) {
 		throw new Error(
-			`Unknown transform: "${name}". Available: ${Object.keys(TRANSFORMS).join(', ')}`
+			`Unknown transform: "${name}". Available: ${Object.keys(TRANSFORMS).join(', ')}, constant(value)`
 		);
 	}
 	return transform.fn;

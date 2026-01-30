@@ -119,6 +119,8 @@ export interface ColumnMapping {
 	xsdPath: string;
 	/** Optional transformation function applied before validation */
 	transform?: string;
+	/** Aim group number (1-5) for multi-aim handling (optional) */
+	aimNumber?: number;
 }
 
 /** Schema reference for mapping compatibility validation */
@@ -143,4 +145,59 @@ export interface MappingConfig {
 	targetSchema: SchemaReference;
 	/** Column mappings */
 	mappings: ColumnMapping[];
+	/** Field to check for aim data presence (supports {n} placeholder for aim number) */
+	aimDetectionField?: string;
+	/** FAM templates for building LearningDeliveryFAM entries */
+	famTemplates?: FamTemplate[];
+	/** AppFinRecord templates for building AppFinRecord entries */
+	appFinTemplates?: AppFinTemplate[];
+	/** Employment status configurations */
+	employmentStatuses?: EmploymentStatusConfig[];
+}
+
+// |------------------------|| Builder Templates ||-------------------------|
+/** Template for generating LearningDeliveryFAM entries from CSV columns */
+export interface FamTemplate {
+	/** CSV column for FAM type (supports {n} placeholder) */
+	typeCsv: string;
+	/** CSV column for FAM code (supports {n} placeholder) */
+	codeCsv: string;
+	/** Optional CSV column for DateFrom (supports {n} placeholder) */
+	dateFromCsv?: string;
+	/** Optional CSV column for DateTo (supports {n} placeholder) */
+	dateToCsv?: string;
+}
+
+/** Template for generating AppFinRecord entries from CSV columns */
+export interface AppFinTemplate {
+	/** CSV column for financial type (supports {n} placeholder) */
+	typeCsv: string;
+	/** CSV column for financial code (supports {n} placeholder) */
+	codeCsv: string;
+	/** CSV column for financial date (supports {n} placeholder) */
+	dateCsv: string;
+	/** CSV column for financial amount (supports {n} placeholder) */
+	amountCsv: string;
+}
+
+/** Employment status monitoring field configuration */
+export interface EsmField {
+	/** Exact CSV column name (no {n} placeholder) */
+	csvColumn: string;
+	/** Derived ESM type constant */
+	esmType: string;
+	/** Transform to apply to the value */
+	transform: string;
+}
+
+/** Configuration for a single employment status set */
+export interface EmploymentStatusConfig {
+	/** CSV column for DateEmpStatApp */
+	dateEmpStatAppCsv: string;
+	/** CSV column for EmpStat */
+	empStatCsv: string;
+	/** CSV column for EmpId (optional in XSD) */
+	empIdCsv: string;
+	/** Array of monitoring fields */
+	monitoring: EsmField[];
 }

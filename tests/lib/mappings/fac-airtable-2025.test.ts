@@ -5,8 +5,8 @@ describe('mappings/fac-airtable-2025', () => {
   describe('facAirtableMapping', () => {
           it('should have correct metadata', () => {
                   expect(facAirtableMapping.id).toBe('fac-airtable-2025');
-                  expect(facAirtableMapping.name).toBe('Founders and Coders Airtable Export');
-                  expect(facAirtableMapping.version).toBe('1.0.0');
+                  expect(facAirtableMapping.name).toBe('Founders and Coders Airtable Export (2025-26)');
+                  expect(facAirtableMapping.version).toBe('2.0.0');
           });
 
           it('should target correct schema', () => {
@@ -33,15 +33,15 @@ describe('mappings/fac-airtable-2025', () => {
 
           it('should include learner fields', () => {
                   const learnerFields = facAirtableMapping.mappings.filter(
-                          m => m.xsdPath.includes('Message.Learner')
+                          m => m.xsdPath.includes('Message.Learner') && !m.xsdPath.includes('LearningDelivery')
                   );
 
                   expect(learnerFields.length).toBeGreaterThan(0);
 
                   const fieldNames = learnerFields.map(f => f.csvColumn);
-                  expect(fieldNames).toContain('LearnRefNumber');
+                  expect(fieldNames).toContain('LearnRefNum');
                   expect(fieldNames).toContain('ULN');
-                  expect(fieldNames).toContain('FamilyName');
+                  expect(fieldNames).toContain('Family name');
           });
 
           it('should include learning delivery fields', () => {
@@ -52,13 +52,13 @@ describe('mappings/fac-airtable-2025', () => {
                   expect(deliveryFields.length).toBeGreaterThan(0);
 
                   const fieldNames = deliveryFields.map(f => f.csvColumn);
-                  expect(fieldNames).toContain('LearnAimRef');
-                  expect(fieldNames).toContain('AimType');
-                  expect(fieldNames).toContain('LearnStartDate');
+                  expect(fieldNames).toContain('Programme aim 1 Learning ref ');
+                  expect(fieldNames).toContain('Aim type (programme aim 1)');
+                  expect(fieldNames).toContain('Start date (aim 1)');
           });
 
           it('should use appropriate transforms for numeric fields', () => {
-                  const numericFields = ['ULN', 'Ethnicity', 'AimType', 'FundModel'];
+                  const numericFields = ['ULN', 'Ethnic group', 'Aim type (programme aim 1)', 'Funding module (aim 1)'];
 
                   for (const fieldName of numericFields) {
                           const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
@@ -66,12 +66,12 @@ describe('mappings/fac-airtable-2025', () => {
                   }
           });
 
-          it('should use uppercase transform for postcode fields', () => {
-                  const postcodeFields = ['Postcode', 'PostcodePrior', 'DelLocPostCode'];
+          it('should use uppercaseNoSpaces transform for postcode fields', () => {
+                  const postcodeFields = ['Post code', 'Prior post code', 'Delivery postcode (aim 1)'];
 
                   for (const fieldName of postcodeFields) {
                           const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
-                          expect(mapping?.transform).toBe('uppercase');
+                          expect(mapping?.transform).toBe('uppercaseNoSpaces');
                   }
           });
   });

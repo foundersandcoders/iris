@@ -13,6 +13,8 @@ describe('transforms/registry', () => {
                   expect(transformNames).toContain('uppercase');
                   expect(transformNames).toContain('trim');
                   expect(transformNames).toContain('uppercaseNoSpaces');
+                  expect(transformNames).toContain('digitsOnly');
+                  expect(transformNames).toContain('boolToInt');
           });
 
           it('should have metadata for each transform', () => {
@@ -123,6 +125,64 @@ describe('transforms/registry', () => {
                   it('should pass through ISO date strings', () => {
                           const fn = getTransform('isoDate');
                           expect(fn('2025-01-28')).toBe('2025-01-28');
+                  });
+          });
+
+          describe('digitsOnly', () => {
+                  it('should extract only digit characters', () => {
+                          const fn = getTransform('digitsOnly');
+                          expect(fn('Tel: 020-1234-5678')).toBe('02012345678');
+                          expect(fn('abc123def456')).toBe('123456');
+                          expect(fn('   789   ')).toBe('789');
+                  });
+
+                  it('should return empty string when no digits present', () => {
+                          const fn = getTransform('digitsOnly');
+                          expect(fn('no digits here')).toBe('');
+                  });
+          });
+
+          describe('boolToInt', () => {
+                  it('should convert truthy values to 1', () => {
+                          const fn = getTransform('boolToInt');
+                          expect(fn('true')).toBe(1);
+                          expect(fn('True')).toBe(1);
+                          expect(fn('TRUE')).toBe(1);
+                          expect(fn('1')).toBe(1);
+                          expect(fn('yes')).toBe(1);
+                          expect(fn('Yes')).toBe(1);
+                  });
+
+                  it('should convert falsy values to 0', () => {
+                          const fn = getTransform('boolToInt');
+                          expect(fn('false')).toBe(0);
+                          expect(fn('False')).toBe(0);
+                          expect(fn('0')).toBe(0);
+                          expect(fn('no')).toBe(0);
+                          expect(fn('')).toBe(0);
+                          expect(fn('anything else')).toBe(0);
+                  });
+          });
+
+          describe('constant (parameterized)', () => {
+                  it('should return numeric constant when number provided', () => {
+                          const fn = getTransform('constant(1)');
+                          expect(fn('ignored')).toBe(1);
+                          expect(fn('also ignored')).toBe(1);
+                  });
+
+                  it('should return string constant when non-number provided', () => {
+                          const fn = getTransform('constant(SEI)');
+                          expect(fn('ignored')).toBe('SEI');
+                  });
+
+                  it('should return numeric constant for valid number strings', () => {
+                          const fn = getTransform('constant(42)');
+                          expect(fn('input')).toBe(42);
+                  });
+
+                  it('should throw error when no argument provided', () => {
+                          expect(() => getTransform('constant()')).toThrow(/requires an argument/);
                   });
           });
   });

@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { mapCsvToSchema } from '../../../src/lib/schema/columnMapper';
+import { mapCsvToSchema, mapCsvToSchemaWithAims } from '../../../src/lib/schema/columnMapper';
 import * as fixtures from '../../fixtures/lib/columnMapper';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import { parseXsd } from '../../../src/lib/schema/schemaParser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
 
 describe('columnMapper', () => {
 	// Load actual schema for path validation
@@ -18,11 +19,13 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearnRefNumber: 'L12345',
-						GivenNames: 'Jane',
-						FamilyName: 'Smith',
-					},
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+							GivenNames: 'Jane',
+							FamilyName: 'Smith',
+						},
+					],
 				},
 			});
 		});
@@ -36,10 +39,12 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						DateOfBirth: '1995-06-15',
-						Postcode: 'SW1A1AA',
-					},
+					Learner: [
+						{
+							DateOfBirth: '1995-06-15',
+							Postcode: 'SW1A1AA',
+						},
+					],
 				},
 			});
 		});
@@ -58,8 +63,8 @@ describe('columnMapper', () => {
 			const result = mapCsvToSchema(csvRow, mappings, registry);
 
 			expect(result.Message).toBeDefined();
-			expect((result.Message as any).Learner.LearnRefNumber).toBe('L12345');
-			expect((result.Message as any).Learner.GivenNames).toBe('Jane');
+			expect((result.Message as any).Learner[0].LearnRefNumber).toBe('L12345');
+			expect((result.Message as any).Learner[0].GivenNames).toBe('Jane');
 		});
 
 		it('should skip mappings for missing CSV columns', () => {
@@ -72,9 +77,11 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearnRefNumber: 'L12345',
-					},
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+						},
+					],
 				},
 			});
 		});
@@ -93,11 +100,151 @@ describe('columnMapper', () => {
 
 			expect(result).toEqual({
 				Message: {
-					Learner: {
-						LearningDelivery: {
-							AimSeqNumber: '1',
+					Learner: [
+						{
+							LearningDelivery: [
+								{
+									AimSeqNumber: '1',
+								},
+							],
 						},
+					],
+				},
+			});
+		});
+	});
+
+	describe('mapCsvToSchemaWithAims', () => {
+		it('should create multiple LearningDelivery elements for populated aims', () => {
+			const csvRow = {
+				'LearnRefNumber': 'L12345',
+				'Programme aim 1 Learning ref ': 'ZPROG001',
+				'Start date (aim 1)': '2025-09-01',
+				'Programme aim 2 Learning ref ': '', // Empty
+				'Programme aim 3 Learning ref ': 'ZPROG002',
+				'Start date (aim 3)': '2025-10-01',
+			};
+
+			const config: MappingConfig = {
+				id: 'test-multi-aim',
+				name: 'Test Multi-Aim',
+				version: '1.0.0',
+				targetSchema: { namespace: 'test', version: '1.0' },
+				aimDetectionField: 'Programme aim {n} Learning ref ',
+				mappings: [
+					// Learner-level
+					{
+						csvColumn: 'LearnRefNumber',
+						xsdPath: 'Message.Learner.LearnRefNumber',
 					},
+					// Aim 1
+					{
+						csvColumn: 'Programme aim 1 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 1,
+					},
+					{
+						csvColumn: 'Start date (aim 1)',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
+						aimNumber: 1,
+					},
+					// Aim 2
+					{
+						csvColumn: 'Programme aim 2 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 2,
+					},
+					// Aim 3
+					{
+						csvColumn: 'Programme aim 3 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 3,
+					},
+					{
+						csvColumn: 'Start date (aim 3)',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
+						aimNumber: 3,
+					},
+				],
+			};
+
+			const result = mapCsvToSchemaWithAims(csvRow, config, registry);
+
+			expect(result).toEqual({
+				Message: {
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+							LearningDelivery: [
+								{
+									AimSeqNumber: 1,
+									LearnAimRef: 'ZPROG001',
+									LearnStartDate: '2025-09-01',
+								},
+								{
+									AimSeqNumber: 3,
+									LearnAimRef: 'ZPROG002',
+									LearnStartDate: '2025-10-01',
+								},
+							],
+						},
+					],
+				},
+			});
+		});
+
+		it('should skip aims with empty detection field', () => {
+			const csvRow = {
+				'LearnRefNumber': 'L12345',
+				'Programme aim 1 Learning ref ': 'ZPROG001',
+				'Programme aim 2 Learning ref ': '',
+				'Programme aim 3 Learning ref ': '',
+			};
+
+			const config: MappingConfig = {
+				id: 'test-single-aim',
+				name: 'Test Single Aim',
+				version: '1.0.0',
+				targetSchema: { namespace: 'test', version: '1.0' },
+				aimDetectionField: 'Programme aim {n} Learning ref ',
+				mappings: [
+					{
+						csvColumn: 'LearnRefNumber',
+						xsdPath: 'Message.Learner.LearnRefNumber',
+					},
+					{
+						csvColumn: 'Programme aim 1 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 1,
+					},
+					{
+						csvColumn: 'Programme aim 2 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 2,
+					},
+					{
+						csvColumn: 'Programme aim 3 Learning ref ',
+						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
+						aimNumber: 3,
+					},
+				],
+			};
+
+			const result = mapCsvToSchemaWithAims(csvRow, config, registry);
+
+			expect(result).toEqual({
+				Message: {
+					Learner: [
+						{
+							LearnRefNumber: 'L12345',
+							LearningDelivery: [
+								{
+									AimSeqNumber: 1,
+									LearnAimRef: 'ZPROG001',
+								},
+							],
+						},
+					],
 				},
 			});
 		});

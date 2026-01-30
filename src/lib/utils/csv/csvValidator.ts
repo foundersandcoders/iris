@@ -14,6 +14,8 @@ import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
 import type { SchemaValidationIssue, MappingConfig } from '../../types/schemaTypes';
+import { hasAimData } from '../../mappings/utils';
+import { getTransform } from '../../transforms/registry';
 
 // === Types ===
 export type ValidationSeverity = 'error' | 'warning' | 'info';
@@ -75,6 +77,8 @@ export function validateRows(
 
 /**
  * Check that all required headers are present based on mapping and schema
+ * Note: Only validates learner-level fields. Aim-specific fields are validated
+ * per-row based on whether that aim exists.
  */
 function validateRequiredHeaders(
 	headers: string[],
@@ -82,15 +86,17 @@ function validateRequiredHeaders(
 	mapping: MappingConfig
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
-	const headerSet = new Set(headers.map((h) => h.toLowerCase()));
+	const headerSet = new Set(headers.map((h) => h.trim().toLowerCase()));
 
 	for (const m of mapping.mappings) {
-		const path = m.xsdPath.replace(/\./g, '/');
-		const element = registry.elementsByPath.get(path);
+		// Skip aim-specific mappings - these are validated per-row based on aim existence
+		if (m.aimNumber) continue;
+
+		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
 		// Check if field is required (cardinality.min >= 1)
-		if (element.cardinality.min >= 1 && !headerSet.has(m.csvColumn.toLowerCase())) {
+		if (element.cardinality.min >= 1 && !headerSet.has(m.csvColumn.trim().toLowerCase())) {
 			issues.push({
 				severity: 'error',
 				field: m.csvColumn,
@@ -113,15 +119,23 @@ function validateRow(
 	mapping: MappingConfig
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
+	const detectionField = mapping.aimDetectionField || 'Programme aim {n} Learning ref';
 
 	for (const m of mapping.mappings) {
-		const path = m.xsdPath.replace(/\./g, '/');
-		const element = registry.elementsByPath.get(path);
+		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
-		// Case-insensitive column lookup
-		const actualHeader = Object.keys(row).find((h) => h.toLowerCase() === m.csvColumn.toLowerCase());
-		const value = actualHeader ? row[actualHeader] : undefined;
+		// Skip aim-specific mappings if that aim has no data
+		if (m.aimNumber && !hasAimData(row, m.aimNumber, detectionField)) {
+			continue;
+		}
+
+		// Case-insensitive, trim-based column lookup
+		const actualHeader = Object.keys(row).find((h) => h.trim().toLowerCase() === m.csvColumn.trim().toLowerCase());
+		const rawValue = actualHeader ? row[actualHeader] : undefined;
+
+		// Apply transform before validation (same as columnMapper), but only if value exists
+		const value = rawValue && m.transform ? getTransform(m.transform)(rawValue) : rawValue;
 
 		const schemaIssues = validateValue(value, element, {
 			rowIndex,
