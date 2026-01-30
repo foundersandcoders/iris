@@ -58,11 +58,16 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 - [ ] 1SS.1. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
-- [ ] 1SS.2 Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+- [ ] 1SS.3. Load mapping config from file (read JSON, validate structure)
+- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors)
+- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
+- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist)
 - [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
 - [ ] 1WA.11. Add unit tests for `check` (independent of UI)
 - [ ] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 - [ ] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
+- [ ] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
@@ -130,6 +135,10 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 - [ ] 2TI.15. Build cross-submission check workflow
 - [ ] 2TI.16. Add visual feedback (animations, transitions, spinners)
 - [ ] 2TI.17. Test TUI with real CSV exports from Airtable
+- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new)
+- [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector)
+- [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues)
+- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default)
 - [ ] 2TS.1. Implement **Dynamic Schema (Phase 5): Schema Management**
 	- [ ] 2TS.1a. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
 	- [ ] 2TS.1b. Build schema manager TUI screen (upload, list, select active schema)
