@@ -24,7 +24,7 @@ describe('createIssue', () => {
 	});
 
 	it('uses provided code instead of generated one', () => {
-		const issue = createIssue('enumeration', 'Message.Header/Collection', 'Invalid collection', {
+		const issue = createIssue('enumeration', 'Message.Header.Collection', 'Invalid collection', {
 			code: 'CUSTOM_CODE',
 		});
 

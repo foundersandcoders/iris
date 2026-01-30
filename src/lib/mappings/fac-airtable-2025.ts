@@ -236,7 +236,7 @@ export const facAirtableMapping: MappingConfig = {
 		{
 			typeCsv: 'Contract type (aim {n})',
 			codeCsv: 'Contract type code (aim {n})',
-			dateFromCsv: 'Date applies from (aim{n})',
+			dateFromCsv: 'Date applies from (aim {n})',
 			dateToCsv: 'Date applies to (aim {n})',
 		},
 		{

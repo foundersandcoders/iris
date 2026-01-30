@@ -139,11 +139,17 @@ export function buildAppFinRecords(
 		// Skip if type is empty (handles bootcamp aims with no financial records)
 		if (!typeValue || typeValue.trim() === '') continue;
 
+		// Skip if date is empty (required field)
+		if (!dateValue || dateValue.trim() === '') continue;
+
+		// Skip if amount is empty (required field, can't distinguish from explicit 0)
+		if (!amountValue || amountValue.trim() === '') continue;
+
 		entries.push({
 			AFinType: typeValue.trim(),
 			AFinCode: codeValue?.trim() || '',
-			AFinDate: dateValue ? getTransform('isoDate')(dateValue) : '',
-			AFinAmount: amountValue ? getTransform('stringToInt')(amountValue) : 0,
+			AFinDate: getTransform('isoDate')(dateValue),
+			AFinAmount: getTransform('stringToInt')(amountValue),
 		});
 	}
 
@@ -198,6 +204,10 @@ export function buildEmploymentStatuses(
 		const empStatValue = getColumnValue(csvRow, config.empStatCsv);
 		if (!empStatValue || empStatValue.trim() === '') continue;
 
+		// Get DateEmpStatApp value - skip entire entry if empty (required field)
+		const dateEmpStatAppValue = getColumnValue(csvRow, config.dateEmpStatAppCsv);
+		if (!dateEmpStatAppValue || dateEmpStatAppValue.trim() === '') continue;
+
 		const entry: {
 			EmpStat: number;
 			DateEmpStatApp: string;
@@ -205,9 +215,7 @@ export function buildEmploymentStatuses(
 			EmploymentStatusMonitoring?: Array<{ ESMType: string; ESMCode: number }>;
 		} = {
 			EmpStat: getTransform('stringToInt')(empStatValue),
-			DateEmpStatApp: getTransform('isoDate')(
-				getColumnValue(csvRow, config.dateEmpStatAppCsv) || ''
-			),
+			DateEmpStatApp: getTransform('isoDate')(dateEmpStatAppValue),
 		};
 
 		// Add optional EmpId if present
