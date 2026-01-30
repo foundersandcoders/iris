@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { convertWorkflow } from '../../../src/lib/workflows/csvConvert';
+import { consumeWorkflow } from '../../../src/lib/workflows/utils';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
-import type { WorkflowResult, WorkflowStepEvent } from '../../../src/lib/types/workflowTypes';
-import type { ConvertOutput } from '../../../src/lib/types/workflowTypes';
 import * as fixtures from '../../fixtures/lib/workflows/workflow';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -18,21 +17,6 @@ beforeAll(() => {
 	const xsdContent = readFileSync(xsdPath, 'utf-8');
 	registry = buildSchemaRegistry(xsdContent);
 });
-
-async function runWorkflow(
-	input: Parameters<typeof convertWorkflow>[0]
-): Promise<{ events: WorkflowStepEvent[]; result: WorkflowResult<ConvertOutput> }> {
-	const gen = convertWorkflow(input);
-	const events: WorkflowStepEvent[] = [];
-
-	while (true) {
-		const next = await gen.next();
-		if (next.done) {
-			return { events, result: next.value };
-		}
-		events.push(next.value);
-	}
-}
 
 describe('convertWorkflow', () => {
 	let testDir: string;
@@ -52,12 +36,14 @@ describe('convertWorkflow', () => {
 		it('yields step events in correct order', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { events } = await runWorkflow({
+			const { events } = await consumeWorkflow(
+				convertWorkflow({
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
 				mapping: facAirtableMapping,
-			});
+			})
+			);
 
 			const eventKeys = events.map((e) => `${e.type}:${e.step.id}`);
 
@@ -76,12 +62,14 @@ describe('convertWorkflow', () => {
 		it('returns successful result with output data', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { result } = await runWorkflow({
+			const { result } = await consumeWorkflow(
+				convertWorkflow({
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
 				mapping: facAirtableMapping,
-			});
+			})
+			);
 
 			expect(result.success).toBe(true);
 			expect(result.data?.xml).toContain('<?xml version="1.0"');
@@ -93,12 +81,14 @@ describe('convertWorkflow', () => {
 		it('saves XML file to output directory', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { result } = await runWorkflow({
+			const { result } = await consumeWorkflow(
+				convertWorkflow({
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
 				mapping: facAirtableMapping,
-			});
+			})
+			);
 
 			const outputFile = Bun.file(result.data!.outputPath);
 			expect(await outputFile.exists()).toBe(true);
@@ -111,12 +101,14 @@ describe('convertWorkflow', () => {
 
 	describe('error handling', () => {
 		it('fails on missing file', async () => {
-			const { events, result } = await runWorkflow({
+			const { events, result } = await consumeWorkflow(
+				convertWorkflow({
 				filePath: join(testDir, 'nonexistent.csv'),
 				outputDir: testDir,
 				registry,
 				mapping: facAirtableMapping,
-			});
+			})
+			);
 
 			expect(events).toContainEqual(
 				expect.objectContaining({
@@ -137,12 +129,14 @@ describe('convertWorkflow', () => {
 		it('reports validation errors but continues', async () => {
 			await writeFile(testCsvPath, fixtures.invalidCsvContent);
 
-			const { result } = await runWorkflow({
+			const { result } = await consumeWorkflow(
+				convertWorkflow({
 				filePath: testCsvPath,
 				outputDir: testDir,
 				registry,
 				mapping: facAirtableMapping,
-			});
+			})
+			);
 
 			expect(result.success).toBe(true);
 			expect(result.data?.validation.valid).toBe(false);
@@ -155,12 +149,14 @@ describe('convertWorkflow', () => {
 			it('emits start and complete events for each step', async () => {
 				await writeFile(testCsvPath, fixtures.validCsvContent);
 
-				const { events } = await runWorkflow({
-					filePath: testCsvPath,
-					outputDir: testDir,
-					registry,
-				mapping: facAirtableMapping,
-				});
+				const { events } = await consumeWorkflow(
+					convertWorkflow({
+						filePath: testCsvPath,
+						outputDir: testDir,
+						registry,
+						mapping: facAirtableMapping,
+					})
+				);
 
 				const parseEvents = events.filter((e) => e.step.id === 'parse').map((e) => e.type);
 
@@ -170,12 +166,14 @@ describe('convertWorkflow', () => {
 			it('sets progress to 100 on completion', async () => {
 				await writeFile(testCsvPath, fixtures.validCsvContent);
 
-				const { events } = await runWorkflow({
-					filePath: testCsvPath,
-					outputDir: testDir,
-					registry,
-				mapping: facAirtableMapping,
-				});
+				const { events } = await consumeWorkflow(
+					convertWorkflow({
+						filePath: testCsvPath,
+						outputDir: testDir,
+						registry,
+						mapping: facAirtableMapping,
+					})
+				);
 
 				const completeEvents = events.filter((e) => e.type === 'step:complete');
 

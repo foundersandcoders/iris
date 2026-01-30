@@ -4,6 +4,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 
 import { xmlValidateWorkflow } from '../../../src/lib/workflows/xmlValidate';
+import { consumeWorkflow } from '../../../src/lib/workflows/utils';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 import * as fixtures from '../../fixtures/lib/workflows/xmlValidate';
@@ -23,37 +24,19 @@ describe('xmlValidateWorkflow', () => {
 		const filePath = join(tempDir, 'valid.xml');
 		writeFileSync(filePath, fixtures.validIlrXml);
 
-		const workflow = xmlValidateWorkflow({ filePath, registry });
+		const { events, result } = await consumeWorkflow(
+			xmlValidateWorkflow({ filePath, registry })
+		);
 
-		const events: string[] = [];
-		let result;
+		const eventKeys = events.map((e) => `${e.type}:${e.step.id}`);
 
-		for await (const event of workflow) {
-			events.push(`${event.type}:${event.step.id}`);
-			if (event.type === 'step:complete' || event.type === 'step:error') {
-				result = event;
-			}
-		}
-
-		// Get final result
-		const gen = xmlValidateWorkflow({ filePath, registry });
-		let done = false;
-		let finalResult;
-		while (!done) {
-			const next = await gen.next();
-			if (next.done) {
-				finalResult = next.value;
-				done = true;
-			}
-		}
-
-		expect(finalResult.success).toBe(true);
-		expect(events).toContain('step:start:load');
-		expect(events).toContain('step:complete:load');
-		expect(events).toContain('step:start:parse');
-		expect(events).toContain('step:complete:parse');
-		expect(events).toContain('step:start:validate');
-		expect(events).toContain('step:complete:validate');
+		expect(result.success).toBe(true);
+		expect(eventKeys).toContain('step:start:load');
+		expect(eventKeys).toContain('step:complete:load');
+		expect(eventKeys).toContain('step:start:parse');
+		expect(eventKeys).toContain('step:complete:parse');
+		expect(eventKeys).toContain('step:start:validate');
+		expect(eventKeys).toContain('step:complete:validate');
 
 		unlinkSync(filePath);
 	});
