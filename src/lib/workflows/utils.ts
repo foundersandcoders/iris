@@ -33,3 +33,60 @@ export function failedResult<T>(
 		duration: Date.now() - startTime,
 	};
 }
+
+/**
+ * Consumes a workflow generator, collecting all step events and returning
+ * the final result along with event history.
+ *
+ * @param generator - Workflow generator to consume
+ * @returns Object containing collected events and final result
+ *
+ * @example
+ * ```typescript
+ * const workflow = convertWorkflow(input);
+ * const { events, result } = await consumeWorkflow(workflow);
+ *
+ * if (result.success) {
+ *   console.log('Workflow completed successfully');
+ * }
+ * ```
+ */
+export async function consumeWorkflow<TOutput>(
+	generator: AsyncGenerator<WorkflowStepEvent, WorkflowResult<TOutput>, void>
+): Promise<{ events: WorkflowStepEvent[]; result: WorkflowResult<TOutput> }> {
+	const events: WorkflowStepEvent[] = [];
+
+	while (true) {
+		const next = await generator.next();
+
+		if (next.done) {
+			return { events, result: next.value };
+		}
+
+		events.push(next.value);
+	}
+}
+
+/**
+ * Consumes a workflow generator and returns only the final result,
+ * discarding intermediate step events.
+ *
+ * @param generator - Workflow generator to consume
+ * @returns Final workflow result
+ *
+ * @example
+ * ```typescript
+ * const workflow = validateWorkflow(input);
+ * const result = await skimWorkflow(workflow);
+ *
+ * if (!result.success) {
+ *   console.error(result.error);
+ * }
+ * ```
+ */
+export async function skimWorkflow<TOutput>(
+	generator: AsyncGenerator<WorkflowStepEvent, WorkflowResult<TOutput>, void>
+): Promise<WorkflowResult<TOutput>> {
+	const { result } = await consumeWorkflow(generator);
+	return result;
+}
