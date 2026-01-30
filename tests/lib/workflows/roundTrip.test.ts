@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 
 import { convertWorkflow } from '../../../src/lib/workflows/csvConvert';
 import { xmlValidateWorkflow } from '../../../src/lib/workflows/xmlValidate';
+import { skimWorkflow } from '../../../src/lib/workflows/utils';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 import { facAirtableMapping } from '../../../src/lib/mappings/fac-airtable-2025';
@@ -36,40 +37,26 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		await writeFile(testCsvPath, fixtures.validCsvContent);
 
 		// 2. Run Convert Workflow
-		const convertGen = convertWorkflow({
-			filePath: testCsvPath,
-			outputDir: testDir,
-			registry,
-			mapping: facAirtableMapping,
-		});
-
-		let convertResult;
-		while (true) {
-			const next = await convertGen.next();
-			if (next.done) {
-				convertResult = next.value;
-				break;
-			}
-		}
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
 
 		expect(convertResult.success).toBe(true);
 		const xmlPath = convertResult.data?.outputPath;
 		expect(xmlPath).toBeDefined();
 
 		// 3. Run XML Validate Workflow on the output
-		const validateGen = xmlValidateWorkflow({
-			filePath: xmlPath!,
-			registry,
-		});
-
-		let validateResult;
-		while (true) {
-			const next = await validateGen.next();
-			if (next.done) {
-				validateResult = next.value;
-				break;
-			}
-		}
+		const validateResult = await skimWorkflow(
+			xmlValidateWorkflow({
+				filePath: xmlPath!,
+				registry,
+			})
+		);
 
 		// 4. Final Assertions
 		expect(validateResult.success).toBe(true);
@@ -93,21 +80,14 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		await writeFile(testCsvPath, invalidCsvContent);
 
 		// 2. Run Convert Workflow
-		const convertGen = convertWorkflow({
-			filePath: testCsvPath,
-			outputDir: testDir,
-			registry,
-			mapping: facAirtableMapping,
-		});
-
-		let convertResult;
-		while (true) {
-			const next = await convertGen.next();
-			if (next.done) {
-				convertResult = next.value;
-				break;
-			}
-		}
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
 
 		expect(convertResult.success).toBe(true);
 		const xmlPath = convertResult.data?.outputPath;

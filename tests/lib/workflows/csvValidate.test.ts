@@ -1,12 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { validateWorkflow } from '../../../src/lib/workflows/csvValidate';
+import { consumeWorkflow } from '../../../src/lib/workflows/utils';
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
-import type {
-	WorkflowResult,
-	WorkflowStepEvent,
-	ValidateOutput,
-} from '../../../src/lib/types/workflowTypes';
 import * as fixtures from '../../fixtures/lib/workflows/workflow';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -21,21 +17,6 @@ beforeAll(() => {
 	const xsdContent = readFileSync(xsdPath, 'utf-8');
 	registry = buildSchemaRegistry(xsdContent);
 });
-
-async function runWorkflow(
-	input: Parameters<typeof validateWorkflow>[0]
-): Promise<{ events: WorkflowStepEvent[]; result: WorkflowResult<ValidateOutput> }> {
-	const gen = validateWorkflow(input);
-	const events: WorkflowStepEvent[] = [];
-
-	while (true) {
-		const next = await gen.next();
-
-		if (next.done) return { events, result: next.value };
-
-		events.push(next.value);
-	}
-}
 
 describe('validateWorkflow (CSV)', () => {
 	let testDir: string;
@@ -56,7 +37,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('yields step events in correct order', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { events } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { events } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 			const eventKeys = events.map((e) => `${e.type}:${e.step.id}`);
 
 			expect(eventKeys).toEqual([
@@ -74,7 +55,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('returns successful result with validation data', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { result } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.success).toBe(true);
 			expect(result.data?.validation.valid).toBe(true);
@@ -87,7 +68,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('includes parsed CSV data in result', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { result } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.data?.sourceData).toHaveProperty('headers');
 			expect(result.data?.sourceData).toHaveProperty('rows');
@@ -99,7 +80,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('reports validation errors but completes successfully', async () => {
 			await writeFile(testCsvPath, fixtures.invalidCsvContent);
 
-			const { result } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.success).toBe(true);
 			expect(result.data?.validation.valid).toBe(false);
@@ -109,7 +90,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('includes validation issues in result', async () => {
 			await writeFile(testCsvPath, fixtures.invalidCsvContent);
 
-			const { result } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.data?.validation.issues).toBeDefined();
 			expect(result.data?.validation.issues.length).toBeGreaterThan(0);
@@ -123,7 +104,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('fails gracefully when file does not exist', async () => {
 			const nonExistentPath = join(testDir, 'nonexistent.csv');
 
-			const { result, events } = await runWorkflow({ filePath: nonExistentPath, registry, mapping: facAirtableMapping });
+			const { result, events } = await consumeWorkflow(validateWorkflow({ filePath: nonExistentPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.success).toBe(false);
 			expect(result.error).toBeDefined();
@@ -139,7 +120,7 @@ describe('validateWorkflow (CSV)', () => {
 			const xmlPath = join(testDir, 'test.xml');
 			await writeFile(xmlPath, '<?xml version="1.0"?><root></root>');
 
-			const { result } = await runWorkflow({ filePath: xmlPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: xmlPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.success).toBe(false);
 			expect(result.error).toBeDefined();
@@ -151,7 +132,7 @@ describe('validateWorkflow (CSV)', () => {
 			const malformedCsv = 'LearnRefNumber,ULN\n"Unclosed quote,1234567890';
 			await writeFile(testCsvPath, malformedCsv);
 
-			const { result } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.success).toBe(false);
 			expect(result.error).toBeDefined();
@@ -165,7 +146,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('marks steps as complete in sequence', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { events } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { events } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			const completeEvents = events.filter((e) => e.type === 'step:complete');
 			expect(completeEvents).toHaveLength(4);
@@ -175,7 +156,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('includes progress and messages in completed steps', async () => {
 			await writeFile(testCsvPath, fixtures.validCsvContent);
 
-			const { events } = await runWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping });
+			const { events } = await consumeWorkflow(validateWorkflow({ filePath: testCsvPath, registry, mapping: facAirtableMapping }));
 
 			const completeEvents = events.filter((e) => e.type === 'step:complete');
 
@@ -189,7 +170,7 @@ describe('validateWorkflow (CSV)', () => {
 		it('stops on first error and does not proceed', async () => {
 			const nonExistentPath = join(testDir, 'nonexistent.csv');
 
-			const { result } = await runWorkflow({ filePath: nonExistentPath, registry, mapping: facAirtableMapping });
+			const { result } = await consumeWorkflow(validateWorkflow({ filePath: nonExistentPath, registry, mapping: facAirtableMapping }));
 
 			expect(result.steps).toHaveLength(1);
 			expect(result.steps[0].id).toBe('load');
