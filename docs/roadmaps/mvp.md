@@ -1,11 +1,11 @@
 # Iris: MVP
 
-| Area | Implemented                                   | Next Up |
+| Area | Status                                        | Next Up |
 | ---- | --------------------------------------------- | ------- |
-| Core | CSV parser; XML generator; XML parser; semantic validator; convert workflow; validate-csv; validate-xml; column mapper | **mapping config + workflow migration** |
-| CLI  | `iris` opens TUI                              | direct commands |
-| TUI  | routing & layout; file picker; processing screen | success screen; validation explorer; schema manager |
-| GUI  | sveltekit configuration                       |         |
+| Core | **Dynamic schema system complete** (Phases 1-4) | round-trip tests; cross-check workflow |
+| CLI  | TUI launches                                  | direct commands |
+| TUI  | Basic screens & navigation                    | validation explorer; workflows; schema manager |
+| GUI  | SvelteKit configured                          | (blocked on TUI completion) |
 
 ---
 ## 1. Tasks
@@ -57,8 +57,15 @@ None
 **Phase 4: Column Mapping Configuration**
 - [x] 1a2a-schema12. Create column mapper module (CSV column → XSD path mapping)
 - [x] 1a2a-schema13. Define mapping configuration schema (ColumnMapping, MappingConfig types)
-- [ ] 1a2a-schema14. Create default FaC Airtable mapping configuration
-- [ ] 1a2a-schema15. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
+- [x] 1a2a-schema14. Create default FaC Airtable mapping configuration
+- [x] 1a2a-schema15. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
+
+**Phase 5: Schema & Mapping Storage**
+- [ ] 1a2a-schema16. Create schema storage module (save/load/cache XSD files from ~/.iris/schemas/)
+- [ ] 1a2a-schema17. Create mapping storage module (save/load mapping configs from ~/.iris/mappings/<name>.json)
+- [ ] 1a2a-schema18. Add schema validation on load (verify XSD is parseable, warn on errors)
+- [ ] 1a2a-schema19. Add mapping validation on load (verify CSV columns exist, XSD paths valid, transforms registered)
+- [ ] 1a2a-schema20. Implement mapping preview generator (CSV sample row → XML fragment for testing)
 
 ##### 1a2b. TUI Interface (Primary)
 - [x] 1a2b1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
@@ -81,11 +88,26 @@ None
 - [ ] 1a2b15. Add visual feedback (animations, transitions, spinners)
 - [ ] 1a2b16. Test TUI with real CSV exports from Airtable
 
-**Schema Management (Phase 5 of Dynamic Schema System)**
-- [ ] 1a2b17. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
-- [ ] 1a2b18. Build schema manager TUI screen (upload, list, select active schema)
-- [ ] 1a2b19. Add schema version selection to workflows
-- [ ] 1a2b20. Implement migration guidance when schema changes affect existing mappings
+**Schema Management (Phase 6 of Dynamic Schema System - TUI)**
+- [ ] 1a2b17. Build schema manager TUI screen (list available schemas, import new XSD files)
+- [ ] 1a2b18. Add schema version selection to convert workflow (choose which schema to validate against)
+- [ ] 1a2b19. Implement migration guidance when schema changes affect existing mappings (show diff, suggest updates)
+- [ ] 1a2b20. Add schema detail view (show schema metadata, element count, validation rules)
+
+**Mapping Builder (Phase 7 of Dynamic Schema System - TUI)**
+> Interactive wizard for users to create custom CSV→XSD mappings without editing code
+
+- [ ] 1a2b21. Build mapping manager TUI screen (list, create, edit, delete, duplicate mapping configs)
+- [ ] 1a2b22. Implement mapping wizard workflow (select CSV → select schema → map fields → save)
+- [ ] 1a2b23. Build CSV column selector UI (parse CSV, show headers with sample data preview)
+- [ ] 1a2b24. Build XSD path browser UI (tree navigation, show element constraints/types, pick target path)
+- [ ] 1a2b25. Build field mapping editor (assign CSV column → XSD path, select transform, test with sample)
+- [ ] 1a2b26. Implement transform selector UI (dropdown of available transforms with descriptions)
+- [ ] 1a2b27. Add mapping preview panel (live preview: sample CSV row → generated XML fragment)
+- [ ] 1a2b28. Implement validation during mapping creation (warn: missing columns, invalid paths, incompatible transforms)
+- [ ] 1a2b29. Add nested element builder UI (wizard for FAM/AppFin/Employment template creation)
+- [ ] 1a2b30. Add mapping selection to convert workflow (choose which mapping config to use before conversion)
+- [ ] 1a2b31. Test mapping builder with non-FaC CSV exports (validate flexibility for other providers)
 
 ##### 1a2c. Direct Commands (Automation)
 - [ ] 1a2c1. Implement `iris convert <file>` (non-TUI execution with pretty output)
@@ -101,8 +123,13 @@ None
 - [ ] 1a2e3. Add XML preview panel (show output before saving)
 - [ ] 1a2e4. Implement output file save dialog
 - [ ] 1a2e5. Show cross-submission warnings in UI
-- [ ] 1a2e6. Add configuration UI (manage field mappings and preferences)
-- [ ] 1a2e7. Add basic error handling and user feedback
+- [ ] 1a2e6. Add basic error handling and user feedback
+
+**Desktop: Schema & Mapping Management (mirrors TUI Phase 6-7)**
+- [ ] 1a2e7. Build schema manager UI (list schemas, import XSD, select active schema)
+- [ ] 1a2e8. Build mapping manager UI (list, create, edit, delete mapping configs)
+- [ ] 1a2e9. Implement mapping wizard (visual CSV→XSD mapper with drag-and-drop)
+- [ ] 1a2e10. Add mapping preview panel (live CSV sample → XML output)
 
 ##### 1a2f. Documentation
 - [ ] 1a2f1. Document ILR XML structure and requirements
@@ -131,15 +158,16 @@ None currently
     - [ ] check (cross-submission consistency)
 - [ ] File-based storage for cross-submission data (designed to support future ESFA response storage)
 - [ ] Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+    - [ ] Phase 5: Schema & Mapping Storage (see 1a2a-schema16-20)
 - [x] Test coverage for core transformations and workflows
-- [ ] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
+- [x] **Dynamic Schema System (Phases 1-4)** — see [1a2a-schema tasks](#1a2a-schema-dynamic-schema-system-xsd-driven)
     - [x] XSD parser and schema registry
     - [x] Schema-driven validator (replaces hardcoded validation rules)
     - [x] Schema-driven generator (fully integrated: csvConvert uses generateFromSchema, legacy types removed)
-    - [ ] Column mapping configuration (CSV→XSD mapping without code changes)
+    - [x] Column mapping configuration (CSV→XSD mapping without code changes)
         - [x] Column mapper module with types
-        - [ ] Default FaC Airtable mapping
-        - [ ] Workflow migration
+        - [x] Default FaC Airtable mapping with nested element builders
+        - [x] Workflow migration (mapCsvToSchemaWithAims integrated into csvConvert)
 
 > [!IMPORTANT]
 > **XML Validation Prerequisite:** Milestone 1 cannot be considered complete without XML parsing and validation capabilities. The transformation engine must be able to verify its own output to ensure ILR compliance. See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
@@ -168,11 +196,11 @@ None currently
 - [ ] Help overlay system
 - [ ] Visual polish (animations, gradients, transitions)
 - [ ] Global installation via `bun link`
-- [ ] **Schema Management (Phase 5)** — see [1a2b17-20 tasks](#schema-management-phase-5-of-dynamic-schema-system)
-      - [ ] Schema loader (load/cache from ~/.iris/schemas/)
-      - [ ] Schema manager TUI screen
-      - [ ] Schema version selection in workflows
-      - [ ] Migration guidance for schema changes
+- [ ] **Schema & Mapping Management (Phases 6-7)** — see [1a2b17-31 tasks](#schema-management-phase-6-of-dynamic-schema-system---tui)
+      - [ ] Schema manager TUI (import, list, select schemas)
+      - [ ] Mapping builder TUI (interactive CSV→XSD mapping wizard)
+      - [ ] Mapping preview (live CSV sample → XML output)
+      - [ ] Transform selection UI
 
 ### 2c. Milestone 3: Direct Commands (Automation)
 > [!NOTE]
@@ -208,7 +236,6 @@ None currently
 - [ ] File picker for CSV input
 - [ ] XML preview panel
 - [ ] Validation results display
-- [ ] Configuration UI
 - [ ] Cross-submission warnings display
 - [ ] Output save location selection
 - [ ] Complete Workflows (using shared workflow layer)
