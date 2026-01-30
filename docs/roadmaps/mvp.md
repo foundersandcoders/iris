@@ -220,7 +220,7 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 - [ ] 4GC.10. Create `/check` SvelteKit route
 - [ ] 4NB.1.Compile macOS `.app` build
 - [ ] 4NB.2. Compile Windows `.exe` build
-- [ ] 4NB.3 Compile Linux `.AppImage` build
+- [ ] 4NB.3. Compile Linux `.AppImage` build
 
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
 
