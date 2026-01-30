@@ -66,8 +66,6 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 - [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
 - [ ] 1WA.11. Add unit tests for `check` (independent of UI)
 - [ ] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
-- [ ] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
-- [ ] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
@@ -106,6 +104,8 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 - [x] 1WA.8. Add unit tests for `validateCsv` (independent of UI)
 - [x] 1WA.9. Add unit tests for `convertCsv` (independent of UI)
 - [x] 1WA.10. Add unit tests for `validateXml` (independent of UI)
+- [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
+- [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
 
 ---
 
