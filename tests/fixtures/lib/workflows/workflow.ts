@@ -307,3 +307,88 @@ export const transformEdgeCasesCsvContent = [
 	validHeaders.join(','),
 	Object.values(transformEdgeCasesRow).join(','),
 ].join('\n');
+
+// === Sparse Aims Fixtures ===
+
+// Headers including aims 1-5
+export const sparseAimsHeaders = [
+	...validHeaders,
+	// Aim 2 (empty)
+	'Programme aim 2 Learning ref ',
+	'Aim type (programme aim 2)',
+	'Start date (aim 2)',
+	'Planned end date (aim 2)',
+	'Funding module (aim 2)',
+	'Delivery postcode (aim 2)',
+	'Completion status (aim 2)',
+	// Aim 3 (empty)
+	'Programme aim 3 Learning ref ',
+	'Aim type (programme aim 3)',
+	'Start date (aim 3)',
+	'Planned end date (aim 3)',
+	'Funding module (aim 3)',
+	'Delivery postcode (aim 3)',
+	'Completion status (aim 3)',
+	// Aim 4 (populated)
+	'Programme aim 4 Learning ref ',
+	'Aim type (programme aim 4)',
+	'Start date (aim 4)',
+	'Planned end date (aim 4)',
+	'Funding module (aim 4)',
+	'Delivery postcode (aim 4)',
+	'Completion status (aim 4)',
+	// Aim 5 (empty)
+	'Programme aim 5 Learning ref ',
+	'Aim type (programme aim 5)',
+	'Start date (aim 5)',
+	'Planned end date (aim 5)',
+	'Funding module (aim 5)',
+	'Delivery postcode (aim 5)',
+	'Completion status (aim 5)',
+];
+
+// Learner with aims 1 and 4 only (2, 3, 5 empty)
+export const sparseAimsRow: CSVRow = {
+	...validRow,
+	'LearnRefNum': 'SPARSE001',
+	'ULN': '7777777777',
+	'Family name': 'Garcia',
+	'Given name': 'Elena',
+	// Aim 2 - empty
+	'Programme aim 2 Learning ref ': '',
+	'Aim type (programme aim 2)': '',
+	'Start date (aim 2)': '',
+	'Planned end date (aim 2)': '',
+	'Funding module (aim 2)': '',
+	'Delivery postcode (aim 2)': '',
+	'Completion status (aim 2)': '',
+	// Aim 3 - empty
+	'Programme aim 3 Learning ref ': '',
+	'Aim type (programme aim 3)': '',
+	'Start date (aim 3)': '',
+	'Planned end date (aim 3)': '',
+	'Funding module (aim 3)': '',
+	'Delivery postcode (aim 3)': '',
+	'Completion status (aim 3)': '',
+	// Aim 4 - populated
+	'Programme aim 4 Learning ref ': '50114829',
+	'Aim type (programme aim 4)': '3',
+	'Start date (aim 4)': '2025-10-01',
+	'Planned end date (aim 4)': '2026-09-30',
+	'Funding module (aim 4)': '36',
+	'Delivery postcode (aim 4)': 'E1 6AN',
+	'Completion status (aim 4)': '1',
+	// Aim 5 - empty
+	'Programme aim 5 Learning ref ': '',
+	'Aim type (programme aim 5)': '',
+	'Start date (aim 5)': '',
+	'Planned end date (aim 5)': '',
+	'Funding module (aim 5)': '',
+	'Delivery postcode (aim 5)': '',
+	'Completion status (aim 5)': '',
+};
+
+export const sparseAimsCsvContent = [
+	sparseAimsHeaders.join(','),
+	Object.values(sparseAimsRow).join(','),
+].join('\n');

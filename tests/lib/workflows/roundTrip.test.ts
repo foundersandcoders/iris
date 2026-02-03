@@ -374,4 +374,60 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(xmlContent).toContain('<AimType>1</AimType>');
 		expect(xmlContent).toContain('<FundModel>36</FundModel>');
 	});
+
+	it('should handle sparse aims (aims 1 and 4 populated, 2/3/5 empty)', async () => {
+		// 1. Setup CSV file with non-contiguous aims
+		const testCsvPath = join(testDir, 'sparse_aims.csv');
+		await writeFile(testCsvPath, fixtures.sparseAimsCsvContent);
+
+		// 2. Run Convert Workflow
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
+
+		expect(convertResult.success).toBe(true);
+		const xmlPath = convertResult.data?.outputPath;
+		expect(xmlPath).toBeDefined();
+
+		// 3. Run XML Validate Workflow
+		const validateResult = await skimWorkflow(
+			xmlValidateWorkflow({
+				filePath: xmlPath!,
+				registry,
+			})
+		);
+
+		// 4. Assert valid XML
+		expect(validateResult.success).toBe(true);
+		expect(validateResult.data?.validation.valid).toBe(true);
+		expect(validateResult.data?.validation.errorCount).toBe(0);
+
+		// 5. Verify aim detection and sequencing
+		const xmlContent = convertResult.data?.xml || '';
+
+		// Should have exactly 2 LearningDelivery elements (aims 1 and 4 only)
+		const deliveryMatches = xmlContent.match(/<LearningDelivery>/g);
+		expect(deliveryMatches).toHaveLength(2);
+
+		// Aim 1 should have AimSeqNumber 1
+		expect(xmlContent).toContain('<LearnAimRef>60161533</LearnAimRef>');
+		const aim1Match = xmlContent.match(
+			/<LearnAimRef>60161533<\/LearnAimRef>[\s\S]*?<AimSeqNumber>(\d+)<\/AimSeqNumber>/
+		);
+		expect(aim1Match).toBeTruthy();
+		expect(aim1Match![1]).toBe('1');
+
+		// Aim 4 should have AimSeqNumber 4 (preserves original aim number)
+		expect(xmlContent).toContain('<LearnAimRef>50114829</LearnAimRef>');
+		const aim4Match = xmlContent.match(
+			/<LearnAimRef>50114829<\/LearnAimRef>[\s\S]*?<AimSeqNumber>(\d+)<\/AimSeqNumber>/
+		);
+		expect(aim4Match).toBeTruthy();
+		expect(aim4Match![1]).toBe('4');
+	});
 });
