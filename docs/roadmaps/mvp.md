@@ -2,7 +2,7 @@
 
 |          | Status                                      | Next Up                               | Blocked                               |
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | Dynamic schema system complete (Phases 1-4) | storage abstraction; config system    | `check` workflow (needs 1SS.1)        |
+| **Core** | Storage abstraction complete                | workflow migrations; config system    | config system (needs 1WA.19)          |
 | **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` (needs 1WA.7)            |
 | **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | cross-check workflow (needs 1WA.7)    |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
@@ -55,7 +55,7 @@ graph TD
 1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
 1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
 
-1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
+1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"]:::open --> 1WA.11
 1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"] --> m1
 
 1WA.16["`*1WA.16*<br/>**Migrate**<br/>csvConvert to storage`"]:::open --> m1
@@ -74,6 +74,7 @@ classDef mile fill:#9ff;
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
+- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
 - [ ] 1WA.16. Migrate `csvConvert` workflow to use storage (replace Bun.write + .keep hack)
 - [ ] 1WA.17. Migrate `xmlValidate` workflow to use storage (replace readFileSync)
 - [ ] 1WA.18. Migrate TUI processing screen to use storage for schema loading
@@ -81,12 +82,11 @@ classDef mile fill:#9ff;
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
-- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`) — **depends on 1SS.1, 1WA.19**
+- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`) — **depends on 1WA.19**
 - [ ] 1SS.3. Load mapping config from file (read JSON, validate structure) — **depends on 1SS.2**
 - [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
 - [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
 - [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
-- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1**
 - [ ] 1WA.11. Add unit tests for `check` (independent of UI) — **depends on 1WA.7**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
@@ -497,7 +497,7 @@ graph TD
 	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
 	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"]
 
-	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
+	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"]:::open --> 1WA.11
 	1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"]
 
 	1WA.16["`*1WA.16*<br/>**Migrate**<br/>csvConvert to storage`"]:::open
