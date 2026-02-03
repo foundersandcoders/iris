@@ -16,7 +16,10 @@ describe('IrisStorage', () => {
 	beforeEach(async () => {
 		// Create unique temp directory for each test
 		testRoot = join(tmpdir(), `iris-storage-test-${Date.now()}`);
-		storage = createStorage({ outputDir: join(testRoot, 'output') });
+		storage = createStorage({
+			outputDir: join(testRoot, 'output'),
+			internalRoot: join(testRoot, '.iris'), // Override internal path for isolation
+		});
 
 		// Initialize storage (creates directories)
 		const initResult = await storage.init();
@@ -279,7 +282,10 @@ describe('IrisStorage', () => {
 		it('maintains multiple history entries', async () => {
 			// Fresh storage instance for this test to avoid contamination
 			const freshTestRoot = join(tmpdir(), `iris-storage-test-history-${Date.now()}`);
-			const freshStorage = createStorage({ outputDir: join(freshTestRoot, 'output') });
+			const freshStorage = createStorage({
+				outputDir: join(freshTestRoot, 'output'),
+				internalRoot: join(freshTestRoot, '.iris'),
+			});
 			await freshStorage.init();
 
 			await freshStorage.appendHistory(fixtures.historyEntry1);

@@ -22,9 +22,7 @@ export interface StoragePaths {
 	submissions: string; // ~/Documents/Iris/submissions/
 }
 
-/**
- * Get default output directory for user-visible files (cross-platform)
- */
+/** Get default output directory for user-visible files (cross-platform) */
 export function getDefaultOutputDir(): string {
 	const home = homedir();
 	const documentsDir = join(home, 'Documents');
@@ -38,14 +36,19 @@ export function getDefaultOutputDir(): string {
 	return join(home, 'Iris');
 }
 
+export interface StoragePathsOptions {
+	outputDir?: string;
+	internalRoot?: string; // For testing: override ~/.iris
+}
+
 /**
  * Construct all Iris storage paths
- * @param outputDir - Optional override for output directory (from config)
+ * @param options - Optional overrides for output and internal directories
  */
-export function getStoragePaths(outputDir?: string): StoragePaths {
+export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths {
 	const home = homedir();
-	const internal = join(home, '.iris');
-	const output = outputDir ?? getDefaultOutputDir();
+	const internal = options.internalRoot ?? join(home, '.iris');
+	const output = options.outputDir ?? getDefaultOutputDir();
 
 	return {
 		// Internal

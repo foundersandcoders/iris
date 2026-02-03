@@ -23,11 +23,15 @@ import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 
 interface StorageOptions {
 	outputDir?: string;
+	internalRoot?: string;
 	adapter?: StorageAdapter;
 }
 
 export function createStorage(options: StorageOptions = {}): IrisStorage {
-	const paths = getStoragePaths(options.outputDir);
+	const paths = getStoragePaths({
+		outputDir: options.outputDir,
+		internalRoot: options.internalRoot,
+	});
 	const adapter = options.adapter ?? createBunAdapter();
 
 	return {
