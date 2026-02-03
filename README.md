@@ -4,6 +4,10 @@
 
 Iris converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and cross-submission consistency checking.
 
+> [!NOTE]
+> **Links**
+> - [Roadmap](docs/roadmaps/mvp.md)
+
 ## What Iris Does
 
 - Full-screen interactive terminal interface (primary UX)
