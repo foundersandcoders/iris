@@ -118,4 +118,52 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(learnRefError).toBeDefined();
 		expect(learnRefError?.type).toBe('pattern');
 	});
+
+	it('should handle multiple learners with different aim counts', async () => {
+		// 1. Setup CSV file with 2 learners (1 aim and 3 aims)
+		const testCsvPath = join(testDir, 'multiple_learners.csv');
+		await writeFile(testCsvPath, fixtures.multiplelearnersCsvContent);
+
+		// 2. Run Convert Workflow
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
+
+		expect(convertResult.success).toBe(true);
+		const xmlPath = convertResult.data?.outputPath;
+		expect(xmlPath).toBeDefined();
+
+		// 3. Run XML Validate Workflow
+		const validateResult = await skimWorkflow(
+			xmlValidateWorkflow({
+				filePath: xmlPath!,
+				registry,
+			})
+		);
+
+		// 4. Assert valid XML
+		expect(validateResult.success).toBe(true);
+		expect(validateResult.data?.validation.valid).toBe(true);
+		expect(validateResult.data?.validation.errorCount).toBe(0);
+
+		// 5. Verify structure
+		const xmlContent = convertResult.data?.xml || '';
+
+		// Should have 2 Learner elements
+		const learnerMatches = xmlContent.match(/<Learner>/g);
+		expect(learnerMatches).toHaveLength(2);
+
+		// Should have 4 total LearningDelivery elements (1 + 3)
+		const deliveryMatches = xmlContent.match(/<LearningDelivery>/g);
+		expect(deliveryMatches).toHaveLength(4);
+
+		// Verify learner identifiers
+		expect(xmlContent).toContain('<LearnRefNumber>LEARN001</LearnRefNumber>');
+		expect(xmlContent).toContain('<LearnRefNumber>LEARN002</LearnRefNumber>');
+	});
 });
