@@ -211,10 +211,10 @@ describe('workflow utils', () => {
 				progress: 0,
 			};
 
-			yield { type: 'step:start', step, timestamp: Date.now() };
+			yield stepEvent('step:start', step);
 			step.status = 'complete';
 			step.progress = 100;
-			yield { type: 'step:complete', step, timestamp: Date.now() };
+			yield stepEvent('step:complete', step);
 
 			return {
 				success: true,
@@ -246,7 +246,7 @@ describe('workflow utils', () => {
 					progress: 0,
 				};
 
-				yield { type: 'step:start', step, timestamp: Date.now() };
+				yield stepEvent('step:start', step);
 
 				return {
 					success: false,
