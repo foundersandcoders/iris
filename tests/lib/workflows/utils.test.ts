@@ -32,9 +32,25 @@ describe('workflow utils', () => {
 			const after = Date.now();
 
 			expect(event.type).toBe('step:start');
-			expect(event.step).toBe(step);
+			expect(event.step).toEqual(step);
 			expect(event.timestamp).toBeGreaterThanOrEqual(before);
 			expect(event.timestamp).toBeLessThanOrEqual(after);
+		});
+
+		it('yields a copy of step to prevent reference mutation', () => {
+			const step = createStep({ id: 'test', name: 'Test' });
+			step.status = 'running';
+			step.progress = 50;
+
+			const event = stepEvent('step:start', step);
+
+			// Mutate the original step
+			step.status = 'complete';
+			step.progress = 100;
+
+			// Event should preserve the state at time of yielding
+			expect(event.step.status).toBe('running');
+			expect(event.step.progress).toBe(50);
 		});
 	});
 
