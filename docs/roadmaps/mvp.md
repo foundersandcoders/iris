@@ -70,7 +70,6 @@ graph TD
 
 1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
 1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"] --> m1
-1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1SS.6 & 1WA.7
 
 m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
@@ -84,7 +83,6 @@ classDef mile fill:#9ff;
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 - [ ] 1SS.1. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
-- [ ] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
@@ -92,8 +90,8 @@ classDef mile fill:#9ff;
 - [ ] 1SS.3. Load mapping config from file (read JSON, validate structure) — **depends on 1SS.2**
 - [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
 - [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
-- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2, 1WA.13**
-- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1, 1WA.13**
+- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
+- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1**
 - [ ] 1WA.11. Add unit tests for `check` (independent of UI) — **depends on 1WA.7**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
@@ -134,6 +132,7 @@ classDef mile fill:#9ff;
 - [x] 1WA.12. Add round-trip tests (load CSV → validate CSV → create XML → validate XML → passes)
 - [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
 - [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
+- [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 
 ---
 
@@ -481,11 +480,10 @@ graph TD
 	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
 	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
 	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"]
-	
+
 	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
 	1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"]
-	1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1SS.6 & 1WA.7
-	
+
 	1SS.5 & 1WA.11 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
 %% Milestone 2 %%
