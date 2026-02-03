@@ -36,18 +36,6 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > [!IMPORTANT]
 > **Goal:** Working transformation engine used by both interfaces
 
-> [!IMPORTANT]
-> **XML Validation Prerequisite**
-> - Milestone 1 cannot be considered complete without XML parsing and validation capabilities.
-> - The transformation engine must be able to verify its own output to ensure ILR compliance.
-> - See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
-
-> [!IMPORTANT]
-> **Dynamic Schema Prerequisite**
-> - Annual ESFA schema updates must not require code changes.
-> - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
-> - Phase 5 (TUI schema management) is deferred to Milestone 2.
-
 > [!NOTE]
 > **Key**
 > - CL (base utils)
@@ -133,6 +121,20 @@ classDef mile fill:#9ff;
 - [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
 - [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
 - [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
+
+<h4>Milestone 1 Notes</h4>
+
+> [!IMPORTANT]
+> **XML Validation Prerequisite**
+> - Milestone 1 cannot be considered complete without XML parsing and validation capabilities.
+> - The transformation engine must be able to verify its own output to ensure ILR compliance.
+> - See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
+
+> [!IMPORTANT]
+> **Dynamic Schema Prerequisite**
+> - Annual ESFA schema updates must not require code changes.
+> - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
+> - Phase 5 (TUI schema management) is deferred to Milestone 2.
 
 ---
 
@@ -280,6 +282,9 @@ classDef mile fill:#9ff;
 
 <a name="m4"><h3>Milestone 4: Desktop Interface</h3></a>
 
+> [!IMPORTANT]
+> **Goal:** Native cross-platform app via Tauri for users who prefer GUI over terminal
+
 > [!NOTE]
 > **Key**
 > - GC (GUI base)
@@ -315,9 +320,6 @@ classDef default,blocked fill:#f9f;
 classDef open fill:#ff9;
 classDef mile fill:#9ff;
 ```
-
-> [!IMPORTANT]
-> **Goal:** Native cross-platform app via Tauri for users who prefer GUI over terminal
 
 <a name="m4-doing"><h4>In Progress (Milestone 4)</h4></a>
 
