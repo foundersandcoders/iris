@@ -166,4 +166,107 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(xmlContent).toContain('<LearnRefNumber>LEARN001</LearnRefNumber>');
 		expect(xmlContent).toContain('<LearnRefNumber>LEARN002</LearnRefNumber>');
 	});
+
+	it('should generate FAM and AppFinRecord elements from aim templates', async () => {
+		// 1. Setup CSV file with FAM and AppFinRecord data
+		const testCsvPath = join(testDir, 'fam_appfin.csv');
+		await writeFile(testCsvPath, fixtures.famAppFinCsvContent);
+
+		// 2. Run Convert Workflow
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
+
+		expect(convertResult.success).toBe(true);
+		const xmlPath = convertResult.data?.outputPath;
+		expect(xmlPath).toBeDefined();
+
+		// 3. Run XML Validate Workflow
+		const validateResult = await skimWorkflow(
+			xmlValidateWorkflow({
+				filePath: xmlPath!,
+				registry,
+			})
+		);
+
+		// 4. Assert valid XML
+		expect(validateResult.success).toBe(true);
+		expect(validateResult.data?.validation.valid).toBe(true);
+		expect(validateResult.data?.validation.errorCount).toBe(0);
+
+		// 5. Verify FAM and AppFinRecord structures
+		const xmlContent = convertResult.data?.xml || '';
+
+		// Should have LearningDeliveryFAM elements
+		expect(xmlContent).toContain('<LearningDeliveryFAM>');
+		expect(xmlContent).toContain('<LearnDelFAMType>ACT</LearnDelFAMType>');
+		expect(xmlContent).toContain('<LearnDelFAMCode>1</LearnDelFAMCode>');
+		expect(xmlContent).toContain('<LearnDelFAMType>SOF</LearnDelFAMType>');
+		expect(xmlContent).toContain('<LearnDelFAMCode>105</LearnDelFAMCode>');
+
+		// Should have AppFinRecord elements
+		expect(xmlContent).toContain('<AppFinRecord>');
+		expect(xmlContent).toContain('<AFinType>TNP</AFinType>');
+		expect(xmlContent).toContain('<AFinCode>1</AFinCode>');
+		expect(xmlContent).toContain('<AFinAmount>15000</AFinAmount>');
+		expect(xmlContent).toContain('<AFinCode>2</AFinCode>');
+		expect(xmlContent).toContain('<AFinAmount>3000</AFinAmount>');
+	});
+
+	it('should handle learners with multiple employment status records', async () => {
+		// 1. Setup CSV file with 3 employment statuses
+		const testCsvPath = join(testDir, 'employment_statuses.csv');
+		await writeFile(testCsvPath, fixtures.employmentStatusCsvContent);
+
+		// 2. Run Convert Workflow
+		const convertResult = await skimWorkflow(
+			convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+			})
+		);
+
+		expect(convertResult.success).toBe(true);
+		const xmlPath = convertResult.data?.outputPath;
+		expect(xmlPath).toBeDefined();
+
+		// 3. Run XML Validate Workflow
+		const validateResult = await skimWorkflow(
+			xmlValidateWorkflow({
+				filePath: xmlPath!,
+				registry,
+			})
+		);
+
+		// 4. Assert valid XML
+		expect(validateResult.success).toBe(true);
+		expect(validateResult.data?.validation.valid).toBe(true);
+		expect(validateResult.data?.validation.errorCount).toBe(0);
+
+		// 5. Verify employment status structures
+		const xmlContent = convertResult.data?.xml || '';
+
+		// Should have 3 LearnerEmploymentStatus elements
+		const empStatusMatches = xmlContent.match(/<LearnerEmploymentStatus>/g);
+		expect(empStatusMatches).toHaveLength(3);
+
+		// Verify employment status values
+		expect(xmlContent).toContain('<EmpStat>10</EmpStat>');
+		expect(xmlContent).toContain('<EmpStat>11</EmpStat>');
+
+		// Should have EmploymentStatusMonitoring elements
+		expect(xmlContent).toContain('<EmploymentStatusMonitoring>');
+		expect(xmlContent).toContain('<ESMType>SEM</ESMType>');
+		expect(xmlContent).toContain('<ESMType>LOE</ESMType>');
+		expect(xmlContent).toContain('<ESMType>EII</ESMType>');
+		expect(xmlContent).toContain('<ESMType>SEI</ESMType>');
+		expect(xmlContent).toContain('<ESMType>LOU</ESMType>');
+	});
 });
