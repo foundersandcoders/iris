@@ -70,7 +70,8 @@ classDef mile fill:#9ff;
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
-- [ ] 1SS.1. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
+- [ ] 1SS.1. Implement storage abstractions for cross-submission history (must support future ESFA response storage)
+	- Must be built with saving multiple artefacts in mind: user config, mappings, generated reports, generated xml, etc
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
