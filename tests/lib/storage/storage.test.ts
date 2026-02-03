@@ -31,16 +31,30 @@ describe('IrisStorage', () => {
 	describe('init', () => {
 		it('creates all required directories', async () => {
 			const { paths } = storage;
+			const { stat } = await import('fs/promises');
 
-			// Check internal directories exist (no .keep hack!)
-			expect(await Bun.file(paths.mappings).exists()).toBe(true);
-			expect(await Bun.file(paths.schemas).exists()).toBe(true);
-			expect(await Bun.file(paths.history).exists()).toBe(true);
-			expect(await Bun.file(paths.reports).exists()).toBe(true);
+			// Check internal directories exist
+			const internalStat = await stat(paths.internal);
+			expect(internalStat.isDirectory()).toBe(true);
+
+			const mappingsStat = await stat(paths.mappings);
+			expect(mappingsStat.isDirectory()).toBe(true);
+
+			const schemasStat = await stat(paths.schemas);
+			expect(schemasStat.isDirectory()).toBe(true);
+
+			const historyStat = await stat(paths.history);
+			expect(historyStat.isDirectory()).toBe(true);
+
+			const reportsStat = await stat(paths.reports);
+			expect(reportsStat.isDirectory()).toBe(true);
 
 			// Check output directories
-			expect(await Bun.file(paths.output).exists()).toBe(true);
-			expect(await Bun.file(paths.submissions).exists()).toBe(true);
+			const outputStat = await stat(paths.output);
+			expect(outputStat.isDirectory()).toBe(true);
+
+			const submissionsStat = await stat(paths.submissions);
+			expect(submissionsStat.isDirectory()).toBe(true);
 		});
 	});
 
@@ -137,8 +151,9 @@ describe('IrisStorage', () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data).toContain('<?xml');
+				// XSD starts with a comment, not XML declaration
 				expect(result.data).toContain('xs:schema');
+				expect(result.data).toContain('ESFA/ILR/2025-26');
 			}
 		});
 
@@ -262,15 +277,23 @@ describe('IrisStorage', () => {
 		});
 
 		it('maintains multiple history entries', async () => {
-			await storage.appendHistory(fixtures.historyEntry1);
-			await storage.appendHistory(fixtures.historyEntry2);
+			// Fresh storage instance for this test to avoid contamination
+			const freshTestRoot = join(tmpdir(), `iris-storage-test-history-${Date.now()}`);
+			const freshStorage = createStorage({ outputDir: join(freshTestRoot, 'output') });
+			await freshStorage.init();
 
-			const result = await storage.loadHistory();
+			await freshStorage.appendHistory(fixtures.historyEntry1);
+			await freshStorage.appendHistory(fixtures.historyEntry2);
+
+			const result = await freshStorage.loadHistory();
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.submissions).toHaveLength(2);
 				expect(result.data.submissions).toEqual([fixtures.historyEntry1, fixtures.historyEntry2]);
 			}
+
+			// Cleanup
+			await rm(freshTestRoot, { recursive: true, force: true });
 		});
 	});
 
