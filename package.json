@@ -1,6 +1,6 @@
 {
   "name": "iris",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "ILR (Individualised Learner Record) toolkit - CSV to ILR XML conversion with semantic validation",
   "type": "module",
   "bin": {
