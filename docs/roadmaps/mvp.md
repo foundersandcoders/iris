@@ -1,20 +1,24 @@
 # Iris: MVP
 
-|          | Status                                      | Next Up                                        |
-| -------- | ------------------------------------------- | ---------------------------------------------- |
-| **Core** | Dynamic schema system complete (Phases 1-4) | round-trip tests; cross-check workflow         |
-| **CLI**  | TUI launches                                | direct commands                                |
-| **TUI**  | Basic screens & navigation                  | validation explorer; workflows; schema manager |
-| **GUI**  | SvelteKit configured                        | (blocked on TUI completion)                    |
+|          | Status                                      | Next Up                               | Blocked                               |
+| -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
+| **Core** | Dynamic schema system complete (Phases 1-4) | storage abstraction; config system    | `check` workflow (needs 1SS.1)        |
+| **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` (needs 1WA.7)            |
+| **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | cross-check workflow (needs 1WA.7)    |
+| **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
 
 ---
 
+## Contents
+
 - [Milestones](#milestones)
-  - [Milestone 1: Shared Core Library](`#m1`)
-  - [Milestone 2: TUI Interface](`#m2`)
-  - [Milestone 3: Direct Commands](`#milestone-3`)
-  - [Milestone 4: Desktop Interface](`#milestone-4`)
-  - [Milestone 5: Production Ready](`#milestone-5`)
+  - [Milestone 1: Shared Core Library](#m1)
+  - [Milestone 2: TUI Interface](#m2)
+  - [Milestone 3: Direct Commands](#m3)
+  - [Milestone 4: Desktop Interface](#m4)
+  - [Milestone 5: Production Ready](#m5)
+- [Progress Map](#map)
+- [Links](#links)
 - [Beyond MVP](#post-mvp)
 
 ---
@@ -51,23 +55,46 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > - SS (schema/mapping storage)
 > - WA (workflow abstractions)
 
-<a name="m1-doing"><h4>In Progress (Milestone 1)</h4></a>
+```mermaid
+---
+title: Milestone 1
+---
+graph TD
 
-- [ ] 1WA.12. Add round-trip tests (load CSV → validate CSV → create XML → validate XML → passes)
+1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1WA.7
+1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
+1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
+1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
+1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
+
+1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
+1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"] --> m1
+1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1WA.7
+
+m1{"`**Milestone 1**<br/>Core Library`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
+
+<a name="m1-doing"><h4>In Progress (Milestone 1)</h4></a>
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 - [ ] 1SS.1. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
 - [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- [ ] 1SS.3. Load mapping config from file (read JSON, validate structure)
-- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors)
-- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
-- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist)
-- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
-- [ ] 1WA.11. Add unit tests for `check` (independent of UI)
 - [ ] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
+
+- [ ] 1SS.3. Load mapping config from file (read JSON, validate structure) — **depends on 1SS.2**
+- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.2**
+- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.2**
+- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
+- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1**
+- [ ] 1WA.11. Add unit tests for `check` (independent of UI) — **depends on 1WA.7**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
 
@@ -104,6 +131,7 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 - [x] 1WA.8. Add unit tests for `validateCsv` (independent of UI)
 - [x] 1WA.9. Add unit tests for `convertCsv` (independent of UI)
 - [x] 1WA.10. Add unit tests for `validateXml` (independent of UI)
+- [x] 1WA.12. Add round-trip tests (load CSV → validate CSV → create XML → validate XML → passes)
 - [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
 - [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
 
@@ -120,32 +148,70 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > - TM (mapping builder TUI)
 > - TS (schema mgmt TUI)
 
+```mermaid
+---
+title: Milestone 2
+---
+graph TD
+
+%m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
+
+2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
+2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
+2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
+2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
+
+2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
+2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
+2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
+2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
+
+2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
+2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
+2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
+2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
+2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
+2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
+2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
+2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
+2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
+2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
+2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
+
+m2{"`**Milestone 2**<br/>TUI App`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
+
 <a name="m2-doing"><h4>In Progress (Milestone 2)</h4></a>
+
+- [ ] 2TI.11. Implement keyboard navigation (arrows, vim-style, shortcuts)
 
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
 - [ ] 2TI.7. Build validation results explorer (error/warning navigation)
 - [ ] 2TI.8. Implement success/completion screen with next actions
-- [ ] 2TI.9. Add settings management screen
-- [ ] 2TI.10. Create submission history browser
-- [ ] 2TI.11. Implement keyboard navigation (arrows, vim-style, shortcuts)
 - [ ] 2TI.12. Add help overlay system (contextual help)
 - [ ] 2TI.13. Build convert workflow (file select → process → results)
-- [ ] 2TI.14. Build validate workflow (file select → validate → explore errors)
-- [ ] 2TI.15. Build cross-submission check workflow
 - [ ] 2TI.16. Add visual feedback (animations, transitions, spinners)
 - [ ] 2TI.17. Test TUI with real CSV exports from Airtable
-- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new)
 - [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector)
 - [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues)
-- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default)
-- [ ] 2TS.1. Implement **Dynamic Schema (Phase 5): Schema Management**
-	- [ ] 2TS.1a. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
-	- [ ] 2TS.1b. Build schema manager TUI screen (upload, list, select active schema)
-	- [ ] 2TS.1c. Add schema version selection to workflows
-	- [ ] 2TS.1d. Implement migration guidance when schema changes affect existing mappings
+- [ ] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
+- [ ] 2TS.2. Build schema manager TUI screen (upload, list, select active schema)
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
+
+- [ ] 2TI.9. Add settings management screen — **depends on 1SS.2**
+- [ ] 2TI.10. Create submission history browser — **depends on 1SS.1**
+- [ ] 2TI.14. Build validate workflow (file select → validate → explore errors) — **depends on 2TI.7**
+- [ ] 2TI.15. Build cross-submission check workflow — **depends on 1WA.7**
+- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new) — **depends on 1SS.2, 1SS.3, 1SS.5**
+- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 1SS.4**
+- [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.1**
+- [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.1**
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -161,7 +227,7 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 
 ---
 
-<a name="milestone-3"><h3>Milestone 3: Direct Commands (Automation)</h3></a>
+<a name="m3"><h3>Milestone 3: Direct Commands (Automation)</h3></a>
 
 > [!IMPORTANT]
 > **Goal:** Scriptable commands for automation and power users
@@ -169,6 +235,29 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > [!NOTE]
 > **Key**
 > - DC (direct commands)
+
+```mermaid
+---
+title: Milestone 3
+---
+graph TD
+
+m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
+
+%% Milestone 3 %%
+3DC.2["`*3DC.2*<br/>**Command**<br/>iris convert`"] --> 3DC.4
+3DC.3["`*3DC.3*<br/>**Command**<br/>iris validate`"] --> 3DC.4
+3DC.4["`*3DC.4*<br/>**Command**<br/>iris check`"] --> 3DC.5 & 3DC.7
+3DC.5["`*3DC.5*<br/>**Flag**<br/>iris * --help`"] --> 3DC.6
+3DC.6["`*3DC.6*<br/>**Test**<br/>automations`"] --> m3
+3DC.7["`*3DC.7*<br/>**Flag**<br/>iris * --interactive`"] --> 3DC.6
+
+m3{"`**Milestone 3**<br/>Commands`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
 
 <a name="m3-doing"><h4>In Progress (Milestone 3)</h4></a>
 
@@ -179,10 +268,10 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check)
-- [ ] 3DC.5. Implement `iris --help` and command-specific help
-- [ ] 3DC.6. Test direct commands in automation/scripting scenarios
-- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows
+- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check) — **blocked by 1WA.7**
+- [ ] 3DC.5. Implement `iris --help` and command-specific help — **blocked by 3DC.2, 3DC.3, 3DC.4**
+- [ ] 3DC.6. Test direct commands in automation/scripting scenarios — **blocked by 3DC.2, 3DC.3, 3DC.4**
+- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows — **blocked by 2TI.13, 2TI.14, 2TI.15**
 
 <a name="m3-done"><h4>Completed (Milestone 3)</h4></a>
 
@@ -190,13 +279,43 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 
 ---
 
-<a name="milestone-4"><h3>Milestone 4: Desktop Interface</h3></a>
+<a name="m4"><h3>Milestone 4: Desktop Interface</h3></a>
 
 > [!NOTE]
 > **Key**
 > - GC (GUI base)
 > - GM (schema/mapping GUI)
 > - NB (native app builds)
+
+```mermaid
+---
+title: Milestone 4
+---
+graph TD
+
+m3{"`**Milestone 3**<br/>Commands`"}:::mile --> 4GC.1 & 4GC.3
+
+4GC.1["`*4GC.1*<br/>**Component**<br/>File picker`"] --> 4GC.4
+4GC.2["`*4GC.2*<br/>**Component**<br/>Validation results`"] --> 4GC.7
+4GC.3["`*4GC.3*<br/>**Component**<br/>XML preview`"] --> 4GC.4
+4GC.4["`*4GC.4*<br/>**Component**<br/>Save dialog`"] --> 4GC.6 & 4GC.8 & 4GC.9 & 4GC.10
+4GC.5["`*4GC.5*<br/>**Component**<br/>Cross-Submission Warnings`"] --> 4NB.1
+4GC.6["`*4GC.6*<br/>**Component**<br/>Config UI`"] --> 4NB.1
+4GC.7["`*4GC.7*<br/>**Feat**<br/>Error Feedback`"] --> 4NB.1
+4GC.8["`*4GC.8*<br/>**Route**<br/>/convert`"] --> 4GC.7
+4GC.9["`*4GC.9*<br/>**Route**<br/>/validate`"] --> 4GC.2
+4GC.10["`*4GC.10*<br/>**Route**<br/>/check`"] --> 4GC.5 & 4GC.7
+
+4NB.1["`*4NB.1*<br/>**Build**<br/>.dmg`"] --> 4NB.2 & 4NB.3
+4NB.2["`*4NB.2*<br/>**Build**<br/>exe`"]
+4NB.3["`*4NB.3*<br/>**Build**<br/>appImage`"]
+
+4NB.2 & 4NB.3 --> m4{"`**Milestone 4**<br/>Desktop App`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
 
 > [!IMPORTANT]
 > **Goal:** Native cross-platform app via Tauri for users who prefer GUI over terminal
@@ -216,17 +335,17 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 
-- [ ] 4GC.5. Show cross-submission warnings in UI
-- [ ] 4GC.10. Create `/check` SvelteKit route
-- [ ] 4NB.1.Compile macOS `.app` build
-- [ ] 4NB.2. Compile Windows `.exe` build
-- [ ] 4NB.3. Compile Linux `.AppImage` build
+- [ ] 4GC.5. Show cross-submission warnings in UI — **blocked by 1WA.7**
+- [ ] 4GC.10. Create `/check` SvelteKit route — **blocked by 1WA.7**
+- [ ] 4NB.1. Compile macOS `.app` build — **blocked by 4GC.1, 4GC.2, 4GC.3, 4GC.4, 4GC.8, 4GC.9**
+- [ ] 4NB.2. Compile Windows `.exe` build — **blocked by 4NB.1**
+- [ ] 4NB.3. Compile Linux `.AppImage` build — **blocked by 4NB.1**
 
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
 
 ---
 
-<a name="milestone-5"><h3>Milestone 5: Production Ready</h3></a>
+<a name="m5"><h3>Milestone 5: Production Ready</h3></a>
 
 > [!IMPORTANT]
 > **Goal:** Replaces existing Electron tool in production
@@ -236,16 +355,36 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > - PR (production readiness)
 > - UD (documentation)
 
+```mermaid
+---
+title: Milestone 5
+---
+graph TD
+
+m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3
+
+5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"]:::block --> 5UD.2 & 5UD.4
+5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"]:::block
+5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"]:::block
+5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"]:::block
+
+5UD.2 & 5UD.3 & 5UD.4 --> m5{"`**Milestone 5**<br/>Documentation`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
+
 <a name="m5-doing"><h4>In Progress (Milestone 5)</h4></a>
 
 <a name="m5-todo"><h4>To Do (Milestone 5)</h4></a>
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
-- [ ] 5UD.1. Document ILR XML structure and requirements
-- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript)
-- [ ] 5UD.3. Write user guide for non-technical users
-- [ ] 5UD.4. Document validation rules and error messages
+- [ ] 5UD.1. Document ILR XML structure and requirements — **blocked by Milestone 1**
+- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript) — **blocked by Milestone 1**
+- [ ] 5UD.3. Write user guide for non-technical users — **blocked by Milestone 2**
+- [ ] 5UD.4. Document validation rules and error messages — **blocked by Milestone 1**
 
 <a name="m5-done"><h4>Completed (Milestone 5)</h4></a>
 
@@ -319,8 +458,103 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 
 ---
 
-<a name="links"><h2></h2></a>
+<a name="links"><h2>Links</h2></a>
 
 <h3>Work Records</h3>
 
 See [`docs/work-records/`](../work-records/) for detailed development history.
+
+---
+
+<a name="map"><h2>Progress Map</h2></a>
+
+```mermaid
+---
+title: Tasks
+---
+graph TD
+
+%% Milestone 1 %%
+	1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1WA.7
+	1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
+	1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
+	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
+	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"]
+	
+	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
+	1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"]
+	1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1WA.7
+	
+	1SS.5 & 1WA.11 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
+
+%% Milestone 2 %%
+	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
+	2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
+	2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
+	2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
+	
+	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
+	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
+	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
+	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"]
+	
+	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
+	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
+	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"]
+	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"]
+	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
+	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
+	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
+	2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
+	2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
+	2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
+	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
+	
+	2TI.9 & 2TI.10 & 2TS.4 --> m2{"`**Milestone 2**<br/>TUI App`"}:::mile
+
+%% Milestone 3 %%
+	3DC.2["`*3DC.2*<br/>**Command**<br/>iris convert`"] --> 3DC.4
+	3DC.3["`*3DC.3*<br/>**Command**<br/>iris validate`"] --> 3DC.4
+	3DC.4["`*3DC.4*<br/>**Command**<br/>iris check`"] --> 3DC.5 & 3DC.7
+	3DC.5["`*3DC.5*<br/>**Flag**<br/>iris * --help`"] --> 3DC.6
+	3DC.6["`*3DC.6*<br/>**Test**<br/>automations`"]
+	3DC.7["`*3DC.7*<br/>**Flag**<br/>iris * --interactive`"] --> 3DC.6
+	
+	3DC.6 --> m3{"`**Milestone 3**<br/>Commands`"}:::mile
+
+%% Milestone 4 %%
+	4GC.1["`*4GC.1*<br/>**Component**<br/>File picker`"] --> 4GC.4
+	4GC.2["`*4GC.2*<br/>**Component**<br/>Validation results`"] --> 4GC.7
+	4GC.3["`*4GC.3*<br/>**Component**<br/>XML preview`"] --> 4GC.4
+	4GC.4["`*4GC.4*<br/>**Component**<br/>Save dialog`"] --> 4GC.6 & 4GC.8 & 4GC.9 & 4GC.10
+	4GC.5["`*4GC.5*<br/>**Component**<br/>Cross-Submission Warnings`"] --> 4NB.1
+	4GC.6["`*4GC.6*<br/>**Component**<br/>Config UI`"] --> 4NB.1
+	4GC.7["`*4GC.7*<br/>**Feat**<br/>Error Feedback`"] --> 4NB.1
+	4GC.8["`*4GC.8*<br/>**Route**<br/>/convert`"] --> 4GC.7
+	4GC.9["`*4GC.9*<br/>**Route**<br/>/validate`"] --> 4GC.2
+	4GC.10["`*4GC.10*<br/>**Route**<br/>/check`"] --> 4GC.5 & 4GC.7
+	
+	4NB.1["`*4NB.1*<br/>**Build**<br/>.dmg`"] --> 4NB.2 & 4NB.3
+	4NB.2["`*4NB.2*<br/>**Build**<br/>exe`"]
+	4NB.3["`*4NB.3*<br/>**Build**<br/>appImage`"]
+	
+	4NB.2 & 4NB.3 --> m4{"`**Milestone 4**<br/>Desktop App`"}:::mile
+
+%% Milestone 5 %%
+	5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"] --> 5UD.2 & 5UD.4
+	5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"]
+	5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"]
+	5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"]
+	
+	5UD.2 & 5UD.3 & 5UD.4 --> m5{"`**Milestone 5**<br/>Documentation`"}:::mile
+
+m1 --> 2TI.11 & 2TM.2 & 2TS.1
+m2 --> 3DC.2 & 3DC.3
+m3 --> 4GC.1 & 4GC.3
+m4 --> 5UD.1 & 5UD.3
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
