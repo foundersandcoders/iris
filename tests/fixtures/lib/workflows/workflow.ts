@@ -247,3 +247,63 @@ export const employmentStatusCsvContent = [
 	employmentStatusHeaders.join(','),
 	Object.values(learnerWithEmploymentStatuses).join(','),
 ].join('\n');
+
+// === Minimal Required Fields Fixtures ===
+
+// Learner with only required fields populated
+export const minimalRequiredRow: CSVRow = {
+	'LearnRefNum': 'MINIMAL01',
+	'ULN': '5555555555',
+	'Family name': '',
+	'Given name': '',
+	'Date of birth': '',
+	'Ethnic group': '31',
+	'Sex ': 'F',
+	'Primary additional needs': '1',
+	'Prior post code': 'SW1A1AA',
+	'Post code': 'SW1A1AA',
+	'Prior attainment date applies to': '',
+	'Prior attainment': '',
+	'Programme aim 1 Learning ref ': '60161533',
+	'Aim type (programme aim 1)': '1',
+	'Start date (aim 1)': '2025-09-01',
+	'Planned end date (aim 1)': '2026-08-31',
+	'Funding module (aim 1)': '36',
+	'Delivery postcode (aim 1)': 'SW1A1AA',
+	'Completion status (aim 1)': '1',
+};
+
+export const minimalRequiredCsvContent = [
+	validHeaders.join(','),
+	Object.values(minimalRequiredRow).join(','),
+].join('\n');
+
+// === Transform Edge Cases Fixtures ===
+
+// Learner with messy data requiring transformation
+export const transformEdgeCasesRow: CSVRow = {
+	'LearnRefNum': '  EDGE001  ',
+	'ULN': '6666666666',
+	'Family name': '  O\'Brien-Smith  ',
+	'Given name': '  Jean-Paul  ',
+	'Date of birth': '2000-01-15',
+	'Ethnic group': '  31  ',
+	'Sex ': '  m  ',
+	'Primary additional needs': '  2  ',
+	'Prior post code': 'e1 6an',
+	'Post code': 'SW1A 1AA',
+	'Prior attainment date applies to': '2025-09-01',
+	'Prior attainment': '  3  ',
+	'Programme aim 1 Learning ref ': 'z0001234',
+	'Aim type (programme aim 1)': '  1  ',
+	'Start date (aim 1)': '2025-09-01',
+	'Planned end date (aim 1)': '2026-08-31',
+	'Funding module (aim 1)': '  36  ',
+	'Delivery postcode (aim 1)': 'e1 6AN',
+	'Completion status (aim 1)': '  1  ',
+};
+
+export const transformEdgeCasesCsvContent = [
+	validHeaders.join(','),
+	Object.values(transformEdgeCasesRow).join(','),
+].join('\n');
