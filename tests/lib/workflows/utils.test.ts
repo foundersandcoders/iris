@@ -32,9 +32,25 @@ describe('workflow utils', () => {
 			const after = Date.now();
 
 			expect(event.type).toBe('step:start');
-			expect(event.step).toBe(step);
+			expect(event.step).toEqual(step);
 			expect(event.timestamp).toBeGreaterThanOrEqual(before);
 			expect(event.timestamp).toBeLessThanOrEqual(after);
+		});
+
+		it('yields a copy of step to prevent reference mutation', () => {
+			const step = createStep({ id: 'test', name: 'Test' });
+			step.status = 'running';
+			step.progress = 50;
+
+			const event = stepEvent('step:start', step);
+
+			// Mutate the original step
+			step.status = 'complete';
+			step.progress = 100;
+
+			// Event should preserve the state at time of yielding
+			expect(event.step.status).toBe('running');
+			expect(event.step.progress).toBe(50);
 		});
 	});
 
@@ -67,12 +83,12 @@ describe('workflow utils', () => {
 				progress: 0,
 			};
 
-			yield { type: 'step:start', step: step1, timestamp: Date.now() };
+			yield stepEvent('step:start', step1);
 
 			step1.status = 'complete';
 			step1.progress = 100;
 
-			yield { type: 'step:complete', step: step1, timestamp: Date.now() };
+			yield stepEvent('step:complete', step1);
 
 			const step2: WorkflowStep = {
 				id: 'step2',
@@ -81,12 +97,12 @@ describe('workflow utils', () => {
 				progress: 0,
 			};
 
-			yield { type: 'step:start', step: step2, timestamp: Date.now() };
+			yield stepEvent('step:start', step2);
 
 			step2.status = 'complete';
 			step2.progress = 100;
 
-			yield { type: 'step:complete', step: step2, timestamp: Date.now() };
+			yield stepEvent('step:complete', step2);
 
 			return {
 				success: true,
@@ -108,12 +124,12 @@ describe('workflow utils', () => {
 				progress: 0,
 			};
 
-			yield { type: 'step:start', step, timestamp: Date.now() };
+			yield stepEvent('step:start', step);
 
 			step.status = 'failed';
 			step.error = new Error('Something went wrong');
 
-			yield { type: 'step:error', step, timestamp: Date.now() };
+			yield stepEvent('step:error', step);
 
 			return {
 				success: false,
@@ -166,6 +182,20 @@ describe('workflow utils', () => {
 			expect(events[2].step.id).toBe('step2');
 			expect(events[2].step.name).toBe('Second Step');
 		});
+
+		it('preserves step state at time of yielding (no reference mutation)', async () => {
+			const { events } = await consumeWorkflow(mockSuccessWorkflow());
+
+			// step:start event should show 'running' status, not 'complete'
+			expect(events[0].type).toBe('step:start');
+			expect(events[0].step.status).toBe('running');
+			expect(events[0].step.progress).toBe(0);
+
+			// step:complete event should show 'complete' status
+			expect(events[1].type).toBe('step:complete');
+			expect(events[1].step.status).toBe('complete');
+			expect(events[1].step.progress).toBe(100);
+		});
 	});
 
 	describe('skimWorkflow', () => {
@@ -181,10 +211,10 @@ describe('workflow utils', () => {
 				progress: 0,
 			};
 
-			yield { type: 'step:start', step, timestamp: Date.now() };
+			yield stepEvent('step:start', step);
 			step.status = 'complete';
 			step.progress = 100;
-			yield { type: 'step:complete', step, timestamp: Date.now() };
+			yield stepEvent('step:complete', step);
 
 			return {
 				success: true,
@@ -216,7 +246,7 @@ describe('workflow utils', () => {
 					progress: 0,
 				};
 
-				yield { type: 'step:start', step, timestamp: Date.now() };
+				yield stepEvent('step:start', step);
 
 				return {
 					success: false,
