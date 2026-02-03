@@ -157,7 +157,7 @@ function stepEvent<T>(
 	type: WorkflowStepEvent['type'],
 	step: WorkflowStep<T>
 ): WorkflowStepEvent<T> {
-	return { type, step, timestamp: Date.now() };
+	return { type, step: { ...step }, timestamp: Date.now() };
 }
 
 function failedResult(
