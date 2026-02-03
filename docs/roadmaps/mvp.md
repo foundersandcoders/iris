@@ -61,8 +61,8 @@ title: Milestone 1
 ---
 graph TD
 
-1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1WA.7
-1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
+1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1SS.2 & 1WA.7
+1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"] --> 1SS.3 & 1SS.6
 1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
 1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
 1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
@@ -70,7 +70,7 @@ graph TD
 
 1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
 1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"] --> m1
-1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1WA.7
+1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1SS.6 & 1WA.7
 
 m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
@@ -84,16 +84,16 @@ classDef mile fill:#9ff;
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 - [ ] 1SS.1. Implement storage abstraction for cross-submission history (must support future ESFA response storage)
-- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [ ] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
+- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`) — **depends on 1SS.1**
 - [ ] 1SS.3. Load mapping config from file (read JSON, validate structure) — **depends on 1SS.2**
-- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.2**
-- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.2**
-- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
-- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1**
+- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
+- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
+- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2, 1WA.13**
+- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report) — **depends on 1SS.1, 1WA.13**
 - [ ] 1WA.11. Add unit tests for `check` (independent of UI) — **depends on 1WA.7**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
@@ -204,14 +204,14 @@ classDef mile fill:#9ff;
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
-- [ ] 2TI.9. Add settings management screen — **depends on 1SS.2**
-- [ ] 2TI.10. Create submission history browser — **depends on 1SS.1**
+- [ ] 2TI.9. Add settings management screen — **depends on 2TM.4, 2TS.2, 2TI.16**
+- [ ] 2TI.10. Create submission history browser — **depends on 2TI.17**
 - [ ] 2TI.14. Build validate workflow (file select → validate → explore errors) — **depends on 2TI.7**
-- [ ] 2TI.15. Build cross-submission check workflow — **depends on 1WA.7**
-- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new) — **depends on 1SS.2, 1SS.3, 1SS.5**
-- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 1SS.4**
-- [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.1**
-- [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.1**
+- [ ] 2TI.15. Build cross-submission check workflow — **depends on 2TI.8**
+- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new) — **depends on 2TM.3**
+- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
+- [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.2**
+- [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4, 2TI.12**
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -268,10 +268,10 @@ classDef mile fill:#9ff;
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check) — **blocked by 1WA.7**
-- [ ] 3DC.5. Implement `iris --help` and command-specific help — **blocked by 3DC.2, 3DC.3, 3DC.4**
-- [ ] 3DC.6. Test direct commands in automation/scripting scenarios — **blocked by 3DC.2, 3DC.3, 3DC.4**
-- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows — **blocked by 2TI.13, 2TI.14, 2TI.15**
+- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check) — **depends on 3DC.2, 3DC.3**
+- [ ] 3DC.5. Implement `iris --help` and command-specific help — **depends on 3DC.4**
+- [ ] 3DC.6. Test direct commands in automation/scripting scenarios — **depends on 3DC.5, 3DC.7**
+- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows — **depends on 3DC.4**
 
 <a name="m3-done"><h4>Completed (Milestone 3)</h4></a>
 
@@ -335,11 +335,11 @@ classDef mile fill:#9ff;
 
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 
-- [ ] 4GC.5. Show cross-submission warnings in UI — **blocked by 1WA.7**
-- [ ] 4GC.10. Create `/check` SvelteKit route — **blocked by 1WA.7**
-- [ ] 4NB.1. Compile macOS `.app` build — **blocked by 4GC.1, 4GC.2, 4GC.3, 4GC.4, 4GC.8, 4GC.9**
-- [ ] 4NB.2. Compile Windows `.exe` build — **blocked by 4NB.1**
-- [ ] 4NB.3. Compile Linux `.AppImage` build — **blocked by 4NB.1**
+- [ ] 4GC.5. Show cross-submission warnings in UI — **depends on 4GC.10**
+- [ ] 4GC.10. Create `/check` SvelteKit route — **depends on 4GC.4**
+- [ ] 4NB.1. Compile macOS `.app` build — **depends on 4GC.5, 4GC.6, 4GC.7**
+- [ ] 4NB.2. Compile Windows `.exe` build — **depends on 4NB.1**
+- [ ] 4NB.3. Compile Linux `.AppImage` build — **depends on 4NB.1**
 
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
 
@@ -381,10 +381,10 @@ classDef mile fill:#9ff;
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
-- [ ] 5UD.1. Document ILR XML structure and requirements — **blocked by Milestone 1**
-- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript) — **blocked by Milestone 1**
-- [ ] 5UD.3. Write user guide for non-technical users — **blocked by Milestone 2**
-- [ ] 5UD.4. Document validation rules and error messages — **blocked by Milestone 1**
+- [ ] 5UD.1. Document ILR XML structure and requirements — **depends on Milestone 4**
+- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript) — **depends on 5UD.1**
+- [ ] 5UD.3. Write user guide for non-technical users — **depends on Milestone 4**
+- [ ] 5UD.4. Document validation rules and error messages — **depends on 5UD.1**
 
 <a name="m5-done"><h4>Completed (Milestone 5)</h4></a>
 
@@ -475,8 +475,8 @@ title: Tasks
 graph TD
 
 %% Milestone 1 %%
-	1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1WA.7
-	1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
+	1SS.1["`*1SS.1*<br/>**Feat**<br/>Storage Abstraction`"]:::open --> 1SS.2 & 1WA.7
+	1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"] --> 1SS.3 & 1SS.6
 	1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
 	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
 	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
@@ -484,7 +484,7 @@ graph TD
 	
 	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"] --> 1WA.11
 	1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"]
-	1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1WA.7
+	1WA.13["`*1WA.13*<br/>**Fix**</br>Yield step copies`"]:::open --> 1SS.6 & 1WA.7
 	
 	1SS.5 & 1WA.11 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
