@@ -195,12 +195,3 @@ function setNestedValue(
 	const lastPart = parts[parts.length - 1];
 	current[lastPart] = value;
 }
-
-/**
- * - Loads a mapping configuration by ID
- * - Placeholder: will load from `~/.iris/mappings/<id>.json` in future)
- */
-export function loadMappingConfig(id: string): MappingConfig | null {
-	// TODO: Implement file-based loading
-	throw new Error(`Mapping config loading not yet implemented (id: ${id})`);
-}
