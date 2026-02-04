@@ -220,4 +220,116 @@ describe('config types', () => {
 			}
 		});
 	});
+
+	describe('validateConfig', () => {
+		it('accepts valid config', () => {
+			const result = validateConfig(DEFAULT_CONFIG);
+
+			expect(result.valid).toBe(true);
+			expect(result.issues).toHaveLength(0);
+		});
+
+		it('rejects non-object config', () => {
+			const result = validateConfig('not an object');
+
+			expect(result.valid).toBe(false);
+			expect(result.issues).toHaveLength(1);
+			expect(result.issues[0].field).toBe('config');
+		});
+
+		it('rejects null config', () => {
+			const result = validateConfig(null);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues[0].field).toBe('config');
+		});
+
+		it('rejects invalid configVersion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, configVersion: 0 };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'configVersion')).toBe(true);
+		});
+
+		it('rejects non-integer configVersion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, configVersion: 1.5 };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'configVersion')).toBe(true);
+		});
+
+		it('rejects non-8-digit UKPRN', () => {
+			const invalidConfig = {
+				...DEFAULT_CONFIG,
+				provider: { ukprn: 123, name: 'Test' },
+			};
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'provider.ukprn')).toBe(true);
+		});
+
+		it('rejects empty activeSchema', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, activeSchema: '' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'activeSchema')).toBe(true);
+		});
+
+		it('rejects empty activeMapping', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, activeMapping: '   ' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'activeMapping')).toBe(true);
+		});
+
+		it('rejects invalid collection length', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, collection: 'ILRR' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'collection')).toBe(true);
+		});
+
+		it('rejects invalid serialNo length', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, serialNo: '1' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'serialNo')).toBe(true);
+		});
+
+		it('accepts valid optional fields', () => {
+			const config = {
+				...DEFAULT_CONFIG,
+				collection: 'ABC',
+				serialNo: '99',
+				outputDir: '/custom/path',
+			};
+			const result = validateConfig(config);
+
+			expect(result.valid).toBe(true);
+			expect(result.issues).toHaveLength(0);
+		});
+
+		it('reports multiple validation issues', () => {
+			const invalidConfig = {
+				configVersion: -1,
+				provider: { ukprn: 123 },
+				submission: {},
+				activeSchema: '',
+				activeMapping: '',
+				collection: 'TOOLONG',
+				serialNo: '1',
+			};
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.length).toBeGreaterThan(1);
+		});
+	});
 });
