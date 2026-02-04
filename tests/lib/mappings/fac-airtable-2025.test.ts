@@ -66,12 +66,12 @@ describe('mappings/fac-airtable-2025', () => {
                   }
           });
 
-          it('should use uppercaseNoSpaces transform for postcode fields', () => {
+          it('should use postcode transform for postcode fields', () => {
                   const postcodeFields = ['Post code', 'Prior post code', 'Delivery postcode (aim 1)'];
 
                   for (const fieldName of postcodeFields) {
                           const mapping = facAirtableMapping.mappings.find(m => m.csvColumn === fieldName);
-                          expect(mapping?.transform).toBe('uppercaseNoSpaces');
+                          expect(mapping?.transform).toBe('postcode');
                   }
           });
   });

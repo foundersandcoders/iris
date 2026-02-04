@@ -220,7 +220,7 @@ describe('buildEmploymentStatuses', () => {
 			EmpId: 12345678,
 			EmploymentStatusMonitoring: [
 				{ ESMType: 'SEM', ESMCode: 1 },
-				{ ESMType: 'SEI', ESMCode: 0 },
+				// SEI: 0 now skipped (Bug 7 fix - omit spurious ESM/0 entries)
 				{ ESMType: 'LOE', ESMCode: 6 },
 			],
 		});
@@ -229,7 +229,7 @@ describe('buildEmploymentStatuses', () => {
 			EmpStat: 11,
 			DateEmpStatApp: '2026-01-01',
 			EmpId: 87654321,
-			EmploymentStatusMonitoring: [{ ESMType: 'SEM', ESMCode: 0 }],
+			// EmploymentStatusMonitoring omitted (SEM: 0 skipped per Bug 7 fix)
 		});
 	});
 

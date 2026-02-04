@@ -311,10 +311,10 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(xmlContent).toContain('<Ethnicity>31</Ethnicity>');
 		expect(xmlContent).toContain('<Sex>F</Sex>');
 
-		// Optional fields present but empty (generator includes empty elements)
-		expect(xmlContent).toContain('<GivenNames></GivenNames>');
-		expect(xmlContent).toContain('<FamilyName></FamilyName>');
-		expect(xmlContent).toContain('<DateOfBirth></DateOfBirth>');
+		// Optional fields with empty strings are now omitted (Bug 3 fix)
+		expect(xmlContent).not.toContain('<GivenNames></GivenNames>');
+		expect(xmlContent).not.toContain('<FamilyName></FamilyName>');
+		expect(xmlContent).not.toContain('<DateOfBirth></DateOfBirth>');
 	});
 
 	it('should correctly transform edge case values', async () => {
@@ -359,14 +359,14 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 		expect(xmlContent).toContain('<GivenNames>Jean-Paul</GivenNames>');
 
 		// Uppercase transform: converts to uppercase but preserves whitespace
-		// Note: This reveals that the mapping should probably use a trimming transform
+		// Note: Some fields now use uppercaseTrim for this reason
 		expect(xmlContent).toContain('<Sex>  M  </Sex>');
-		expect(xmlContent).toContain('<LearnAimRef>Z0001234</LearnAimRef>');
+		expect(xmlContent).toContain('<LearnAimRef>Z0001234</LearnAimRef>'); // Now uses uppercaseTrim
 
-		// UppercaseNoSpaces transform: postcodes normalized (uppercase + no spaces)
-		expect(xmlContent).toContain('<PostcodePrior>E16AN</PostcodePrior>');
-		expect(xmlContent).toContain('<Postcode>SW1A1AA</Postcode>');
-		expect(xmlContent).toContain('<DelLocPostCode>E16AN</DelLocPostCode>');
+		// Postcode transform: trim + uppercase, preserve internal space (Bug 3 fix)
+		expect(xmlContent).toContain('<PostcodePrior>E1 6AN</PostcodePrior>');
+		expect(xmlContent).toContain('<Postcode>SW1A 1AA</Postcode>');
+		expect(xmlContent).toContain('<DelLocPostCode>E1 6AN</DelLocPostCode>');
 
 		// StringToInt transform: numeric strings converted, whitespace handled during parsing
 		expect(xmlContent).toContain('<ULN>6666666666</ULN>');

@@ -1,4 +1,4 @@
-# Iris Status Update
+# Iris { version number from package.json }: Status Update
 ## 1. TL;DR
 { One sentence: what changed since the last report }
 

@@ -21,7 +21,7 @@ describe('generateFromSchema', () => {
 		const result = generateFromSchema(fixtures.minimalSchemaMessage, registry);
 
 		expect(result.xml).toContain('<?xml version="1.0" encoding="utf-8"?>');
-		expect(result.xml).toContain('<Message xmlns="ESFA/ILR/2025-26">');
+		expect(result.xml).toContain('<Message xmlns="ESFA/ILR/2025-26" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">');
 		expect(result.xml).toContain('</Message>');
 	});
 

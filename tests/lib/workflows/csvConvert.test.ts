@@ -94,7 +94,7 @@ describe('convertWorkflow', () => {
 			expect(await outputFile.exists()).toBe(true);
 
 			const content = await outputFile.text();
-			expect(content).toContain('<Message xmlns="ESFA/ILR/2025-26">');
+			expect(content).toContain('<Message xmlns="ESFA/ILR/2025-26" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">');
 			expect(content).toContain('<LearnRefNumber>ABC123</LearnRefNumber>');
 		});
 	});

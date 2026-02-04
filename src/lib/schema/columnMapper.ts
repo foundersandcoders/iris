@@ -3,7 +3,13 @@ import type { SchemaRegistry } from '../types/interpreterTypes';
 import { isRepeatable } from '../types/interpreterTypes';
 import { getTransform } from '../transforms/registry';
 import { hasAimData } from '../utils/config/mapping';
-import { buildFamEntries, buildAppFinRecords, buildEmploymentStatuses } from '../mappings/builders';
+import {
+	buildFamEntries,
+	buildAppFinRecords,
+	buildEmploymentStatuses,
+	buildLLDDFields,
+} from '../mappings/builders';
+import { generateUUID } from '../utils/uuid';
 
 /**
  * Maps a single CSV row to a partial ILR structure using column mappings
@@ -84,6 +90,19 @@ export function mapCsvToSchemaWithAims(
 		setNestedValue(result, mapping.xsdPath, value, registry);
 	}
 
+	// Build LLDD fields with conditional logic
+	const llddFields = buildLLDDFields(csvRow, 'Primary additional needs');
+	const messagePart = result.Message as Record<string, unknown>;
+	if (messagePart && messagePart.Learner) {
+		const learnerArray = messagePart.Learner as Record<string, unknown>[];
+		if (learnerArray.length > 0) {
+			learnerArray[0].LLDDHealthProb = llddFields.LLDDHealthProb;
+			if (llddFields.LLDDandHealthProblem) {
+				learnerArray[0].LLDDandHealthProblem = llddFields.LLDDandHealthProblem;
+			}
+		}
+	}
+
 	// Build employment status entries
 	const statuses = buildEmploymentStatuses(csvRow, config.employmentStatuses);
 	if (statuses.length > 0) {
@@ -123,6 +142,9 @@ export function mapCsvToSchemaWithAims(
 
 			delivery[fieldName] = value;
 		}
+
+		// Generate SWSupAimId (software-generated UUID for tracking)
+		delivery.SWSupAimId = generateUUID();
 
 		// Build FAM entries for this aim
 		const fams = buildFamEntries(csvRow, config.famTemplates, aimNumber);

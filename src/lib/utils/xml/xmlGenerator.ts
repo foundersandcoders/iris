@@ -75,7 +75,9 @@ function generateElement(
 	const indent = ' '.repeat(depth * indentSize);
 
 	const isRoot = depth === 0;
-	const openTag = isRoot ? `<${element.name} xmlns="${namespace}">` : `<${element.name}>`;
+	const openTag = isRoot
+		? `<${element.name} xmlns="${namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`
+		: `<${element.name}>`;
 
 	// If element has no children (leaf node), generate simple element
 	if (!element.isComplex) return generateLeafElement(element, data, indent, warnings);
@@ -153,7 +155,10 @@ function generateLeafElement(
 	indent: string,
 	warnings: GeneratorWarning[]
 ): string {
-	if (data === undefined || data === null) {
+	// Treat empty strings as missing data
+	const isEmpty = data === undefined || data === null || (typeof data === 'string' && data.trim() === '');
+
+	if (isEmpty) {
 		if (isRequired(element)) {
 			warnings.push({
 				path: element.path,

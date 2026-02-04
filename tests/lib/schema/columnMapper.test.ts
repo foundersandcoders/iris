@@ -170,27 +170,20 @@ describe('columnMapper', () => {
 
 			const result = mapCsvToSchemaWithAims(csvRow, config, registry);
 
-			expect(result).toEqual({
-				Message: {
-					Learner: [
-						{
-							LearnRefNumber: 'L12345',
-							LearningDelivery: [
-								{
-									AimSeqNumber: 1,
-									LearnAimRef: 'ZPROG001',
-									LearnStartDate: '2025-09-01',
-								},
-								{
-									AimSeqNumber: 3,
-									LearnAimRef: 'ZPROG002',
-									LearnStartDate: '2025-10-01',
-								},
-							],
-						},
-					],
-				},
-			});
+		// Updated to expect LLDDHealthProb and SWSupAimId added by our bug fixes
+		expect(result.Message.Learner[0].LearnRefNumber).toBe('L12345');
+		expect(result.Message.Learner[0].LLDDHealthProb).toBe(9);
+		expect(result.Message.Learner[0].LearningDelivery).toHaveLength(2);
+		
+		expect(result.Message.Learner[0].LearningDelivery[0].AimSeqNumber).toBe(1);
+		expect(result.Message.Learner[0].LearningDelivery[0].LearnAimRef).toBe('ZPROG001');
+		expect(result.Message.Learner[0].LearningDelivery[0].LearnStartDate).toBe('2025-09-01');
+		expect(result.Message.Learner[0].LearningDelivery[0].SWSupAimId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+		
+		expect(result.Message.Learner[0].LearningDelivery[1].AimSeqNumber).toBe(3);
+		expect(result.Message.Learner[0].LearningDelivery[1].LearnAimRef).toBe('ZPROG002');
+		expect(result.Message.Learner[0].LearningDelivery[1].LearnStartDate).toBe('2025-10-01');
+		expect(result.Message.Learner[0].LearningDelivery[1].SWSupAimId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 		});
 
 		it('should skip aims with empty detection field', () => {
@@ -232,21 +225,14 @@ describe('columnMapper', () => {
 
 			const result = mapCsvToSchemaWithAims(csvRow, config, registry);
 
-			expect(result).toEqual({
-				Message: {
-					Learner: [
-						{
-							LearnRefNumber: 'L12345',
-							LearningDelivery: [
-								{
-									AimSeqNumber: 1,
-									LearnAimRef: 'ZPROG001',
-								},
-							],
-						},
-					],
-				},
-			});
+		// Updated to expect LLDDHealthProb and SWSupAimId added by our bug fixes
+		expect(result.Message.Learner[0].LearnRefNumber).toBe('L12345');
+		expect(result.Message.Learner[0].LLDDHealthProb).toBe(9);
+		expect(result.Message.Learner[0].LearningDelivery).toHaveLength(1);
+		
+		expect(result.Message.Learner[0].LearningDelivery[0].AimSeqNumber).toBe(1);
+		expect(result.Message.Learner[0].LearningDelivery[0].LearnAimRef).toBe('ZPROG001');
+		expect(result.Message.Learner[0].LearningDelivery[0].SWSupAimId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 		});
 	});
 });

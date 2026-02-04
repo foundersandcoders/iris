@@ -158,8 +158,10 @@ export interface MappingConfig {
 // |------------------------|| Builder Templates ||-------------------------|
 /** Template for generating LearningDeliveryFAM entries from CSV columns */
 export interface FamTemplate {
-	/** CSV column for FAM type (supports {n} placeholder) */
-	typeCsv: string;
+	/** Constant FAM type value (e.g., 'FFI', 'SOF', 'ACT') - use this OR typeCsv */
+	type?: string;
+	/** CSV column for FAM type (supports {n} placeholder) - use this OR type */
+	typeCsv?: string;
 	/** CSV column for FAM code (supports {n} placeholder) */
 	codeCsv: string;
 	/** Optional CSV column for DateFrom (supports {n} placeholder) */
