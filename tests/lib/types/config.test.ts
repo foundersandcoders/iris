@@ -88,6 +88,15 @@ describe('config types', () => {
 
 			if (result.success) expect(result.data.outputDir).toBeUndefined();
 		});
+
+		it('has configVersion in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.configVersion).toBe(1);
+			}
+		});
 	});
 
 	describe('type validation', () => {
