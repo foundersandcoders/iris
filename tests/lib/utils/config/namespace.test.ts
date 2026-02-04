@@ -34,7 +34,9 @@ describe('deriveCollectionYear', () => {
 	});
 
 	it('throws on empty string', () => {
-		expect(() => deriveCollectionYear('')).toThrow('Cannot derive collection year from namespace');
+		expect(() => deriveCollectionYear('')).toThrow(
+			'Cannot derive collection year from namespace'
+		);
 	});
 
 	it('throws on namespace with only start year', () => {

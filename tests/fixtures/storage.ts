@@ -15,7 +15,6 @@ export const defaultConfig: IrisConfig = {
 	submission: {
 		softwareSupplier: 'Founders and Coders',
 		softwarePackage: 'Iris',
-		release: '1.0.0',
 	},
 	activeSchema: 'schemafile25.xsd',
 	activeMapping: 'fac-airtable-2025',
@@ -32,7 +31,6 @@ export const customConfig: IrisConfig = {
 	submission: {
 		softwareSupplier: 'Test Supplier',
 		softwarePackage: 'Test Package',
-		release: '2.0.0',
 	},
 	activeSchema: 'schemafile26.xsd',
 	activeMapping: 'custom-mapping',

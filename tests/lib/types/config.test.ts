@@ -65,7 +65,6 @@ describe('config types', () => {
 			if (result.success) {
 				expect(result.data.submission.softwareSupplier).toBe('Founders and Coders');
 				expect(result.data.submission.softwarePackage).toBe('Iris');
-				expect(result.data.submission.release).toBe(packageJson.version);
 			}
 		});
 
@@ -77,7 +76,7 @@ describe('config types', () => {
 			expect(result2.success).toBe(true);
 			if (result1.success && result2.success) {
 				expect(result1.data.provider.ukprn).toBe(result2.data.provider.ukprn);
-				expect(result1.data.submission.release).toBe(result2.data.submission.release);
+				expect(result1.data.submission.softwarePackage).toBe(result2.data.submission.softwarePackage);
 			}
 		});
 
@@ -159,12 +158,10 @@ describe('config types', () => {
 			const submission: SubmissionConfig = {
 				softwareSupplier: 'Test Supplier',
 				softwarePackage: 'Test Package',
-				release: '2.0.0',
 			};
 
 			expect(submission.softwareSupplier).toBe('Test Supplier');
 			expect(submission.softwarePackage).toBe('Test Package');
-			expect(submission.release).toBe('2.0.0');
 		});
 
 		it('accepts SubmissionConfig with all fields optional', () => {
@@ -172,7 +169,6 @@ describe('config types', () => {
 
 			expect(submission.softwareSupplier).toBeUndefined();
 			expect(submission.softwarePackage).toBeUndefined();
-			expect(submission.release).toBeUndefined();
 		});
 
 		it('accepts valid IrisConfig', () => {
