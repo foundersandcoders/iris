@@ -93,6 +93,25 @@ describe('IrisStorage', () => {
 				expect(result.error.code).toBe('INVALID_JSON');
 			}
 		});
+
+		it('validates config structure on load', async () => {
+			// Write valid JSON but invalid config structure
+			const invalidConfig = {
+				provider: { ukprn: 123 }, // Too few digits
+				submission: {},
+				activeSchema: '', // Empty
+				activeMapping: '', // Empty
+				configVersion: 1,
+			};
+			await Bun.write(storage.paths.config, JSON.stringify(invalidConfig));
+
+			const result = await storage.loadConfig();
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.code).toBe('INVALID_JSON');
+				expect(result.error.message).toContain('Invalid config');
+			}
+		});
 	});
 
 	describe('mappings', () => {
