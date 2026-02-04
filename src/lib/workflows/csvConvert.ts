@@ -87,7 +87,7 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', generateStep);
 
 	try {
-		const message = buildILRMessage(csvData, input.registry, input.mapping);
+		const message = await buildILRMessage(csvData, input.registry, input.mapping);
 		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
@@ -176,13 +176,13 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(
+async function buildILRMessage(
 	csvData: CSVData,
 	registry: SchemaRegistry,
 	mapping: MappingConfig
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
 	const now = new Date();
-	const config = getConfig();
+	const config = await getConfig();
 
 	// Build header and provider sections (not from CSV)
 	const baseStructure: Record<string, unknown> = {
