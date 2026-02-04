@@ -20,6 +20,7 @@ import { getStoragePaths, type StoragePaths } from './adapters/paths';
 import { StorageError } from './errors';
 import { createBunAdapter } from './adapters/bun';
 import { facAirtableMapping } from '../mappings/fac-airtable-2025';
+import packageJson from '../../../package.json';
 
 interface StorageOptions {
 	outputDir?: string;
@@ -80,7 +81,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 					submission: {
 						softwareSupplier: 'Founders and Coders',
 						softwarePackage: 'Iris',
-						release: '1.0.0', // TODO: Import from package.json
+						release: packageJson.version,
 					},
 				};
 				return { success: true, data: defaultConfig };

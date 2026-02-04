@@ -15,8 +15,7 @@ import type {
 	WorkflowStepEvent,
 	WorkflowResult,
 } from '../types/workflowTypes';
-import { homedir } from 'os';
-import { join } from 'path';
+import { createStorage } from '../storage';
 import type { SchemaRegistry } from '$lib/schema';
 import type { MappingConfig } from '../types/schemaTypes';
 
@@ -88,7 +87,7 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', generateStep);
 
 	try {
-		const message = buildILRMessage(csvData, input.registry, input.mapping);
+		const message = await buildILRMessage(csvData, input.registry, input.mapping);
 		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
@@ -114,14 +113,17 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', saveStep);
 
 	try {
-		const outputDir = input.outputDir ?? join(homedir(), '.iris', 'submissions');
-		await Bun.write(join(outputDir, '.keep'), ''); // Ensure dir exists
+		const storage = createStorage({ outputDir: input.outputDir });
+		await storage.init(); // Ensures directories exist
 
-		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-		const filename = `ILR-${timestamp}.xml`;
-		outputPath = join(outputDir, filename);
+		const saveResult = await storage.saveSubmission(xml);
 
-		await Bun.write(outputPath, xml);
+		if (!saveResult.success) {
+			throw new Error(`Failed to save submission: ${saveResult.error.message}`);
+		}
+
+		outputPath = saveResult.data;
+		const filename = outputPath.split('/').pop() ?? 'unknown';
 
 		saveStep.status = 'complete';
 		saveStep.progress = 100;
@@ -174,13 +176,13 @@ function failedResult(
 }
 
 // === CSV --> ILR Message Mapping ===
-function buildILRMessage(
+async function buildILRMessage(
 	csvData: CSVData,
 	registry: SchemaRegistry,
 	mapping: MappingConfig
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
 	const now = new Date();
-	const config = getConfig();
+	const config = await getConfig();
 
 	// Build header and provider sections (not from CSV)
 	const baseStructure: Record<string, unknown> = {

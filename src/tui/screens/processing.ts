@@ -4,8 +4,6 @@
  * Shows step status, messages, and handles completion/errors.
  */
 
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import type { Terminal } from 'terminal-kit';
 import { THEMES } from '../theme';
 import { Layout } from '../utils/layout';
@@ -13,6 +11,7 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import { facAirtableMapping } from '../../lib/mappings/fac-airtable-2025';
+import { createStorage } from '../../lib/storage';
 import type {
 	WorkflowStepEvent,
 	WorkflowResult,
@@ -50,9 +49,23 @@ export class ProcessingScreen implements Screen {
 		const filePath = data?.filePath as string;
 		if (!filePath) return { action: 'pop' };
 
-		const xsdPath = join(process.cwd(), 'docs/schemas/schemafile25.xsd');
-		const xsd = readFileSync(xsdPath, 'utf-8');
-		const registry = buildSchemaRegistry(xsd);
+		const storage = createStorage();
+		const schemaResult = await storage.loadSchema('schemafile25.xsd');
+
+		if (!schemaResult.success) {
+			this.error = new Error(
+				`Failed to load schema: ${schemaResult.error.message}`
+			);
+			this.drawScreen();
+			return new Promise((resolve) => {
+				this.term.once('key', () => {
+					this.cleanup();
+					resolve({ action: 'pop' });
+				});
+			});
+		}
+
+		const registry = buildSchemaRegistry(schemaResult.data);
 
 		this.drawScreen();
 

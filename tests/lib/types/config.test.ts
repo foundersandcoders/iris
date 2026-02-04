@@ -1,59 +1,96 @@
 /** |===================|| Config Tests ||==================|
- *  | Test configuration types and stub implementation
+ *  | Test configuration types and storage integration
  *  |======================================================|
  */
-import { describe, it, expect } from 'vitest';
-import {
-	getConfig,
-	type IrisConfig,
-	type ProviderConfig,
-	type SubmissionConfig,
-} from '$lib/types/configTypes';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { join } from 'path';
+import { tmpdir } from 'os';
+import { rm } from 'fs/promises';
+import { createStorage } from '$lib/storage';
+import type { IrisConfig, ProviderConfig, SubmissionConfig } from '$lib/types/configTypes';
 import packageJson from '../../../package.json';
 
 describe('config types', () => {
-	describe('getConfig', () => {
-		it('returns a valid IrisConfig object', () => {
-			const config = getConfig();
+	let testRoot: string;
+	let storage: ReturnType<typeof createStorage>;
 
-			expect(config).toBeDefined();
-			expect(config.provider).toBeDefined();
-			expect(config.submission).toBeDefined();
+	beforeEach(async () => {
+		// Create unique temp directory for each test
+		testRoot = join(tmpdir(), `iris-config-test-${Date.now()}`);
+		storage = createStorage({
+			internalRoot: join(testRoot, '.iris'),
 		});
 
-		it('returns provider config with placeholder UKPRN', () => {
-			const config = getConfig();
+		const initResult = await storage.init();
+		expect(initResult.success).toBe(true);
+	});
 
-			expect(config.provider.ukprn).toBe(10000000);
-			expect(config.provider.name).toBe('Founders and Coders');
+	afterEach(async () => {
+		// Clean up test directory
+		await rm(testRoot, { recursive: true, force: true });
+	});
+
+	describe('loadConfig via storage', () => {
+		it('returns a valid IrisConfig object', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data).toBeDefined();
+				expect(result.data.provider).toBeDefined();
+				expect(result.data.submission).toBeDefined();
+			}
 		});
 
-		it('returns submission metadata', () => {
-			const config = getConfig();
+		it('returns provider config with default UKPRN', async () => {
+			const result = await storage.loadConfig();
 
-			expect(config.submission.softwareSupplier).toBe('Founders and Coders');
-			expect(config.submission.softwarePackage).toBe('Iris');
-			expect(config.submission.release).toBe(packageJson.version);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.provider.ukprn).toBe(10000000);
+				expect(result.data.provider.name).toBe('Founders and Coders');
+			}
 		});
 
-		it('returns consistent results across multiple calls', () => {
-			const config1 = getConfig();
-			const config2 = getConfig();
+		it('returns submission metadata', async () => {
+			const result = await storage.loadConfig();
 
-			expect(config1.provider.ukprn).toBe(config2.provider.ukprn);
-			expect(config1.submission.release).toBe(config2.submission.release);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.submission.softwareSupplier).toBe('Founders and Coders');
+				expect(result.data.submission.softwarePackage).toBe('Iris');
+				expect(result.data.submission.release).toBe(packageJson.version);
+			}
 		});
 
-		it('has no column mapping in stub implementation', () => {
-			const config = getConfig();
+		it('returns consistent results across multiple calls', async () => {
+			const result1 = await storage.loadConfig();
+			const result2 = await storage.loadConfig();
 
-			expect(config.columnMapping).toBeUndefined();
+			expect(result1.success).toBe(true);
+			expect(result2.success).toBe(true);
+			if (result1.success && result2.success) {
+				expect(result1.data.provider.ukprn).toBe(result2.data.provider.ukprn);
+				expect(result1.data.submission.release).toBe(result2.data.submission.release);
+			}
 		});
 
-		it('has no output directory in stub implementation', () => {
-			const config = getConfig();
+		it('has no column mapping in default config', async () => {
+			const result = await storage.loadConfig();
 
-			expect(config.outputDir).toBeUndefined();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.columnMapping).toBeUndefined();
+			}
+		});
+
+		it('has no output directory in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.outputDir).toBeUndefined();
+			}
 		});
 	});
 
@@ -119,19 +156,25 @@ describe('config types', () => {
 	});
 
 	describe('UKPRN validation', () => {
-		it('placeholder UKPRN is in valid range', () => {
-			const config = getConfig();
-			const ukprn = config.provider.ukprn;
+		it('default UKPRN is in valid range', async () => {
+			const result = await storage.loadConfig();
 
-			expect(ukprn).toBeGreaterThanOrEqual(10000000);
-			expect(ukprn).toBeLessThanOrEqual(99999999);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				const ukprn = result.data.provider.ukprn;
+				expect(ukprn).toBeGreaterThanOrEqual(10000000);
+				expect(ukprn).toBeLessThanOrEqual(99999999);
+			}
 		});
 
-		it('UKPRN is exactly 8 digits', () => {
-			const config = getConfig();
-			const ukprn = config.provider.ukprn.toString();
+		it('UKPRN is exactly 8 digits', async () => {
+			const result = await storage.loadConfig();
 
-			expect(ukprn).toHaveLength(8);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				const ukprn = result.data.provider.ukprn.toString();
+				expect(ukprn).toHaveLength(8);
+			}
 		});
 	});
 });
