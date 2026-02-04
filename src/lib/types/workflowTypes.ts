@@ -56,6 +56,47 @@ export interface ValidateOutput {
 	sourceData: CSVData | string;
 }
 
+// |------------|| CROSS-SUBMISSION CHECK ||------------|
+export interface CheckInput {
+	filePath: string;
+}
+
+export type CheckSeverity = 'info' | 'warning' | 'error';
+
+export interface CheckIssue {
+	severity: CheckSeverity;
+	category: 'learner_count' | 'schema_version' | 'data_anomaly' | 'duplicate_learners';
+	message: string;
+	details?: Record<string, unknown>;
+}
+
+export interface CheckReport {
+	currentSubmission: {
+		filename: string;
+		learnerCount: number;
+		schema: string;
+		learnerRefs: string[];
+	};
+	previousSubmission?: {
+		filename: string;
+		learnerCount: number;
+		schema: string;
+		timestamp: string;
+	};
+	issues: CheckIssue[];
+	summary: {
+		totalIssues: number;
+		errorCount: number;
+		warningCount: number;
+		infoCount: number;
+	};
+}
+
+export interface CheckOutput {
+	report: CheckReport;
+	hasIssues: boolean;
+}
+
 // <<--------------------------------------------------------------------->>
 
 export type WorkflowStepEvent<T = unknown> = {
