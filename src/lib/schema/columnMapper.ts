@@ -2,7 +2,7 @@ import type { ColumnMapping, MappingConfig } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
 import { isRepeatable } from '../types/interpreterTypes';
 import { getTransform } from '../transforms/registry';
-import { hasAimData } from '../mappings/utils';
+import { hasAimData } from '../utils/config/mapping';
 import { buildFamEntries, buildAppFinRecords, buildEmploymentStatuses } from '../mappings/builders';
 
 /**

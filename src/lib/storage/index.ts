@@ -2,8 +2,8 @@
  *  | Public API for Iris storage operations.
  *  |==========================================================|
  */
-export { createStorage } from './storage';
-export { getStoragePaths, getDefaultOutputDir } from './adapters/paths';
+export { createStorage } from './create';
+export { getStoragePaths, getDefaultOutputDir } from '../utils/storage/paths';
 export { StorageError } from './errors';
 export { createBunAdapter } from './adapters/bun';
 

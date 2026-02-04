@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveBaseType, buildNamedTypesMap } from '../../../../src/lib/schema/utils/typeResolver';
+import { resolveBaseType, buildNamedTypesMap } from '../../../../src/lib/utils/schema/typeResolver';
 import type { RawXsdSimpleType } from '../../../../src/lib/schema/schemaParser';
 import type { NamedSimpleType } from '../../../../src/lib/schema/schema-interpreter';
 

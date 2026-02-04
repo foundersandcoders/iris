@@ -5,9 +5,9 @@
  */
 
 import type { StorageError } from '../storage/errors';
-import type { StoragePaths } from '../storage/adapters/paths';
+import type { StoragePaths } from '../utils/storage/paths';
 
-export type { StoragePaths } from '../storage/adapters/paths';
+export type { StoragePaths } from '../utils/storage/paths';
 
 /**
  * Result type for storage operations (explicit error handling)

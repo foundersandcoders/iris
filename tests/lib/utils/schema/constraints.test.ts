@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractConstraints } from '../../../../src/lib/schema/utils/constraints';
+import { extractConstraints } from '../../../../src/lib/utils/schema/constraints';
 import type { RawXsdSimpleType } from '../../../../src/lib/schema/schemaParser';
 
 describe('extractConstraints', () => {

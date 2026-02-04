@@ -16,8 +16,8 @@ import type {
 	SchemaRegistryOptions,
 	SchemaElement,
 } from '../types/interpreterTypes';
-import { buildNamedTypesMap } from './utils/typeResolver';
-import { buildElement, populateLookupMaps } from './utils/elementBuilder';
+import { buildNamedTypesMap } from '../utils/schema/typeResolver';
+import { buildElement, populateLookupMaps } from '../utils/schema/elementBuilder';
 
 /**
  * Build a queryable SchemaRegistry from XSD content
