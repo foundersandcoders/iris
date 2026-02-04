@@ -1,10 +1,10 @@
 /** |===================|| Configuration Types ||==================|
  *  | User preferences, provider settings, and field mappings.
- *  | Phase 4 implementation stub - API contract defined here.
+ *  | Loads from storage with fallback to defaults.
  *  |==============================================================|
  */
 
-import packageJson from '../../../package.json';
+import { createStorage } from '../storage';
 
 export interface ProviderConfig {
 	ukprn: number;
@@ -40,21 +40,21 @@ export interface IrisConfig {
 }
 
 /**
- * Get configuration (stub implementation)
- * TODO: Implement config loading from ~/.iris/config.json
+ * Get configuration from storage
+ * Loads from ~/.iris/config.json if exists, otherwise returns defaults
  *
- * @returns Default configuration with placeholder UKPRN
+ * @returns Configuration with user settings or defaults
+ * @throws If storage fails to read config (not if file missing - that returns defaults)
  */
-export function getConfig(): IrisConfig {
-	return {
-		provider: {
-			ukprn: 10000000, // TODO: Load from ~/.iris/config.json
-			name: 'Founders and Coders', // TODO: Load from ~/.iris/config.json
-		},
-		submission: {
-			softwareSupplier: 'Founders and Coders',
-			softwarePackage: 'Iris',
-			release: packageJson.version,
-		},
-	};
+export async function getConfig(): Promise<IrisConfig> {
+	const storage = createStorage();
+	const result = await storage.loadConfig();
+
+	// Storage returns defaults if file doesn't exist
+	// Only fails on actual read/parse errors
+	if (!result.success) {
+		throw new Error(`Failed to load config: ${result.error.message}`);
+	}
+
+	return result.data;
 }
