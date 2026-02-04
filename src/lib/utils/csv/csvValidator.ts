@@ -14,7 +14,7 @@ import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
 import type { SchemaValidationIssue, MappingConfig } from '../../types/schemaTypes';
-import { hasAimData } from '../../mappings/utils';
+import { hasAimData } from '../config/mapping';
 import { getTransform } from '../../transforms/registry';
 
 // === Types ===
@@ -131,7 +131,9 @@ function validateRow(
 		}
 
 		// Case-insensitive, trim-based column lookup
-		const actualHeader = Object.keys(row).find((h) => h.trim().toLowerCase() === m.csvColumn.trim().toLowerCase());
+		const actualHeader = Object.keys(row).find(
+			(h) => h.trim().toLowerCase() === m.csvColumn.trim().toLowerCase()
+		);
 		const rawValue = actualHeader ? row[actualHeader] : undefined;
 
 		// Apply transform before validation (same as columnMapper), but only if value exists

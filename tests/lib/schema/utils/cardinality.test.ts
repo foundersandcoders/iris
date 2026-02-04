@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCardinality } from '../../../../src/lib/schema/utils/cardinality';
+import { parseCardinality } from '../../../../src/lib/utils/schema/cardinality';
 import type { RawXsdElement } from '../../../../src/lib/schema/schemaParser';
 
 describe('parseCardinality', () => {

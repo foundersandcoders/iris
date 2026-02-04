@@ -16,7 +16,7 @@ import type {
 } from '../types/storageTypes';
 import type { IrisConfig } from '../types/configTypes';
 import type { MappingConfig } from '../types/schemaTypes';
-import { getStoragePaths, type StoragePaths } from './adapters/paths';
+import { getStoragePaths, type StoragePaths } from '../utils/storage/paths';
 import { StorageError } from './errors';
 import { createBunAdapter } from './adapters/bun';
 import { facAirtableMapping } from '../mappings/fac-airtable-2025';

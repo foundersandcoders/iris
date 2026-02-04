@@ -4,7 +4,7 @@
  *  |=======================================================|
  */
 import { describe, it, expect } from 'vitest';
-import { getStoragePaths, getDefaultOutputDir } from '$lib/storage/adapters/paths';
+import { getStoragePaths, getDefaultOutputDir } from '$lib/utils/storage/paths';
 import { join } from 'path';
 
 describe('Storage Paths', () => {

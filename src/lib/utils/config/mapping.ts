@@ -3,7 +3,7 @@
  *  |============================================================|
  */
 
-import type { ColumnMapping } from '../types/schemaTypes';
+import type { ColumnMapping } from '../../types/schemaTypes';
 
 /** Template for generating aim-specific mappings */
 export interface AimFieldTemplate {
