@@ -14,7 +14,7 @@ import type {
 	SubmissionHistory,
 	HistoryEntry,
 } from '../types/storageTypes';
-import type { IrisConfig } from '../types/configTypes';
+import { DEFAULT_CONFIG, validateConfig, type IrisConfig } from '../types/configTypes';
 import type { MappingConfig } from '../types/schemaTypes';
 import { getStoragePaths, type StoragePaths } from '../utils/storage/paths';
 import { StorageError } from './errors';
@@ -68,23 +68,30 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		async loadConfig(): Promise<StorageResult<IrisConfig>> {
 			try {
 				if (await adapter.exists(paths.config)) {
-					const config = await adapter.readJson<IrisConfig>(paths.config);
+					const loadedConfig = await adapter.readJson<IrisConfig>(paths.config);
+
+					// Validate the loaded config
+					const validation = validateConfig(loadedConfig);
+					if (!validation.valid) {
+						const errorMessages = validation.issues
+							.map((i) => `${i.field}: ${i.message}`)
+							.join(', ');
+						return {
+							success: false,
+							error: StorageError.invalidJson(
+								paths.config,
+								new Error(`Invalid config: ${errorMessages}`)
+							),
+						};
+					}
+
+					// Merge with defaults to backfill any missing fields
+					const config = { ...DEFAULT_CONFIG, ...loadedConfig };
 					return { success: true, data: config };
 				}
 
 				// Return default config if file doesn't exist
-				const defaultConfig: IrisConfig = {
-					provider: {
-						ukprn: 10000000,
-						name: 'Founders and Coders',
-					},
-					submission: {
-						softwareSupplier: 'Founders and Coders',
-						softwarePackage: 'Iris',
-						release: packageJson.version,
-					},
-				};
-				return { success: true, data: defaultConfig };
+				return { success: true, data: { ...DEFAULT_CONFIG } };
 			} catch (error) {
 				return {
 					success: false,
