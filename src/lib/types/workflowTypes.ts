@@ -59,6 +59,7 @@ export interface ValidateOutput {
 // |------------|| CROSS-SUBMISSION CHECK ||------------|
 export interface CheckInput {
 	filePath: string;
+	internalRoot?: string; // Override ~/.iris for testing
 }
 
 export type CheckSeverity = 'info' | 'warning' | 'error';

@@ -35,7 +35,7 @@ export async function* checkWorkflow(
 ): AsyncGenerator<WorkflowStepEvent, WorkflowResult<CheckOutput>, void> {
 	const startTime = Date.now();
 	const steps: WorkflowStep[] = [];
-	const storage = createStorage();
+	const storage = createStorage({ internalRoot: input.internalRoot });
 
 	// --- Step 1: Load XML File ---
 	const loadStep = createStep(STEPS.load);
