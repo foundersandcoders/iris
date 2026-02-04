@@ -22,6 +22,7 @@ disable-model-invocation: true
 <guidelines>
 - **Brevity is paramount** - this is a status snapshot, not a changelog
 - TL;DR must be exactly one sentence, big-picture only (milestone completed, NOT technical implementation)
+- MAKE IT EASILY UNDERSTANDABLE AND INTERESTING; if it's dull, skip it
 - Maximum 5-6 completed items; group related work aggressively
 - Use **bold labels** for categories in Completed section (e.g. "**Column Matcher:**", "**Test Coverage:**")
 - Put implementation details in parentheses after category labels when needed
