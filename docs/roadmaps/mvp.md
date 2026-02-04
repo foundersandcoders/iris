@@ -49,11 +49,12 @@ title: Milestone 1
 ---
 graph TD
 
-1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
+1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6 & 1SS.7
 1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
 1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
 1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
 1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
+1SS.7["`*1SS.7*<br/>**Doc**<br/>Config file versions`"] --> m1
 
 m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
@@ -64,15 +65,17 @@ classDef mile fill:#9ff;
 
 <a name="m1-doing"><h4>In Progress (Milestone 1)</h4></a>
 
+- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
-- [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`) — **needs design decisions**
 - [ ] 1SS.3. Load mapping config from file (read JSON, validate structure) — **depends on 1SS.2**
 - [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
 - [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
 - [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
+- [ ] 1SS.7. Document config file format and versioning (explain configVersion field, migration strategy) — **depends on 1SS.2**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
 
@@ -481,14 +484,15 @@ title: Tasks
 graph TD
 
 %% Milestone 1 %%
-	1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6
-	1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
-	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+  1SS.2["`*1SS.2*<br/>**System**<br/>Config System`"]:::open --> 1SS.3 & 1SS.6 & 1SS.7
 	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
-	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"]
+	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
+	1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
+	1SS.7["`*1SS.7*<br/>**Doc**<br/>Config file versions`"] --> m1
 
-	1SS.5 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
-
+	m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
+	
 %% Milestone 2 %%
 	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
 	2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
@@ -498,12 +502,12 @@ graph TD
 	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
 	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
 	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
-	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"]
+	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
 	
 	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
 	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
-	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"]
-	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"]
+	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
+	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
 	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
 	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
@@ -512,17 +516,17 @@ graph TD
 	2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
 	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
 	
-	2TI.9 & 2TI.10 & 2TS.4 --> m2{"`**Milestone 2**<br/>TUI App`"}:::mile
+	m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
 
 %% Milestone 3 %%
 	3DC.2["`*3DC.2*<br/>**Command**<br/>iris convert`"] --> 3DC.4
 	3DC.3["`*3DC.3*<br/>**Command**<br/>iris validate`"] --> 3DC.4
 	3DC.4["`*3DC.4*<br/>**Command**<br/>iris check`"] --> 3DC.5 & 3DC.7
 	3DC.5["`*3DC.5*<br/>**Flag**<br/>iris * --help`"] --> 3DC.6
-	3DC.6["`*3DC.6*<br/>**Test**<br/>automations`"]
+	3DC.6["`*3DC.6*<br/>**Test**<br/>automations`"] --> m3
 	3DC.7["`*3DC.7*<br/>**Flag**<br/>iris * --interactive`"] --> 3DC.6
 	
-	3DC.6 --> m3{"`**Milestone 3**<br/>Commands`"}:::mile
+	m3{"`**Milestone 3**<br/>Commands`"}:::mile --> 4GC.1 & 4GC.3
 
 %% Milestone 4 %%
 	4GC.1["`*4GC.1*<br/>**Component**<br/>File picker`"] --> 4GC.4
@@ -537,23 +541,18 @@ graph TD
 	4GC.10["`*4GC.10*<br/>**Route**<br/>/check`"] --> 4GC.5 & 4GC.7
 	
 	4NB.1["`*4NB.1*<br/>**Build**<br/>.dmg`"] --> 4NB.2 & 4NB.3
-	4NB.2["`*4NB.2*<br/>**Build**<br/>exe`"]
-	4NB.3["`*4NB.3*<br/>**Build**<br/>appImage`"]
+	4NB.2["`*4NB.2*<br/>**Build**<br/>exe`"] --> m4
+	4NB.3["`*4NB.3*<br/>**Build**<br/>appImage`"] --> m4
 	
-	4NB.2 & 4NB.3 --> m4{"`**Milestone 4**<br/>Desktop App`"}:::mile
+	m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3
 
 %% Milestone 5 %%
 	5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"] --> 5UD.2 & 5UD.4
-	5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"]
-	5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"]
-	5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"]
+	5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"] --> m5
+	5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"] --> m5
+	5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"] --> m5
 	
-	5UD.2 & 5UD.3 & 5UD.4 --> m5{"`**Milestone 5**<br/>Documentation`"}:::mile
-
-m1 --> 2TI.11 & 2TM.2 & 2TS.1
-m2 --> 3DC.2 & 3DC.3
-m3 --> 4GC.1 & 4GC.3
-m4 --> 5UD.1 & 5UD.3
+	m5{"`**Milestone 5**<br/>Documentation`"}:::mile
 
 classDef default,blocked fill:#f9f;
 classDef open fill:#ff9;
