@@ -18,6 +18,7 @@ import type {
 import { createStorage } from '../storage';
 import type { SchemaRegistry } from '$lib/schema';
 import type { MappingConfig } from '../types/schemaTypes';
+import packageJson from '../../../package.json';
 
 const STEPS = {
 	parse: { id: 'parse', name: 'Parse CSV' },
@@ -188,7 +189,7 @@ async function buildILRMessage(
 	const baseStructure: Record<string, unknown> = {
 		Header: {
 			CollectionDetails: {
-				Collection: 'ILR',
+				Collection: config.collection ?? 'ILR',
 				Year: '2526',
 				FilePreparationDate: now.toISOString().split('T')[0],
 			},
@@ -197,8 +198,8 @@ async function buildILRMessage(
 				UKPRN: config.provider.ukprn,
 				SoftwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
 				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
-				Release: config.submission.release ?? 'Unspecified Release',
-				SerialNo: '01',
+				Release: packageJson.version,
+				SerialNo: config.serialNo ?? '01',
 				DateTime: now.toISOString(),
 			},
 		},

@@ -7,7 +7,13 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { rm } from 'fs/promises';
 import { createStorage } from '$lib/storage';
-import type { IrisConfig, ProviderConfig, SubmissionConfig } from '$lib/types/configTypes';
+import {
+	validateConfig,
+	DEFAULT_CONFIG,
+	type IrisConfig,
+	type ProviderConfig,
+	type SubmissionConfig,
+} from '$lib/types/configTypes';
 import packageJson from '../../../package.json';
 
 describe('config types', () => {
@@ -59,7 +65,6 @@ describe('config types', () => {
 			if (result.success) {
 				expect(result.data.submission.softwareSupplier).toBe('Founders and Coders');
 				expect(result.data.submission.softwarePackage).toBe('Iris');
-				expect(result.data.submission.release).toBe(packageJson.version);
 			}
 		});
 
@@ -71,25 +76,60 @@ describe('config types', () => {
 			expect(result2.success).toBe(true);
 			if (result1.success && result2.success) {
 				expect(result1.data.provider.ukprn).toBe(result2.data.provider.ukprn);
-				expect(result1.data.submission.release).toBe(result2.data.submission.release);
+				expect(result1.data.submission.softwarePackage).toBe(result2.data.submission.softwarePackage);
 			}
 		});
 
-		it('has no column mapping in default config', async () => {
+		it('outputDir is optional in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+
+			if (result.success) expect(result.data.outputDir).toBeUndefined();
+		});
+
+		it('has configVersion in default config', async () => {
 			const result = await storage.loadConfig();
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.columnMapping).toBeUndefined();
+				expect(result.data.configVersion).toBe(1);
 			}
 		});
 
-		it('has no output directory in default config', async () => {
+		it('has activeSchema in default config', async () => {
 			const result = await storage.loadConfig();
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.outputDir).toBeUndefined();
+				expect(result.data.activeSchema).toBe('schemafile25.xsd');
+			}
+		});
+
+		it('has activeMapping in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.activeMapping).toBe('fac-airtable-2025');
+			}
+		});
+
+		it('has collection in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.collection).toBe('ILR');
+			}
+		});
+
+		it('has serialNo in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.serialNo).toBe('01');
 			}
 		});
 	});
@@ -118,12 +158,10 @@ describe('config types', () => {
 			const submission: SubmissionConfig = {
 				softwareSupplier: 'Test Supplier',
 				softwarePackage: 'Test Package',
-				release: '2.0.0',
 			};
 
 			expect(submission.softwareSupplier).toBe('Test Supplier');
 			expect(submission.softwarePackage).toBe('Test Package');
-			expect(submission.release).toBe('2.0.0');
 		});
 
 		it('accepts SubmissionConfig with all fields optional', () => {
@@ -131,11 +169,11 @@ describe('config types', () => {
 
 			expect(submission.softwareSupplier).toBeUndefined();
 			expect(submission.softwarePackage).toBeUndefined();
-			expect(submission.release).toBeUndefined();
 		});
 
 		it('accepts valid IrisConfig', () => {
 			const config: IrisConfig = {
+				configVersion: 1,
 				provider: {
 					ukprn: 12345678,
 					name: 'Test',
@@ -143,14 +181,15 @@ describe('config types', () => {
 				submission: {
 					softwareSupplier: 'Test',
 				},
-				columnMapping: {
-					'CSV Column': 'XSD.Path',
-				},
+				activeSchema: 'schemafile25.xsd',
+				activeMapping: 'fac-airtable-2025',
+				collection: 'ILR',
+				serialNo: '01',
 				outputDir: '/path/to/output',
 			};
 
 			expect(config.provider.ukprn).toBe(12345678);
-			expect(config.columnMapping?.['CSV Column']).toBe('XSD.Path');
+			expect(config.activeSchema).toBe('schemafile25.xsd');
 			expect(config.outputDir).toBe('/path/to/output');
 		});
 	});
@@ -175,6 +214,118 @@ describe('config types', () => {
 				const ukprn = result.data.provider.ukprn.toString();
 				expect(ukprn).toHaveLength(8);
 			}
+		});
+	});
+
+	describe('validateConfig', () => {
+		it('accepts valid config', () => {
+			const result = validateConfig(DEFAULT_CONFIG);
+
+			expect(result.valid).toBe(true);
+			expect(result.issues).toHaveLength(0);
+		});
+
+		it('rejects non-object config', () => {
+			const result = validateConfig('not an object');
+
+			expect(result.valid).toBe(false);
+			expect(result.issues).toHaveLength(1);
+			expect(result.issues[0].field).toBe('config');
+		});
+
+		it('rejects null config', () => {
+			const result = validateConfig(null);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues[0].field).toBe('config');
+		});
+
+		it('rejects invalid configVersion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, configVersion: 0 };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'configVersion')).toBe(true);
+		});
+
+		it('rejects non-integer configVersion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, configVersion: 1.5 };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'configVersion')).toBe(true);
+		});
+
+		it('rejects non-8-digit UKPRN', () => {
+			const invalidConfig = {
+				...DEFAULT_CONFIG,
+				provider: { ukprn: 123, name: 'Test' },
+			};
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'provider.ukprn')).toBe(true);
+		});
+
+		it('rejects empty activeSchema', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, activeSchema: '' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'activeSchema')).toBe(true);
+		});
+
+		it('rejects empty activeMapping', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, activeMapping: '   ' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'activeMapping')).toBe(true);
+		});
+
+		it('rejects invalid collection length', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, collection: 'ILRR' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'collection')).toBe(true);
+		});
+
+		it('rejects invalid serialNo length', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, serialNo: '1' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'serialNo')).toBe(true);
+		});
+
+		it('accepts valid optional fields', () => {
+			const config = {
+				...DEFAULT_CONFIG,
+				collection: 'ABC',
+				serialNo: '99',
+				outputDir: '/custom/path',
+			};
+			const result = validateConfig(config);
+
+			expect(result.valid).toBe(true);
+			expect(result.issues).toHaveLength(0);
+		});
+
+		it('reports multiple validation issues', () => {
+			const invalidConfig = {
+				configVersion: -1,
+				provider: { ukprn: 123 },
+				submission: {},
+				activeSchema: '',
+				activeMapping: '',
+				collection: 'TOOLONG',
+				serialNo: '1',
+			};
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.length).toBeGreaterThan(1);
 		});
 	});
 });
