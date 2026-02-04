@@ -7,6 +7,7 @@ import type { MappingConfig } from '$lib/types/schemaTypes';
 import type { SubmissionMetadata, HistoryEntry } from '$lib/types/storageTypes';
 
 export const defaultConfig: IrisConfig = {
+	configVersion: 1,
 	provider: {
 		ukprn: 10000000,
 		name: 'Founders and Coders',
@@ -16,9 +17,14 @@ export const defaultConfig: IrisConfig = {
 		softwarePackage: 'Iris',
 		release: '1.0.0',
 	},
+	activeSchema: 'schemafile25.xsd',
+	activeMapping: 'fac-airtable-2025',
+	collection: 'ILR',
+	serialNo: '01',
 };
 
 export const customConfig: IrisConfig = {
+	configVersion: 1,
 	provider: {
 		ukprn: 12345678,
 		name: 'Test Provider',
@@ -28,6 +34,10 @@ export const customConfig: IrisConfig = {
 		softwarePackage: 'Test Package',
 		release: '2.0.0',
 	},
+	activeSchema: 'schemafile26.xsd',
+	activeMapping: 'custom-mapping',
+	collection: 'ILR',
+	serialNo: '02',
 	outputDir: '/custom/path',
 };
 
