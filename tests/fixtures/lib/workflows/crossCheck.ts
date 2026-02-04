@@ -173,8 +173,9 @@ export const validXmlFiveLearners = `<?xml version="1.0" encoding="utf-8"?>
 </Message>`;
 
 // XML with schema change (different year)
+// Note: Schema detection uses the Year element (2627), not the xmlns
 export const validXmlDifferentSchema = `<?xml version="1.0" encoding="utf-8"?>
-<Message xmlns="ESFA/ILR/2025-26">
+<Message xmlns="ESFA/ILR/2026-27">
   <Header>
     <CollectionDetails>
       <Collection>ILR</Collection>
