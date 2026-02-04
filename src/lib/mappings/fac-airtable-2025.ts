@@ -47,26 +47,23 @@ export const facAirtableMapping: MappingConfig = {
 			xsdPath: 'Message.Learner.Sex',
 			transform: 'uppercase',
 		},
+		// Column 14: Primary additional needs - handled by buildLLDDFields() in columnMapper
+		// (Complex conditional logic: 99→2, empty→9, other→1 with LLDDandHealthProblem)
 
-		// Column 14: Primary additional needs
-		{
-			csvColumn: 'Primary additional needs',
-			xsdPath: 'Message.Learner.LLDDHealthProb',
-			transform: 'stringToInt',
-		},
+
 
 		// Column 10: Prior post code
 		{
 			csvColumn: 'Prior post code',
 			xsdPath: 'Message.Learner.PostcodePrior',
-			transform: 'uppercaseNoSpaces',
+			transform: 'postcode',
 		},
 
 		// Column 11: Post code
 		{
 			csvColumn: 'Post code',
 			xsdPath: 'Message.Learner.Postcode',
-			transform: 'uppercaseNoSpaces',
+			transform: 'postcode',
 		},
 
 		// ==================== LEARNER: Optional Fields ====================
@@ -120,6 +117,20 @@ export const facAirtableMapping: MappingConfig = {
 			transform: 'digitsOnly',
 		},
 
+
+	// Column 12: Street address
+	{
+		csvColumn: 'Street address',
+		xsdPath: 'Message.Learner.AddLine1',
+		transform: 'normalizeAddress',
+	},
+
+	// Learning hours (learner-level planned hours for skills bootcamp)
+	{
+		csvColumn: 'Learning hours (skills bootcamp)',
+		xsdPath: 'Message.Learner.PlanLearnHours',
+		transform: 'stringToIntOptional',
+	},
 		// ==================== LEARNER: Prior Attainment ====================
 
 		// Column 15: Prior attainment date applies to
@@ -148,7 +159,7 @@ export const facAirtableMapping: MappingConfig = {
 			{
 				csv: 'Programme aim {n} Learning ref ',
 				xsd: 'Message.Learner.LearningDelivery.LearnAimRef',
-				transform: 'uppercase',
+				transform: 'uppercaseTrim',
 			},
 			{
 				csv: 'Start date (aim {n})',
@@ -178,7 +189,7 @@ export const facAirtableMapping: MappingConfig = {
 			{
 				csv: 'Delivery postcode (aim {n})',
 				xsd: 'Message.Learner.LearningDelivery.DelLocPostCode',
-				transform: 'uppercaseNoSpaces',
+				transform: 'postcode',
 			},
 			{
 				csv: 'Planned hours (aim {n})',
@@ -234,14 +245,18 @@ export const facAirtableMapping: MappingConfig = {
 	],
 	famTemplates: [
 		{
-			typeCsv: 'Contract type (aim {n})',
+			type: 'FFI',
+			codeCsv: 'Funding indicator (aim {n})',
+		},
+		{
+			type: 'SOF',
+			codeCsv: 'Source of funding (aim {n})',
+		},
+		{
+			type: 'ACT',
 			codeCsv: 'Contract type code (aim {n})',
 			dateFromCsv: 'Date applies from (aim {n})',
 			dateToCsv: 'Date applies to (aim {n})',
-		},
-		{
-			typeCsv: 'Source of funding (aim {n})',
-			codeCsv: 'Funding indicator (aim {n})',
 		},
 	],
 	appFinTemplates: [

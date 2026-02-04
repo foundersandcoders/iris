@@ -14,11 +14,22 @@ import { getTransform } from '../transforms/registry';
 
 /**
  * Find CSV column value using case-insensitive, trim-based lookup
+ * Also tries removing space before number for aim 1 compatibility (aim1 vs aim 1)
  */
 function getColumnValue(csvRow: Record<string, string>, columnName: string): string | undefined {
-	const key = Object.keys(csvRow).find(
+	// Try exact match first
+	let key = Object.keys(csvRow).find(
 		(k) => k.trim().toLowerCase() === columnName.trim().toLowerCase()
 	);
+
+	// If not found and contains "(aim 1)", try without space
+	if (!key && columnName.includes('(aim 1)')) {
+		const altColumnName = columnName.replace('(aim 1)', '(aim1)');
+		key = Object.keys(csvRow).find(
+			(k) => k.trim().toLowerCase() === altColumnName.trim().toLowerCase()
+		);
+	}
+
 	return key ? csvRow[key] : undefined;
 }
 
@@ -51,17 +62,30 @@ export function buildFamEntries(
 
 	for (const template of templates) {
 		// Interpolate {n} with aim number
-		const typeCsv = template.typeCsv.replace('{n}', String(aimNumber));
 		const codeCsv = template.codeCsv.replace('{n}', String(aimNumber));
 		const dateFromCsv = template.dateFromCsv?.replace('{n}', String(aimNumber));
 		const dateToCsv = template.dateToCsv?.replace('{n}', String(aimNumber));
 
-		// Get values
-		const typeValue = getColumnValue(csvRow, typeCsv);
-		const codeValue = getColumnValue(csvRow, codeCsv);
+		// Get type value - either constant or from CSV
+		let typeValue: string | undefined;
+		if (template.type) {
+			// Constant type value
+			typeValue = template.type;
+		} else if (template.typeCsv) {
+			// Type from CSV column
+			const typeCsv = template.typeCsv.replace('{n}', String(aimNumber));
+			typeValue = getColumnValue(csvRow, typeCsv);
+			// Skip if type is empty (handles bootcamp aims with no ACT FAM)
+			if (!typeValue || typeValue.trim() === '') continue;
+			typeValue = typeValue.trim();
+		} else {
+			// Invalid template - must have either type or typeCsv
+			continue;
+		}
 
-		// Skip if type is empty (handles bootcamp aims with no ACT FAM)
-		if (!typeValue || typeValue.trim() === '') continue;
+		// Get code value - skip entry if code is empty
+		const codeValue = getColumnValue(csvRow, codeCsv);
+		if (!codeValue || codeValue.trim() === '') continue;
 
 		const entry: {
 			LearnDelFAMType: string;
@@ -69,8 +93,8 @@ export function buildFamEntries(
 			LearnDelFAMDateFrom?: string;
 			LearnDelFAMDateTo?: string;
 		} = {
-			LearnDelFAMType: typeValue.trim(),
-			LearnDelFAMCode: codeValue?.trim() || '',
+			LearnDelFAMType: typeValue,
+			LearnDelFAMCode: codeValue.trim(),
 		};
 
 		// Add optional dates if provided
@@ -157,6 +181,45 @@ export function buildAppFinRecords(
 }
 
 /**
+ * Build LLDD (Learning Difficulty/Disability) fields from Primary additional needs value
+ *
+ * @param csvRow - CSV row data
+ * @param columnName - CSV column name for primary additional needs
+ * @returns Object with LLDDHealthProb and optional LLDDandHealthProblem
+ */
+export function buildLLDDFields(
+	csvRow: Record<string, string>,
+	columnName: string
+): {
+	LLDDHealthProb: number;
+	LLDDandHealthProblem?: Array<{ LLDDCat: number; PrimaryLLDD: number }>;
+} {
+	const value = getColumnValue(csvRow, columnName);
+	const trimmedValue = value?.trim();
+
+	// No LLDD (value is '99')
+	if (trimmedValue === '99') {
+		return { LLDDHealthProb: 2 };
+	}
+
+	// Not provided (empty or missing)
+	if (!trimmedValue || trimmedValue === '') {
+		return { LLDDHealthProb: 9 };
+	}
+
+	// Has LLDD - return code 1 and the specific category (as array per XSD)
+	return {
+		LLDDHealthProb: 1,
+		LLDDandHealthProblem: [
+			{
+				LLDDCat: getTransform('stringToInt')(trimmedValue),
+				PrimaryLLDD: 1,
+			},
+		],
+	};
+}
+
+/**
  * Build EmploymentStatusMonitoring entry for a single ESM field
  */
 function buildEsmEntry(
@@ -168,9 +231,13 @@ function buildEsmEntry(
 	// Skip if value is empty
 	if (!value || value.trim() === '') return null;
 
+	// Transform value and skip if result is 0 (prevents spurious SEI/0, SEM/0, REI/0)
+	const transformedValue = getTransform(field.transform)(value);
+	if (transformedValue === 0) return null;
+
 	return {
 		ESMType: field.esmType,
-		ESMCode: getTransform(field.transform)(value),
+		ESMCode: transformedValue,
 	};
 }
 
