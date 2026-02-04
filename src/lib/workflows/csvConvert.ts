@@ -18,6 +18,7 @@ import type {
 import { createStorage } from '../storage';
 import type { SchemaRegistry } from '$lib/schema';
 import type { MappingConfig } from '../types/schemaTypes';
+import packageJson from '../../../package.json';
 
 const STEPS = {
 	parse: { id: 'parse', name: 'Parse CSV' },
@@ -197,7 +198,7 @@ async function buildILRMessage(
 				UKPRN: config.provider.ukprn,
 				SoftwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
 				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
-				Release: config.submission.release ?? 'Unspecified Release',
+				Release: packageJson.version,
 				SerialNo: '01',
 				DateTime: now.toISOString(),
 			},

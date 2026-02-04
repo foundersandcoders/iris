@@ -15,7 +15,6 @@ export interface ProviderConfig {
 export interface SubmissionConfig {
 	softwareSupplier?: string;
 	softwarePackage?: string;
-	release?: string;
 }
 
 export interface IrisConfig {
@@ -45,7 +44,6 @@ export const DEFAULT_CONFIG: IrisConfig = {
 	submission: {
 		softwareSupplier: 'Founders and Coders',
 		softwarePackage: 'Iris',
-		release: packageJson.version,
 	},
 	activeSchema: 'schemafile25.xsd',
 	activeMapping: 'fac-airtable-2025',
