@@ -130,7 +130,7 @@ export async function* checkWorkflow(
 
 	try {
 		// Check 1: Learner count variance
-		if (previousSubmission) {
+		if (previousSubmission && previousSubmission.learnerCount > 0) {
 			const variance =
 				Math.abs(learnerCount - previousSubmission.learnerCount) /
 				previousSubmission.learnerCount;
@@ -147,6 +147,17 @@ export async function* checkWorkflow(
 					},
 				});
 			}
+		} else if (previousSubmission && previousSubmission.learnerCount === 0 && learnerCount > 0) {
+			// Handle edge case: previous submission had 0 learners
+			issues.push({
+				severity: 'info',
+				category: 'learner_count',
+				message: `Learner count increased from 0 to ${learnerCount}`,
+				details: {
+					current: learnerCount,
+					previous: 0,
+				},
+			});
 		}
 
 		// Check 2: Schema version changes
