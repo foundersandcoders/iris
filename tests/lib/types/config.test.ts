@@ -97,6 +97,42 @@ describe('config types', () => {
 				expect(result.data.configVersion).toBe(1);
 			}
 		});
+
+		it('has activeSchema in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.activeSchema).toBe('schemafile25.xsd');
+			}
+		});
+
+		it('has activeMapping in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.activeMapping).toBe('fac-airtable-2025');
+			}
+		});
+
+		it('has collection in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.collection).toBe('ILR');
+			}
+		});
+
+		it('has serialNo in default config', async () => {
+			const result = await storage.loadConfig();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.serialNo).toBe('01');
+			}
+		});
 	});
 
 	describe('type validation', () => {
