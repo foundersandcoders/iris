@@ -189,7 +189,7 @@ async function buildILRMessage(
 	const baseStructure: Record<string, unknown> = {
 		Header: {
 			CollectionDetails: {
-				Collection: 'ILR',
+				Collection: config.collection ?? 'ILR',
 				Year: '2526',
 				FilePreparationDate: now.toISOString().split('T')[0],
 			},
@@ -199,7 +199,7 @@ async function buildILRMessage(
 				SoftwareSupplier: config.submission.softwareSupplier ?? 'Founders and Coders',
 				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
 				Release: packageJson.version,
-				SerialNo: '01',
+				SerialNo: config.serialNo ?? '01',
 				DateTime: now.toISOString(),
 			},
 		},
