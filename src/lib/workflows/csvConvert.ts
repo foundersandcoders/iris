@@ -200,7 +200,7 @@ async function buildILRMessage(
 				SoftwarePackage: config.submission.softwarePackage ?? 'Iris',
 				Release: packageJson.version,
 				SerialNo: config.serialNo ?? '01',
-				DateTime: now.toISOString(),
+				DateTime: now.toISOString().slice(0, 19), // Format: YYYY-MM-DDTHH:MM:SS (no milliseconds/timezone)
 			},
 		},
 		LearningProvider: {
