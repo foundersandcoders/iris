@@ -177,6 +177,7 @@ describe('config types', () => {
 
 		it('accepts valid IrisConfig', () => {
 			const config: IrisConfig = {
+				configVersion: 1,
 				provider: {
 					ukprn: 12345678,
 					name: 'Test',
@@ -184,14 +185,15 @@ describe('config types', () => {
 				submission: {
 					softwareSupplier: 'Test',
 				},
-				columnMapping: {
-					'CSV Column': 'XSD.Path',
-				},
+				activeSchema: 'schemafile25.xsd',
+				activeMapping: 'fac-airtable-2025',
+				collection: 'ILR',
+				serialNo: '01',
 				outputDir: '/path/to/output',
 			};
 
 			expect(config.provider.ukprn).toBe(12345678);
-			expect(config.columnMapping?.['CSV Column']).toBe('XSD.Path');
+			expect(config.activeSchema).toBe('schemafile25.xsd');
 			expect(config.outputDir).toBe('/path/to/output');
 		});
 	});
