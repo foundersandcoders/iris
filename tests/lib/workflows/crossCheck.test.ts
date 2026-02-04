@@ -162,6 +162,40 @@ describe('checkWorkflow', () => {
 			expect(schemaInfo?.message).toContain('2627');
 		});
 
+		it('handles zero learner count in previous submission', async () => {
+			await writeFile(testXmlPath, fixtures.validXmlTwoLearners);
+
+			const storageModule = await import('../../../src/lib/storage');
+			vi.spyOn(storageModule, 'createStorage').mockReturnValue({
+				...storageModule.createStorage(),
+				loadHistory: vi.fn().mockResolvedValue({
+					success: true,
+					data: {
+						version: 1,
+						submissions: [
+							{
+								filename: 'ILR-2026-01-01.xml',
+								timestamp: '2026-01-01T10:00:00',
+								learnerCount: 0,
+								checksum: 'abc123',
+								schema: '2526',
+								learnerRefs: [],
+							},
+						],
+					},
+				}),
+			} as any);
+
+			const { result } = await consumeWorkflow(checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot }));
+
+			expect(result.success).toBe(true);
+
+			const countInfo = result.data?.report.issues.find((i) => i.category === 'learner_count');
+			expect(countInfo).toBeDefined();
+			expect(countInfo?.severity).toBe('info');
+			expect(countInfo?.message).toContain('increased from 0 to 2');
+		});
+
 		it('detects duplicate learner references', async () => {
 			await writeFile(testXmlPath, fixtures.xmlWithDuplicateLearners);
 
