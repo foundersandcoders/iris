@@ -69,7 +69,7 @@ export async function* checkWorkflow(
 
 	let learnerCount: number;
 	let learnerRefs: string[];
-	let schema: string;
+	let collectionYear: string;
 
 	try {
 		const parseResult = parseILR(xmlContent);
@@ -81,13 +81,13 @@ export async function* checkWorkflow(
 		learnerCount = data.learners.length;
 		learnerRefs = data.learners.map((l) => String(l.learnRefNumber));
 
-		// Extract schema version from header (Year field indicates collection year)
-		schema = data.header.collectionDetails.year || 'unknown';
+		// Extract collection year from header (e.g., "2526" for 2025-26)
+		collectionYear = data.header.collectionDetails.year || 'unknown';
 
 		parseStep.status = 'complete';
 		parseStep.progress = 100;
 		parseStep.message = `Parsed ${learnerCount} learners`;
-		parseStep.data = { learnerCount, schema };
+		parseStep.data = { learnerCount, collectionYear };
 		yield stepEvent('step:complete', parseStep);
 	} catch (error) {
 		parseStep.status = 'failed';
@@ -160,14 +160,14 @@ export async function* checkWorkflow(
 			});
 		}
 
-		// Check 2: Schema version changes
-		if (previousSubmission && schema !== previousSubmission.schema) {
+		// Check 2: Collection year changes (indicates schema migration)
+		if (previousSubmission && collectionYear !== previousSubmission.schema) {
 			issues.push({
 				severity: 'info',
 				category: 'schema_version',
-				message: `Schema version changed from ${previousSubmission.schema} to ${schema}`,
+				message: `Collection year changed from ${previousSubmission.schema} to ${collectionYear}`,
 				details: {
-					current: schema,
+					current: collectionYear,
 					previous: previousSubmission.schema,
 				},
 			});
@@ -225,7 +225,7 @@ export async function* checkWorkflow(
 			currentSubmission: {
 				filename: basename(input.filePath),
 				learnerCount,
-				schema,
+				schema: collectionYear,
 				learnerRefs,
 			},
 			previousSubmission: previousSubmission
