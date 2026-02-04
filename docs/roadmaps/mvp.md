@@ -2,9 +2,9 @@
 
 |          | Status                                      | Next Up                               | Blocked                               |
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | Storage migrations complete                 | check workflow (1WA.7)                | config system (needs 1SS.2 design)    |
-| **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` (needs 1WA.7)            |
-| **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | cross-check workflow (needs 1WA.7)    |
+| **Core** | Check workflow complete                     | config system (1SS.2 - needs design)  | —                                     |
+| **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
+| **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | —                                     |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
 
 ---
@@ -55,9 +55,6 @@ graph TD
 1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
 1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"] --> 1SS.4
 
-1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"]:::open --> 1WA.11
-1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"] --> m1
-
 m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
 classDef default,blocked fill:#f9f;
@@ -69,8 +66,6 @@ classDef mile fill:#9ff;
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
-- [ ] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
-
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
 - [ ] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`) — **needs design decisions**
@@ -78,7 +73,6 @@ classDef mile fill:#9ff;
 - [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
 - [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
 - [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist) — **depends on 1SS.2**
-- [ ] 1WA.11. Add unit tests for `check` (independent of UI) — **depends on 1WA.7**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
 
@@ -123,6 +117,8 @@ classDef mile fill:#9ff;
 - [x] 1WA.16. Migrate `csvConvert` workflow to use storage (replace Bun.write + .keep hack)
 - [x] 1WA.18. Migrate TUI processing screen to use storage for schema loading
 - [x] 1WA.19. Migrate `configTypes.ts` to use storage (replace hardcoded defaults)
+- [x] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
+- [x] 1WA.11. Add unit tests for `check` (independent of UI)
 
 <h4>Milestone 1 Notes</h4>
 
@@ -491,10 +487,7 @@ graph TD
 	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"] --> 1SS.5
 	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"]
 
-	1WA.7["`*1WA.7*<br/>**Workflow**<br/>check`"]:::open --> 1WA.11
-	1WA.11["`*1WA.11*<br/>**Tests**<br/>unit tests for 'check'`"]
-
-	1SS.5 & 1WA.11 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
+	1SS.5 --> m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
 %% Milestone 2 %%
 	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
