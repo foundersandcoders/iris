@@ -5,7 +5,6 @@
  */
 
 import { createStorage } from '../storage';
-import packageJson from '../../../package.json';
 
 export interface ProviderConfig {
 	ukprn: number;
