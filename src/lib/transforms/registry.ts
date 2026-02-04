@@ -76,6 +76,20 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		category: 'string',
 	},
 
+	uppercaseTrim: {
+		fn: (v: string) => v.trim().toUpperCase(),
+		description: 'Trim whitespace and convert to uppercase',
+		example: "' male ' → 'MALE', 'Z0001946 ' → 'Z0001946'",
+		category: 'string',
+	},
+
+	postcode: {
+		fn: (v: string) => v.trim().toUpperCase(),
+		description: 'Format postcode: trim and uppercase, preserve internal space',
+		example: "' sw1a 1aa ' → 'SW1A 1AA'",
+		category: 'string',
+	},
+
 	uppercaseNoSpaces: {
 		fn: (v: string) => v.toUpperCase().replace(/\s+/g, ''),
 		description: 'Convert to uppercase and remove all spaces',
@@ -101,6 +115,19 @@ export const TRANSFORMS: Record<string, TransformMetadata> = {
 		fn: (v: string) => v.replace(/\D/g, ''),
 		description: 'Extract only digit characters',
 		example: "'Tel: 020-1234-5678' → '02012345678'",
+		category: 'string',
+	},
+
+	normalizeAddress: {
+		fn: (v: string) => {
+			return v
+				.trim()
+				.replace(/[\u2018\u2019]/g, "'") // Curly single quotes (U+2018, U+2019) → straight quote
+				.replace(/[\u201C\u201D]/g, '"') // Curly double quotes (U+201C, U+201D) → straight
+				.slice(0, 50); // Truncate to max 50 chars
+		},
+		description: 'Normalize address: trim, fix quotes, truncate to 50 chars',
+		example: "'123 St Stephen's Rd' → '123 St Stephen's Rd'",
 		category: 'string',
 	},
 
