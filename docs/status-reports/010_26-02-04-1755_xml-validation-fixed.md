@@ -1,4 +1,4 @@
-# Iris Status Update
+# Iris 3.0.0: Status Update
 
 ## 1. TL;DR
 Fixed 12 critical XML validation bugs causing 1,649+ XSD errors; generated XML now validates perfectly (0 errors) with additional data-quality fixes for NI numbers, postcodes, and addresses.
