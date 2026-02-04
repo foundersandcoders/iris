@@ -119,7 +119,7 @@ export async function* convertWorkflow(
 		const saveResult = await storage.saveSubmission(xml);
 
 		if (!saveResult.success) {
-			throw saveResult.error;
+			throw new Error(`Failed to save submission: ${saveResult.error.message}`);
 		}
 
 		outputPath = saveResult.data;
