@@ -5,6 +5,28 @@ import * as fixtures from '../../fixtures/lib/workflows/crossCheck';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { mkdir, rm, writeFile } from 'fs/promises';
+import type { IrisStorage, SubmissionHistory } from '../../../src/lib/storage';
+
+/**
+ * Mock storage to return specific submission history for testing.
+ * Uses dynamic import + spy to intercept createStorage calls within the workflow.
+ *
+ * Note: This works because checkWorkflow calls createStorage() internally.
+ * More robust approaches (vi.mock with hoisting) would require restructuring
+ * the workflow to accept storage as a dependency injection parameter.
+ */
+async function mockStorageHistory(history: SubmissionHistory): Promise<void> {
+	const storageModule = await import('../../../src/lib/storage');
+	const baseStorage = storageModule.createStorage();
+
+	vi.spyOn(storageModule, 'createStorage').mockReturnValue({
+		...baseStorage,
+		loadHistory: vi.fn().mockResolvedValue({
+			success: true,
+			data: history,
+		}),
+	} as IrisStorage);
+}
 
 describe('checkWorkflow', () => {
 	let testDir: string;
@@ -113,18 +135,11 @@ describe('checkWorkflow', () => {
 	describe('anomaly detection', () => {
 		it('detects significant learner count increase', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlFiveLearners);
+			await mockStorageHistory(fixtures.historyWithOnePrevious);
 
-			// Mock storage to return history with 2 learners
-			const storageModule = await import('../../../src/lib/storage');
-			vi.spyOn(storageModule, 'createStorage').mockReturnValue({
-				...storageModule.createStorage(),
-				loadHistory: vi.fn().mockResolvedValue({
-					success: true,
-					data: fixtures.historyWithOnePrevious,
-				}),
-			} as any);
-
-			const { result } = await consumeWorkflow(checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot }));
+			const { result } = await consumeWorkflow(
+				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
+			);
 
 			expect(result.success).toBe(true);
 			expect(result.data?.hasIssues).toBe(true);
@@ -139,17 +154,11 @@ describe('checkWorkflow', () => {
 
 		it('detects schema version changes', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlDifferentSchema);
+			await mockStorageHistory(fixtures.historyWithDifferentSchema);
 
-			const storageModule = await import('../../../src/lib/storage');
-			vi.spyOn(storageModule, 'createStorage').mockReturnValue({
-				...storageModule.createStorage(),
-				loadHistory: vi.fn().mockResolvedValue({
-					success: true,
-					data: fixtures.historyWithDifferentSchema,
-				}),
-			} as any);
-
-			const { result } = await consumeWorkflow(checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot }));
+			const { result } = await consumeWorkflow(
+				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
+			);
 
 			expect(result.success).toBe(true);
 
@@ -164,29 +173,23 @@ describe('checkWorkflow', () => {
 
 		it('handles zero learner count in previous submission', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlTwoLearners);
-
-			const storageModule = await import('../../../src/lib/storage');
-			vi.spyOn(storageModule, 'createStorage').mockReturnValue({
-				...storageModule.createStorage(),
-				loadHistory: vi.fn().mockResolvedValue({
-					success: true,
-					data: {
-						version: 1,
-						submissions: [
-							{
-								filename: 'ILR-2026-01-01.xml',
-								timestamp: '2026-01-01T10:00:00',
-								learnerCount: 0,
-								checksum: 'abc123',
-								schema: '2526',
-								learnerRefs: [],
-							},
-						],
+			await mockStorageHistory({
+				version: 1,
+				submissions: [
+					{
+						filename: 'ILR-2026-01-01.xml',
+						timestamp: '2026-01-01T10:00:00',
+						learnerCount: 0,
+						checksum: 'abc123',
+						schema: '2526',
+						learnerRefs: [],
 					},
-				}),
-			} as any);
+				],
+			});
 
-			const { result } = await consumeWorkflow(checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot }));
+			const { result } = await consumeWorkflow(
+				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
+			);
 
 			expect(result.success).toBe(true);
 
@@ -227,17 +230,11 @@ describe('checkWorkflow', () => {
 
 		it('includes previous submission details when available', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlTwoLearners);
+			await mockStorageHistory(fixtures.historyWithOnePrevious);
 
-			const storageModule = await import('../../../src/lib/storage');
-			vi.spyOn(storageModule, 'createStorage').mockReturnValue({
-				...storageModule.createStorage(),
-				loadHistory: vi.fn().mockResolvedValue({
-					success: true,
-					data: fixtures.historyWithOnePrevious,
-				}),
-			} as any);
-
-			const { result } = await consumeWorkflow(checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot }));
+			const { result } = await consumeWorkflow(
+				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
+			);
 
 			expect(result.success).toBe(true);
 			expect(result.data?.report.previousSubmission).toBeDefined();
