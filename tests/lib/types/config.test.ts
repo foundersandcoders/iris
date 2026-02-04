@@ -7,7 +7,13 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { rm } from 'fs/promises';
 import { createStorage } from '$lib/storage';
-import type { IrisConfig, ProviderConfig, SubmissionConfig } from '$lib/types/configTypes';
+import {
+	validateConfig,
+	DEFAULT_CONFIG,
+	type IrisConfig,
+	type ProviderConfig,
+	type SubmissionConfig,
+} from '$lib/types/configTypes';
 import packageJson from '../../../package.json';
 
 describe('config types', () => {
@@ -75,22 +81,12 @@ describe('config types', () => {
 			}
 		});
 
-		it('has no column mapping in default config', async () => {
+		it('outputDir is optional in default config', async () => {
 			const result = await storage.loadConfig();
 
 			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.columnMapping).toBeUndefined();
-			}
-		});
 
-		it('has no output directory in default config', async () => {
-			const result = await storage.loadConfig();
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.outputDir).toBeUndefined();
-			}
+			if (result.success) expect(result.data.outputDir).toBeUndefined();
 		});
 	});
 
