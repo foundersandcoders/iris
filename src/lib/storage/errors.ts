@@ -8,6 +8,7 @@ export type StorageErrorCode =
 	| 'NOT_FOUND'
 	| 'PERMISSION_DENIED'
 	| 'INVALID_JSON'
+	| 'INVALID_STRUCTURE'
 	| 'WRITE_FAILED'
 	| 'DIR_NOT_FOUND'
 	| 'ALREADY_EXISTS'
