@@ -39,7 +39,7 @@ export const sampleCsvRow: Record<string, string> = {
 export const mockMappingConfig: MappingConfig = {
 	id: 'test-mapping',
 	name: 'Test Mapping Configuration',
-	version: '1.0.0',
+	mappingVersion: '1.0.0',
 	targetSchema: {
 		namespace: 'ESFA/ILR/2025-26',
 		version: '1.0',

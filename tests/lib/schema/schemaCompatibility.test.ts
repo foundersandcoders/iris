@@ -9,7 +9,7 @@ import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 describe('schema/schemaCompatibility', () => {
       const mockRegistry: SchemaRegistry = {
               namespace: 'ESFA/ILR/2025-26',
-              version: '1.0',
+              schemaVersion: '1.0',
               sourceFile: 'schemafile25.xsd',
               rootElement: {
                       name: 'Message',
@@ -31,7 +31,7 @@ describe('schema/schemaCompatibility', () => {
       const mockMapping: MappingConfig = {
               id: 'test-mapping',
               name: 'Test Mapping',
-              version: '1.0.0',
+              mappingVersion: '1.0.0',
               targetSchema: {
                       namespace: 'ESFA/ILR/2025-26',
                       version: '1.0',

@@ -128,7 +128,7 @@ describe('columnMapper', () => {
 			const config: MappingConfig = {
 				id: 'test-multi-aim',
 				name: 'Test Multi-Aim',
-				version: '1.0.0',
+				mappingVersion: '1.0.0',
 				targetSchema: { namespace: 'test', version: '1.0' },
 				aimDetectionField: 'Programme aim {n} Learning ref ',
 				mappings: [
@@ -197,7 +197,7 @@ describe('columnMapper', () => {
 			const config: MappingConfig = {
 				id: 'test-single-aim',
 				name: 'Test Single Aim',
-				version: '1.0.0',
+				mappingVersion: '1.0.0',
 				targetSchema: { namespace: 'test', version: '1.0' },
 				aimDetectionField: 'Programme aim {n} Learning ref ',
 				mappings: [

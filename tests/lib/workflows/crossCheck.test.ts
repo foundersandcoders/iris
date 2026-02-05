@@ -174,7 +174,7 @@ describe('checkWorkflow', () => {
 		it('handles zero learner count in previous submission', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlTwoLearners);
 			await mockStorageHistory({
-				version: 1,
+				formatVersion: 1,
 				submissions: [
 					{
 						filename: 'ILR-2026-01-01.xml',

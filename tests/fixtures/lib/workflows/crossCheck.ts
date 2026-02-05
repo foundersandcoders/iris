@@ -271,13 +271,13 @@ export const xmlWithDuplicateLearners = `<?xml version="1.0" encoding="utf-8"?>
 
 // Mock submission history - empty
 export const emptyHistory: SubmissionHistory = {
-	version: 1,
+	formatVersion: 1,
 	submissions: [],
 };
 
 // Mock submission history - with 1 previous submission
 export const historyWithOnePrevious: SubmissionHistory = {
-	version: 1,
+	formatVersion: 1,
 	submissions: [
 		{
 			filename: 'ILR-2026-01-15T10-00-00.xml',
@@ -292,7 +292,7 @@ export const historyWithOnePrevious: SubmissionHistory = {
 
 // Mock submission history - with different schema
 export const historyWithDifferentSchema: SubmissionHistory = {
-	version: 1,
+	formatVersion: 1,
 	submissions: [
 		{
 			filename: 'ILR-2025-09-01T10-00-00.xml',

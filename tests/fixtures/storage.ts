@@ -44,7 +44,7 @@ export const malformedConfigJson = '{ invalid json }';
 export const customMapping: MappingConfig = {
 	id: 'custom-test',
 	name: 'Custom Test Mapping',
-	version: '1.0.0',
+	mappingVersion: '1.0.0',
 	targetSchema: {
 		namespace: 'ESFA/ILR/2025-26',
 		version: '1.0',
@@ -61,7 +61,7 @@ export const customMapping: MappingConfig = {
 export const userMapping: MappingConfig = {
 	id: 'user-mapping',
 	name: 'User Mapping',
-	version: '1.0.0',
+	mappingVersion: '1.0.0',
 	targetSchema: { namespace: 'ESFA/ILR/2025-26' },
 	mappings: [],
 };

@@ -281,7 +281,7 @@ describe('IrisStorage', () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.version).toBe(1);
+				expect(result.data.formatVersion).toBe(1);
 				expect(result.data.submissions).toEqual([]);
 			}
 		});
