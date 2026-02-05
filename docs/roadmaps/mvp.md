@@ -36,13 +36,6 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > [!IMPORTANT]
 > **Goal:** Working transformation engine used by both interfaces
 
-> [!NOTE]
-> **Key**
-> - CL (base utils)
-> - SG (schema system)
-> - SS (schema/mapping storage)
-> - WA (workflow abstractions)
-
 ```mermaid
 ---
 title: Milestone 1
@@ -56,63 +49,67 @@ classDef open fill:#ff9;
 classDef mile fill:#9ff;
 ```
 
-<a name="m1-doing"><h4>In Progress (Milestone 1)</h4></a>
+> [!NOTE]
+> **Key**
+> - CL (base utils)
+> - SG (schema system)
+> - SS (schema/mapping storage)
+> - WA (workflow abstractions)
 
-<a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
-<a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
+<details>
+    <summary><a name="m1-done"><h4>Milestone 1</h4></a></summary>
 
-<a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
-
-- [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
-- [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
-- [x] 1CL.1. Implement CSV parser with header-based column matching
-- [x] 1CL.2. Create ILR XML generator (minimal valid structure)
-- [x] 1CL.3. Build semantic validator (beyond structural checks)
-- [x] 1CL.4. Create XML parser module (src/lib/xml-parser.ts)
-	- [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
-- [x] 1CL.5. Add unit tests for core transformations
-- [x] 1SG.1. Implement **Dynamic Schema (Phase 1): XSD Parser & Schema Registry**
-	- [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
-	- [x] 1SG.1b. Add fast-xml-parser dependency
-	- [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
-	- [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
-	- [x] 1SG.1e. Add tests against actual schemafile25.xsd
-- [x] 1SG.2. Implement **Dynamic Schema (Phase 2): Schema-Driven Validator**
-	- [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
-	- [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
-	- [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
-- [x] 1SG.3. Implement **Dynamic Schema (Phase 3): Schema-Driven Generator**
-	- [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
-	- [x] 1SG.3b. Implement element ordering from xs:sequence
-	- [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
-- [x] 1SG.4. Implement **Dynamic Schema (Phase 4): Column Mapping Configuration**
-	- [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
-	- [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
-	- [x] 1SG.4c. Create default FaC Airtable mapping configuration
-	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
-- [x] 1WA.1. Define workflow step interfaces (types, status, data, errors)
-- [x] 1WA.2. Create workflow abstraction consumption layer (interface-agnostic generators)
-- [x] 1WA.3. Implement `validateCsv` workflow (load CSV → parse CSV → validate CSV → print report)
-- [x] 1WA.4. Implement `convertCsv` workflow (load CSV parse → validate CSV → generate XML → save XML)
-- [x] 1WA.5. Implement `validateXml` workflow (load/generate XML → parse XML → validate XML → print report)
-- [x] 1WA.8. Add unit tests for `validateCsv` (independent of UI)
-- [x] 1WA.9. Add unit tests for `convertCsv` (independent of UI)
-- [x] 1WA.10. Add unit tests for `validateXml` (independent of UI)
-- [x] 1WA.12. Add round-trip tests (load CSV → validate CSV → create XML → validate XML → passes)
-- [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
-- [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
-- [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
-- [x] 1WA.16. Migrate `csvConvert` workflow to use storage (replace Bun.write + .keep hack)
-- [x] 1WA.18. Migrate TUI processing screen to use storage for schema loading
-- [x] 1WA.19. Migrate `configTypes.ts` to use storage (replace hardcoded defaults)
-- [x] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
-- [x] 1WA.11. Add unit tests for `check` (independent of UI)
-- [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
-- [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
-- [x] 1SS.7. Document config file format and versioning (explain configVersion/mappingVersion/formatVersion/schemaVersion)
-- [x] 1SS.4. Save mapping config to file (write JSON, handle errors)
-- [x] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
+  - [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
+  - [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+  - [x] 1CL.1. Implement CSV parser with header-based column matching
+  - [x] 1CL.2. Create ILR XML generator (minimal valid structure)
+  - [x] 1CL.3. Build semantic validator (beyond structural checks)
+  - [x] 1CL.4. Create XML parser module (`src/lib/xml-parser.ts`)
+  	- [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
+  - [x] 1CL.5. Add unit tests for core transformations
+  - [x] 1SG.1. Implement **Dynamic Schema (Phase 1): XSD Parser & Schema Registry**
+  	- [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
+  	- [x] 1SG.1b. Add fast-xml-parser dependency
+  	- [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
+  	- [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
+  	- [x] 1SG.1e. Add tests against actual schemafile25.xsd
+  - [x] 1SG.2. Implement **Dynamic Schema (Phase 2): Schema-Driven Validator**
+  	- [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
+  	- [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
+  	- [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
+  - [x] 1SG.3. Implement **Dynamic Schema (Phase 3): Schema-Driven Generator**
+  	- [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
+  	- [x] 1SG.3b. Implement element ordering from xs:sequence
+  	- [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
+  - [x] 1SG.4. Implement **Dynamic Schema (Phase 4): Column Mapping Configuration**
+  	- [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
+  	- [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
+  	- [x] 1SG.4c. Create default FaC Airtable mapping configuration
+  	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
+  - [x] 1WA.1. Define workflow step interfaces (types, status, data, errors)
+  - [x] 1WA.2. Create workflow abstraction consumption layer (interface-agnostic generators)
+  - [x] 1WA.3. Implement `validateCsv` workflow (`load CSV → parse CSV → validate CSV → print report`)
+  - [x] 1WA.4. Implement `convertCsv` workflow (`load CSV parse → validate CSV → generate XML → save XML`)
+  - [x] 1WA.5. Implement `validateXml` workflow (`load/generate XML → parse XML → validate XML → print report`)
+  - [x] 1WA.8. Add unit tests for `validateCsv` (independent of UI)
+  - [x] 1WA.9. Add unit tests for `convertCsv` (independent of UI)
+  - [x] 1WA.10. Add unit tests for `validateXml` (independent of UI)
+  - [x] 1WA.12. Add round-trip tests (`load CSV → validate CSV → create XML → validate XML → passes`)
+  - [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
+  - [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
+  - [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
+  - [x] 1WA.16. Migrate `csvConvert` workflow to use storage (replace Bun.write + .keep hack)
+  - [x] 1WA.18. Migrate TUI processing screen to use storage for schema loading
+  - [x] 1WA.19. Migrate `configTypes.ts` to use storage (replace hardcoded defaults)
+  - [x] 1WA.7. Implement `check` workflow (`load XML → load XML or history → compare → print report`)
+  - [x] 1WA.11. Add unit tests for `check` (independent of UI)
+  - [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
+  - [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
+  - [x] 1SS.7. Document config file format and versioning (explain configVersion, mappingVersion, formatVersion, schemaVersion)
+  - [x] 1SS.4. Save mapping config to file (write JSON, handle errors)
+  - [x] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
+</details>
 
 <h4>Milestone 1 Notes</h4>
 
