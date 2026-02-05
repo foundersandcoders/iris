@@ -1,16 +1,20 @@
-# Iris { version number from package.json }: Status Update
-## 1. TL;DR
-{ One sentence: what changed since the last report }
+# {{ Project Name }} - {{ Date }}
 
-## 2. Completed
-- { High-level features only, 3-6 bullets max }
+## 1. What Happened
+{ 2-3 sentences explaining what got done and where things stand now. Written for someone without dev knowledge - focus on capabilities, not code. }
 
-## 3. Radar
-### 3a. In Progress
-- { Current milestone with percentage, one line }
+---
+## 2. Shipped
+- { 3-5 things that actually work now, described in terms of what they do, not how }
 
-### 3b. Up Next
-- { 2-4 upcoming tasks, brief }
+---
+## 3. Currently Working On
+- { What's in progress right now - be honest about state and uncertainty }
 
-## 4. Blockers
-{ "None" or brief list }
+---
+## 4. Up Next
+- { 2-4 things likely to happen next, subject to change }
+
+---
+## 5. Worth Remembering
+{ Dead ends tried, decisions made, things learned, direction changes. Optional but valuable for future reference. }

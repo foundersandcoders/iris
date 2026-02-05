@@ -1,5 +1,5 @@
 ---
-description: "{{ Iris • Haiku }} Check all version number props and update them"
+description: "=== IRIS {{ Haiku }} === Check all version number props and update them"
 argument-hint: [version number]
 model: claude-haiku-4-5
 ---

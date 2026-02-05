@@ -229,6 +229,6 @@ This project uses automated evidence tracking via git hooks. Every commit with K
 
 ## Getting Help
 - **Claude Code:** Use `/project/init` to reconfigure
-- **Roadmaps:** See `docs/roadmaps/mvp.md`
+- **Roadmaps:** See `docs/roadmaps/` (restructured into 3 phases: [Phase 1](docs/roadmaps/phase-1-mvp-features.md), [Phase 2](docs/roadmaps/phase-2-production-features.md), [Phase 3](docs/roadmaps/phase-3-future-features.md))
 - **Architecture:** See `docs/adrs/`
 - **Technical details:** See `docs/technical/`
