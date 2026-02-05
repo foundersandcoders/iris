@@ -337,26 +337,48 @@ graph TD
 2UD.1["`*2UD.1* user guide`"]:::must-open
 2UD.2["`*2UD.2* val rules`"]:::could-open
 
+%% Milestone nodes %%
+m2a{"`**M2A**<br/>Core TUI`"}:::mile
+m2b{"`**M2B**<br/>Commands`"}:::mile
+m2c{"`**M2C**<br/>Advanced`"}:::mile
+phase1{"`**Phase 1**<br/>Complete`"}:::mile
+
 %% M2A Dependencies %%
 2TI.11 --> 2TI.13 & 2TI.7 & 2TI.12
 2TI.13 --> 2TI.14 & 2TI.8
 2TI.7 --> 2TI.14 & 2TI.15 & 2TI.8
 2TI.14 --> 2TI.15 & 2TI.8
 2TI.15 --> 2TI.17 & 2TI.8
+2TI.17 --> m2a
+2TI.8 --> m2a
 
 %% M2B Dependencies %%
 2DC.2 --> 2DC.4
 2DC.3 --> 2DC.4
+2DC.4 --> m2b
+
+%% Cross-phase dependencies %%
+m2a --> m2c
+m2b --> m2c
 
 %% M2C Dependencies %%
 2TM.2 --> 2TM.3
 2TM.3 --> 2TM.1
 2TM.1 --> 2TM.4
-2TM.4 --> 2TI.9 & 2TS.4
+2TM.4 --> 2TI.9 & 2TS.4 & m2c
 2TI.9 --> 2TI.19
 2TS.2 --> 2TS.3 & 2TI.19
 2TS.3 --> 2TS.4
+2TS.4 --> m2c
 2TI.12 -.-> 2TS.4
+2TI.19 --> m2c
+2TI.10 --> m2c
+2TI.18 --> m2c
+2UD.1 --> m2c
+2UD.2 --> m2c
+
+%% Phase completion %%
+m2c --> phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
