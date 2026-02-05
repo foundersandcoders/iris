@@ -5,6 +5,7 @@
 
 import type { MappingConfig, SchemaReference } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
+import { FAM_PATHS, APP_FIN_PATHS, LLDD_PATHS, EMPLOYMENT_PATHS } from '../mappings/builderPaths';
 
 export interface CompatibilityResult {
 	compatible: boolean;
@@ -49,6 +50,38 @@ export function validateSchemaCompatibility(
 			errors.push(
 				`Invalid XSD path "${columnMapping.xsdPath}" for column "${columnMapping.csvColumn}"`
 			);
+		}
+	}
+
+	// Validate builder paths (conditionally based on template presence)
+	if (mapping.famTemplates && mapping.famTemplates.length > 0) {
+		for (const path of FAM_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	if (mapping.appFinTemplates && mapping.appFinTemplates.length > 0) {
+		for (const path of APP_FIN_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	if (mapping.employmentStatuses && mapping.employmentStatuses.length > 0) {
+		for (const path of EMPLOYMENT_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	// LLDD paths are always checked (learner-level, not template-based)
+	for (const path of LLDD_PATHS) {
+		if (!registry.elementsByPath.has(path)) {
+			errors.push(`Builder path not found in schema: ${path}`);
 		}
 	}
 
