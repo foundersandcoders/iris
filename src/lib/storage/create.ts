@@ -209,14 +209,16 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		async listMappings(): Promise<StorageResult<string[]>> {
 			try {
 				// Start with bundled mappings
-				const mappings = [facAirtableMapping.id];
+				const bundledIds = [facAirtableMapping.id];
 
-				// Add user mappings
+				// Scan user mappings directory
 				const userMappingFiles = await adapter.list(paths.mappings, { pattern: '*.json' });
-				const userMappingIds = userMappingFiles.map((file) => basename(file, '.json'));
+				const userMappingIds = userMappingFiles
+					.map((file) => basename(file, '.json'))
+					.filter((id) => id.length > 0);
 
-				// Combine and deduplicate (user overrides bundled)
-				const allMappings = [...new Set([...mappings, ...userMappingIds])];
+				// Combine and deduplicate (bundled listed first, then user)
+				const allMappings = [...new Set([...bundledIds, ...userMappingIds])];
 
 				return { success: true, data: allMappings };
 			} catch (error) {
