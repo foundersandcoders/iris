@@ -4,7 +4,7 @@
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
 | **Core** | ✅ **Milestone 1 complete**                 | —                                     | —                                     |
 | **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
-| **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | —                                     |
+| **TUI**  | Basic screens & navigation                  | keyboard abstraction (2TI.11)         | all screens (needs 2TI.11)            |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
 
 ---
@@ -136,28 +136,28 @@ title: Milestone 2
 ---
 graph TD
 
-2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
-2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
-2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
+2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.13 & 2TI.7 & 2TM.2 & 2TS.2 & 2TI.12
 
+2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.14 & 2TI.8
+2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14 & 2TI.15
+
+2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.15 & 2TI.8
+2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.8
+2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.17
+
+2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
 2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
 
-2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
-2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
-2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
+2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9 & 2TI.10
+2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>schema version selector`"] --> 2TS.4
+2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 
-2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
-2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
+2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
 2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
-2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
-2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
-2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
-2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
-2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
+2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2
 
 m2{"`**Milestone 2**<br/>TUI App`"}:::mile
 
@@ -172,23 +172,21 @@ classDef mile fill:#9ff;
 
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
-- [ ] 2TI.7. Build validation results explorer (error/warning navigation)
-- [ ] 2TI.8. Implement success/completion screen with next actions
-- [ ] 2TI.12. Add help overlay system (contextual help)
-- [ ] 2TI.13. Build convert workflow (file select → process → results)
-- [ ] 2TI.16. Add visual feedback (animations, transitions, spinners)
-- [ ] 2TI.17. Test TUI with real CSV exports from Airtable
-- [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector)
-- [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues)
-- [ ] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/)
-- [ ] 2TS.2. Build schema manager TUI screen (upload, list, select active schema)
+- [ ] 2TI.7. Build validation results explorer (error/warning navigation) — **depends on 2TI.11**
+- [ ] 2TI.12. Add help overlay system (contextual help) — **depends on 2TI.11**
+- [ ] 2TI.13. Build convert workflow screen (file select → process → results) — **depends on 2TI.11**
+- [ ] 2TI.17. Test TUI with real CSV exports from Airtable — **depends on 2TI.8**
+- [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector) — **depends on 2TI.11**
+- [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues) — **depends on 2TM.2**
+- [ ] 2TS.2. Build schema manager TUI screen (upload, list, select active schema) — **depends on 2TI.11**
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
-- [ ] 2TI.9. Add settings management screen — **depends on 2TM.4, 2TS.2, 2TI.16**
-- [ ] 2TI.10. Create submission history browser — **depends on 2TI.17**
-- [ ] 2TI.14. Build validate workflow (file select → validate → explore errors) — **depends on 2TI.7**
-- [ ] 2TI.15. Build cross-submission check workflow — **depends on 2TI.8**
+- [ ] 2TI.8. Implement success/completion screen with next actions — **depends on 2TI.13, 2TI.14, 2TI.15**
+- [ ] 2TI.9. Add settings management screen — **depends on 2TM.4, 2TS.2**
+- [ ] 2TI.10. Create submission history browser — **depends on 2TS.2**
+- [ ] 2TI.14. Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
+- [ ] 2TI.15. Build cross-submission check workflow — **depends on 2TI.14, 2TI.7**
 - [ ] 2TM.1. Build mapping builder screen (list available mappings, create new) — **depends on 2TM.3**
 - [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
 - [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.2**
@@ -205,6 +203,7 @@ classDef mile fill:#9ff;
 - [x] 2TI.4. Implement interactive file picker for CSV selection
 - [x] 2TI.5. Create processing screen with live progress and log viewer
 - [x] 2TI.6. Live processing screen with progress and logs
+- [x] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/) — exists in core lib (`storage.loadSchema()`)
 
 ---
 
@@ -333,7 +332,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Key**
-> - PR (production readiness)
+> - TI (TUI polish)
 > - UD (documentation)
 
 ```mermaid
@@ -342,14 +341,15 @@ title: Milestone 5
 ---
 graph TD
 
-m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3
+m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3 & 5TI.1
 
-5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"]:::block --> 5UD.2 & 5UD.4
-5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"]:::block
-5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"]:::block
-5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"]:::block
+5TI.1["`*5TI.1*<br/>**TUI Feat**<br/>visual feedback`"] --> m5
+5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"] --> 5UD.2 & 5UD.4
+5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"] --> m5
+5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"] --> m5
+5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"] --> m5
 
-5UD.2 & 5UD.3 & 5UD.4 --> m5{"`**Milestone 5**<br/>Documentation`"}:::mile
+m5{"`**Milestone 5**<br/>Production Ready`"}:::mile
 
 classDef default,blocked fill:#f9f;
 classDef open fill:#ff9;
@@ -362,6 +362,7 @@ classDef mile fill:#9ff;
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
+- [ ] 5TI.1. Add visual feedback (animations, transitions, spinners) — **depends on Milestone 4**
 - [ ] 5UD.1. Document ILR XML structure and requirements — **depends on Milestone 4**
 - [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript) — **depends on 5UD.1**
 - [ ] 5UD.3. Write user guide for non-technical users — **depends on Milestone 4**
@@ -463,28 +464,28 @@ title: Tasks
 graph TD
 
 %% Milestone 2 %%
-	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
-	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
-	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
+	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.13 & 2TI.7 & 2TM.2 & 2TS.2 & 2TI.12
 
+	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.14 & 2TI.8
+	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14 & 2TI.15
+
+	2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.15 & 2TI.8
+	2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.8
+	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.17
+
+	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
 	2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 	2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 	2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
 
-	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
-	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
-	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
+	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9 & 2TI.10
+	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>schema version selector`"] --> 2TS.4
+	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 
-	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
-	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
+	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
 	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
-	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
-	2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
-	2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
-	2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
-	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
+	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2
 
 	m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
 
@@ -495,7 +496,7 @@ graph TD
 	3DC.5["`*3DC.5*<br/>**Flag**<br/>iris * --help`"] --> 3DC.6
 	3DC.6["`*3DC.6*<br/>**Test**<br/>automations`"] --> m3
 	3DC.7["`*3DC.7*<br/>**Flag**<br/>iris * --interactive`"] --> 3DC.6
-	
+
 	m3{"`**Milestone 3**<br/>Commands`"}:::mile --> 4GC.1 & 4GC.3
 
 %% Milestone 4 %%
@@ -509,20 +510,21 @@ graph TD
 	4GC.8["`*4GC.8*<br/>**Route**<br/>/convert`"] --> 4GC.7
 	4GC.9["`*4GC.9*<br/>**Route**<br/>/validate`"] --> 4GC.2
 	4GC.10["`*4GC.10*<br/>**Route**<br/>/check`"] --> 4GC.5 & 4GC.7
-	
+
 	4NB.1["`*4NB.1*<br/>**Build**<br/>.dmg`"] --> 4NB.2 & 4NB.3
 	4NB.2["`*4NB.2*<br/>**Build**<br/>exe`"] --> m4
 	4NB.3["`*4NB.3*<br/>**Build**<br/>appImage`"] --> m4
-	
-	m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3
+
+	m4{"`**Milestone 4**<br/>Desktop App`"}:::mile --> 5UD.1 & 5UD.3 & 5TI.1
 
 %% Milestone 5 %%
+	5TI.1["`*5TI.1*<br/>**TUI Feat**<br/>visual feedback`"] --> m5
 	5UD.1["`*5UD.1*<br/>**Doc**<br/>ILR XML`"] --> 5UD.2 & 5UD.4
 	5UD.2["`*5UD.2*<br/>**Doc**<br/>Transformation reference`"] --> m5
 	5UD.3["`*5UD.3*<br/>**Doc**<br/>User guide`"] --> m5
 	5UD.4["`*5UD.4*<br/>**Doc**<br/>Validation rules`"] --> m5
-	
-	m5{"`**Milestone 5**<br/>Documentation`"}:::mile
+
+	m5{"`**Milestone 5**<br/>Production Ready`"}:::mile
 
 classDef default,blocked fill:#f9f;
 classDef open fill:#ff9;
