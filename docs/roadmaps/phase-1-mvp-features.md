@@ -308,39 +308,36 @@ title: Phase 1 — Complete Picture
 graph TD
 
 %% M2A Tasks %%
-2TI.11["`*2TI.11* keyboard nav`"]:::must-open
-2TI.13["`*2TI.13* convert`"]:::must-blocked
-2TI.7["`*2TI.7* validator`"]:::must-blocked
-2TI.14["`*2TI.14* validate`"]:::must-blocked
-2TI.15["`*2TI.15* check`"]:::must-blocked
-2TI.17["`*2TI.17* test real`"]:::must-blocked
-2TI.12["`*2TI.12* help`"]:::should-blocked
-2TI.8["`*2TI.8* success`"]:::should-blocked
+2TI.11["`*2TI.11*<br/>feat<br/>keyboard nav`"]:::must-open
+2TI.13["`*2TI.13*<br/>screen<br/>convert`"]:::must-blocked
+2TI.7["`*2TI.7*<br/>component<br/>validation explorer`"]:::must-blocked
+2TI.14["`*2TI.14*<br/>screen<br/>validate`"]:::must-blocked
+2TI.15["`*2TI.15*<br/>screen<br/>check`"]:::must-blocked
+2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-blocked
+2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-blocked
+2TI.8["`*2TI.8*<br/>screen<br/>success`"]:::should-blocked
 
 %% M2B Tasks %%
-2DC.2["`*2DC.2* convert cmd`"]:::should-open
-2DC.3["`*2DC.3* validate cmd`"]:::should-open
-2DC.4["`*2DC.4* check cmd`"]:::could-blocked
+2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-open
+2DC.3["`*2DC.3*<br/>command<br/>validate`"]:::should-open
+2DC.4["`*2DC.4*<br/>command<br/>check`"]:::could-blocked
 
 %% M2C Tasks %%
-2TM.2["`*2TM.2* mapping UI`"]:::must-open
-2TM.3["`*2TM.3* mapping preview`"]:::must-blocked
-2TM.1["`*2TM.1* builder screen`"]:::must-blocked
-2TM.4["`*2TM.4* save dialog`"]:::must-blocked
-2TI.9["`*2TI.9* settings`"]:::should-blocked
-2TS.2["`*2TS.2* schema mgr`"]:::could-open
-2TS.3["`*2TS.3* schema selector`"]:::could-blocked
-2TS.4["`*2TS.4* migration`"]:::could-blocked
-2TI.19["`*2TI.19* schema settings`"]:::could-blocked
-2TI.10["`*2TI.10* history`"]:::must-open
-2TI.18["`*2TI.18* polish`"]:::should-open
-2UD.1["`*2UD.1* user guide`"]:::must-open
-2UD.2["`*2UD.2* val rules`"]:::could-open
+2TM.2["`*2TM.2*<br/>component<br/>mapping UI`"]:::must-open
+2TM.3["`*2TM.3*<br/>component<br/>mapping preview`"]:::must-blocked
+2TM.1["`*2TM.1*<br/>screen<br/>builder`"]:::must-blocked
+2TM.4["`*2TM.4*<br/>component<br/>save dialog`"]:::must-blocked
+2TI.9["`*2TI.9*<br/>screen<br/>settings`"]:::should-blocked
+2TS.2["`*2TS.2*<br/>feat<br/>schema mgr`"]:::could-open
+2TS.3["`*2TS.3*<br/>component<br/>schema selector`"]:::could-blocked
+2TS.4["`*2TS.4*<br/>component</br>migration`"]:::could-blocked
+2TI.19["`*2TI.19*<br/>enhance<br/>schema settings`"]:::could-blocked
+2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-open
+2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-open
+2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-open
+2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-open
 
 %% Milestone nodes %%
-m2a{"`**M2A**<br/>Core TUI`"}:::mile
-m2b{"`**M2B**<br/>Commands`"}:::mile
-m2c{"`**M2C**<br/>Advanced`"}:::mile
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2A Dependencies %%
@@ -348,37 +345,30 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TI.13 --> 2TI.14 & 2TI.8
 2TI.7 --> 2TI.14 & 2TI.15 & 2TI.8
 2TI.14 --> 2TI.15 & 2TI.8
-2TI.15 --> 2TI.17 & 2TI.8
-2TI.17 --> m2a
-2TI.8 --> m2a
+2TI.15 --> 2TI.12 & 2TI.17 & 2TI.8
+2TI.12 --> 2TI.17
 
 %% M2B Dependencies %%
-2DC.2 --> 2DC.4
-2DC.3 --> 2DC.4
-2DC.4 --> m2b
-
-%% Cross-phase dependencies (M2A + M2B unlock M2C tasks) %%
-m2a -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
-m2b -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
+2TI.8 & 2TI.17 --> 2DC.2
+2DC.2 --> 2DC.3
+2DC.3 -.-> 2DC.4
+2DC.3 --> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1
 
 %% M2C Dependencies %%
 2TM.2 --> 2TM.3
 2TM.3 --> 2TM.1
 2TM.1 --> 2TM.4
-2TM.4 --> 2TI.9 & 2TS.4 & m2c
-2TI.9 --> 2TI.19
-2TS.2 --> 2TS.3 & 2TI.19
+2TM.4 --> 2TI.9
 2TS.3 --> 2TS.4
-2TS.4 --> m2c
-2TI.12 -.-> 2TS.4
-2TI.19 --> m2c
-2TI.10 --> m2c
-2TI.18 --> m2c
-2UD.1 --> m2c
-2UD.2 --> m2c
+2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 --> phase1
 
-%% Phase completion %%
-m2c --> phase1
+%% OPTIONAL %%
+2UD.1 -.->| optional | 2UD.2
+2TI.9 -.->| optional | 2TI.19
+2TM.4 -.->| optional | 2TS.4
+2DC.3 -.->| optional | 2TS.2
+2TS.2 -.->| optional | 2TS.3 & 2TI.19
+2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 -.->| optional | phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
