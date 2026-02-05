@@ -2,7 +2,7 @@
 
 |          | Status                                      | Next Up                               | Blocked                               |
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | Mapping validation & docs complete          | save/list mapping utilities (1SS.4-5) | —                                     |
+| **Core** | ✅ **Milestone 1 complete**                 | —                                     | —                                     |
 | **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
 | **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | —                                     |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
@@ -49,10 +49,7 @@ title: Milestone 1
 ---
 graph TD
 
-1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
-1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-
-m1{"`**Milestone 1**<br/>Core Library`"}:::mile
+m1{"`**Milestone 1**<br/>✅ Complete`"}:::mile
 
 classDef default,blocked fill:#f9f;
 classDef open fill:#ff9;
@@ -64,9 +61,6 @@ classDef mile fill:#9ff;
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
-
-- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors)
-- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.4**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
 
@@ -117,6 +111,8 @@ classDef mile fill:#9ff;
 - [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
 - [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
 - [x] 1SS.7. Document config file format and versioning (explain configVersion/mappingVersion/formatVersion/schemaVersion)
+- [x] 1SS.4. Save mapping config to file (write JSON, handle errors)
+- [x] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
 
 <h4>Milestone 1 Notes</h4>
 
@@ -151,14 +147,14 @@ title: Milestone 2
 ---
 graph TD
 
-%m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
+2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
+2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
+2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
 
-2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
 2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
 
-2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
 2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
 2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
 2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
@@ -167,7 +163,6 @@ graph TD
 2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
 2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
 2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
 2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
@@ -478,35 +473,30 @@ title: Tasks
 ---
 graph TD
 
-%% Milestone 1 %%
-	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
-	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-
-	m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
-	
 %% Milestone 2 %%
-	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
+	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
+	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
+	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
+
 	2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 	2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 	2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
-	
-	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
+
 	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
 	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
 	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
-	
+
 	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
 	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
 	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
 	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
 	2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
 	2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
 	2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
 	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
-	
+
 	m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
 
 %% Milestone 3 %%
