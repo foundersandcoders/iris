@@ -2,7 +2,7 @@
 
 |          | Status                                      | Next Up                               | Blocked                               |
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | Mapping validation & docs complete          | save/list mapping utilities (1SS.4-5) | —                                     |
+| **Core** | ✅ **Milestone 1 complete**                 | —                                     | —                                     |
 | **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
 | **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | —                                     |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
@@ -36,6 +36,29 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > [!IMPORTANT]
 > **Goal:** Working transformation engine used by both interfaces
 
+```mermaid
+---
+title: Milestone 1
+---
+graph TD
+
+m1{"`**Milestone 1**<br/>✅ Complete`"}:::mile
+
+classDef default,blocked fill:#f9f;
+classDef open fill:#ff9;
+classDef mile fill:#9ff;
+```
+
+
+<details>
+<summary><a name="m1-done"><h4>Milestone 1</h4></a></summary>
+
+> [!IMPORTANT]
+> **Dynamic Schema Prerequisite**
+> - Annual ESFA schema updates must not require code changes.
+> - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
+> - Phase 5 (TUI schema management) is deferred to Milestone 2.
+
 > [!NOTE]
 > **Key**
 > - CL (base utils)
@@ -43,39 +66,10 @@ Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
 > - SS (schema/mapping storage)
 > - WA (workflow abstractions)
 
-```mermaid
----
-title: Milestone 1
----
-graph TD
-
-1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
-1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-
-m1{"`**Milestone 1**<br/>Core Library`"}:::mile
-
-classDef default,blocked fill:#f9f;
-classDef open fill:#ff9;
-classDef mile fill:#9ff;
-```
-
-<a name="m1-doing"><h4>In Progress (Milestone 1)</h4></a>
-
-<a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
-
-<a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
-
-- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors)
-- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.4**
-
-<a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
-
-- [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
-- [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] 1CL.1. Implement CSV parser with header-based column matching
 - [x] 1CL.2. Create ILR XML generator (minimal valid structure)
 - [x] 1CL.3. Build semantic validator (beyond structural checks)
-- [x] 1CL.4. Create XML parser module (src/lib/xml-parser.ts)
+- [x] 1CL.4. Create XML parser module (`src/lib/xml-parser.ts`)
 	- [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
 - [x] 1CL.5. Add unit tests for core transformations
 - [x] 1SG.1. Implement **Dynamic Schema (Phase 1): XSD Parser & Schema Registry**
@@ -96,41 +90,32 @@ classDef mile fill:#9ff;
 	- [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
 	- [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
 	- [x] 1SG.4c. Create default FaC Airtable mapping configuration
-	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner/rowToDelivery)
+	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
+- [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
+- [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
+- [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
+- [x] 1SS.4. Save mapping config to file (write JSON, handle errors)
+- [x] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory)
+- [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
+- [x] 1SS.7. Document config file format and versioning (explain configVersion, mappingVersion, formatVersion, schemaVersion)
 - [x] 1WA.1. Define workflow step interfaces (types, status, data, errors)
 - [x] 1WA.2. Create workflow abstraction consumption layer (interface-agnostic generators)
-- [x] 1WA.3. Implement `validateCsv` workflow (load CSV → parse CSV → validate CSV → print report)
-- [x] 1WA.4. Implement `convertCsv` workflow (load CSV parse → validate CSV → generate XML → save XML)
-- [x] 1WA.5. Implement `validateXml` workflow (load/generate XML → parse XML → validate XML → print report)
+- [x] 1WA.3. Implement `validateCsv` workflow (`load CSV → parse CSV → validate CSV → print report`)
+- [x] 1WA.4. Implement `convertCsv` workflow (`load CSV parse → validate CSV → generate XML → save XML`)
+- [x] 1WA.5. Implement `validateXml` workflow (`load/generate XML → parse XML → validate XML → print report`)
+- [x] 1WA.7. Implement `check` workflow (`load XML → load XML or history → compare → print report`)
 - [x] 1WA.8. Add unit tests for `validateCsv` (independent of UI)
 - [x] 1WA.9. Add unit tests for `convertCsv` (independent of UI)
 - [x] 1WA.10. Add unit tests for `validateXml` (independent of UI)
-- [x] 1WA.12. Add round-trip tests (load CSV → validate CSV → create XML → validate XML → passes)
+- [x] 1WA.11. Add unit tests for `check` (independent of UI)
+- [x] 1WA.12. Add round-trip tests (`load CSV → validate CSV → create XML → validate XML → passes`)
+- [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 - [x] 1WA.14. Add helper to consume workflow generator and capture return value in single pass
 - [x] 1WA.15. Add mapping config parameter to `convertCsv` workflow (select which mapping to use)
-- [x] 1WA.13. Refactor workflow to yield step copies (prevent reference mutation issues)
 - [x] 1WA.16. Migrate `csvConvert` workflow to use storage (replace Bun.write + .keep hack)
 - [x] 1WA.18. Migrate TUI processing screen to use storage for schema loading
 - [x] 1WA.19. Migrate `configTypes.ts` to use storage (replace hardcoded defaults)
-- [x] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
-- [x] 1WA.11. Add unit tests for `check` (independent of UI)
-- [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
-- [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
-- [x] 1SS.7. Document config file format and versioning (explain configVersion/mappingVersion/formatVersion/schemaVersion)
-
-<h4>Milestone 1 Notes</h4>
-
-> [!IMPORTANT]
-> **XML Validation Prerequisite**
-> - Milestone 1 cannot be considered complete without XML parsing and validation capabilities.
-> - The transformation engine must be able to verify its own output to ensure ILR compliance.
-> - See [Architecture Decision 1c1](#1c1-workflow-boundaries-csv-vs-xml-validation) for details.
-
-> [!IMPORTANT]
-> **Dynamic Schema Prerequisite**
-> - Annual ESFA schema updates must not require code changes.
-> - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
-> - Phase 5 (TUI schema management) is deferred to Milestone 2.
+</details>
 
 ---
 
@@ -151,14 +136,14 @@ title: Milestone 2
 ---
 graph TD
 
-%m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
+2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
+2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
+2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
 
-2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
 2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
 
-2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
 2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
 2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
 2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
@@ -167,7 +152,6 @@ graph TD
 2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
 2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
 2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
 2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
@@ -478,35 +462,30 @@ title: Tasks
 ---
 graph TD
 
-%% Milestone 1 %%
-	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
-	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-
-	m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
-	
 %% Milestone 2 %%
-	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"] --> 2TM.3
+	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"]:::open --> 2TI.7 & 2TI.8 & 2TI.16
+	2TM.2["`*2TM.2*<br/>**TUI Feat**<br/>CSV to XML Mapping UI`"]:::open --> 2TM.3
+	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"]:::open --> 2TS.2
+
 	2TM.3["`*2TM.3*<br/>**TUI Feat**<br/>Mapping Preview & Validation`"] --> 2TM.1
 	2TM.1["`*2TM.1*<br/>**TUI Screen**<br/>Mapping Builder`"] --> 2TM.4
 	2TM.4["`*2TM.4*<br/>**TUI Element**<br/>Save Mapping`"] --> 2TI.9 & 2TS.4
-	
-	2TS.1["`*2TS.1*<br/>**TUI Feat**<br/>Schema Loader`"] --> 2TS.2
+
 	2TS.2["`*2TS.2*<br/>**TUI Screen**<br/>Schema Manager`"] --> 2TS.3 & 2TI.9
 	2TS.3["`*2TS.3*<br/>**TUI Feat**<br/>Add schema version selector to workflow`"] --> 2TS.4
 	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
-	
+
 	2TI.7["`*2TI.7*<br/>**TUI Element**<br/>validation explorer`"] --> 2TI.14
 	2TI.8["`*2TI.8*<br/>**TUI Screen**<br/>success`"] --> 2TI.13 & 2TI.14 & 2TI.15
 	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-	2TI.11["`*2TI.11*<br/>**TUI Feat**<br/>keyboard navigation`"] --> 2TI.7 & 2TI.8 & 2TI.16
 	2TI.12["`*2TI.12*<br/>**TUI Element**<br/>contextual help`"] --> 2TS.4
 	2TI.13["`*2TI.13*<br/>**TUI Screen**<br/>convert`"] --> 2TI.17
 	2TI.14["`*2TI.14*<br/>**TUI Screen**<br/>validate`"] --> 2TI.17
 	2TI.15["`*2TI.15*<br/>**TUI Screen**<br/>check`"] --> 2TI.17
 	2TI.16["`*2TI.16*<br/>**TUI Feat**<br/>visual feedback`"] --> 2TI.9
 	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> 2TI.10 & 2TI.12
-	
+
 	m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
 
 %% Milestone 3 %%

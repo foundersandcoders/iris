@@ -196,6 +196,68 @@ describe('IrisStorage', () => {
 				expect(result.error.message).toContain('mappings');
 			}
 		});
+
+		it('rejects saving a mapping with bundled mapping ID', async () => {
+			const result = await storage.saveMapping(fixtures.bundledIdMapping);
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.code).toBe('ALREADY_EXISTS');
+				expect(result.error.message).toContain('fac-airtable-2025');
+			}
+		});
+
+		it('rejects saving a mapping with invalid structure', async () => {
+			const result = await storage.saveMapping(fixtures.invalidMappingStructure);
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.code).toBe('INVALID_STRUCTURE');
+				expect(result.error.message).toContain('id');
+			}
+		});
+
+		it('saves mapping even if init() was not called (ensureDir fallback)', async () => {
+			// Create fresh storage WITHOUT calling init()
+			const freshRoot = join(tmpdir(), `iris-no-init-${Date.now()}`);
+			const freshStorage = createStorage({
+				outputDir: join(freshRoot, 'output'),
+				internalRoot: join(freshRoot, '.iris'),
+			});
+
+			const result = await freshStorage.saveMapping(fixtures.customMapping);
+			expect(result.success).toBe(true);
+
+			// Verify the file was actually written
+			const loadResult = await freshStorage.loadMapping('custom-test');
+			expect(loadResult.success).toBe(true);
+
+			// Cleanup
+			await rm(freshRoot, { recursive: true, force: true });
+		});
+
+		it('returns only bundled mappings when directory is empty', async () => {
+			// Directory is already empty in beforeEach (only init() called, no saves)
+			const result = await storage.listMappings();
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data).toEqual(['fac-airtable-2025']);
+			}
+		});
+
+		it('handles non-JSON files in mappings directory gracefully', async () => {
+			// Write a non-JSON file into mappings dir
+			await writeFile(join(testRoot, '.iris', 'mappings', 'readme.txt'), 'not a mapping');
+
+			const result = await storage.listMappings();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				// Should not include .txt file (pattern filter is *.json)
+				expect(result.data).not.toContain('readme');
+				expect(result.data).toContain('fac-airtable-2025');
+			}
+		});
 	});
 
 	describe('schemas', () => {

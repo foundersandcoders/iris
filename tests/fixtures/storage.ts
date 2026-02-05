@@ -79,6 +79,19 @@ export const invalidMappingStructure: MappingConfig = {
 	mappings: [],
 };
 
+export const bundledIdMapping: MappingConfig = {
+	id: 'fac-airtable-2025',
+	name: 'Imposter Bundled Mapping',
+	mappingVersion: '1.0.0',
+	targetSchema: { namespace: 'ESFA/ILR/2025-26' },
+	mappings: [
+		{
+			csvColumn: 'TestColumn',
+			xsdPath: 'Message.Learner.TestField',
+		},
+	],
+};
+
 export const sampleXml = '<?xml version="1.0"?><Message></Message>';
 
 export const sampleXmlWithContent = (index: number) =>

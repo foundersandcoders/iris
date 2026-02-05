@@ -164,6 +164,34 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 
 		async saveMapping(mapping: MappingConfig): Promise<StorageResult<void>> {
 			try {
+				// Reject attempts to overwrite bundled mapping IDs
+				if (mapping.id === facAirtableMapping.id) {
+					return {
+						success: false,
+						error: StorageError.alreadyExists(
+							`Bundled mapping '${mapping.id}' cannot be overwritten`
+						),
+					};
+				}
+
+				// Validate structure before writing
+				const validation = validateMappingStructure(mapping);
+				if (!validation.valid) {
+					const issueMessages = validation.issues
+						.map((issue) => `${issue.field}: ${issue.message}`)
+						.join(', ');
+					return {
+						success: false,
+						error: StorageError.invalidStructure(
+							join(paths.mappings, `${mapping.id}.json`),
+							issueMessages
+						),
+					};
+				}
+
+				// Ensure mappings directory exists (defensive)
+				await adapter.ensureDir(paths.mappings);
+
 				const mappingPath = join(paths.mappings, `${mapping.id}.json`);
 				await adapter.writeJson(mappingPath, mapping);
 				return { success: true, data: undefined };
@@ -181,14 +209,16 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		async listMappings(): Promise<StorageResult<string[]>> {
 			try {
 				// Start with bundled mappings
-				const mappings = [facAirtableMapping.id];
+				const bundledIds = [facAirtableMapping.id];
 
-				// Add user mappings
+				// Scan user mappings directory
 				const userMappingFiles = await adapter.list(paths.mappings, { pattern: '*.json' });
-				const userMappingIds = userMappingFiles.map((file) => basename(file, '.json'));
+				const userMappingIds = userMappingFiles
+					.map((file) => basename(file, '.json'))
+					.filter((id) => id.length > 0);
 
-				// Combine and deduplicate (user overrides bundled)
-				const allMappings = [...new Set([...mappings, ...userMappingIds])];
+				// Combine and deduplicate (bundled listed first, then user)
+				const allMappings = [...new Set([...bundledIds, ...userMappingIds])];
 
 				return { success: true, data: allMappings };
 			} catch (error) {

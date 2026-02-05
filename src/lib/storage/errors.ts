@@ -8,6 +8,7 @@ export type StorageErrorCode =
 	| 'NOT_FOUND'
 	| 'PERMISSION_DENIED'
 	| 'INVALID_JSON'
+	| 'INVALID_STRUCTURE'
 	| 'WRITE_FAILED'
 	| 'DIR_NOT_FOUND'
 	| 'ALREADY_EXISTS'
@@ -57,5 +58,13 @@ export class StorageError extends Error {
 
 	static alreadyExists(path: string): StorageError {
 		return new StorageError('ALREADY_EXISTS', `File already exists: ${path}`, path);
+	}
+
+	static invalidStructure(path: string, details: string): StorageError {
+		return new StorageError(
+			'INVALID_STRUCTURE',
+			`Invalid structure for ${path}: ${details}`,
+			path
+		);
 	}
 }
