@@ -2,8 +2,8 @@
 
 | Sub-Milestone | Focus | Status |
 |---------------|-------|--------|
-| **M2A** | Core TUI Screens | In Progress |
-| **M2B** | Direct Commands | To Do |
+| **M2A** | OpenTUI Migration + Core TUI Screens | In Progress (migration first) |
+| **M2B** | Direct Commands | Blocked (depends on M2A) |
 | **M2C** | Advanced TUI + Polish + Docs | Blocked (depends on M2A + M2B) |
 
 **Prerequisite:** Milestone 1 (Shared Core Library) — ✅ Complete
@@ -130,17 +130,82 @@ graph TD
 
 > [!IMPORTANT]
 > **Goal:** Beautiful, interactive terminal interface for core workflows
+>
+> **Prerequisite:** OpenTUI migration must complete before building new screens. See [evaluation](../technical/opentui-evaluation.md) and [migration guide](../technical/opentui-migration-guide.md).
 
 > [!NOTE]
 > **Category:** TI (TUI Interface)
 
+### OpenTUI Migration
+
+> [!NOTE]
+> **Context:** The current TUI is 971 lines across 16 files (7 implemented, 9 empty stubs) built on terminal-kit. OpenTUI (`@opentui/core`) replaces terminal-kit with Yoga flexbox layout, built-in components (Select, ScrollBox, Input, Box), a focus/keyboard system, and sub-millisecond Zig-powered rendering. This migration must complete before building new M2A screens. See the [OpenTUI evaluation](../technical/opentui-evaluation.md) for full rationale.
+
 ```mermaid
 ---
-title: M2A — Core TUI Screens
+title: M2A — OpenTUI Migration
 ---
 graph TD
 
-2TI.11["`*2TI.11*<br/>**MUST**<br/>keyboard navigation`"]:::must-open --> 2TI.13 & 2TI.7 & 2TI.12
+%% Phase 1: Foundation %%
+2TI.20["`*2TI.20*<br/>**MUST**<br/>install OpenTUI`"]:::must-open --> 2TI.21 & 2TI.22
+
+2TI.21["`*2TI.21*<br/>**MUST**<br/>app.ts bootstrap`"]:::must-open --> 2TI.23
+2TI.22["`*2TI.22*<br/>**MUST**<br/>theme adapter`"]:::must-open --> 2TI.24 & 2TI.25 & 2TI.26
+2TI.23["`*2TI.23*<br/>**MUST**<br/>router adapter`"]:::must-open --> 2TI.24 & 2TI.25 & 2TI.26
+
+%% Phase 2: Screen Migration %%
+2TI.24["`*2TI.24*<br/>**MUST**<br/>migrate dashboard`"]:::must-blocked --> 2TI.27
+2TI.25["`*2TI.25*<br/>**MUST**<br/>migrate file picker`"]:::must-blocked --> 2TI.27
+2TI.26["`*2TI.26*<br/>**MUST**<br/>migrate processing`"]:::must-blocked --> 2TI.27
+
+%% Phase 3: Cleanup %%
+2TI.27["`*2TI.27*<br/>**MUST**<br/>remove old deps + stubs`"]:::must-blocked --> 2TI.28
+2TI.28["`*2TI.28*<br/>**MUST**<br/>update tests`"]:::must-blocked
+
+classDef must-open fill:#D6A3BF,color:#000;
+classDef must-blocked fill:#F3D8E6,color:#000;
+classDef should-open fill:#6F2A52,color:#fff;
+classDef should-blocked fill:#A45A84,color:#fff;
+classDef could-open fill:#3E7F96,color:#fff;
+classDef could-blocked fill:#5FA3BA,color:#fff;
+classDef mile fill:#E8EFF6,color:#000;
+```
+
+#### Migration Phase 1: Foundation
+
+- [ ] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
+- [ ] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
+- [ ] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
+- [ ] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
+
+#### Migration Phase 2: Screen Migration
+
+- [ ] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained) — **depends on 2TI.22, 2TI.23**
+- [ ] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated) — **depends on 2TI.22, 2TI.23**
+- [ ] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop) — **depends on 2TI.22, 2TI.23**
+
+#### Migration Phase 3: Cleanup
+
+- [ ] **2TI.27** — Delete `layout.ts` (Yoga replaces manual positioning); delete 9 empty stubs (5 components, 2 screens, 2 utils); remove `terminal-kit`, `ora`, `boxen`, `cli-table3`, `figures` from dependencies — **depends on 2TI.24, 2TI.25, 2TI.26**
+- [ ] **2TI.28** — Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments — **depends on 2TI.27**
+
+---
+
+### Core TUI Features
+
+> [!NOTE]
+> These tasks build **on top of the OpenTUI migration**. OpenTUI's built-in keyboard/focus system, `SelectRenderable`, `ScrollBox`, `BoxRenderable`, `ASCIIFontRenderable`, and Timeline API simplify most of these significantly compared to building them on terminal-kit.
+
+```mermaid
+---
+title: M2A — Core TUI Features (post-migration)
+---
+graph TD
+
+2TI.28["`*2TI.28*<br/>migration complete<br/>update tests`"]:::must-blocked --> 2TI.11
+
+2TI.11["`*2TI.11*<br/>**MUST**<br/>keyboard navigation`"]:::must-blocked --> 2TI.13 & 2TI.7 & 2TI.12
 
 2TI.13["`*2TI.13*<br/>**MUST**<br/>convert screen`"]:::must-blocked --> 2TI.14 & 2TI.8
 2TI.7["`*2TI.7*<br/>**MUST**<br/>validation explorer`"]:::must-blocked --> 2TI.14 & 2TI.15 & 2TI.8
@@ -165,17 +230,17 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TI.11** — Implement keyboard navigation (arrows, vim-style, shortcuts)
+- [ ] **2TI.11** — Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`) — **depends on 2TI.28**
 - [ ] **2TI.13** — Build convert workflow screen (file select → process → results) — **depends on 2TI.11**
-- [ ] **2TI.7** — Build validation results explorer (error/warning navigation) — **depends on 2TI.11**
+- [ ] **2TI.7** — Build validation results explorer (error/warning navigation; uses `ScrollBox` for error list, `Code` for XML preview, `TabSelect` for error categories) — **depends on 2TI.11**
 - [ ] **2TI.14** — Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
 - [ ] **2TI.15** — Build cross-submission check workflow — **depends on 2TI.14, 2TI.7**
 - [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.15, 2TI.12**
 
 ### Should Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help) — **depends on 2TI.11, 2TI.15**
-- [ ] **2TI.8** — Implement success/completion screen with next actions — **depends on 2TI.7, 2TI.13, 2TI.14, 2TI.15**
+- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11, 2TI.15**
+- [ ] **2TI.8** — Implement success/completion screen (`BoxRenderable` for summary card, `ASCIIFontRenderable` for completion banner) — **depends on 2TI.7, 2TI.13, 2TI.14, 2TI.15**
 
 ---
 
@@ -282,21 +347,21 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector) — **depends on 2DC.3**
-- [ ] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues) — **depends on 2TM.2**
-- [ ] **2TM.1** — Build mapping builder screen (list available mappings, create new) — **depends on 2TM.3**
-- [ ] **2TM.4** — Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
-- [ ] **2TI.10** — Create submission history browser — **depends on 2DC.3**
+- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter) — **depends on 2DC.3**
+- [ ] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues; uses `BoxRenderable` for preview panel, `TextRenderable` for status) — **depends on 2TM.2**
+- [ ] **2TM.1** — Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout) — **depends on 2TM.3**
+- [ ] **2TM.4** — Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`) — **depends on 2TM.1**
+- [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards) — **depends on 2DC.3**
 - [ ] **2UD.1** — Write user guide for non-technical users — **depends on 2DC.3**
 
 ### Should Have
 
-- [ ] **2TI.9** — Add settings management screen — **depends on 2TM.4**
-- [ ] **2TI.18** — Add visual feedback (animations, transitions, spinners) — **depends on 2DC.3**
+- [ ] **2TI.9** — Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections) — **depends on 2TM.4**
+- [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
 
 ### Could Have
 
-- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema) — **depends on 2DC.3 (optional)**
+- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`) — **depends on 2DC.3 (optional)**
 - [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2 (optional)**
 - [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
 - [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
@@ -312,8 +377,19 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% M2A Tasks %%
-2TI.11["`*2TI.11*<br/>feat<br/>keyboard nav`"]:::must-open
+%% OpenTUI Migration (M2A prerequisite) %%
+2TI.20["`*2TI.20*<br/>install<br/>OpenTUI`"]:::must-open
+2TI.21["`*2TI.21*<br/>migrate<br/>app.ts`"]:::must-open
+2TI.22["`*2TI.22*<br/>adapt<br/>theme`"]:::must-open
+2TI.23["`*2TI.23*<br/>adapt<br/>router`"]:::must-open
+2TI.24["`*2TI.24*<br/>migrate<br/>dashboard`"]:::must-blocked
+2TI.25["`*2TI.25*<br/>migrate<br/>file picker`"]:::must-blocked
+2TI.26["`*2TI.26*<br/>migrate<br/>processing`"]:::must-blocked
+2TI.27["`*2TI.27*<br/>cleanup<br/>old deps + stubs`"]:::must-blocked
+2TI.28["`*2TI.28*<br/>update<br/>tests`"]:::must-blocked
+
+%% M2A Core Tasks %%
+2TI.11["`*2TI.11*<br/>feat<br/>keyboard nav`"]:::must-blocked
 2TI.13["`*2TI.13*<br/>screen<br/>convert`"]:::must-blocked
 2TI.7["`*2TI.7*<br/>component<br/>validation explorer`"]:::must-blocked
 2TI.14["`*2TI.14*<br/>screen<br/>validate`"]:::must-blocked
@@ -323,27 +399,35 @@ graph TD
 2TI.8["`*2TI.8*<br/>screen<br/>success`"]:::should-blocked
 
 %% M2B Tasks %%
-2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-open
-2DC.3["`*2DC.3*<br/>command<br/>validate`"]:::should-open
+2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-blocked
+2DC.3["`*2DC.3*<br/>command<br/>validate`"]:::should-blocked
 2DC.4["`*2DC.4*<br/>command<br/>check`"]:::could-blocked
 
 %% M2C Tasks %%
-2TM.2["`*2TM.2*<br/>component<br/>mapping UI`"]:::must-open
+2TM.2["`*2TM.2*<br/>component<br/>mapping UI`"]:::must-blocked
 2TM.3["`*2TM.3*<br/>component<br/>mapping preview`"]:::must-blocked
 2TM.1["`*2TM.1*<br/>screen<br/>builder`"]:::must-blocked
 2TM.4["`*2TM.4*<br/>component<br/>save dialog`"]:::must-blocked
 2TI.9["`*2TI.9*<br/>screen<br/>settings`"]:::should-blocked
-2TS.2["`*2TS.2*<br/>feat<br/>schema mgr`"]:::could-open
+2TS.2["`*2TS.2*<br/>feat<br/>schema mgr`"]:::could-blocked
 2TS.3["`*2TS.3*<br/>component<br/>schema selector`"]:::could-blocked
 2TS.4["`*2TS.4*<br/>component</br>migration`"]:::could-blocked
 2TI.19["`*2TI.19*<br/>enhance<br/>schema settings`"]:::could-blocked
-2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-open
-2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-open
-2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-open
-2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-open
+2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-blocked
+2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-blocked
+2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-blocked
+2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-blocked
 
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
+
+%% Migration Dependencies %%
+2TI.20 --> 2TI.21 & 2TI.22
+2TI.21 --> 2TI.23
+2TI.22 & 2TI.23 --> 2TI.24 & 2TI.25 & 2TI.26
+2TI.24 & 2TI.25 & 2TI.26 --> 2TI.27
+2TI.27 --> 2TI.28
+2TI.28 --> 2TI.11
 
 %% M2A Dependencies %%
 2TI.11 --> 2TI.13 & 2TI.7 & 2TI.12
