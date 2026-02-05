@@ -1,5 +1,5 @@
 ---
-description: "{{ Iris • Haiku }} Generate a work record summarizing recent development"
+description: "=== IRIS {{ Haiku }} === Generate a work record summarizing recent development"
 model: claude-haiku-4-5
 ---
 
