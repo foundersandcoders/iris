@@ -59,4 +59,12 @@ export class StorageError extends Error {
 	static alreadyExists(path: string): StorageError {
 		return new StorageError('ALREADY_EXISTS', `File already exists: ${path}`, path);
 	}
+
+	static invalidStructure(path: string, details: string): StorageError {
+		return new StorageError(
+			'INVALID_STRUCTURE',
+			`Invalid structure for ${path}: ${details}`,
+			path
+		);
+	}
 }
