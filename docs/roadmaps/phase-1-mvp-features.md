@@ -357,9 +357,9 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2DC.3 --> 2DC.4
 2DC.4 --> m2b
 
-%% Cross-phase dependencies %%
-m2a --> m2c
-m2b --> m2c
+%% Cross-phase dependencies (M2A + M2B unlock M2C tasks) %%
+m2a -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
+m2b -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
 
 %% M2C Dependencies %%
 2TM.2 --> 2TM.3
