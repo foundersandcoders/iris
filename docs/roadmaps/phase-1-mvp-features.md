@@ -146,15 +146,13 @@ graph TD
 2TI.7["`*2TI.7*<br/>**MUST**<br/>validation explorer`"]:::must-blocked --> 2TI.14 & 2TI.15 & 2TI.8
 
 2TI.14["`*2TI.14*<br/>**MUST**<br/>validate screen`"]:::must-blocked --> 2TI.15 & 2TI.8
-2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked --> 2TI.17 & 2TI.8
+2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked --> 2TI.12 & 2TI.17 & 2TI.8
 
-2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-blocked
+2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-blocked --> 2TI.17
 
 2TI.8["`*2TI.8*<br/>**SHOULD**<br/>success screen`"]:::should-blocked
 
-2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked --> m2a
-
-m2a{"`**M2A Complete**`"}:::mile
+2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -172,11 +170,11 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TI.7** — Build validation results explorer (error/warning navigation) — **depends on 2TI.11**
 - [ ] **2TI.14** — Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
 - [ ] **2TI.15** — Build cross-submission check workflow — **depends on 2TI.14, 2TI.7**
-- [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.15**
+- [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.15, 2TI.12**
 
 ### Should Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help) — **depends on 2TI.11**
+- [ ] **2TI.12** — Add help overlay system (contextual help) — **depends on 2TI.11, 2TI.15**
 - [ ] **2TI.8** — Implement success/completion screen with next actions — **depends on 2TI.7, 2TI.13, 2TI.14, 2TI.15**
 
 ---
@@ -195,12 +193,15 @@ title: M2B — Direct Commands
 ---
 graph TD
 
-2DC.2["`*2DC.2*<br/>**SHOULD**<br/>iris convert`"]:::should-open --> 2DC.4
-2DC.3["`*2DC.3*<br/>**SHOULD**<br/>iris validate`"]:::should-open --> 2DC.4
+2TI.8["`*2TI.8*<br/>M2A task<br/>success screen`"]:::should-blocked
+2TI.17["`*2TI.17*<br/>M2A task<br/>test real data`"]:::must-blocked
 
-2DC.4["`*2DC.4*<br/>**COULD**<br/>iris check`"]:::could-blocked --> m2b
+2TI.8 & 2TI.17 --> 2DC.2
 
-m2b{"`**M2B Complete**`"}:::mile
+2DC.2["`*2DC.2*<br/>**SHOULD**<br/>iris convert`"]:::should-blocked --> 2DC.3
+2DC.3["`*2DC.3*<br/>**SHOULD**<br/>iris validate`"]:::should-blocked -.-> 2DC.4
+
+2DC.4["`*2DC.4*<br/>**COULD**<br/>iris check`"]:::could-blocked
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -213,12 +214,12 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Should Have
 
-- [ ] **2DC.2** — Implement `iris convert <file>` (non-TUI execution with pretty output)
-- [ ] **2DC.3** — Implement `iris validate <file>` (non-TUI validation)
+- [ ] **2DC.2** — Implement `iris convert <file>` (non-TUI execution with pretty output) — **depends on 2TI.8, 2TI.17**
+- [ ] **2DC.3** — Implement `iris validate <file>` (non-TUI validation) — **depends on 2DC.2**
 
 ### Could Have
 
-- [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2DC.2, 2DC.3**
+- [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2DC.3 (optional)**
 
 ---
 
@@ -241,30 +242,34 @@ title: M2C — Advanced TUI + Polish + Docs
 ---
 graph TD
 
-m2a{"`**M2A**`"}:::mile -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
-m2b{"`**M2B**`"}:::mile -.-> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1 & 2UD.2
+2DC.3["`*2DC.3*<br/>M2B task<br/>validate cmd`"]:::should-blocked
 
-2TM.2["`*2TM.2*<br/>**MUST**<br/>CSV→XML mapping UI`"]:::must-open --> 2TM.3
+2DC.3 --> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1
+
+2TM.2["`*2TM.2*<br/>**MUST**<br/>CSV→XML mapping UI`"]:::must-blocked --> 2TM.3
 2TM.3["`*2TM.3*<br/>**MUST**<br/>mapping preview`"]:::must-blocked --> 2TM.1
 2TM.1["`*2TM.1*<br/>**MUST**<br/>mapping builder screen`"]:::must-blocked --> 2TM.4
-2TM.4["`*2TM.4*<br/>**MUST**<br/>save mapping dialog`"]:::must-blocked --> 2TI.9 & 2TS.4
+2TM.4["`*2TM.4*<br/>**MUST**<br/>save mapping dialog`"]:::must-blocked --> 2TI.9
 
-2TI.9["`*2TI.9*<br/>**SHOULD**<br/>settings screen`"]:::should-blocked --> 2TI.19
+2TI.9["`*2TI.9*<br/>**SHOULD**<br/>settings screen`"]:::should-blocked
 
-2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-open --> 2TS.3 & 2TI.19
+2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-blocked
 2TS.3["`*2TS.3*<br/>**COULD**<br/>schema version selector`"]:::could-blocked --> 2TS.4
 2TS.4["`*2TS.4*<br/>**COULD**<br/>dynamic migration guidance`"]:::could-blocked
 
 2TI.19["`*2TI.19*<br/>**COULD**<br/>schema settings integration`"]:::could-blocked
 
-2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-open
-2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-open
-2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-open
-2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-open
+2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
+2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
+2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-blocked
+2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
 
-2TM.4 & 2TI.9 & 2TS.4 & 2TI.19 & 2TI.10 & 2TI.18 & 2UD.1 & 2UD.2 --> m2c
-
-m2c{"`**M2C Complete**`"}:::mile
+%% Optional dependencies %%
+2UD.1 -.->| optional | 2UD.2
+2TI.9 -.->| optional | 2TI.19
+2TM.4 -.->| optional | 2TS.4
+2DC.3 -.->| optional | 2TS.2
+2TS.2 -.->| optional | 2TS.3 & 2TI.19
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -277,25 +282,25 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector)
+- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector) — **depends on 2DC.3**
 - [ ] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues) — **depends on 2TM.2**
 - [ ] **2TM.1** — Build mapping builder screen (list available mappings, create new) — **depends on 2TM.3**
 - [ ] **2TM.4** — Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
-- [ ] **2TI.10** — Create submission history browser
-- [ ] **2UD.1** — Write user guide for non-technical users
+- [ ] **2TI.10** — Create submission history browser — **depends on 2DC.3**
+- [ ] **2UD.1** — Write user guide for non-technical users — **depends on 2DC.3**
 
 ### Should Have
 
 - [ ] **2TI.9** — Add settings management screen — **depends on 2TM.4**
-- [ ] **2TI.18** — Add visual feedback (animations, transitions, spinners)
+- [ ] **2TI.18** — Add visual feedback (animations, transitions, spinners) — **depends on 2DC.3**
 
 ### Could Have
 
-- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema)
-- [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2**
-- [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4, 2TI.12**
-- [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9**
-- [ ] **2UD.2** — Document validation rules and error messages
+- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema) — **depends on 2DC.3 (optional)**
+- [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2 (optional)**
+- [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
+- [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
+- [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
 
 ---
 
