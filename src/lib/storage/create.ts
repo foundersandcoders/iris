@@ -324,7 +324,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 
 				// Return empty history if file doesn't exist
 				const emptyHistory: SubmissionHistory = {
-					version: 1,
+					formatVersion: 1,
 					submissions: [],
 				};
 				return { success: true, data: emptyHistory };

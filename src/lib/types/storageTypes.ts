@@ -60,7 +60,7 @@ export interface HistoryEntry {
  * Cross-submission history structure
  */
 export interface SubmissionHistory {
-	version: 1;
+	formatVersion: 1;
 	submissions: HistoryEntry[];
 }
 

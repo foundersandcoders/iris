@@ -10,7 +10,7 @@ import { generateAimMappings } from '../utils/config/mapping';
 export const facAirtableMapping: MappingConfig = {
 	id: 'fac-airtable-2025',
 	name: 'Founders and Coders Airtable Export (2025-26)',
-	version: '2.0.0',
+	mappingVersion: '2.0.0',
 	targetSchema: {
 		namespace: 'ESFA/ILR/2025-26',
 		version: '1.0',

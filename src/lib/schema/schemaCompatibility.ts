@@ -25,7 +25,7 @@ export function validateSchemaCompatibility(
 	const expected = mapping.targetSchema;
 	const actual = {
 		namespace: registry.namespace,
-		version: registry.version,
+		schemaVersion: registry.schemaVersion,
 		file: registry.sourceFile,
 	};
 
@@ -37,9 +37,9 @@ export function validateSchemaCompatibility(
 	}
 
 	// Check version match (warning only - may work across minor versions)
-	if (expected.version && actual.version && expected.version !== actual.version) {
+	if (expected.version && actual.schemaVersion && expected.version !== actual.schemaVersion) {
 		warnings.push(
-			`Version mismatch: mapping expects v${expected.version} but registry has v${actual.version}`
+			`Version mismatch: mapping expects v${expected.version} but registry has v${actual.schemaVersion}`
 		);
 	}
 
@@ -78,8 +78,8 @@ export function formatCompatibilityError(
 
 	lines.push('Currently Loaded:');
 	lines.push(`  Namespace: ${registry.namespace}`);
-	if (registry.version) {
-		lines.push(`  Version: ${registry.version}`);
+	if (registry.schemaVersion) {
+		lines.push(`  Version: ${registry.schemaVersion}`);
 	}
 	if (registry.sourceFile) {
 		lines.push(`  File: ${registry.sourceFile}`);
