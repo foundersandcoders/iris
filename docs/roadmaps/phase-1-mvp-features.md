@@ -13,13 +13,21 @@
 ## Colour Key
 
 ```mermaid
-classDef must-open fill:#D6A3BF,color:#000;
-classDef must-blocked fill:#F3D8E6,color:#000;
-classDef should-open fill:#6F2A52,color:#fff;
-classDef should-blocked fill:#A45A84,color:#fff;
-classDef could-open fill:#3E7F96,color:#fff;
-classDef could-blocked fill:#5FA3BA,color:#fff;
-classDef mile fill:#E8EFF6,color:#000;
+graph TD
+    must_open[Must - Open]:::must-open
+    must_blocked[Must - Blocked]:::must-blocked
+    should_open[Should - Open]:::should-open
+    should_blocked[Should - Blocked]:::should-blocked
+    could_open[Could - Open]:::could-open
+    could_blocked[Could - Blocked]:::could-blocked
+
+    classDef must-open fill:#D6A3BF,color:#000;
+    classDef must-blocked fill:#F3D8E6,color:#000;
+    classDef should-open fill:#6F2A52,color:#fff;
+    classDef should-blocked fill:#A45A84,color:#fff;
+    classDef could-open fill:#3E7F96,color:#fff;
+    classDef could-blocked fill:#5FA3BA,color:#fff;
+    classDef mile fill:#E8EFF6,color:#000;
 ```
 
 - **Must** (dark/light iris purple) — Non-negotiable core functionality
@@ -299,55 +307,48 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% M2A %%
-subgraph m2a_group["`**M2A: Core TUI**`"]
-    2TI.11["`*2TI.11* keyboard nav`"]:::must-open
-    2TI.13["`*2TI.13* convert`"]:::must-blocked
-    2TI.7["`*2TI.7* validator`"]:::must-blocked
-    2TI.14["`*2TI.14* validate`"]:::must-blocked
-    2TI.15["`*2TI.15* check`"]:::must-blocked
-    2TI.17["`*2TI.17* test real`"]:::must-blocked
-    2TI.12["`*2TI.12* help`"]:::should-blocked
-    2TI.8["`*2TI.8* success`"]:::should-blocked
-end
+%% M2A Tasks %%
+2TI.11["`*2TI.11* keyboard nav`"]:::must-open
+2TI.13["`*2TI.13* convert`"]:::must-blocked
+2TI.7["`*2TI.7* validator`"]:::must-blocked
+2TI.14["`*2TI.14* validate`"]:::must-blocked
+2TI.15["`*2TI.15* check`"]:::must-blocked
+2TI.17["`*2TI.17* test real`"]:::must-blocked
+2TI.12["`*2TI.12* help`"]:::should-blocked
+2TI.8["`*2TI.8* success`"]:::should-blocked
 
-%% M2B %%
-subgraph m2b_group["`**M2B: Commands**`"]
-    2DC.2["`*2DC.2* convert cmd`"]:::should-open
-    2DC.3["`*2DC.3* validate cmd`"]:::should-open
-    2DC.4["`*2DC.4* check cmd`"]:::could-blocked
-end
+%% M2B Tasks %%
+2DC.2["`*2DC.2* convert cmd`"]:::should-open
+2DC.3["`*2DC.3* validate cmd`"]:::should-open
+2DC.4["`*2DC.4* check cmd`"]:::could-blocked
 
-%% M2C %%
-subgraph m2c_group["`**M2C: Advanced**`"]
-    2TM.2["`*2TM.2* mapping UI`"]:::must-open
-    2TM.3["`*2TM.3* mapping preview`"]:::must-blocked
-    2TM.1["`*2TM.1* builder screen`"]:::must-blocked
-    2TM.4["`*2TM.4* save dialog`"]:::must-blocked
-    2TI.9["`*2TI.9* settings`"]:::should-blocked
-    2TS.2["`*2TS.2* schema mgr`"]:::could-open
-    2TS.3["`*2TS.3* schema selector`"]:::could-blocked
-    2TS.4["`*2TS.4* migration`"]:::could-blocked
-    2TI.19["`*2TI.19* schema settings`"]:::could-blocked
-    2TI.10["`*2TI.10* history`"]:::must-open
-    2TI.18["`*2TI.18* polish`"]:::should-open
-    2UD.1["`*2UD.1* user guide`"]:::must-open
-    2UD.2["`*2UD.2* val rules`"]:::could-open
-end
+%% M2C Tasks %%
+2TM.2["`*2TM.2* mapping UI`"]:::must-open
+2TM.3["`*2TM.3* mapping preview`"]:::must-blocked
+2TM.1["`*2TM.1* builder screen`"]:::must-blocked
+2TM.4["`*2TM.4* save dialog`"]:::must-blocked
+2TI.9["`*2TI.9* settings`"]:::should-blocked
+2TS.2["`*2TS.2* schema mgr`"]:::could-open
+2TS.3["`*2TS.3* schema selector`"]:::could-blocked
+2TS.4["`*2TS.4* migration`"]:::could-blocked
+2TI.19["`*2TI.19* schema settings`"]:::could-blocked
+2TI.10["`*2TI.10* history`"]:::must-open
+2TI.18["`*2TI.18* polish`"]:::should-open
+2UD.1["`*2UD.1* user guide`"]:::must-open
+2UD.2["`*2UD.2* val rules`"]:::could-open
 
-%% Dependencies %%
+%% M2A Dependencies %%
 2TI.11 --> 2TI.13 & 2TI.7 & 2TI.12
 2TI.13 --> 2TI.14 & 2TI.8
 2TI.7 --> 2TI.14 & 2TI.15 & 2TI.8
 2TI.14 --> 2TI.15 & 2TI.8
 2TI.15 --> 2TI.17 & 2TI.8
 
+%% M2B Dependencies %%
 2DC.2 --> 2DC.4
 2DC.3 --> 2DC.4
 
-m2a_group -.-> m2c_group
-m2b_group -.-> m2c_group
-
+%% M2C Dependencies %%
 2TM.2 --> 2TM.3
 2TM.3 --> 2TM.1
 2TM.1 --> 2TM.4
