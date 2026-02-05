@@ -9,7 +9,7 @@ import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 describe('schema/schemaCompatibility', () => {
       const mockRegistry: SchemaRegistry = {
               namespace: 'ESFA/ILR/2025-26',
-              version: '1.0',
+              schemaVersion: '1.0',
               sourceFile: 'schemafile25.xsd',
               rootElement: {
                       name: 'Message',
@@ -23,6 +23,9 @@ describe('schema/schemaCompatibility', () => {
               elementsByPath: new Map([
                       ['Message.Learner.LearnRefNumber', {} as any],
                       ['Message.Learner.ULN', {} as any],
+                      ['Message.Learner.LLDDHealthProb', {} as any],
+                      ['Message.Learner.LLDDandHealthProblem.LLDDCat', {} as any],
+                      ['Message.Learner.LLDDandHealthProblem.PrimaryLLDD', {} as any],
               ]),
               elementsByName: new Map(),
               namedTypes: new Map(),
@@ -31,7 +34,7 @@ describe('schema/schemaCompatibility', () => {
       const mockMapping: MappingConfig = {
               id: 'test-mapping',
               name: 'Test Mapping',
-              version: '1.0.0',
+              mappingVersion: '1.0.0',
               targetSchema: {
                       namespace: 'ESFA/ILR/2025-26',
                       version: '1.0',
@@ -127,6 +130,54 @@ describe('schema/schemaCompatibility', () => {
 
                       expect(result.compatible).toBe(false);
                       expect(result.errors.length).toBeGreaterThan(2);
+              });
+
+              it('should validate FAM builder paths when famTemplates present', () => {
+                      const registryWithFamPaths: SchemaRegistry = {
+                              ...mockRegistry,
+                              elementsByPath: new Map([
+                                      ...mockRegistry.elementsByPath,
+                                      ['Message.Learner.LearningDelivery.LearningDeliveryFAM.LearnDelFAMType', {} as any],
+                                      ['Message.Learner.LearningDelivery.LearningDeliveryFAM.LearnDelFAMCode', {} as any],
+                                      ['Message.Learner.LearningDelivery.LearningDeliveryFAM.LearnDelFAMDateFrom', {} as any],
+                                      ['Message.Learner.LearningDelivery.LearningDeliveryFAM.LearnDelFAMDateTo', {} as any],
+                              ]),
+                      };
+
+                      const mappingWithFam: MappingConfig = {
+                              ...mockMapping,
+                              famTemplates: [{ type: 'FFI', codeCsv: 'Funding indicator (aim {n})' }],
+                      };
+
+                      const result = validateSchemaCompatibility(mappingWithFam, registryWithFamPaths);
+
+                      expect(result.compatible).toBe(true);
+                      expect(result.errors).toHaveLength(0);
+              });
+
+              it('should fail when FAM builder paths missing', () => {
+                      const mappingWithFam: MappingConfig = {
+                              ...mockMapping,
+                              famTemplates: [{ type: 'FFI', codeCsv: 'Funding indicator (aim {n})' }],
+                      };
+
+                      const result = validateSchemaCompatibility(mappingWithFam, mockRegistry);
+
+                      expect(result.compatible).toBe(false);
+                      expect(result.errors.some((e) => e.includes('LearnDelFAMType'))).toBe(true);
+              });
+
+              it('should skip FAM validation when no famTemplates', () => {
+                      const mappingWithoutFam: MappingConfig = {
+                              ...mockMapping,
+                              famTemplates: undefined,
+                      };
+
+                      const result = validateSchemaCompatibility(mappingWithoutFam, mockRegistry);
+
+                      // Should pass now (LLDD paths exist in mock, FAM not required)
+                      expect(result.compatible).toBe(true);
+                      expect(result.errors.every((e) => !e.includes('LearnDelFAM'))).toBe(true);
               });
       });
 

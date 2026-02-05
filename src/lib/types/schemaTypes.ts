@@ -139,8 +139,8 @@ export interface MappingConfig {
 	id: string;
 	/** Human-readable name */
 	name: string;
-	/** Mapping version (semver) */
-	version: string;
+	/** Mapping content version (semver) */
+	mappingVersion: string;
 	/** Target ILR schema reference */
 	targetSchema: SchemaReference;
 	/** Column mappings */

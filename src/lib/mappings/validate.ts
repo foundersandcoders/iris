@@ -41,9 +41,9 @@ export function validateMappingStructure(mapping: unknown): MappingValidationRes
 		issues.push({ field: 'name', message: 'Must be a non-empty string' });
 	}
 
-	// version
-	if (typeof m.version !== 'string' || m.version.trim() === '') {
-		issues.push({ field: 'version', message: 'Must be a non-empty string' });
+	// mappingVersion
+	if (typeof m.mappingVersion !== 'string' || m.mappingVersion.trim() === '') {
+		issues.push({ field: 'mappingVersion', message: 'Must be a non-empty string' });
 	}
 
 	// targetSchema

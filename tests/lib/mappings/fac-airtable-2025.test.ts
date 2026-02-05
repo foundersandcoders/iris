@@ -6,7 +6,7 @@ describe('mappings/fac-airtable-2025', () => {
           it('should have correct metadata', () => {
                   expect(facAirtableMapping.id).toBe('fac-airtable-2025');
                   expect(facAirtableMapping.name).toBe('Founders and Coders Airtable Export (2025-26)');
-                  expect(facAirtableMapping.version).toBe('2.0.0');
+                  expect(facAirtableMapping.mappingVersion).toBe('2.0.0');
           });
 
           it('should target correct schema', () => {

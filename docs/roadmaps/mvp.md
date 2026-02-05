@@ -2,7 +2,7 @@
 
 |          | Status                                      | Next Up                               | Blocked                               |
 | -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | Config system complete                      | mapping/schema utilities (1SS.3-7)    | —                                     |
+| **Core** | Mapping validation & docs complete          | save/list mapping utilities (1SS.4-5) | —                                     |
 | **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
 | **TUI**  | Basic screens & navigation                  | validation explorer; convert workflow | —                                     |
 | **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
@@ -49,11 +49,8 @@ title: Milestone 1
 ---
 graph TD
 
-1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"]:::open --> 1SS.5
-1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
 1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"]:::open --> 1SS.4
-1SS.7["`*1SS.7*<br/>**Doc**<br/>Config file versions`"]:::open --> m1
 
 m1{"`**Milestone 1**<br/>Core Library`"}:::mile
 
@@ -66,14 +63,10 @@ classDef mile fill:#9ff;
 
 <a name="m1-todo"><h4>To Do (Milestone 1)</h4></a>
 
-- [ ] 1SS.3. Load mapping config from file (read JSON, validate structure)
-- [ ] 1SS.6. Validate mapping config against active schema (verify XSD paths exist)
-- [ ] 1SS.7. Document config file format and versioning (explain configVersion field, migration strategy)
-
 <a name="m1-blocked"><h4>Blocked (Milestone 1)</h4></a>
 
-- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors) — **depends on 1SS.6**
-- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.3, 1SS.4**
+- [ ] 1SS.4. Save mapping config to file (write JSON, handle errors)
+- [ ] 1SS.5. List available mapping configs (scan `~/.iris/mappings/` directory) — **depends on 1SS.4**
 
 <a name="m1-done"><h4>Completed (Milestone 1)</h4></a>
 
@@ -121,6 +114,9 @@ classDef mile fill:#9ff;
 - [x] 1WA.19. Migrate `configTypes.ts` to use storage (replace hardcoded defaults)
 - [x] 1WA.7. Implement `check` workflow (load XML → load XML/history → compare → print report)
 - [x] 1WA.11. Add unit tests for `check` (independent of UI)
+- [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
+- [x] 1SS.6. Validate mapping config against active schema (verify XSD paths exist, builder paths)
+- [x] 1SS.7. Document config file format and versioning (explain configVersion/mappingVersion/formatVersion/schemaVersion)
 
 <h4>Milestone 1 Notes</h4>
 
@@ -483,11 +479,8 @@ title: Tasks
 graph TD
 
 %% Milestone 1 %%
-	1SS.3["`*1SS.3*<br/>**Util**<br/>Load Config`"]:::open --> 1SS.5
-	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"] --> 1SS.5
+	1SS.4["`*1SS.4*<br/>**Util**<br/>Save Config`"]:::open --> 1SS.5
 	1SS.5["`*1SS.5*<br/>**Util**<br/>List Configs`"] --> m1
-	1SS.6["`*1SS.6*<br/>**Util**<br/>Validate Config`"]:::open --> 1SS.4
-	1SS.7["`*1SS.7*<br/>**Doc**<br/>Config file versions`"]:::open --> m1
 
 	m1{"`**Milestone 1**<br/>Core Library`"}:::mile --> 2TI.11 & 2TM.2 & 2TS.1
 	

@@ -5,6 +5,7 @@
 
 import type { MappingConfig, SchemaReference } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
+import { FAM_PATHS, APP_FIN_PATHS, LLDD_PATHS, EMPLOYMENT_PATHS } from '../mappings/builderPaths';
 
 export interface CompatibilityResult {
 	compatible: boolean;
@@ -25,7 +26,7 @@ export function validateSchemaCompatibility(
 	const expected = mapping.targetSchema;
 	const actual = {
 		namespace: registry.namespace,
-		version: registry.version,
+		schemaVersion: registry.schemaVersion,
 		file: registry.sourceFile,
 	};
 
@@ -37,9 +38,9 @@ export function validateSchemaCompatibility(
 	}
 
 	// Check version match (warning only - may work across minor versions)
-	if (expected.version && actual.version && expected.version !== actual.version) {
+	if (expected.version && actual.schemaVersion && expected.version !== actual.schemaVersion) {
 		warnings.push(
-			`Version mismatch: mapping expects v${expected.version} but registry has v${actual.version}`
+			`Version mismatch: mapping expects v${expected.version} but registry has v${actual.schemaVersion}`
 		);
 	}
 
@@ -49,6 +50,38 @@ export function validateSchemaCompatibility(
 			errors.push(
 				`Invalid XSD path "${columnMapping.xsdPath}" for column "${columnMapping.csvColumn}"`
 			);
+		}
+	}
+
+	// Validate builder paths (conditionally based on template presence)
+	if (mapping.famTemplates && mapping.famTemplates.length > 0) {
+		for (const path of FAM_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	if (mapping.appFinTemplates && mapping.appFinTemplates.length > 0) {
+		for (const path of APP_FIN_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	if (mapping.employmentStatuses && mapping.employmentStatuses.length > 0) {
+		for (const path of EMPLOYMENT_PATHS) {
+			if (!registry.elementsByPath.has(path)) {
+				errors.push(`Builder path not found in schema: ${path}`);
+			}
+		}
+	}
+
+	// LLDD paths are always checked (learner-level, not template-based)
+	for (const path of LLDD_PATHS) {
+		if (!registry.elementsByPath.has(path)) {
+			errors.push(`Builder path not found in schema: ${path}`);
 		}
 	}
 
@@ -78,8 +111,8 @@ export function formatCompatibilityError(
 
 	lines.push('Currently Loaded:');
 	lines.push(`  Namespace: ${registry.namespace}`);
-	if (registry.version) {
-		lines.push(`  Version: ${registry.version}`);
+	if (registry.schemaVersion) {
+		lines.push(`  Version: ${registry.schemaVersion}`);
 	}
 	if (registry.sourceFile) {
 		lines.push(`  File: ${registry.sourceFile}`);

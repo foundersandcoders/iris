@@ -6,7 +6,7 @@ describe('validateMappingStructure', () => {
 	const validMapping: MappingConfig = {
 		id: 'test-mapping',
 		name: 'Test Mapping',
-		version: '1.0.0',
+		mappingVersion: '1.0.0',
 		targetSchema: {
 			namespace: 'TEST/SCHEMA',
 			version: '1.0',
@@ -103,11 +103,11 @@ describe('validateMappingStructure', () => {
 		});
 
 		it('should reject missing version', () => {
-			const { version, ...invalid } = validMapping;
+			const { mappingVersion, ...invalid } = validMapping;
 			const result = validateMappingStructure(invalid);
 
 			expect(result.valid).toBe(false);
-			expect(result.issues.some((i) => i.field === 'version')).toBe(true);
+			expect(result.issues.some((i) => i.field === 'mappingVersion')).toBe(true);
 		});
 	});
 
@@ -236,7 +236,7 @@ describe('validateMappingStructure', () => {
 			const invalid = {
 				id: '',
 				name: '',
-				version: '',
+				mappingVersion: '',
 				targetSchema: null,
 				mappings: [],
 			};
