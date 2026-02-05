@@ -20,6 +20,7 @@ import { getStoragePaths, type StoragePaths } from '../utils/storage/paths';
 import { StorageError } from './errors';
 import { createBunAdapter } from './adapters/bun';
 import { facAirtableMapping } from '../mappings/fac-airtable-2025';
+import { validateMappingStructure } from '../mappings/validate';
 import packageJson from '../../../package.json';
 
 interface StorageOptions {
@@ -130,6 +131,22 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				const mappingPath = join(paths.mappings, `${id}.json`);
 				if (await adapter.exists(mappingPath)) {
 					const mapping = await adapter.readJson<MappingConfig>(mappingPath);
+
+					// Validate mapping structure
+					const validation = validateMappingStructure(mapping);
+					if (!validation.valid) {
+						const issueMessages = validation.issues
+							.map((issue) => `${issue.field}: ${issue.message}`)
+							.join(', ');
+						return {
+							success: false,
+							error: StorageError.invalidJson(
+								mappingPath,
+								new Error(`Invalid mapping structure: ${issueMessages}`)
+							),
+						};
+					}
+
 					return { success: true, data: mapping };
 				}
 

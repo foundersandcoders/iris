@@ -63,6 +63,19 @@ export const userMapping: MappingConfig = {
 	name: 'User Mapping',
 	mappingVersion: '1.0.0',
 	targetSchema: { namespace: 'ESFA/ILR/2025-26' },
+	mappings: [
+		{
+			csvColumn: 'UserColumn',
+			xsdPath: 'Message.Learner.UserField',
+		},
+	],
+};
+
+export const invalidMappingStructure: MappingConfig = {
+	id: '',
+	name: '',
+	mappingVersion: '',
+	targetSchema: { namespace: 'ESFA/ILR/2025-26' },
 	mappings: [],
 };
 

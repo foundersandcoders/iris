@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { rm } from 'fs/promises';
+import { rm, writeFile } from 'fs/promises';
 import { createStorage } from '$lib/storage';
 import * as fixtures from '../../fixtures/storage';
 
@@ -163,6 +163,37 @@ describe('IrisStorage', () => {
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error.code).toBe('NOT_FOUND');
+			}
+		});
+
+		it('rejects user mapping with invalid structure', async () => {
+			// Save invalid mapping directly to bypass saveMapping validation
+			const invalidPath = join(testRoot, '.iris', 'mappings', 'invalid.json');
+			await writeFile(invalidPath, JSON.stringify(fixtures.invalidMappingStructure));
+
+			const result = await storage.loadMapping('invalid');
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.code).toBe('INVALID_JSON');
+				expect(result.error.message).toContain('Invalid mapping structure');
+			}
+		});
+
+		it('rejects user mapping with empty mappings array', async () => {
+			const emptyMapping = {
+				...fixtures.userMapping,
+				mappings: [],
+			};
+			const emptyPath = join(testRoot, '.iris', 'mappings', 'empty.json');
+			await writeFile(emptyPath, JSON.stringify(emptyMapping));
+
+			const result = await storage.loadMapping('empty');
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.code).toBe('INVALID_JSON');
+				expect(result.error.message).toContain('mappings');
 			}
 		});
 	});
