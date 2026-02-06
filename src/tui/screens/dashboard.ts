@@ -1,22 +1,33 @@
 /** ====== Dashboard Screen ======
  * Main menu and entry point for TUI
- * TODO: Full OpenTUI migration in 2TI.24
  */
-import gradient from 'gradient-string';
-import type { RenderContext } from '../types';
-import { Layout } from '../utils/layout';
-import { THEMES, PALETTE, symbols } from '../theme';
+import {
+	BoxRenderable,
+	TextRenderable,
+	ASCIIFontRenderable,
+	SelectRenderable,
+	SelectRenderableEvents,
+	type KeyEvent,
+	type SelectOption,
+} from '@opentui/core';
+import type { RenderContext, Renderer } from '../types';
+import { theme, PALETTE } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
-const theme = THEMES.themeLight;
+interface MenuItem {
+	key: string;
+	label: string;
+	implemented: boolean;
+}
+
+const CONTAINER_ID = 'dashboard-root';
 
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
-	private layout: Layout;
-	private selectedIndex = 0;
-	private term: any; // Stub until OpenTUI migration
+	private renderer: Renderer;
+	private keyHandler?: (key: KeyEvent) => void;
 
-	private menuItems = [
+	private menuItems: MenuItem[] = [
 		{ key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
 		{ key: 'validate', label: 'Validate XML Submission', implemented: false },
 		{ key: 'check', label: 'Cross-Submission Check', implemented: false },
@@ -26,125 +37,104 @@ export class Dashboard implements Screen {
 	];
 
 	constructor(ctx: RenderContext) {
-		// Stub: Cast renderer to term for now (will not work at runtime)
-		this.term = (ctx as any).renderer;
-		this.layout = new Layout(this.term);
+		this.renderer = ctx.renderer;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
 		return new Promise((resolve) => {
-			this.drawScreen();
+			// Root container
+			const container = new BoxRenderable(this.renderer, {
+				id: CONTAINER_ID,
+				flexDirection: 'column',
+				width: '100%',
+				height: '100%',
+				backgroundColor: theme.background,
+			});
 
-			this.term.on('key', (key: string) => {
-				if (key === 'UP' && this.selectedIndex > 0) {
-					this.selectedIndex--;
-					this.drawScreen();
-				} else if (key === 'DOWN' && this.selectedIndex < this.menuItems.length - 1) {
-					this.selectedIndex++;
-					this.drawScreen();
-				} else if (key === 'ENTER') {
-					const selected = this.menuItems[this.selectedIndex];
-					if (selected.key === 'quit') {
-						this.term.removeAllListeners('key');
-						resolve({ action: 'quit' });
-					} else if (!selected.implemented) {
-						this.drawScreen();
-						this.term.moveTo(1, this.term.height - 2);
-						// Using 'Vein' color for alerts/patience messages
-						this.term.colorRgbHex(PALETTE.line.main.colour)('Patience, Daniel/Jess...');
-						this.term.styleReset();
-					} else {
-						this.term.removeAllListeners('key');
-						resolve({ action: 'push', screen: selected.key });
-					}
-				} else if (key === 'q' || key === 'ESCAPE') {
-					this.term.removeAllListeners('key');
+			// Logo with gradient (Tyrian → Blueglass)
+			const logo = new ASCIIFontRenderable(this.renderer, {
+				text: 'Iris',
+				font: 'block',
+				color: [PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi],
+			});
+			container.add(logo);
+
+			// Spacer
+			container.add(new TextRenderable(this.renderer, { content: '' }));
+
+			// Section heading
+			container.add(
+				new TextRenderable(this.renderer, {
+					content: 'Quick Actions',
+					fg: theme.text,
+				})
+			);
+
+			// Spacer
+			container.add(new TextRenderable(this.renderer, { content: '' }));
+
+			// Menu
+			const select = new SelectRenderable(this.renderer, {
+				options: this.menuItems.map((item, index) => ({
+					name: `${index + 1}  ${item.label}`,
+					description: item.implemented ? '' : '(soon)',
+					value: item,
+				})),
+				backgroundColor: theme.background,
+				focusedBackgroundColor: theme.background,
+				selectedBackgroundColor: theme.highlight,
+				selectedTextColor: theme.text,
+				textColor: theme.text,
+				focusedTextColor: theme.text,
+				descriptionColor: theme.textMuted,
+				flexGrow: 1,
+			});
+			container.add(select);
+
+			// Status bar
+			container.add(
+				new TextRenderable(this.renderer, {
+					content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
+					fg: theme.textMuted,
+				})
+			);
+
+			// Add to renderer
+			this.renderer.root.add(container);
+			select.focus();
+
+			// Menu item selected
+			select.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
+				const item = option.value as MenuItem;
+				if (!item) return;
+
+				if (item.key === 'quit') {
 					resolve({ action: 'quit' });
-				} else if (key >= '1' && key <= '6') {
-					const index = parseInt(key) - 1;
-					if (index < this.menuItems.length) {
-						this.selectedIndex = index;
-						const selected = this.menuItems[this.selectedIndex];
-						this.term.removeAllListeners('key');
-						if (selected.key === 'quit') {
-							this.term.removeAllListeners('key');
-							resolve({ action: 'quit' });
-						} else if (!selected.implemented) {
-							this.drawScreen();
-							this.term.moveTo(1, this.term.height - 2);
-							this.term.colorRgbHex(PALETTE.line.main.colour)('Patience, Daniel/Jess...');
-							this.term.styleReset();
-						} else {
-							this.term.removeAllListeners('key');
-							resolve({ action: 'push', screen: selected.key });
-						}
-					}
+				} else if (item.implemented) {
+					resolve({ action: 'push', screen: item.key });
 				}
 			});
+
+			// Screen-level key handler for q/escape/number keys
+			this.keyHandler = (key: KeyEvent) => {
+				if (key.name === 'escape' || key.name === 'q') {
+					resolve({ action: 'quit' });
+				} else if (key.name && key.name >= '1' && key.name <= '6') {
+					const index = parseInt(key.name) - 1;
+					if (index < this.menuItems.length) {
+						select.setSelectedIndex(index);
+						select.selectCurrent();
+					}
+				}
+			};
+			this.renderer.keyInput.on('keypress', this.keyHandler);
 		});
 	}
 
 	cleanup(): void {
-		this.term.removeAllListeners('key');
-	}
-
-	private drawScreen(): void {
-		const region = this.layout.draw({
-			title: '',
-			statusBar: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
-			showBack: false,
-		});
-
-		const asciiArt = [
-			'  ┏━┓   ╭┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬╮   ┏━┓  ',
-			'  ┗━╋━━━┿┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┿━━━╋━┛  ',
-			'╭─┰─╂─░██████         ░██       ╰───╂─┰─╮',
-			'│ ┃ ┃   ░██                         ┃ ┃ │',
-			'│ ┃ ┃   ░██  ░██░████ ░██ ░███████  ┃ ┃ │',
-			'│ ┃ ┃   ░██  ░███     ░██░██        ┃ ┃ │',
-			'│ ┃ ┃   ░██  ░██      ░██ ░███████  ┃ ┃ │',
-			'│ ┃ ┃   ░██  ░██      ░██       ░██ ┃ ┃ │',
-			'╰─┸─╂─░██████░██      ░██ ░███████──╂─┸─╯',
-			'  ┏━╋━━━┿┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┿━━━╋━┓  ',
-			'  ┗━┛   ╰┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴╯   ┗━┛  ',
-		];
-
-		const logoGradient = gradient([PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi]);
-
-		asciiArt.forEach((line, i) => {
-			this.term.moveTo(1, 2 + i);
-			this.term(logoGradient(line));
-		});
-
-		const contentTop = 2 + asciiArt.length + 2;
-
-		this.term.moveTo(1, contentTop);
-		this.term.colorRgbHex(theme.text)('Quick Actions');
-		this.term.styleReset();
-
-		this.menuItems.forEach((item, index) => {
-			this.term.moveTo(3, contentTop + 2 + index);
-			const isSelected = index === this.selectedIndex;
-
-			if (isSelected) {
-				this.term.bgColorRgbHex(theme.highlight);
-				this.term.colorRgbHex(theme.text).bold(`${symbols.arrow} `);
-			} else {
-				this.term.bgColorRgbHex(theme.background);
-				this.term('  ');
-			}
-
-			if (item.implemented) {
-				this.term.colorRgbHex(theme.text);
-				if (isSelected) this.term.bold;
-				this.term(`${index + 1}  ${item.label}`);
-			} else {
-				this.term.colorRgbHex(theme.textMuted);
-				this.term(`${index + 1}  ${item.label}`);
-				this.term.colorRgbHex(theme.textMuted)(' (soon)');
-			}
-
-			this.term.styleReset();
-		});
+		if (this.keyHandler) {
+			this.renderer.keyInput.off('keypress', this.keyHandler);
+		}
+		this.renderer.root.remove(CONTAINER_ID);
 	}
 }

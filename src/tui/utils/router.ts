@@ -20,14 +20,10 @@ export interface Screen {
 export type ScreenFactory = (ctx: RenderContext) => Screen;
 
 interface StackEntry {
-  screenName: string;
-  data?: ScreenData;
+	screenName: string;
+	data?: ScreenData;
 }
 
-/* LOG (25-01-14): Navigation Array
- * OKAY this might be a slightly insane approach? I don't know.
- * But here we go, TUI navigation is henceforth an array of class instances.
- */
 export class Router {
 	private screens: Map<string, ScreenFactory> = new Map();
 	private stack: StackEntry[] = [];
@@ -38,107 +34,107 @@ export class Router {
 		this.ctx = { renderer };
 	}
 
-  register(name: string, factory: ScreenFactory): void {
-    this.screens.set(name, factory);
-  }
+	register(name: string, factory: ScreenFactory): void {
+		this.screens.set(name, factory);
+	}
 
-  /* Go Forwards */
-  async push(screenName: string, data?: ScreenData): Promise<void> {
-    const factory = this.screens.get(screenName);
-    if (!factory) {
-      throw new Error(`Screen not found: ${screenName}`);
-    }
+	/* Go Forwards */
+	async push(screenName: string, data?: ScreenData): Promise<void> {
+		const factory = this.screens.get(screenName);
+		if (!factory) {
+			throw new Error(`Screen not found: ${screenName}`);
+		}
 
-    // Cleanup current screen
-    this.currentScreen?.cleanup?.();
+		// Cleanup current screen
+		this.currentScreen?.cleanup?.();
 
-    // Push to stack
-    this.stack.push({ screenName, data });
+		// Push to stack
+		this.stack.push({ screenName, data });
 
-    // Create and render new screen
-    this.currentScreen = factory(this.ctx);
-    await this.runScreen(data);
-  }
+		// Create and render new screen
+		this.currentScreen = factory(this.ctx);
+		await this.runScreen(data);
+	}
 
-  /* Go Backwards */
-  async pop(data?: ScreenData): Promise<void> {
-    if (this.stack.length <= 1) {
-      return;
-    }
+	/* Go Backwards */
+	async pop(data?: ScreenData): Promise<void> {
+		if (this.stack.length <= 1) {
+			return;
+		}
 
-    // Cleanup current screen
-    this.currentScreen?.cleanup?.();
+		// Cleanup current screen
+		this.currentScreen?.cleanup?.();
 
-    // Pop current screen
-    this.stack.pop();
+		// Pop current screen
+		this.stack.pop();
 
-    // Get previous screen
-    const previous = this.stack[this.stack.length - 1];
-    const factory = this.screens.get(previous.screenName);
-    if (!factory) {
-      throw new Error(`Screen not found: ${previous.screenName}`);
-    }
+		// Get previous screen
+		const previous = this.stack[this.stack.length - 1];
+		const factory = this.screens.get(previous.screenName);
+		if (!factory) {
+			throw new Error(`Screen not found: ${previous.screenName}`);
+		}
 
-    // Merge any returned data with original data
-    const screenData = { ...previous.data, ...data };
+		// Merge any returned data with original data
+		const screenData = { ...previous.data, ...data };
 
-    // Create and render previous screen
-    this.currentScreen = factory(this.ctx);
-    await this.runScreen(screenData);
-  }
+		// Create and render previous screen
+		this.currentScreen = factory(this.ctx);
+		await this.runScreen(screenData);
+	}
 
-  /* Go Sideways */
-  async replace(screenName: string, data?: ScreenData): Promise<void> {
-    const factory = this.screens.get(screenName);
-    if (!factory) {
-      throw new Error(`Screen not found: ${screenName}`);
-    }
+	/* Go Sideways */
+	async replace(screenName: string, data?: ScreenData): Promise<void> {
+		const factory = this.screens.get(screenName);
+		if (!factory) {
+			throw new Error(`Screen not found: ${screenName}`);
+		}
 
-    // Cleanup current screen
-    this.currentScreen?.cleanup?.();
+		// Cleanup current screen
+		this.currentScreen?.cleanup?.();
 
-    // Replace top of stack
-    if (this.stack.length > 0) {
-      this.stack[this.stack.length - 1] = { screenName, data };
-    } else {
-      this.stack.push({ screenName, data });
-    }
+		// Replace top of stack
+		if (this.stack.length > 0) {
+			this.stack[this.stack.length - 1] = { screenName, data };
+		} else {
+			this.stack.push({ screenName, data });
+		}
 
-    // Create and render new screen
-    this.currentScreen = factory(this.ctx);
-    await this.runScreen(data);
-  }
+		// Create and render new screen
+		this.currentScreen = factory(this.ctx);
+		await this.runScreen(data);
+	}
 
-  getBreadcrumbs(): string[] {
-    return this.stack.map((entry) => entry.screenName);
-  }
+	getBreadcrumbs(): string[] {
+		return this.stack.map((entry) => entry.screenName);
+	}
 
-  canGoBack(): boolean {
-    return this.stack.length > 1;
-  }
+	canGoBack(): boolean {
+		return this.stack.length > 1;
+	}
 
-  private async runScreen(data?: ScreenData): Promise<void> {
-    if (!this.currentScreen) return;
+	private async runScreen(data?: ScreenData): Promise<void> {
+		if (!this.currentScreen) return;
 
-    const result = await this.currentScreen.render(data);
+		const result = await this.currentScreen.render(data);
 
-    switch (result.action) {
-      case 'push':
-        if (result.screen) {
-          await this.push(result.screen, result.data);
-        }
-        break;
-      case 'pop':
-        await this.pop(result.data);
-        break;
-      case 'replace':
-        if (result.screen) {
-          await this.replace(result.screen, result.data);
-        }
-        break;
-      case 'quit':
-        // Signal to exit - handled by TUI
-        break;
-    }
-  }
+		switch (result.action) {
+			case 'push':
+				if (result.screen) {
+					await this.push(result.screen, result.data);
+				}
+				break;
+			case 'pop':
+				await this.pop(result.data);
+				break;
+			case 'replace':
+				if (result.screen) {
+					await this.replace(result.screen, result.data);
+				}
+				break;
+			case 'quit':
+				// Signal to exit - handled by TUI
+				break;
+		}
+	}
 }
