@@ -1,6 +1,7 @@
+/** TODO: Full OpenTUI migration in 2TI.25 */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Terminal } from 'terminal-kit';
+import type { RenderContext } from '../types';
 import { Layout } from '../utils/layout';
 import { THEMES } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
@@ -8,24 +9,27 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 const theme = THEMES.themeLight;
 
 interface FileEntry {
-  name: string;
-  isDirectory: boolean;
-  path: string;
+	name: string;
+	isDirectory: boolean;
+	path: string;
 }
 
 export class FilePicker implements Screen {
-  readonly name = 'file-picker';
-  private layout: Layout;
-  private currentPath: string;
-  private entries: FileEntry[] = [];
-  private selectedIndex = 0;
-  private scrollOffset = 0;
-  private showHidden = false;
+	readonly name = 'file-picker';
+	private layout: Layout;
+	private currentPath: string;
+	private entries: FileEntry[] = [];
+	private selectedIndex = 0;
+	private scrollOffset = 0;
+	private showHidden = false;
+	private term: any; // Stub until OpenTUI migration
 
-  constructor(private term: Terminal) {
-    this.layout = new Layout(term);
-    this.currentPath = process.cwd();
-  }
+	constructor(ctx: RenderContext) {
+		// Stub: Cast renderer to term for now (will not work at runtime)
+		this.term = (ctx as any).renderer;
+		this.layout = new Layout(this.term);
+		this.currentPath = process.cwd();
+	}
 
   async render(data?: ScreenData): Promise<ScreenResult> {
     if (data?.path && typeof data.path === 'string') {
