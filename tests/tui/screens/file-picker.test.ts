@@ -10,8 +10,7 @@ vi.mock('node:fs/promises', () => ({
 	},
 }));
 
-// TODO: Full migration in Phase 2 (2TI.25)
-describe.skip('FilePicker', () => {
+describe('FilePicker', () => {
 	let mockContext: ReturnType<typeof tuiFixtures.createMockContext>;
 
 	beforeEach(() => {
@@ -30,15 +29,18 @@ describe.skip('FilePicker', () => {
 
 		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
 
-		screen.render();
+		screen.render(); // Don't await - promise won't resolve in test
 
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		// Wait for async directory load
+		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const entries = (screen as any).entries;
 
 		expect(entries).toHaveLength(2);
 		expect(entries.map((e: any) => e.name)).toContain('data.csv');
 		expect(entries.map((e: any) => e.name)).toContain('nested');
+
+		screen.cleanup();
 	});
 
 	it('sorts directories before files', async () => {
@@ -46,8 +48,9 @@ describe.skip('FilePicker', () => {
 
 		(fs.readdir as any).mockResolvedValue(filePickerFixtures.messyCsvDirectory);
 
-		screen.render();
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const entries = (screen as any).entries;
 
@@ -56,16 +59,98 @@ describe.skip('FilePicker', () => {
 		expect(entries[1].name).toBe('Folder B');
 		expect(entries[2].name).toBe('a_first.csv');
 		expect(entries[3].name).toBe('z_last.csv');
+
+		screen.cleanup();
 	});
 
-	it('renders "No CSV files" message for empty directory', async () => {
+	it('adds renderable tree to renderer root', async () => {
+		const screen = new FilePicker(mockContext);
+
+		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
+
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
+		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		expect(addedRenderable).toBeDefined();
+		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
+
+		screen.cleanup();
+	});
+
+	it('registers keypress handler', async () => {
+		const screen = new FilePicker(mockContext);
+
+		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
+
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(mockContext.renderer.keyInput.on).toHaveBeenCalledWith(
+			'keypress',
+			expect.any(Function)
+		);
+
+		screen.cleanup();
+	});
+
+	it('cleanup removes keypress handler and container', async () => {
+		const screen = new FilePicker(mockContext);
+
+		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
+
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		screen.cleanup();
+
+		expect(mockContext.renderer.keyInput.off).toHaveBeenCalledWith(
+			'keypress',
+			expect.any(Function)
+		);
+		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(1);
+	});
+
+	it('shortenPath replaces HOME with ~', () => {
+		const screen = new FilePicker(mockContext);
+		const home = process.env.HOME || '/home/user';
+		const fullPath = `${home}/Documents/data.csv`;
+
+		const shortened = (screen as any).shortenPath(fullPath);
+
+		expect(shortened).toBe('~/Documents/data.csv');
+	});
+
+	it('shortenPath returns path unchanged if not under HOME', () => {
+		const screen = new FilePicker(mockContext);
+		const fullPath = '/tmp/data.csv';
+
+		const shortened = (screen as any).shortenPath(fullPath);
+
+		expect(shortened).toBe('/tmp/data.csv');
+	});
+
+	it('shows empty message when no CSV files found', async () => {
 		const screen = new FilePicker(mockContext);
 
 		(fs.readdir as any).mockResolvedValue(filePickerFixtures.emptyDirectory);
 
-		screen.render();
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		screen.render(); // Don't await
 
-		// Note: This test would need updating for OpenTUI renderables
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const entries = (screen as any).entries;
+		expect(entries).toHaveLength(0);
+
+		// Empty message should be created
+		const emptyMessage = (screen as any).emptyMessage;
+		expect(emptyMessage).toBeDefined();
+		expect(emptyMessage.content.chunks[0].text).toBe('  No CSV files found in this directory.');
+
+		screen.cleanup();
 	});
 });
