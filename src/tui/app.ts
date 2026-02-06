@@ -1,60 +1,51 @@
 /** ====== TUI Application ======
-  * Manages full-screen terminal interface, screen transitions, and workflows
-  */
-import terminalKit from 'terminal-kit';
-import { Router } from "./utils/router";
+ * Manages full-screen terminal interface, screen transitions, and workflows
+ */
+import { createCliRenderer, type KeyEvent } from '@opentui/core';
+import { Router } from './utils/router';
 import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
 import { ProcessingScreen } from './screens/processing';
-
-const term = terminalKit.terminal;
+import type { Renderer } from './types';
 
 interface TUIOptions {
-  startCommand?: string;
-  args?: string[];
+	startCommand?: string;
+	args?: string[];
 }
 
 export class TUI {
-  private router: Router;
-  
-  constructor(private options: TUIOptions = {}) {
-    this.router = new Router(term);
-  }
+	private renderer!: Renderer;
+	private router!: Router;
 
-  async start() {
-    this.initialize();
-    this.registerScreens();
-    
-    await this.router.push("dashboard");
-  }
+	constructor(private options: TUIOptions = {}) {}
 
-  private initialize() {
-    term.fullscreen(true);
-    term.hideCursor(true);
-    term.grabInput(true);
+	async start(): Promise<void> {
+		this.renderer = await createCliRenderer();
+		this.router = new Router(this.renderer);
 
-    /* Ctrl+C */
-    term.on('key', (key: string) => {
-      if (key === 'CTRL_C') {
-        this.cleanup();
-        process.exit(0);
-      }
-    });
+		this.registerInputHandlers();
+		this.registerScreens();
 
-    process.stdout.on('resize', () => {
-      /* TODO: Handle this in Router */
-    });
-  }
-  
-  private registerScreens() {
-    this.router.register('dashboard', (term) => new Dashboard(term));
-    this.router.register('convert', (term) => new FilePicker(term));
-    this.router.register('processing', (term) => new ProcessingScreen(term));
-  }
+		await this.router.push('dashboard');
+		this.renderer.start();
+	}
 
-  private cleanup() {
-    term.fullscreen(false);
-    term.hideCursor(false); // TODO: Check terminalKit.terminal API
-    term.grabInput(false);
-  }
+	private registerInputHandlers(): void {
+		this.renderer.keyInput.on('keypress', (key: KeyEvent) => {
+			if (key.ctrl && key.name === 'c') {
+				this.cleanup();
+				process.exit(0);
+			}
+		});
+	}
+
+	private registerScreens(): void {
+		this.router.register('dashboard', (ctx) => new Dashboard(ctx));
+		this.router.register('convert', (ctx) => new FilePicker(ctx));
+		this.router.register('processing', (ctx) => new ProcessingScreen(ctx));
+	}
+
+	private cleanup(): void {
+		this.renderer.stop();
+	}
 }
