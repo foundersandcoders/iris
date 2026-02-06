@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="icon-bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFF1F7"/>
+      <stop offset="100%" stop-color="#F3D8E6"/>
+    </radialGradient>
+    <linearGradient id="icon-arch" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6F2A52"/>
+      <stop offset="50%" stop-color="#7A2A57"/>
+      <stop offset="100%" stop-color="#3E7F96"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#icon-bg)"/>
+  <path d="M 256.0 228.0 C 240.2 273.0 187.8 331.0 151.0 386.0" stroke="#6F2A52" stroke-width="9.0" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 256.0 228.0 C 256.0 273.0 256.0 331.0 256.0 386.0" stroke="#7A2A57" stroke-width="7.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 256.0 228.0 C 271.8 273.0 324.2 331.0 361.0 386.0" stroke="#3E7F96" stroke-width="9.0" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 178.0 236.0
+           L 178.0 181.0
+           A 78.0 78.0 0 0 1 334.0 181.0
+           L 334.0 236.0"
+        stroke="url(#icon-arch)" stroke-width="13.0" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -148,14 +148,10 @@ title: M2A — OpenTUI Migration
 graph TD
 
 %% Phase 1: Foundation — COMPLETE %%
-
-%% Phase 2: Screen Migration %%
-2TI.24["`*2TI.24*<br/>**MUST**<br/>migrate dashboard`"]:::must-open --> 2TI.27
-2TI.25["`*2TI.25*<br/>**MUST**<br/>migrate file picker`"]:::must-open --> 2TI.27
-2TI.26["`*2TI.26*<br/>**MUST**<br/>migrate processing`"]:::must-open --> 2TI.27
+%% Phase 2: Screen Migration — COMPLETE %%
 
 %% Phase 3: Cleanup %%
-2TI.27["`*2TI.27*<br/>**MUST**<br/>remove old deps + stubs`"]:::must-blocked --> 2TI.28
+2TI.27["`*2TI.27*<br/>**MUST**<br/>remove old deps + stubs`"]:::must-open --> 2TI.28
 2TI.28["`*2TI.28*<br/>**MUST**<br/>update tests`"]:::must-blocked
 
 classDef must-open fill:#D6A3BF,color:#000;
@@ -174,11 +170,11 @@ classDef mile fill:#E8EFF6,color:#000;
 - [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
 - [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
 
-#### Migration Phase 2: Screen Migration
+#### Migration Phase 2: Screen Migration ✅
 
-- [ ] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained) — **ready to start**
-- [ ] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated) — **ready to start**
-- [ ] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop) — **ready to start**
+- [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
+- [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
+- [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
 
 #### Migration Phase 3: Cleanup
 
@@ -372,11 +368,8 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% OpenTUI Migration Phase 2 (Phase 1 Foundation complete) %%
-2TI.24["`*2TI.24*<br/>migrate<br/>dashboard`"]:::must-open
-2TI.25["`*2TI.25*<br/>migrate<br/>file picker`"]:::must-open
-2TI.26["`*2TI.26*<br/>migrate<br/>processing`"]:::must-open
-2TI.27["`*2TI.27*<br/>cleanup<br/>old deps + stubs`"]:::must-blocked
+%% OpenTUI Migration (Phases 1-2 complete) %%
+2TI.27["`*2TI.27*<br/>cleanup<br/>old deps + stubs`"]:::must-open
 2TI.28["`*2TI.28*<br/>update<br/>tests`"]:::must-blocked
 
 %% M2A Core Tasks %%
@@ -412,8 +405,7 @@ graph TD
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
-%% Migration Dependencies (Phase 1 Foundation complete) %%
-2TI.24 & 2TI.25 & 2TI.26 --> 2TI.27
+%% Migration Dependencies (Phases 1-2 complete) %%
 2TI.27 --> 2TI.28
 2TI.28 --> 2TI.11
 
