@@ -1,8 +1,9 @@
 /** ====== Dashboard Screen ======
  * Main menu and entry point for TUI
+ * TODO: Full OpenTUI migration in 2TI.24
  */
 import gradient from 'gradient-string';
-import type { Terminal } from 'terminal-kit';
+import type { RenderContext } from '../types';
 import { Layout } from '../utils/layout';
 import { THEMES, PALETTE, symbols } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
@@ -13,6 +14,7 @@ export class Dashboard implements Screen {
 	readonly name = 'dashboard';
 	private layout: Layout;
 	private selectedIndex = 0;
+	private term: any; // Stub until OpenTUI migration
 
 	private menuItems = [
 		{ key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
@@ -23,8 +25,10 @@ export class Dashboard implements Screen {
 		{ key: 'quit', label: 'Quit', implemented: true },
 	];
 
-	constructor(private term: Terminal) {
-		this.layout = new Layout(term);
+	constructor(ctx: RenderContext) {
+		// Stub: Cast renderer to term for now (will not work at runtime)
+		this.term = (ctx as any).renderer;
+		this.layout = new Layout(this.term);
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
