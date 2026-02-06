@@ -1,13 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TUI } from '../../src/tui/app';
+import { createMockRenderer } from '../fixtures/tui/tui';
 
 vi.mock('@opentui/core', () => ({
-	createCliRenderer: vi.fn().mockResolvedValue({
-		root: { add: vi.fn(), remove: vi.fn() },
-		keyInput: { on: vi.fn(), off: vi.fn() },
-		start: vi.fn(),
-		stop: vi.fn(),
-	}),
+	createCliRenderer: vi.fn().mockResolvedValue(createMockRenderer()),
 }));
 
 describe('TUI', () => {
