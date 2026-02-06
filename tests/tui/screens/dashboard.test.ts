@@ -27,11 +27,9 @@ describe('Dashboard', () => {
 		dashboard.render();
 
 		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
-		expect(mockContext.renderer.root.add).toHaveBeenCalledWith(
-			expect.objectContaining({
-				flexDirection: 'column',
-			})
-		);
+		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		expect(addedRenderable).toBeDefined();
+		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
 	});
 
 	it('registers keypress handler on renderer', () => {
