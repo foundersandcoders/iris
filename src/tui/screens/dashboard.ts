@@ -81,9 +81,11 @@ export class Dashboard implements Screen {
 					value: item,
 				})),
 				backgroundColor: theme.background,
+				focusedBackgroundColor: theme.background,
 				selectedBackgroundColor: theme.highlight,
 				selectedTextColor: theme.text,
 				textColor: theme.text,
+				focusedTextColor: theme.text,
 				descriptionColor: theme.textMuted,
 				flexGrow: 1,
 			});

@@ -99,9 +99,11 @@ export class FilePicker implements Screen {
 			this.select = new SelectRenderable(this.renderer, {
 				options: this.entriesToOptions(),
 				backgroundColor: theme.background,
+				focusedBackgroundColor: theme.background,
 				selectedBackgroundColor: theme.highlight,
 				selectedTextColor: theme.text,
 				textColor: theme.text,
+				focusedTextColor: theme.text,
 				showScrollIndicator: true,
 				flexGrow: 1,
 			});
