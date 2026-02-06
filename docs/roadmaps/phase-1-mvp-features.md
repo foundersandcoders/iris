@@ -147,17 +147,12 @@ title: M2A — OpenTUI Migration
 ---
 graph TD
 
-%% Phase 1: Foundation %%
-2TI.20["`*2TI.20*<br/>**MUST**<br/>install OpenTUI`"]:::must-open --> 2TI.21 & 2TI.22
-
-2TI.21["`*2TI.21*<br/>**MUST**<br/>app.ts bootstrap`"]:::must-open --> 2TI.23
-2TI.22["`*2TI.22*<br/>**MUST**<br/>theme adapter`"]:::must-open --> 2TI.24 & 2TI.25 & 2TI.26
-2TI.23["`*2TI.23*<br/>**MUST**<br/>router adapter`"]:::must-open --> 2TI.24 & 2TI.25 & 2TI.26
+%% Phase 1: Foundation — COMPLETE %%
 
 %% Phase 2: Screen Migration %%
-2TI.24["`*2TI.24*<br/>**MUST**<br/>migrate dashboard`"]:::must-blocked --> 2TI.27
-2TI.25["`*2TI.25*<br/>**MUST**<br/>migrate file picker`"]:::must-blocked --> 2TI.27
-2TI.26["`*2TI.26*<br/>**MUST**<br/>migrate processing`"]:::must-blocked --> 2TI.27
+2TI.24["`*2TI.24*<br/>**MUST**<br/>migrate dashboard`"]:::must-open --> 2TI.27
+2TI.25["`*2TI.25*<br/>**MUST**<br/>migrate file picker`"]:::must-open --> 2TI.27
+2TI.26["`*2TI.26*<br/>**MUST**<br/>migrate processing`"]:::must-open --> 2TI.27
 
 %% Phase 3: Cleanup %%
 2TI.27["`*2TI.27*<br/>**MUST**<br/>remove old deps + stubs`"]:::must-blocked --> 2TI.28
@@ -172,18 +167,18 @@ classDef could-blocked fill:#5FA3BA,color:#fff;
 classDef mile fill:#E8EFF6,color:#000;
 ```
 
-#### Migration Phase 1: Foundation
+#### Migration Phase 1: Foundation ✅
 
-- [ ] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
-- [ ] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
-- [ ] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
-- [ ] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
+- [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
+- [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
+- [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
+- [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
 
 #### Migration Phase 2: Screen Migration
 
-- [ ] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained) — **depends on 2TI.22, 2TI.23**
-- [ ] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated) — **depends on 2TI.22, 2TI.23**
-- [ ] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop) — **depends on 2TI.22, 2TI.23**
+- [ ] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained) — **ready to start**
+- [ ] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated) — **ready to start**
+- [ ] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop) — **ready to start**
 
 #### Migration Phase 3: Cleanup
 
@@ -377,14 +372,10 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% OpenTUI Migration (M2A prerequisite) %%
-2TI.20["`*2TI.20*<br/>install<br/>OpenTUI`"]:::must-open
-2TI.21["`*2TI.21*<br/>migrate<br/>app.ts`"]:::must-open
-2TI.22["`*2TI.22*<br/>adapt<br/>theme`"]:::must-open
-2TI.23["`*2TI.23*<br/>adapt<br/>router`"]:::must-open
-2TI.24["`*2TI.24*<br/>migrate<br/>dashboard`"]:::must-blocked
-2TI.25["`*2TI.25*<br/>migrate<br/>file picker`"]:::must-blocked
-2TI.26["`*2TI.26*<br/>migrate<br/>processing`"]:::must-blocked
+%% OpenTUI Migration Phase 2 (Phase 1 Foundation complete) %%
+2TI.24["`*2TI.24*<br/>migrate<br/>dashboard`"]:::must-open
+2TI.25["`*2TI.25*<br/>migrate<br/>file picker`"]:::must-open
+2TI.26["`*2TI.26*<br/>migrate<br/>processing`"]:::must-open
 2TI.27["`*2TI.27*<br/>cleanup<br/>old deps + stubs`"]:::must-blocked
 2TI.28["`*2TI.28*<br/>update<br/>tests`"]:::must-blocked
 
@@ -421,10 +412,7 @@ graph TD
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
-%% Migration Dependencies %%
-2TI.20 --> 2TI.21 & 2TI.22
-2TI.21 --> 2TI.23
-2TI.22 & 2TI.23 --> 2TI.24 & 2TI.25 & 2TI.26
+%% Migration Dependencies (Phase 1 Foundation complete) %%
 2TI.24 & 2TI.25 & 2TI.26 --> 2TI.27
 2TI.27 --> 2TI.28
 2TI.28 --> 2TI.11

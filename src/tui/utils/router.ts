@@ -1,23 +1,23 @@
 /** ====== Screen Router ======
-  * Manages navigation between TUI screens with stack-based history
-  */
-import type { Terminal } from 'terminal-kit';
+ * Manages navigation between TUI screens with stack-based history
+ */
+import type { RenderContext, Renderer } from '../types';
 
 export type ScreenData = Record<string, unknown>;
 
 export interface ScreenResult {
-  /** Action */ action: 'push' | 'pop' | 'replace' | 'quit';
-  /** Destination */ screen?: string;
-  /** Payload */ data?: ScreenData;
+	/** Action */ action: 'push' | 'pop' | 'replace' | 'quit';
+	/** Destination */ screen?: string;
+	/** Payload */ data?: ScreenData;
 }
 
 export interface Screen {
-  readonly name: string;
-  render(data?: ScreenData): Promise<ScreenResult>;
-  cleanup?(): void;
+	readonly name: string;
+	render(data?: ScreenData): Promise<ScreenResult>;
+	cleanup?(): void;
 }
 
-export type ScreenFactory = (term: Terminal) => Screen;
+export type ScreenFactory = (ctx: RenderContext) => Screen;
 
 interface StackEntry {
   screenName: string;
@@ -25,15 +25,18 @@ interface StackEntry {
 }
 
 /* LOG (25-01-14): Navigation Array
-  * OKAY this might be a slightly insane approach? I don't know.
-  * But here we go, TUI navigation is henceforth an array of class instances.
-  */
+ * OKAY this might be a slightly insane approach? I don't know.
+ * But here we go, TUI navigation is henceforth an array of class instances.
+ */
 export class Router {
-  private screens: Map<string, ScreenFactory> = new Map();
-  private stack: StackEntry[] = [];
-  private currentScreen: Screen | null = null;
+	private screens: Map<string, ScreenFactory> = new Map();
+	private stack: StackEntry[] = [];
+	private currentScreen: Screen | null = null;
+	private ctx: RenderContext;
 
-  constructor(private term: Terminal) {}
+	constructor(renderer: Renderer) {
+		this.ctx = { renderer };
+	}
 
   register(name: string, factory: ScreenFactory): void {
     this.screens.set(name, factory);
@@ -53,7 +56,7 @@ export class Router {
     this.stack.push({ screenName, data });
 
     // Create and render new screen
-    this.currentScreen = factory(this.term);
+    this.currentScreen = factory(this.ctx);
     await this.runScreen(data);
   }
 
@@ -80,7 +83,7 @@ export class Router {
     const screenData = { ...previous.data, ...data };
 
     // Create and render previous screen
-    this.currentScreen = factory(this.term);
+    this.currentScreen = factory(this.ctx);
     await this.runScreen(screenData);
   }
 
@@ -102,7 +105,7 @@ export class Router {
     }
 
     // Create and render new screen
-    this.currentScreen = factory(this.term);
+    this.currentScreen = factory(this.ctx);
     await this.runScreen(data);
   }
 

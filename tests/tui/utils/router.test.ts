@@ -3,13 +3,13 @@ import { Router, type ScreenResult } from '../../../src/tui/utils/router';
 import * as fixtures from '../../fixtures/tui/tui';
 
 describe('Router', () => {
-  let router: Router;
-  let mockTerm: ReturnType<typeof fixtures.createMockTerminal>;
+	let router: Router;
+	let mockRenderer: ReturnType<typeof fixtures.createMockRenderer>;
 
-  beforeEach(() => {
-    mockTerm = fixtures.createMockTerminal();
-    router = new Router(mockTerm as any);
-  });
+	beforeEach(() => {
+		mockRenderer = fixtures.createMockRenderer();
+		router = new Router(mockRenderer);
+	});
 
   describe('register', () => {
     it('should register a screen factory', () => {

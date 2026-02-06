@@ -1,60 +1,70 @@
 /** ====== TUI Application ======
-  * Manages full-screen terminal interface, screen transitions, and workflows
-  */
-import terminalKit from 'terminal-kit';
-import { Router } from "./utils/router";
+ * Manages full-screen terminal interface, screen transitions, and workflows
+ */
+import { createCliRenderer, type KeyEvent } from '@opentui/core';
+import { Router } from './utils/router';
 import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
 import { ProcessingScreen } from './screens/processing';
-
-const term = terminalKit.terminal;
+import type { Renderer } from './types';
 
 interface TUIOptions {
-  startCommand?: string;
-  args?: string[];
+	startCommand?: string;
+	args?: string[];
 }
 
 export class TUI {
-  private router: Router;
-  
-  constructor(private options: TUIOptions = {}) {
-    this.router = new Router(term);
-  }
+	private renderer!: Renderer;
+	private router!: Router;
 
-  async start() {
-    this.initialize();
-    this.registerScreens();
-    
-    await this.router.push("dashboard");
-  }
+	constructor(private options: TUIOptions = {}) {}
 
-  private initialize() {
-    term.fullscreen(true);
-    term.hideCursor(true);
-    term.grabInput(true);
+	async start(): Promise<void> {
+		this.renderer = await createCliRenderer();
+		this.router = new Router(this.renderer);
 
-    /* Ctrl+C */
-    term.on('key', (key: string) => {
-      if (key === 'CTRL_C') {
-        this.cleanup();
-        process.exit(0);
-      }
-    });
+		this.registerInputHandlers();
+		this.registerScreens();
 
-    process.stdout.on('resize', () => {
-      /* TODO: Handle this in Router */
-    });
-  }
-  
-  private registerScreens() {
-    this.router.register('dashboard', (term) => new Dashboard(term));
-    this.router.register('convert', (term) => new FilePicker(term));
-    this.router.register('processing', (term) => new ProcessingScreen(term));
-  }
+		try {
+			await this.router.push('dashboard');
+			this.renderer.start();
+		} catch (error) {
+			// Phase 1 (OpenTUI foundation) complete but screens not yet migrated
+			// Stop renderer before writing to stderr to avoid OpenTUI console overlay
+			try {
+				this.renderer.stop();
+			} catch {
+				// Renderer might not be in a stoppable state
+			}
 
-  private cleanup() {
-    term.fullscreen(false);
-    term.hideCursor(false); // TODO: Check terminalKit.terminal API
-    term.grabInput(false);
-  }
+			// Write to stderr after renderer is stopped
+			process.stderr.write('\n❌ TUI screens not yet migrated to OpenTUI\n');
+			process.stderr.write('   Phase 1 complete (bootstrap + router)\n');
+			process.stderr.write('   Phase 2 pending (screen migration: 2TI.24-26)\n\n');
+			if (error instanceof Error) {
+				process.stderr.write(`   Error: ${error.message}\n\n`);
+			}
+			process.exit(1);
+		}
+	}
+
+	private registerInputHandlers(): void {
+		this.renderer.keyInput.on('keypress', (key: KeyEvent) => {
+			if (key.ctrl && key.name === 'c') {
+				this.cleanup();
+				process.exit(0);
+			}
+		});
+	}
+
+	private registerScreens(): void {
+		this.router.register('dashboard', (ctx) => new Dashboard(ctx));
+		this.router.register('convert', (ctx) => new FilePicker(ctx));
+		this.router.register('processing', (ctx) => new ProcessingScreen(ctx));
+	}
+
+	private cleanup(): void {
+		this.renderer.stop();
+	}
 }

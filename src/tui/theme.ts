@@ -84,3 +84,28 @@ export const spinners = {
 	dots: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
 	arrow: ['←', '↖', '↑', '↗', '→', '↘', '↓', '↙'],
 };
+
+/** ====== OpenTUI Adapter ====== */
+import { RGBA } from '@opentui/core';
+
+/** Pre-computed RGBA objects for OpenTUI renderables
+ * Use hex strings from THEMES.themeLight directly for simple fg/bg.
+ * Use these RGBA objects when colour manipulation is needed.
+ */
+export const rgba = {
+	success: RGBA.fromHex(THEMES.themeLight.success),
+	warning: RGBA.fromHex(THEMES.themeLight.warning),
+	error: RGBA.fromHex(THEMES.themeLight.error),
+	info: RGBA.fromHex(THEMES.themeLight.info),
+	primary: RGBA.fromHex(THEMES.themeLight.primary),
+	secondary: RGBA.fromHex(THEMES.themeLight.secondary),
+	accent: RGBA.fromHex(THEMES.themeLight.accent),
+	highlight: RGBA.fromHex(THEMES.themeLight.highlight),
+	text: RGBA.fromHex(THEMES.themeLight.text),
+	textMuted: RGBA.fromHex(THEMES.themeLight.textMuted),
+	border: RGBA.fromHex(THEMES.themeLight.border),
+	background: RGBA.fromHex(THEMES.themeLight.background),
+} as const;
+
+/** Active theme as hex strings (OpenTUI accepts these directly) */
+export const theme = THEMES.themeLight;

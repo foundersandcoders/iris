@@ -1,33 +1,34 @@
 import { describe, it, expect } from 'vitest';
-import { THEMES, symbols, borders, spinners } from '../../src/tui/theme';
+import { THEMES, symbols, borders, spinners, rgba, theme } from '../../src/tui/theme';
+import { RGBA } from '@opentui/core';
 
-const theme = THEMES.themeLight;
+describe('THEMES.themeLight', () => {
+	const themeLight = THEMES.themeLight;
 
-describe('theme', () => {
-  it('exports status colors', () => {
-    expect(theme.success).toBeDefined();
-    expect(theme.warning).toBeDefined();
-    expect(theme.error).toBeDefined();
-    expect(theme.info).toBeDefined();
+	it('exports status colors', () => {
+		expect(themeLight.success).toBeDefined();
+    expect(themeLight.warning).toBeDefined();
+    expect(themeLight.error).toBeDefined();
+    expect(themeLight.info).toBeDefined();
   });
 
   it('exports UI colors', () => {
-    expect(theme.primary).toBeDefined();
-    expect(theme.secondary).toBeDefined();
-    expect(theme.accent).toBeDefined();
-    expect(theme.highlight).toBeDefined();
+    expect(themeLight.primary).toBeDefined();
+    expect(themeLight.secondary).toBeDefined();
+    expect(themeLight.accent).toBeDefined();
+    expect(themeLight.highlight).toBeDefined();
   });
 
   it('exports neutral colors', () => {
-    expect(theme.text).toBeDefined();
-    expect(theme.textMuted).toBeDefined();
-    expect(theme.border).toBeDefined();
-    expect(theme.background).toBeDefined();
+    expect(themeLight.text).toBeDefined();
+    expect(themeLight.textMuted).toBeDefined();
+    expect(themeLight.border).toBeDefined();
+    expect(themeLight.background).toBeDefined();
   });
 
   it('all colors are valid hex codes', () => {
     const hexPattern = /^#[0-9a-f]{6}$/i;
-    Object.values(theme).forEach(color => { expect(color).toMatch(hexPattern) });
+    Object.values(themeLight).forEach(color => { expect(color).toMatch(hexPattern) });
   });
 });
 
@@ -65,13 +66,33 @@ describe('borders', () => {
 });
 
 describe('spinners', () => {
-  it('exports dots spinner with 10 frames', () => {
-    expect(spinners.dots).toHaveLength(10);
-    expect(spinners.dots[0]).toBe('⠋');
-  });
+	it('exports dots spinner with 10 frames', () => {
+		expect(spinners.dots).toHaveLength(10);
+		expect(spinners.dots[0]).toBe('⠋');
+	});
 
-  it('exports arrow spinner with 8 frames', () => {
-    expect(spinners.arrow).toHaveLength(8);
-    expect(spinners.arrow[0]).toBe('←');
-  });
+	it('exports arrow spinner with 8 frames', () => {
+		expect(spinners.arrow).toHaveLength(8);
+		expect(spinners.arrow[0]).toBe('←');
+	});
+});
+
+describe('rgba (OpenTUI adapter)', () => {
+	it('exports RGBA objects for all theme colours', () => {
+		Object.values(rgba).forEach((colour) => {
+			expect(colour).toBeInstanceOf(RGBA);
+		});
+	});
+
+	it('rgba values match hex theme values', () => {
+		expect(rgba.primary).toEqual(RGBA.fromHex(theme.primary));
+		expect(rgba.background).toEqual(RGBA.fromHex(theme.background));
+		expect(rgba.success).toEqual(RGBA.fromHex(theme.success));
+	});
+});
+
+describe('theme convenience export', () => {
+	it('is themeLight', () => {
+		expect(theme).toBe(THEMES.themeLight);
+	});
 });
