@@ -26,27 +26,8 @@ export class TUI {
 		this.registerInputHandlers();
 		this.registerScreens();
 
-		try {
-			await this.router.push('dashboard');
-			this.renderer.start();
-		} catch (error) {
-			// Phase 1 (OpenTUI foundation) complete but screens not yet migrated
-			// Stop renderer before writing to stderr to avoid OpenTUI console overlay
-			try {
-				this.renderer.stop();
-			} catch {
-				// Renderer might not be in a stoppable state
-			}
-
-			// Write to stderr after renderer is stopped
-			process.stderr.write('\n❌ TUI screens not yet migrated to OpenTUI\n');
-			process.stderr.write('   Phase 1 complete (bootstrap + router)\n');
-			process.stderr.write('   Phase 2 pending (screen migration: 2TI.24-26)\n\n');
-			if (error instanceof Error) {
-				process.stderr.write(`   Error: ${error.message}\n\n`);
-			}
-			process.exit(1);
-		}
+		await this.router.push('dashboard');
+		this.renderer.start();
 	}
 
 	private registerInputHandlers(): void {
