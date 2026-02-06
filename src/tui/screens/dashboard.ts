@@ -8,6 +8,7 @@ import {
 	SelectRenderable,
 	SelectRenderableEvents,
 	type KeyEvent,
+	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
 import { theme, PALETTE } from '../theme';
@@ -19,11 +20,11 @@ interface MenuItem {
 	implemented: boolean;
 }
 
+const CONTAINER_ID = 'dashboard-root';
+
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
 	private renderer: Renderer;
-	private container?: BoxRenderable;
-	private select?: SelectRenderable;
 	private keyHandler?: (key: KeyEvent) => void;
 
 	private menuItems: MenuItem[] = [
@@ -42,7 +43,8 @@ export class Dashboard implements Screen {
 	async render(data?: ScreenData): Promise<ScreenResult> {
 		return new Promise((resolve) => {
 			// Root container
-			this.container = new BoxRenderable(this.renderer, {
+			const container = new BoxRenderable(this.renderer, {
+				id: CONTAINER_ID,
 				flexDirection: 'column',
 				width: '100%',
 				height: '100%',
@@ -55,70 +57,67 @@ export class Dashboard implements Screen {
 				font: 'block',
 				color: [PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi],
 			});
-			this.container.add(logo);
+			container.add(logo);
 
 			// Spacer
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Section heading
-			const heading = new TextRenderable(this.renderer, {
+			container.add(new TextRenderable(this.renderer, {
 				content: 'Quick Actions',
 				fg: theme.text,
-			});
-			this.container.add(heading);
+			}));
 
 			// Spacer
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Menu
-			this.select = new SelectRenderable(this.renderer, {
+			const select = new SelectRenderable(this.renderer, {
 				options: this.menuItems.map((item, index) => ({
 					name: `${index + 1}  ${item.label}`,
 					description: item.implemented ? '' : '(soon)',
 					value: item,
 				})),
+				backgroundColor: theme.background,
 				selectedBackgroundColor: theme.highlight,
 				selectedTextColor: theme.text,
 				textColor: theme.text,
 				descriptionColor: theme.textMuted,
 				flexGrow: 1,
 			});
-			this.container.add(this.select);
+			container.add(select);
 
 			// Status bar
-			const statusBar = new TextRenderable(this.renderer, {
+			container.add(new TextRenderable(this.renderer, {
 				content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
 				fg: theme.textMuted,
-			});
-			this.container.add(statusBar);
+			}));
 
 			// Add to renderer
-			this.renderer.root.add(this.container);
+			this.renderer.root.add(container);
+			select.focus();
 
-			// Event handlers
-			this.select.on(SelectRenderableEvents.ITEM_SELECTED, () => {
-				const selected = this.select?.getSelectedOption();
-				if (!selected?.value) return;
-
-				const item = selected.value as MenuItem;
+			// Menu item selected
+			select.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
+				const item = option.value as MenuItem;
+				if (!item) return;
 
 				if (item.key === 'quit') {
 					resolve({ action: 'quit' });
 				} else if (item.implemented) {
 					resolve({ action: 'push', screen: item.key });
 				}
-				// Unimplemented items: do nothing (description already shows "(soon)")
 			});
 
-			// Screen-level key handler for number keys and q/escape
+			// Screen-level key handler for q/escape/number keys
 			this.keyHandler = (key: KeyEvent) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					resolve({ action: 'quit' });
 				} else if (key.name && key.name >= '1' && key.name <= '6') {
 					const index = parseInt(key.name) - 1;
-					if (this.select && index < this.menuItems.length) {
-						this.select.setSelectedIndex(index);
-						this.select.selectCurrent();
+					if (index < this.menuItems.length) {
+						select.setSelectedIndex(index);
+						select.selectCurrent();
 					}
 				}
 			};
@@ -130,8 +129,6 @@ export class Dashboard implements Screen {
 		if (this.keyHandler) {
 			this.renderer.keyInput.off('keypress', this.keyHandler);
 		}
-		if (this.container) {
-			this.renderer.root.remove(this.container);
-		}
+		this.renderer.root.remove(CONTAINER_ID);
 	}
 }

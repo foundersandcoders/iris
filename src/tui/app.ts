@@ -1,7 +1,7 @@
 /** ====== TUI Application ======
  * Manages full-screen terminal interface, screen transitions, and workflows
  */
-import { createCliRenderer, type KeyEvent } from '@opentui/core';
+import { createCliRenderer } from '@opentui/core';
 import { Router } from './utils/router';
 import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
@@ -20,32 +20,22 @@ export class TUI {
 	constructor(private options: TUIOptions = {}) {}
 
 	async start(): Promise<void> {
-		this.renderer = await createCliRenderer();
-		this.router = new Router(this.renderer);
+		this.renderer = await createCliRenderer({
+			exitOnCtrlC: true,
+		});
 
-		this.registerInputHandlers();
+		this.router = new Router(this.renderer);
 		this.registerScreens();
 
 		await this.router.push('dashboard');
-		this.renderer.start();
-	}
 
-	private registerInputHandlers(): void {
-		this.renderer.keyInput.on('keypress', (key: KeyEvent) => {
-			if (key.ctrl && key.name === 'c') {
-				this.cleanup();
-				process.exit(0);
-			}
-		});
+		// Router returns when quit action received
+		this.renderer.destroy();
 	}
 
 	private registerScreens(): void {
 		this.router.register('dashboard', (ctx) => new Dashboard(ctx));
 		this.router.register('convert', (ctx) => new FilePicker(ctx));
 		this.router.register('processing', (ctx) => new ProcessingScreen(ctx));
-	}
-
-	private cleanup(): void {
-		this.renderer.stop();
 	}
 }

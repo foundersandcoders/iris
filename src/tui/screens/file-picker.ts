@@ -21,12 +21,13 @@ interface FileEntry {
 	path: string;
 }
 
+const CONTAINER_ID = 'file-picker-root';
+
 export class FilePicker implements Screen {
 	readonly name = 'file-picker';
 	private renderer: Renderer;
 	private currentPath: string;
 	private entries: FileEntry[] = [];
-	private container?: BoxRenderable;
 	private select?: SelectRenderable;
 	private breadcrumb?: TextRenderable;
 	private emptyMessage?: TextRenderable;
@@ -45,54 +46,7 @@ export class FilePicker implements Screen {
 		await this.loadDirectory();
 
 		return new Promise((resolve) => {
-			this.buildUI();
-
-			// SelectRenderable event handler
-			if (this.select) {
-				this.select.on(SelectRenderableEvents.ITEM_SELECTED, async () => {
-					const selected = this.select?.getSelectedOption();
-					if (!selected?.value) return;
-
-					const entry = selected.value as FileEntry;
-
-					if (entry.isDirectory) {
-						// Navigate into directory
-						this.currentPath = entry.path;
-						this.select!.setSelectedIndex(0);
-						await this.loadDirectory();
-						this.updateSelectOptions();
-						if (this.breadcrumb) {
-							this.breadcrumb.content = this.shortenPath(this.currentPath);
-						}
-					} else {
-						// File selected - push to processing
-						resolve({
-							action: 'push',
-							screen: 'processing',
-							data: { filePath: entry.path },
-						});
-					}
-				});
-			}
-
-			// Screen-level key handler
-			this.keyHandler = async (key: KeyEvent) => {
-				if (key.name === 'backspace' || key.name === 'left') {
-					const parent = path.dirname(this.currentPath);
-					if (parent !== this.currentPath) {
-						this.currentPath = parent;
-						this.select?.setSelectedIndex(0);
-						await this.loadDirectory();
-						this.updateSelectOptions();
-						if (this.breadcrumb) {
-							this.breadcrumb.content = this.shortenPath(this.currentPath);
-						}
-					}
-				} else if (key.name === 'escape' || key.name === 'q') {
-					resolve({ action: 'pop' });
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
+			this.buildUI(resolve);
 		});
 	}
 
@@ -100,14 +54,13 @@ export class FilePicker implements Screen {
 		if (this.keyHandler) {
 			this.renderer.keyInput.off('keypress', this.keyHandler);
 		}
-		if (this.container) {
-			this.renderer.root.remove(this.container);
-		}
+		this.renderer.root.remove(CONTAINER_ID);
 	}
 
-	private buildUI(): void {
+	private buildUI(resolve: (result: ScreenResult) => void): void {
 		// Root container
-		this.container = new BoxRenderable(this.renderer, {
+		const container = new BoxRenderable(this.renderer, {
+			id: CONTAINER_ID,
 			flexDirection: 'column',
 			width: '100%',
 			height: '100%',
@@ -119,11 +72,10 @@ export class FilePicker implements Screen {
 			flexDirection: 'column',
 		});
 
-		const title = new TextRenderable(this.renderer, {
+		header.add(new TextRenderable(this.renderer, {
 			content: 'Select CSV File',
 			fg: theme.primary,
-		});
-		header.add(title);
+		}));
 
 		this.breadcrumb = new TextRenderable(this.renderer, {
 			content: this.shortenPath(this.currentPath),
@@ -131,7 +83,7 @@ export class FilePicker implements Screen {
 		});
 		header.add(this.breadcrumb);
 
-		this.container.add(header);
+		container.add(header);
 
 		// File list or empty message
 		if (this.entries.length === 0) {
@@ -140,56 +92,87 @@ export class FilePicker implements Screen {
 				fg: theme.textMuted,
 				flexGrow: 1,
 			});
-			this.container.add(this.emptyMessage);
+			container.add(this.emptyMessage);
 		} else {
 			this.select = new SelectRenderable(this.renderer, {
 				options: this.entriesToOptions(),
+				backgroundColor: theme.background,
 				selectedBackgroundColor: theme.highlight,
 				selectedTextColor: theme.text,
 				textColor: theme.text,
 				showScrollIndicator: true,
 				flexGrow: 1,
 			});
-			this.container.add(this.select);
+			container.add(this.select);
 		}
 
 		// Status bar
-		const statusBar = new TextRenderable(this.renderer, {
+		container.add(new TextRenderable(this.renderer, {
 			content: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
 			fg: theme.textMuted,
-		});
-		this.container.add(statusBar);
+		}));
 
 		// Add to renderer
-		this.renderer.root.add(this.container);
+		this.renderer.root.add(container);
+
+		// Focus select if it exists
+		if (this.select) {
+			this.select.focus();
+
+			// Item selected
+			this.select.on(SelectRenderableEvents.ITEM_SELECTED, async (index: number, option: SelectOption) => {
+				const entry = option.value as FileEntry;
+				if (!entry) return;
+
+				if (entry.isDirectory) {
+					this.currentPath = entry.path;
+					await this.loadDirectory();
+					this.updateSelectOptions();
+					if (this.breadcrumb) {
+						this.breadcrumb.content = this.shortenPath(this.currentPath);
+					}
+				} else {
+					resolve({
+						action: 'push',
+						screen: 'processing',
+						data: { filePath: entry.path },
+					});
+				}
+			});
+		}
+
+		// Screen-level key handler
+		this.keyHandler = async (key: KeyEvent) => {
+			if (key.name === 'backspace' || key.name === 'left') {
+				const parent = path.dirname(this.currentPath);
+				if (parent !== this.currentPath) {
+					this.currentPath = parent;
+					await this.loadDirectory();
+					this.updateSelectOptions();
+					if (this.breadcrumb) {
+						this.breadcrumb.content = this.shortenPath(this.currentPath);
+					}
+				}
+			} else if (key.name === 'escape' || key.name === 'q') {
+				resolve({ action: 'pop' });
+			}
+		};
+		this.renderer.keyInput.on('keypress', this.keyHandler);
 	}
 
 	private updateSelectOptions(): void {
 		if (!this.select) return;
 
 		if (this.entries.length === 0) {
-			// Hide select, show empty message
 			this.select.visible = false;
-			if (!this.emptyMessage) {
-				this.emptyMessage = new TextRenderable(this.renderer, {
-					content: '  No CSV files found in this directory.',
-					fg: theme.textMuted,
-					flexGrow: 1,
-				});
-				// Insert before status bar (last child)
-				const statusBar = this.container?.children[this.container.children.length - 1];
-				if (statusBar && this.container) {
-					this.container.remove(statusBar);
-					this.container.add(this.emptyMessage);
-					this.container.add(statusBar);
-				}
-			} else {
+			if (this.emptyMessage) {
 				this.emptyMessage.visible = true;
 			}
 		} else {
-			// Update select options
 			this.select.options = this.entriesToOptions();
+			this.select.setSelectedIndex(0);
 			this.select.visible = true;
+			this.select.focus();
 			if (this.emptyMessage) {
 				this.emptyMessage.visible = false;
 			}

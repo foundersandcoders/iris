@@ -19,9 +19,20 @@ export function createMockRenderer(): Renderer {
 		removeAllListeners: vi.fn(),
 	};
 
+	const mockInternalKeyInput = {
+		on: vi.fn(),
+		off: vi.fn(),
+		once: vi.fn(),
+		emit: vi.fn(),
+		onInternal: vi.fn(),
+		offInternal: vi.fn(),
+		removeAllListeners: vi.fn(),
+	};
+
 	return {
 		root: mockRoot,
 		keyInput: mockKeyInput,
+		_internalKeyInput: mockInternalKeyInput,
 		start: vi.fn(),
 		stop: vi.fn(),
 		// RenderContext methods needed by renderables

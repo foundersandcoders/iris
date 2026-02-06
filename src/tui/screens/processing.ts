@@ -39,6 +39,8 @@ interface StepRenderables {
 	errorsContainer: BoxRenderable | null;
 }
 
+const CONTAINER_ID = 'processing-root';
+
 export class ProcessingScreen implements Screen {
 	readonly name = 'processing';
 	private renderer: Renderer;
@@ -116,14 +118,13 @@ export class ProcessingScreen implements Screen {
 				renderables.spinner.stop();
 			}
 		}
-		if (this.container) {
-			this.renderer.root.remove(this.container);
-		}
+		this.renderer.root.remove(CONTAINER_ID);
 	}
 
 	private buildUI(): void {
 		// Root container
 		this.container = new BoxRenderable(this.renderer, {
+			id: CONTAINER_ID,
 			flexDirection: 'column',
 			width: '100%',
 			height: '100%',
@@ -215,7 +216,7 @@ export class ProcessingScreen implements Screen {
 
 			// Replace icon with spinner
 			if (renderables.iconText) {
-				renderables.iconContainer.remove(renderables.iconText);
+				renderables.iconContainer.remove(renderables.iconText.id);
 			}
 			renderables.spinner = new SpinnerRenderable(this.renderer, {
 				autoplay: true,
@@ -231,7 +232,7 @@ export class ProcessingScreen implements Screen {
 			// Stop spinner, replace with success icon
 			if (renderables.spinner) {
 				renderables.spinner.stop();
-				renderables.iconContainer.remove(renderables.spinner);
+				renderables.iconContainer.remove(renderables.spinner.id);
 				renderables.spinner = null;
 			}
 			renderables.iconText = new TextRenderable(this.renderer, {
@@ -307,7 +308,7 @@ export class ProcessingScreen implements Screen {
 			// Stop spinner, replace with error icon
 			if (renderables.spinner) {
 				renderables.spinner.stop();
-				renderables.iconContainer.remove(renderables.spinner);
+				renderables.iconContainer.remove(renderables.spinner.id);
 				renderables.spinner = null;
 			}
 			renderables.iconText = new TextRenderable(this.renderer, {
