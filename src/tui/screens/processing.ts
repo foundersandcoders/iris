@@ -2,9 +2,11 @@
  *
  * Displays live progress as the convert workflow runs.
  * Shows step status, messages, and handles completion/errors.
+ *
+ * TODO: Full OpenTUI migration in 2TI.26
  */
 
-import type { Terminal } from 'terminal-kit';
+import type { RenderContext } from '../types';
 import { THEMES } from '../theme';
 import { Layout } from '../utils/layout';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
@@ -40,9 +42,12 @@ export class ProcessingScreen implements Screen {
 	];
 	private result: WorkflowResult<ConvertOutput> | null = null;
 	private error: Error | null = null;
+	private term: any; // Stub until OpenTUI migration
 
-	constructor(private term: Terminal) {
-		this.layout = new Layout(term);
+	constructor(ctx: RenderContext) {
+		// Stub: Cast renderer to term for now (will not work at runtime)
+		this.term = (ctx as any).renderer;
+		this.layout = new Layout(this.term);
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
