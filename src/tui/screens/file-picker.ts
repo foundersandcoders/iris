@@ -1,12 +1,19 @@
-/** TODO: Full OpenTUI migration in 2TI.25 */
+/** ====== File Picker Screen ======
+ * Directory browser for selecting CSV files
+ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { RenderContext } from '../types';
-import { Layout } from '../utils/layout';
-import { THEMES } from '../theme';
+import {
+	BoxRenderable,
+	TextRenderable,
+	SelectRenderable,
+	SelectRenderableEvents,
+	type KeyEvent,
+	type SelectOption,
+} from '@opentui/core';
+import type { RenderContext, Renderer } from '../types';
+import { theme } from '../theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-
-const theme = THEMES.themeLight;
 
 interface FileEntry {
 	name: string;
@@ -16,192 +23,221 @@ interface FileEntry {
 
 export class FilePicker implements Screen {
 	readonly name = 'file-picker';
-	private layout: Layout;
+	private renderer: Renderer;
 	private currentPath: string;
 	private entries: FileEntry[] = [];
-	private selectedIndex = 0;
-	private scrollOffset = 0;
-	private showHidden = false;
-	private term: any; // Stub until OpenTUI migration
+	private container?: BoxRenderable;
+	private select?: SelectRenderable;
+	private breadcrumb?: TextRenderable;
+	private emptyMessage?: TextRenderable;
+	private keyHandler?: (key: KeyEvent) => void;
 
 	constructor(ctx: RenderContext) {
-		// Stub: Cast renderer to term for now (will not work at runtime)
-		this.term = (ctx as any).renderer;
-		this.layout = new Layout(this.term);
+		this.renderer = ctx.renderer;
 		this.currentPath = process.cwd();
 	}
 
-  async render(data?: ScreenData): Promise<ScreenResult> {
-    if (data?.path && typeof data.path === 'string') {
-      this.currentPath = data.path;
-    }
+	async render(data?: ScreenData): Promise<ScreenResult> {
+		if (data?.path && typeof data.path === 'string') {
+			this.currentPath = data.path;
+		}
 
-    await this.loadDirectory();
+		await this.loadDirectory();
 
-    return new Promise((resolve) => {
-      this.drawScreen();
+		return new Promise((resolve) => {
+			this.buildUI();
 
-      this.term.on('key', async (key: string) => {
-        if (key === 'UP') {
-          if (this.selectedIndex > 0) {
-            this.selectedIndex--;
-            this.adjustScroll();
-            this.drawScreen();
-          }
-        } else if (key === 'DOWN') {
-          if (this.selectedIndex < this.entries.length - 1) {
-            this.selectedIndex++;
-            this.adjustScroll();
-            this.drawScreen();
-          }
-        }
-        else if (key === 'PAGE_UP') {
-          const region = this.layout.draw({ title: '' });
-          const pageSize = region.contentHeight;
-          this.selectedIndex = Math.max(0, this.selectedIndex - pageSize);
-          this.adjustScroll();
-          this.drawScreen();
-        } else if (key === 'PAGE_DOWN') {
-          const region = this.layout.draw({ title: '' });
-          const pageSize = region.contentHeight;
-          this.selectedIndex = Math.min(this.entries.length - 1, this.selectedIndex + pageSize);
-          this.adjustScroll();
-          this.drawScreen();
-        }
-        else if (key === 'ENTER') {
-          const selected = this.entries[this.selectedIndex];
-          if (selected) {
-            if (selected.isDirectory) {
-              this.currentPath = selected.path;
-              this.selectedIndex = 0;
-              this.scrollOffset = 0;
-              await this.loadDirectory();
-              this.drawScreen();
-            } else {
-              this.cleanup();
-              resolve({
-                action: 'push',
-                screen: 'processing',
-                data: { filePath: selected.path }
-              });
-            }
-          }
-        } else if (key === 'BACKSPACE' || key === 'LEFT') {
-          const parent = path.dirname(this.currentPath);
-          if (parent !== this.currentPath) {
-            this.currentPath = parent;
-            this.selectedIndex = 0;
-            this.scrollOffset = 0;
-            await this.loadDirectory();
-            this.drawScreen();
-          }
-        } else if (key === 'q' || key === 'ESCAPE') {
-          this.cleanup();
-          resolve({ action: 'pop' });
-        }
-      });
-    });
-  }
+			// SelectRenderable event handler
+			if (this.select) {
+				this.select.on(SelectRenderableEvents.ITEM_SELECTED, async () => {
+					const selected = this.select?.getSelectedOption();
+					if (!selected?.value) return;
 
-  cleanup(): void {
-    this.term.removeAllListeners('key');
-  }
+					const entry = selected.value as FileEntry;
 
-  private async loadDirectory() {
-    try {
-      const dirents = await fs.readdir(this.currentPath, { withFileTypes: true });
+					if (entry.isDirectory) {
+						// Navigate into directory
+						this.currentPath = entry.path;
+						this.select!.setSelectedIndex(0);
+						await this.loadDirectory();
+						this.updateSelectOptions();
+						if (this.breadcrumb) {
+							this.breadcrumb.content = this.shortenPath(this.currentPath);
+						}
+					} else {
+						// File selected - push to processing
+						resolve({
+							action: 'push',
+							screen: 'processing',
+							data: { filePath: entry.path },
+						});
+					}
+				});
+			}
 
-      const filtered = dirents.filter(d => {
-        if (!this.showHidden && d.name.startsWith('.') && d.name !== '..') return false;
-        if (d.isDirectory()) return true;
-        if (d.name.toLowerCase().endsWith('.csv')) return true;
-        return false;
-      });
+			// Screen-level key handler
+			this.keyHandler = async (key: KeyEvent) => {
+				if (key.name === 'backspace' || key.name === 'left') {
+					const parent = path.dirname(this.currentPath);
+					if (parent !== this.currentPath) {
+						this.currentPath = parent;
+						this.select?.setSelectedIndex(0);
+						await this.loadDirectory();
+						this.updateSelectOptions();
+						if (this.breadcrumb) {
+							this.breadcrumb.content = this.shortenPath(this.currentPath);
+						}
+					}
+				} else if (key.name === 'escape' || key.name === 'q') {
+					resolve({ action: 'pop' });
+				}
+			};
+			this.renderer.keyInput.on('keypress', this.keyHandler);
+		});
+	}
 
-      const mapped: FileEntry[] = filtered.map(d => ({
-        name: d.name,
-        isDirectory: d.isDirectory(),
-        path: path.join(this.currentPath, d.name)
-      }));
+	cleanup(): void {
+		if (this.keyHandler) {
+			this.renderer.keyInput.off('keypress', this.keyHandler);
+		}
+		if (this.container) {
+			this.renderer.root.remove(this.container);
+		}
+	}
 
-      mapped.sort((a, b) => {
-        if (a.isDirectory && !b.isDirectory) return -1;
-        if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name);
-      });
+	private buildUI(): void {
+		// Root container
+		this.container = new BoxRenderable(this.renderer, {
+			flexDirection: 'column',
+			width: '100%',
+			height: '100%',
+			backgroundColor: theme.background,
+		});
 
-      this.entries = mapped;
-    } catch (error) {
-      this.entries = [];
-    }
-  }
+		// Header
+		const header = new BoxRenderable(this.renderer, {
+			flexDirection: 'column',
+		});
 
-  private adjustScroll() {
-    const region = this.layout.draw({ title: '' });
-    const height = region.contentHeight;
+		const title = new TextRenderable(this.renderer, {
+			content: 'Select CSV File',
+			fg: theme.primary,
+		});
+		header.add(title);
 
-    if (this.selectedIndex < this.scrollOffset) {
-      this.scrollOffset = this.selectedIndex;
-    } else if (this.selectedIndex >= this.scrollOffset + height) {
-      this.scrollOffset = this.selectedIndex - height + 1;
-    }
-  }
+		this.breadcrumb = new TextRenderable(this.renderer, {
+			content: this.shortenPath(this.currentPath),
+			fg: theme.textMuted,
+		});
+		header.add(this.breadcrumb);
 
-  private drawScreen(): void {
-    const region = this.layout.draw({
-      title: 'Select CSV File',
-      breadcrumbs: [this.shortenPath(this.currentPath)],
-      statusBar: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
-      showBack: true,
-    });
+		this.container.add(header);
 
-    const visibleHeight = region.contentHeight;
-    const visibleItems = this.entries.slice(this.scrollOffset, this.scrollOffset + visibleHeight);
+		// File list or empty message
+		if (this.entries.length === 0) {
+			this.emptyMessage = new TextRenderable(this.renderer, {
+				content: '  No CSV files found in this directory.',
+				fg: theme.textMuted,
+				flexGrow: 1,
+			});
+			this.container.add(this.emptyMessage);
+		} else {
+			this.select = new SelectRenderable(this.renderer, {
+				options: this.entriesToOptions(),
+				selectedBackgroundColor: theme.highlight,
+				selectedTextColor: theme.text,
+				textColor: theme.text,
+				showScrollIndicator: true,
+				flexGrow: 1,
+			});
+			this.container.add(this.select);
+		}
 
-    if (this.entries.length === 0) {
-      this.term.moveTo(3, region.contentTop + 2);
-      this.term.colorRgbHex(theme.textMuted)('No CSV files found in this directory.');
-      return;
-    }
+		// Status bar
+		const statusBar = new TextRenderable(this.renderer, {
+			content: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
+			fg: theme.textMuted,
+		});
+		this.container.add(statusBar);
 
-    visibleItems.forEach((item, index) => {
-      const y = region.contentTop + index;
-      const actualIndex = this.scrollOffset + index;
-      const isSelected = actualIndex === this.selectedIndex;
+		// Add to renderer
+		this.renderer.root.add(this.container);
+	}
 
-      this.term.moveTo(1, y);
+	private updateSelectOptions(): void {
+		if (!this.select) return;
 
-      if (isSelected) {
-        // Light highlight background
-        this.term.bgColorRgbHex(theme.highlight);
-        // Dark text on highlight
-        this.term.colorRgbHex(theme.text);
-        this.term.eraseLineAfter();
-      } else {
-        this.term.bgDefaultColor();
-      }
+		if (this.entries.length === 0) {
+			// Hide select, show empty message
+			this.select.visible = false;
+			if (!this.emptyMessage) {
+				this.emptyMessage = new TextRenderable(this.renderer, {
+					content: '  No CSV files found in this directory.',
+					fg: theme.textMuted,
+					flexGrow: 1,
+				});
+				// Insert before status bar (last child)
+				const statusBar = this.container?.children[this.container.children.length - 1];
+				if (statusBar && this.container) {
+					this.container.remove(statusBar);
+					this.container.add(this.emptyMessage);
+					this.container.add(statusBar);
+				}
+			} else {
+				this.emptyMessage.visible = true;
+			}
+		} else {
+			// Update select options
+			this.select.options = this.entriesToOptions();
+			this.select.visible = true;
+			if (this.emptyMessage) {
+				this.emptyMessage.visible = false;
+			}
+		}
+	}
 
-      const icon = item.isDirectory ? '📁' : '📄';
-      const color = item.isDirectory ? theme.primary : theme.success;
+	private entriesToOptions(): SelectOption[] {
+		return this.entries.map((entry) => ({
+			name: `${entry.isDirectory ? '📁' : '📄'}  ${entry.name}`,
+			description: '',
+			value: entry,
+		}));
+	}
 
-      this.term('  ');
-      if (isSelected) {
-        this.term.colorRgbHex(color)(icon + '  ');
-        this.term.colorRgbHex(theme.text)(item.name);
-      } else {
-        this.term.colorRgbHex(color)(icon + '  ');
-        this.term.colorRgbHex(theme.text)(item.name);
-      }
-      
-      this.term.styleReset();
-    });
-  }
+	private async loadDirectory(): Promise<void> {
+		try {
+			const dirents = await fs.readdir(this.currentPath, { withFileTypes: true });
 
-  private shortenPath(fullPath: string): string {
-    const home = process.env.HOME || '';
-    if (fullPath.startsWith(home)) {
-      return '~' + fullPath.slice(home.length);
-    }
-    return fullPath;
-  }
+			const filtered = dirents.filter((d) => {
+				if (d.name.startsWith('.') && d.name !== '..') return false;
+				if (d.isDirectory()) return true;
+				if (d.name.toLowerCase().endsWith('.csv')) return true;
+				return false;
+			});
+
+			const mapped: FileEntry[] = filtered.map((d) => ({
+				name: d.name,
+				isDirectory: d.isDirectory(),
+				path: path.join(this.currentPath, d.name),
+			}));
+
+			mapped.sort((a, b) => {
+				if (a.isDirectory && !b.isDirectory) return -1;
+				if (!a.isDirectory && b.isDirectory) return 1;
+				return a.name.localeCompare(b.name);
+			});
+
+			this.entries = mapped;
+		} catch (error) {
+			this.entries = [];
+		}
+	}
+
+	private shortenPath(fullPath: string): string {
+		const home = process.env.HOME || '';
+		if (fullPath.startsWith(home)) {
+			return '~' + fullPath.slice(home.length);
+		}
+		return fullPath;
+	}
 }
