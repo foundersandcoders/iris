@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProcessingScreen } from '../../../src/tui/screens/processing';
 import * as tuiFixtures from '../../fixtures/tui/tui';
 
-// TODO: Full migration in Phase 2 (2TI.26)
-describe.skip('ProcessingScreen', () => {
+describe('ProcessingScreen', () => {
 	let mockContext: ReturnType<typeof tuiFixtures.createMockContext>;
 
 	beforeEach(() => {
@@ -46,5 +45,92 @@ describe.skip('ProcessingScreen', () => {
 		expect(typeof getColor('complete')).toBe('string');
 		expect(typeof getColor('failed')).toBe('string');
 		expect(typeof getColor('skipped')).toBe('string');
+	});
+
+	it('handleEvent updates step status on step:start', () => {
+		const screen = new ProcessingScreen(mockContext);
+
+		// Build UI to initialize stepRenderables
+		(screen as any).buildUI();
+
+		const steps = (screen as any).steps;
+		const parseStep = steps.find((s: any) => s.id === 'parse');
+
+		expect(parseStep.status).toBe('pending');
+
+		const event = {
+			type: 'step:start' as const,
+			step: { id: 'parse', name: 'Parse CSV', status: 'running' as const },
+			timestamp: Date.now(),
+		};
+
+		(screen as any).handleEvent(event);
+
+		expect(parseStep.status).toBe('running');
+
+		screen.cleanup();
+	});
+
+	it('handleEvent updates step status on step:complete', () => {
+		const screen = new ProcessingScreen(mockContext);
+
+		// Build UI to initialize stepRenderables
+		(screen as any).buildUI();
+
+		const steps = (screen as any).steps;
+		const parseStep = steps.find((s: any) => s.id === 'parse');
+
+		// Start the step first
+		(screen as any).handleEvent({
+			type: 'step:start',
+			step: { id: 'parse', name: 'Parse CSV', status: 'running' },
+			timestamp: Date.now(),
+		});
+
+		const completeEvent = {
+			type: 'step:complete' as const,
+			step: {
+				id: 'parse',
+				name: 'Parse CSV',
+				status: 'complete' as const,
+				message: 'Parsed 10 rows',
+			},
+			timestamp: Date.now(),
+		};
+
+		(screen as any).handleEvent(completeEvent);
+
+		expect(parseStep.status).toBe('complete');
+		expect(parseStep.message).toBe('Parsed 10 rows');
+
+		screen.cleanup();
+	});
+
+	it('handleEvent updates step status on step:error', () => {
+		const screen = new ProcessingScreen(mockContext);
+
+		// Build UI to initialize stepRenderables
+		(screen as any).buildUI();
+
+		const steps = (screen as any).steps;
+		const parseStep = steps.find((s: any) => s.id === 'parse');
+
+		const errorEvent = {
+			type: 'step:error' as const,
+			step: {
+				id: 'parse',
+				name: 'Parse CSV',
+				status: 'failed' as const,
+				error: new Error('Failed to parse'),
+			},
+			timestamp: Date.now(),
+		};
+
+		(screen as any).handleEvent(errorEvent);
+
+		expect(parseStep.status).toBe('failed');
+		expect(parseStep.message).toBe('Failed to parse');
+
+		screen.cleanup();
 	});
 });
