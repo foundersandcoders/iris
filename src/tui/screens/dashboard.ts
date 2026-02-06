@@ -42,7 +42,7 @@ export class Dashboard implements Screen {
 	async render(data?: ScreenData): Promise<ScreenResult> {
 		return new Promise((resolve) => {
 			// Root container
-			this.container = new BoxRenderable({
+			this.container = new BoxRenderable(this.renderer, {
 				flexDirection: 'column',
 				width: '100%',
 				height: '100%',
@@ -50,7 +50,7 @@ export class Dashboard implements Screen {
 			});
 
 			// Logo with gradient (Tyrian → Blueglass)
-			const logo = new ASCIIFontRenderable({
+			const logo = new ASCIIFontRenderable(this.renderer, {
 				text: 'Iris',
 				font: 'block',
 				color: [PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi],
@@ -58,20 +58,20 @@ export class Dashboard implements Screen {
 			this.container.add(logo);
 
 			// Spacer
-			this.container.add(new TextRenderable({ content: '' }));
+			this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Section heading
-			const heading = new TextRenderable({
+			const heading = new TextRenderable(this.renderer, {
 				content: 'Quick Actions',
 				fg: theme.text,
 			});
 			this.container.add(heading);
 
 			// Spacer
-			this.container.add(new TextRenderable({ content: '' }));
+			this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Menu
-			this.select = new SelectRenderable({
+			this.select = new SelectRenderable(this.renderer, {
 				options: this.menuItems.map((item, index) => ({
 					name: `${index + 1}  ${item.label}`,
 					description: item.implemented ? '' : '(soon)',
@@ -86,7 +86,7 @@ export class Dashboard implements Screen {
 			this.container.add(this.select);
 
 			// Status bar
-			const statusBar = new TextRenderable({
+			const statusBar = new TextRenderable(this.renderer, {
 				content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
 				fg: theme.textMuted,
 			});
