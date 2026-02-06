@@ -151,20 +151,17 @@ title: M2A — Core TUI Features (post-migration)
 ---
 graph TD
 
-2TI.11["`*2TI.11*<br/>**MUST**<br/>keyboard navigation`"]:::must-open --> 2TI.13 & 2TI.7 & 2TI.12
-
-2TI.13["`*2TI.13*<br/>**MUST**<br/>convert screen`"]:::must-blocked --> 2TI.14 & 2TI.8
-2TI.7["`*2TI.7*<br/>**MUST**<br/>validation explorer`"]:::must-blocked --> 2TI.14 & 2TI.15 & 2TI.8
+2TI.13["`*2TI.13*<br/>**MUST**<br/>convert screen`"]:::must-open --> 2TI.14 & 2TI.8
+2TI.7["`*2TI.7*<br/>**MUST**<br/>validation explorer`"]:::must-open --> 2TI.14 & 2TI.15 & 2TI.8
 
 2TI.14["`*2TI.14*<br/>**MUST**<br/>validate screen`"]:::must-blocked --> 2TI.15 & 2TI.8
 2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked --> 2TI.12 & 2TI.17 & 2TI.8
 
-2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-blocked --> 2TI.17
+2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-open --> 2TI.17
 
 2TI.8["`*2TI.8*<br/>**SHOULD**<br/>success screen`"]:::should-blocked
 
 2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
-
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-open fill:#6F2A52,color:#fff;
@@ -211,6 +208,7 @@ graph TD
 
 2DC.4["`*2DC.4*<br/>**COULD**<br/>iris check`"]:::could-blocked
 
+classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-open fill:#6F2A52,color:#fff;
@@ -273,6 +271,7 @@ graph TD
 2DC.3 -.->| optional | 2TS.2
 2TS.2 -.->| optional | 2TS.3 & 2TI.19
 
+classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-open fill:#6F2A52,color:#fff;
@@ -315,13 +314,12 @@ title: Phase 1 — Complete Picture
 graph TD
 
 %% M2A Core Tasks %%
-2TI.11["`*2TI.11*<br/>feat<br/>keyboard nav`"]:::must-open
-2TI.13["`*2TI.13*<br/>screen<br/>convert`"]:::must-blocked
-2TI.7["`*2TI.7*<br/>component<br/>validation explorer`"]:::must-blocked
+2TI.13["`*2TI.13*<br/>screen<br/>convert`"]:::must-open
+2TI.7["`*2TI.7*<br/>component<br/>validation explorer`"]:::must-open
 2TI.14["`*2TI.14*<br/>screen<br/>validate`"]:::must-blocked
 2TI.15["`*2TI.15*<br/>screen<br/>check`"]:::must-blocked
 2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-blocked
-2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-blocked
+2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-open
 2TI.8["`*2TI.8*<br/>screen<br/>success`"]:::should-blocked
 
 %% M2B Tasks %%
@@ -348,7 +346,6 @@ graph TD
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2A Dependencies %%
-2TI.11 --> 2TI.13 & 2TI.7 & 2TI.12
 2TI.13 --> 2TI.14 & 2TI.8
 2TI.7 --> 2TI.14 & 2TI.15 & 2TI.8
 2TI.14 --> 2TI.15 & 2TI.8
@@ -377,6 +374,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TS.2 -.->| optional | 2TS.3 & 2TI.19
 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 -.->| optional | phase1
 
+classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-open fill:#6F2A52,color:#fff;
