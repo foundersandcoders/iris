@@ -12,7 +12,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../theme';
+import { theme, PALETTE } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
 interface FileEntry {
@@ -72,10 +72,12 @@ export class FilePicker implements Screen {
 			flexDirection: 'column',
 		});
 
-		header.add(new TextRenderable(this.renderer, {
-			content: 'Select CSV File',
-			fg: theme.primary,
-		}));
+		header.add(
+			new TextRenderable(this.renderer, {
+				content: 'Select CSV File',
+				fg: theme.primary,
+			})
+		);
 
 		this.breadcrumb = new TextRenderable(this.renderer, {
 			content: this.shortenPath(this.currentPath),
@@ -107,10 +109,12 @@ export class FilePicker implements Screen {
 		}
 
 		// Status bar
-		container.add(new TextRenderable(this.renderer, {
-			content: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
-			fg: theme.textMuted,
-		}));
+		container.add(
+			new TextRenderable(this.renderer, {
+				content: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
+				fg: theme.textMuted,
+			})
+		);
 
 		// Add to renderer
 		this.renderer.root.add(container);
@@ -120,25 +124,28 @@ export class FilePicker implements Screen {
 			this.select.focus();
 
 			// Item selected
-			this.select.on(SelectRenderableEvents.ITEM_SELECTED, async (index: number, option: SelectOption) => {
-				const entry = option.value as FileEntry;
-				if (!entry) return;
+			this.select.on(
+				SelectRenderableEvents.ITEM_SELECTED,
+				async (index: number, option: SelectOption) => {
+					const entry = option.value as FileEntry;
+					if (!entry) return;
 
-				if (entry.isDirectory) {
-					this.currentPath = entry.path;
-					await this.loadDirectory();
-					this.updateSelectOptions();
-					if (this.breadcrumb) {
-						this.breadcrumb.content = this.shortenPath(this.currentPath);
+					if (entry.isDirectory) {
+						this.currentPath = entry.path;
+						await this.loadDirectory();
+						this.updateSelectOptions();
+						if (this.breadcrumb) {
+							this.breadcrumb.content = this.shortenPath(this.currentPath);
+						}
+					} else {
+						resolve({
+							action: 'push',
+							screen: 'processing',
+							data: { filePath: entry.path },
+						});
 					}
-				} else {
-					resolve({
-						action: 'push',
-						screen: 'processing',
-						data: { filePath: entry.path },
-					});
 				}
-			});
+			);
 		}
 
 		// Screen-level key handler

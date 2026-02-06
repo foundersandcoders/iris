@@ -1,14 +1,10 @@
 /** ====== Processing Screen ======
  * Displays live progress as the convert workflow runs
  */
-import {
-	BoxRenderable,
-	TextRenderable,
-	type KeyEvent,
-} from '@opentui/core';
+import { BoxRenderable, TextRenderable, type KeyEvent } from '@opentui/core';
 import { SpinnerRenderable } from 'opentui-spinner';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../theme';
+import { theme } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
@@ -72,9 +68,7 @@ export class ProcessingScreen implements Screen {
 		const schemaResult = await storage.loadSchema('schemafile25.xsd');
 
 		if (!schemaResult.success) {
-			this.error = new Error(
-				`Failed to load schema: ${schemaResult.error.message}`
-			);
+			this.error = new Error(`Failed to load schema: ${schemaResult.error.message}`);
 			this.buildUI();
 			this.showError();
 			return this.waitForKeyThenPop();
@@ -262,9 +256,7 @@ export class ProcessingScreen implements Screen {
 				step.errorSamples = sampleErrors.map((e) => {
 					const rowDisplay = e.row !== undefined ? ` (row ${e.row})` : '';
 					const valueDisplay =
-						e.actualValue !== undefined
-							? ` [value: ${JSON.stringify(e.actualValue)}]`
-							: '';
+						e.actualValue !== undefined ? ` [value: ${JSON.stringify(e.actualValue)}]` : '';
 					return `${e.field || 'general'}: ${e.message}${rowDisplay}${valueDisplay}`;
 				});
 
@@ -344,9 +336,7 @@ export class ProcessingScreen implements Screen {
 	private showResult(): void {
 		if (!this.result || !this.resultContainer) return;
 
-		this.resultContainer.add(
-			new TextRenderable(this.renderer, { content: '' })
-		);
+		this.resultContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 		if (this.result.success) {
 			const successText = new TextRenderable(this.renderer, {

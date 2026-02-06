@@ -11,7 +11,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../theme';
+import { theme, PALETTE } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
 interface MenuItem {
@@ -63,10 +63,12 @@ export class Dashboard implements Screen {
 			container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Section heading
-			container.add(new TextRenderable(this.renderer, {
-				content: 'Quick Actions',
-				fg: theme.text,
-			}));
+			container.add(
+				new TextRenderable(this.renderer, {
+					content: 'Quick Actions',
+					fg: theme.text,
+				})
+			);
 
 			// Spacer
 			container.add(new TextRenderable(this.renderer, { content: '' }));
@@ -88,10 +90,12 @@ export class Dashboard implements Screen {
 			container.add(select);
 
 			// Status bar
-			container.add(new TextRenderable(this.renderer, {
-				content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
-				fg: theme.textMuted,
-			}));
+			container.add(
+				new TextRenderable(this.renderer, {
+					content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
+					fg: theme.textMuted,
+				})
+			);
 
 			// Add to renderer
 			this.renderer.root.add(container);
