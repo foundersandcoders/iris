@@ -176,7 +176,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TI.11** — Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`)
+- [x] **2TI.11** — Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`)
 - [ ] **2TI.13** — Build convert workflow screen (file select → process → results) — **depends on 2TI.11**
 - [ ] **2TI.7** — Build validation results explorer (error/warning navigation; uses `ScrollBox` for error list, `Code` for XML preview, `TabSelect` for error categories) — **depends on 2TI.11**
 - [ ] **2TI.14** — Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
