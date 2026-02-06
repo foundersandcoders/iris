@@ -10,9 +10,20 @@ const command = args[0];
 
 // No arguments = Launch TUI
 if (!command) {
-  const tui = new TUI();
-  await tui.start();
-  process.exit(0);
+	// TODO: TUI screens not yet migrated to OpenTUI (Phase 2: 2TI.24-26)
+	// OpenTUI foundation is complete but screens still use terminal-kit
+	console.error('❌ TUI not available yet');
+	console.error('   OpenTUI foundation complete (Phase 1: 2TI.20-23)');
+	console.error('   Screen migration pending (Phase 2: 2TI.24-26)');
+	console.error('\n   Use direct commands for now:');
+	console.error('     iris help');
+	console.error('     iris convert <file.csv>');
+	process.exit(1);
+
+	// Temporarily disabled until Phase 2
+	// const tui = new TUI();
+	// await tui.start();
+	// process.exit(0);
 }
 
 // Direct commands (existing implementation)
