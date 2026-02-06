@@ -16,8 +16,7 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 
 ## Tech Stack
 - **Runtime:** Bun
-- **TUI Framework:** terminal-kit (primary interface)
-- **TUI Libraries:** consola, chalk, gradient-string, cli-table3, boxen, ora, listr2, figures
+- **TUI Framework:** @opentui/core (primary interface)
 - **Desktop Framework:** Tauri (Rust backend, no Rust code written)
 - **Frontend:** SvelteKit with TypeScript (desktop GUI)
 - **Storage:** File-based (local filesystem, no database)

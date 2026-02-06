@@ -47,7 +47,7 @@ bun tauri dev
 
 Built on a shared TypeScript core with multiple interfaces:
 
-- **TUI** (primary): terminal-kit, full-screen interactive interface
+- **TUI** (primary): @opentui/core, full-screen interactive interface
 - **Direct Commands**: Scriptable automation with beautiful output
 - **Desktop**: Tauri + SvelteKit, cross-platform native app (macOS, Windows, Linux)
 

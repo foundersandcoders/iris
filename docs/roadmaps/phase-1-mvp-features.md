@@ -151,8 +151,8 @@ graph TD
 %% Phase 2: Screen Migration — COMPLETE %%
 
 %% Phase 3: Cleanup %%
-2TI.27["`*2TI.27*<br/>**MUST**<br/>remove old deps + stubs`"]:::must-open --> 2TI.28
-2TI.28["`*2TI.28*<br/>**MUST**<br/>update tests`"]:::must-blocked
+2TI.27["`*2TI.27*<br/>**MUST**<br/>update docs + unify tests`"]:::must-open --> 2TI.END
+2TI.END["`*COMPLETE*<br/>OpenTUI migration`"]:::mile
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -178,8 +178,8 @@ classDef mile fill:#E8EFF6,color:#000;
 
 #### Migration Phase 3: Cleanup
 
-- [ ] **2TI.27** — Delete `layout.ts` (Yoga replaces manual positioning); delete 9 empty stubs (5 components, 2 screens, 2 utils); remove `terminal-kit`, `ora`, `boxen`, `cli-table3`, `figures` from dependencies — **depends on 2TI.24, 2TI.25, 2TI.26**
-- [ ] **2TI.28** — Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments — **depends on 2TI.27**
+- [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
+- [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
 
 ---
 

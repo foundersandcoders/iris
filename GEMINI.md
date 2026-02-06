@@ -11,8 +11,7 @@ All interfaces are powered by a shared core TypeScript library, ensuring that al
 ## Tech Stack
 
 - **Runtime:** Bun
-- **TUI Framework:** terminal-kit
-- **TUI Libraries:** consola, chalk, gradient-string, cli-table3, boxen, ora, listr2, figures
+- **TUI Framework:** @opentui/core
 - **Desktop Framework:** Tauri (with a Rust backend that requires no custom Rust code)
 - **Frontend:** SvelteKit with TypeScript
 - **Testing:** Vitest
