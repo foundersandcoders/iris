@@ -6,11 +6,8 @@
 | **M2B** | Direct Commands | Blocked (depends on M2A) |
 | **M2C** | Advanced TUI + Polish + Docs | Blocked (depends on M2A + M2B) |
 
-**Prerequisite:** Milestone 1 (Shared Core Library) — ✅ Complete
-
----
-
-## Colour Key
+<details>
+<summary><strong>Colour Key</strong></summary>
 
 ```mermaid
 graph TD
@@ -36,18 +33,10 @@ graph TD
 
 **Open** (darker shade) = Ready to start | **Blocked** (lighter shade) = Awaiting dependencies
 
----
-
-## Note: New Categories
-
-**DC (Direct Commands)** and **UD (User Documentation)** are new categories added to Milestone 2 (originally part of M3 and M5).
-
----
-
-## Milestone 1: Shared Core Library
+</details>
 
 <details>
-<summary><strong>✅ Complete</strong></summary>
+<summary><strong>✅ Milestone 1: Shared Core Library</strong></summary>
 
 > [!IMPORTANT]
 > **Dynamic Schema Prerequisite**
@@ -133,13 +122,8 @@ graph TD
 >
 > **Prerequisite:** OpenTUI migration must complete before building new screens. See [evaluation](../technical/opentui-evaluation.md) and [migration guide](../technical/opentui-migration-guide.md).
 
-> [!NOTE]
-> **Category:** TI (TUI Interface)
-
-### OpenTUI Migration
-
-> [!NOTE]
-> **Context:** The current TUI is 971 lines across 16 files (7 implemented, 9 empty stubs) built on terminal-kit. OpenTUI (`@opentui/core`) replaces terminal-kit with Yoga flexbox layout, built-in components (Select, ScrollBox, Input, Box), a focus/keyboard system, and sub-millisecond Zig-powered rendering. This migration must complete before building new M2A screens. See the [OpenTUI evaluation](../technical/opentui-evaluation.md) for full rationale.
+<details>
+<summary><strong>✅ OpenTUI Migration</strong></summary>
 
 ```mermaid
 ---
@@ -163,25 +147,20 @@ classDef could-blocked fill:#5FA3BA,color:#fff;
 classDef mile fill:#E8EFF6,color:#000;
 ```
 
-#### Migration Phase 1: Foundation ✅
+1. Foundation ✅
+	- [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
+	- [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
+	- [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
+	- [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
+2. Screen Migration ✅
+	- [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
+	- [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
+	- [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
+3. Cleanup
+	- [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
+	- [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
 
-- [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
-- [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
-- [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
-- [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
-
-#### Migration Phase 2: Screen Migration ✅
-
-- [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
-- [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
-- [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
-
-#### Migration Phase 3: Cleanup
-
-- [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
-- [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
-
----
+</details>
 
 ### Core TUI Features
 
@@ -240,9 +219,6 @@ classDef mile fill:#E8EFF6,color:#000;
 > [!IMPORTANT]
 > **Goal:** Scriptable commands for automation and power users
 
-> [!NOTE]
-> **Category:** DC (Direct Commands)
-
 ```mermaid
 ---
 title: M2B — Direct Commands
@@ -285,12 +261,6 @@ classDef mile fill:#E8EFF6,color:#000;
 > **Goal:** Mapping builder, schema management, settings, and documentation
 >
 > **Prerequisite:** M2A + M2B must be complete
-
-> [!NOTE]
-> **Categories:**
-> - TM (Mapping Builder TUI)
-> - TS (Schema Management TUI)
-> - UD (User Documentation)
 
 ```mermaid
 ---
