@@ -65,6 +65,8 @@ export class ValidationExplorerScreen implements Screen {
 				const tabValue = (option.value || 'all') as TabFilter;
 				this.currentFilter = tabValue;
 				this.updateIssueList();
+				// Move focus to issue list after selecting a tab
+				this.issueList?.focus();
 			});
 
 			// Issue selection handler
@@ -81,8 +83,8 @@ export class ValidationExplorerScreen implements Screen {
 			};
 			this.renderer.keyInput.on('keypress', handler);
 
-			// Focus tabs initially
-			this.tabs?.focus();
+			// Focus issue list initially (tabs can be switched with left/right while list is focused)
+			this.issueList?.focus();
 		});
 	}
 
@@ -210,7 +212,7 @@ export class ValidationExplorerScreen implements Screen {
 
 		// Build options
 		const options = filtered.map((issue, i) => {
-			const rowDisplay = issue.row !== undefined ? ` (row ${issue.row})` : '';
+			const rowDisplay = issue.row !== undefined ? ` (row ${issue.row + 1})` : '';
 			const icon = issue.severity === 'error' ? '✗' : '⚠';
 			return { name: `${icon} ${issue.field}${rowDisplay}`, description: '', value: String(i) };
 		});
@@ -228,8 +230,11 @@ export class ValidationExplorerScreen implements Screen {
 	private updateDetailPanel(index: number): void {
 		if (!this.detailPanel) return;
 
-		// Clear existing content
-		this.detailPanel.clear?.() || this.detailPanel.children?.splice(0);
+		// Clear existing content by removing all children
+		const children = this.detailPanel.getChildren();
+		for (const child of children) {
+			this.detailPanel.remove(child.id);
+		}
 
 		// Filter issues based on current filter
 		const filtered = this.allIssues.filter((issue) => {
@@ -265,7 +270,7 @@ export class ValidationExplorerScreen implements Screen {
 			this.detailPanel.add(rowLabel);
 
 			const rowValue = new TextRenderable(this.renderer, {
-				content: String(issue.row),
+				content: String(issue.row + 1), // Display as 1-indexed for non-dev users
 				fg: theme.text,
 			});
 			this.detailPanel.add(rowValue);
@@ -322,7 +327,12 @@ export class ValidationExplorerScreen implements Screen {
 
 	private clearDetailPanel(): void {
 		if (!this.detailPanel) return;
-		this.detailPanel.clear?.() || this.detailPanel.children?.splice(0);
+
+		// Clear existing content by removing all children
+		const children = this.detailPanel.getChildren();
+		for (const child of children) {
+			this.detailPanel.remove(child.id);
+		}
 
 		const emptyText = new TextRenderable(this.renderer, {
 			content: 'No issues to display',
