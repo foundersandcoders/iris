@@ -31,6 +31,11 @@ export interface SubmissionMetadata {
 	learnerCount: number;
 	schema: string; // Schema namespace used
 	checksum?: string; // SHA256 of XML content
+	// ESFA filename components
+	ukprn?: number; // 8-digit UKPRN for ESFA-compliant filename
+	collectionYear?: string; // e.g. '2526' (academic year code)
+	serialNo?: string; // e.g. '01' (2-character serial number)
+	collection?: string; // e.g. 'ILR' (3-character collection type)
 }
 
 /**
