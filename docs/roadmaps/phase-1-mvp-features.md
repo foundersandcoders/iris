@@ -35,6 +35,8 @@ graph TD
 
 </details>
 
+## Completed Milestones
+
 <details>
 <summary><strong>✅ Milestone 1: Shared Core Library</strong></summary>
 
@@ -115,12 +117,9 @@ graph TD
 
 ---
 
-## M2A: Core TUI Screens
+## Open Milestones
 
-> [!IMPORTANT]
-> **Goal:** Beautiful, interactive terminal interface for core workflows
->
-> **Prerequisite:** OpenTUI migration must complete before building new screens. See [evaluation](../technical/opentui-evaluation.md) and [migration guide](../technical/opentui-migration-guide.md).
+### M2A: Core TUI Screens
 
 <details>
 <summary><strong>✅ OpenTUI Migration (Complete)</strong></summary>
@@ -140,7 +139,8 @@ graph TD
 
 </details>
 
-### Core TUI Features
+> [!IMPORTANT]
+> **Goal:** Beautiful, interactive terminal interface for core workflows
 
 > [!NOTE]
 > These tasks build **on top of the OpenTUI migration**. OpenTUI's built-in keyboard/focus system, `SelectRenderable`, `ScrollBox`, `BoxRenderable`, `ASCIIFontRenderable`, and Timeline API simplify most of these significantly compared to building them on terminal-kit.
