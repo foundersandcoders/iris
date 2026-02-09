@@ -149,7 +149,7 @@ describe('FilePicker', () => {
 		// Empty message should be created
 		const emptyMessage = (screen as any).emptyMessage;
 		expect(emptyMessage).toBeDefined();
-		expect(emptyMessage.content.chunks[0].text).toBe('  No CSV files found in this directory.');
+		expect(emptyMessage.content.chunks[0].text).toBe('  No .csv files found in this directory.');
 
 		screen.cleanup();
 	});
