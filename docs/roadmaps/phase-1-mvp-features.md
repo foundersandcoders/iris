@@ -151,19 +151,28 @@ title: M2A — Core TUI Features (post-migration)
 ---
 graph TD
 
-2TI.13["`*2TI.13*<br/>**MUST**<br/>convert screen`"]:::must-open --> 2TI.14 & 2TI.8
-2TI.7["`*2TI.7*<br/>**MUST**<br/>validation explorer`"]:::must-open --> 2TI.14 & 2TI.15 & 2TI.8
+2TI.13["`*2TI.13* ✅<br/>**MUST**<br/>convert screen`"]:::must-done
+2TI.7["`*2TI.7* ✅<br/>**MUST**<br/>validation explorer`"]:::must-done
+2TI.14["`*2TI.14* ✅<br/>**MUST**<br/>validate screen`"]:::must-done
+2TI.15["`*2TI.15* ✅<br/>**MUST**<br/>check screen`"]:::must-done
+2TI.8["`*2TI.8* ✅<br/>**SHOULD**<br/>success screen`"]:::should-done
 
-2TI.14["`*2TI.14*<br/>**MUST**<br/>validate screen`"]:::must-blocked --> 2TI.15 & 2TI.8
-2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked --> 2TI.12 & 2TI.17 & 2TI.8
+2TI.29["`*2TI.29*<br/>**MUST**<br/>fix schema resolution`"]:::must-open
+1WA.20["`*1WA.20*<br/>**MUST**<br/>ESFA filename format`"]:::must-open
+1WA.21["`*1WA.21*<br/>**MUST**<br/>append to history`"]:::must-open
+1WA.22["`*1WA.22*<br/>**MUST**<br/>block invalid output`"]:::must-open
+2TI.30["`*2TI.30*<br/>**MUST**<br/>fix validation explorer`"]:::must-open
+1SS.8["`*1SS.8*<br/>**SHOULD**<br/>default directories`"]:::should-open
+2TI.31["`*2TI.31*<br/>**SHOULD**<br/>success proof`"]:::should-open
 
+2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 2TI.30 --> 2TI.17
 2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-open --> 2TI.17
-
-2TI.8["`*2TI.8*<br/>**SHOULD**<br/>success screen`"]:::should-blocked
-
 2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
+
+classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
+classDef should-done fill:#4A1A3A,color:#fff;
 classDef should-open fill:#6F2A52,color:#fff;
 classDef should-blocked fill:#A45A84,color:#fff;
 classDef could-open fill:#3E7F96,color:#fff;
@@ -174,16 +183,27 @@ classDef mile fill:#E8EFF6,color:#000;
 ### Must Have
 
 - [x] **2TI.11** — Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`)
-- [ ] **2TI.13** — Build convert workflow screen (file select → process → results) — **depends on 2TI.11**
-- [ ] **2TI.7** — Build validation results explorer (error/warning navigation; uses `ScrollBox` for error list, `Code` for XML preview, `TabSelect` for error categories) — **depends on 2TI.11**
-- [ ] **2TI.14** — Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
-- [ ] **2TI.15** — Build cross-submission check workflow — **depends on 2TI.14, 2TI.7**
-- [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.15, 2TI.12**
+- [x] **2TI.13** — Build convert workflow screen (generic `WorkflowScreen` handles file select → process → results for all workflow types)
+- [x] **2TI.7** — Build validation results explorer (tab-filtered issue browser with detail panel; `TabSelectRenderable` for error/warning/all, `SelectRenderable` for issue list)
+- [x] **2TI.14** — Build validate workflow screen (file select → validate → explore errors; shares generic `WorkflowScreen` with convert)
+- [x] **2TI.15** — Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view)
+- [ ] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
+- [ ] **1WA.20** — Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
+- [ ] **1WA.21** — Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()` — cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
+- [ ] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
+- [ ] **2TI.30** — Fix validation explorer UX issues:
+	- Status bar says `[Tab] Switch filter` but `TabSelectRenderable` uses `[←→]` arrows
+	- Tab switching causes display glitches (same bordered-container rendering issue as check-results)
+	- Row numbers 0-indexed — should display as 1-indexed for non-dev users
+	- Single-issue display doesn't indicate it's the first occurrence of a repeated error
+- [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 2TI.30, 2TI.12**
 
 ### Should Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11, 2TI.15**
-- [ ] **2TI.8** — Implement success/completion screen (`BoxRenderable` for summary card, `ASCIIFontRenderable` for completion banner) — **depends on 2TI.7, 2TI.13, 2TI.14, 2TI.15**
+- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11**
+- [x] **2TI.8** — Implement success/completion screen (generic for all workflow types; conditional "View Issues" menu, duration/output/learner count display)
+- [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session)
+- [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid)
 
 ---
 
@@ -198,7 +218,7 @@ title: M2B — Direct Commands
 ---
 graph TD
 
-2TI.8["`*2TI.8*<br/>M2A task<br/>success screen`"]:::should-blocked
+2TI.8["`*2TI.8* ✅<br/>M2A task<br/>success screen`"]:::should-done
 2TI.17["`*2TI.17*<br/>M2A task<br/>test real data`"]:::must-blocked
 
 2TI.8 & 2TI.17 --> 2DC.2
@@ -211,6 +231,7 @@ graph TD
 classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
+classDef should-done fill:#4A1A3A,color:#fff;
 classDef should-open fill:#6F2A52,color:#fff;
 classDef should-blocked fill:#A45A84,color:#fff;
 classDef could-open fill:#3E7F96,color:#fff;
@@ -313,14 +334,23 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% M2A Core Tasks %%
-2TI.13["`*2TI.13*<br/>screen<br/>convert`"]:::must-open
-2TI.7["`*2TI.7*<br/>component<br/>validation explorer`"]:::must-open
-2TI.14["`*2TI.14*<br/>screen<br/>validate`"]:::must-blocked
-2TI.15["`*2TI.15*<br/>screen<br/>check`"]:::must-blocked
-2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-blocked
+%% M2A Completed %%
+2TI.13["`*2TI.13* ✅<br/>screen<br/>convert`"]:::must-done
+2TI.7["`*2TI.7* ✅<br/>component<br/>validation explorer`"]:::must-done
+2TI.14["`*2TI.14* ✅<br/>screen<br/>validate`"]:::must-done
+2TI.15["`*2TI.15* ✅<br/>screen<br/>check`"]:::must-done
+2TI.8["`*2TI.8* ✅<br/>screen<br/>success`"]:::should-done
+
+%% M2A Open — bugs/fixes before real-data testing %%
+2TI.29["`*2TI.29*<br/>fix<br/>schema resolution`"]:::must-open
+1WA.20["`*1WA.20*<br/>fix<br/>ESFA filename`"]:::must-open
+1WA.21["`*1WA.21*<br/>fix<br/>history append`"]:::must-open
+1WA.22["`*1WA.22*<br/>fix<br/>block invalid output`"]:::must-open
+2TI.30["`*2TI.30*<br/>fix<br/>validation explorer UX`"]:::must-open
+1SS.8["`*1SS.8*<br/>enhance<br/>default directories`"]:::should-open
+2TI.31["`*2TI.31*<br/>enhance<br/>success proof`"]:::should-open
 2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-open
-2TI.8["`*2TI.8*<br/>screen<br/>success`"]:::should-blocked
+2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-blocked
 
 %% M2B Tasks %%
 2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-blocked
@@ -346,11 +376,7 @@ graph TD
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2A Dependencies %%
-2TI.13 --> 2TI.14 & 2TI.8
-2TI.7 --> 2TI.14 & 2TI.15 & 2TI.8
-2TI.14 --> 2TI.15 & 2TI.8
-2TI.15 --> 2TI.12 & 2TI.17 & 2TI.8
-2TI.12 --> 2TI.17
+2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 2TI.30 & 2TI.12 --> 2TI.17
 
 %% M2B Dependencies %%
 2TI.8 & 2TI.17 --> 2DC.2
@@ -373,10 +399,12 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2DC.3 -.->| optional | 2TS.2
 2TS.2 -.->| optional | 2TS.3 & 2TI.19
 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 -.->| optional | phase1
+1SS.8 & 2TI.31 -.->| optional | 2TI.17
 
 classDef must-done fill:#8B5A7D,color:#fff;
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
+classDef should-done fill:#4A1A3A,color:#fff;
 classDef should-open fill:#6F2A52,color:#fff;
 classDef should-blocked fill:#A45A84,color:#fff;
 classDef could-open fill:#3E7F96,color:#fff;
