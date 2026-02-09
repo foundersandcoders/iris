@@ -23,6 +23,10 @@ import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 import { validateMappingStructure } from '../mappings/validate';
 import packageJson from '../../../package.json';
 
+/** Bundled schema dir, resolved relative to this file (not cwd).
+ *  create.ts is at src/lib/storage/ — project root is 3 levels up. */
+const BUNDLED_SCHEMA_DIR = join(import.meta.dir, '..', '..', '..', 'docs', 'schemas');
+
 interface StorageOptions {
 	outputDir?: string;
 	internalRoot?: string;
@@ -244,7 +248,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				}
 
 				// Fall back to bundled schemas
-				const bundledSchemaPath = join(process.cwd(), 'docs', 'schemas', name);
+				const bundledSchemaPath = join(BUNDLED_SCHEMA_DIR, name);
 				if (await adapter.exists(bundledSchemaPath)) {
 					const schema = await adapter.read(bundledSchemaPath);
 					return { success: true, data: schema };
@@ -266,7 +270,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				const userSchemas = await adapter.list(paths.schemas, { pattern: '*.xsd' });
 
 				// List bundled schemas
-				const bundledSchemaDir = join(process.cwd(), 'docs', 'schemas');
+				const bundledSchemaDir = BUNDLED_SCHEMA_DIR;
 				const bundledSchemas = await adapter.list(bundledSchemaDir, { pattern: '*.xsd' });
 
 				// Combine and deduplicate (user takes precedence)
@@ -419,6 +423,11 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 
 				const history = historyResult.data;
 				history.submissions.push(entry);
+
+				// Sort by timestamp descending (newest first)
+				history.submissions.sort((a, b) =>
+					new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+				);
 
 				const historyPath = join(paths.history, 'submissions.json');
 				await adapter.writeJson(historyPath, history);

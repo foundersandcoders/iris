@@ -97,6 +97,42 @@ describe('convertWorkflow', () => {
 			expect(content).toContain('<Message xmlns="ESFA/ILR/2025-26" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">');
 			expect(content).toContain('<LearnRefNumber>ABC123</LearnRefNumber>');
 		});
+
+		it('appends entry to submission history after save', async () => {
+			await writeFile(testCsvPath, fixtures.validCsvContent);
+
+			// Use isolated internal directory for this test
+			const internalRoot = join(testDir, '.iris');
+
+			const { result } = await consumeWorkflow(
+				convertWorkflow({
+				filePath: testCsvPath,
+				outputDir: testDir,
+				registry,
+				mapping: facAirtableMapping,
+				internalRoot,
+			})
+			);
+
+			expect(result.success).toBe(true);
+
+			// Verify history entry was created
+			const { createStorage } = await import('../../../src/lib/storage');
+			const storage = createStorage({ outputDir: testDir, internalRoot });
+			const historyResult = await storage.loadHistory();
+
+			expect(historyResult.success).toBe(true);
+			if (historyResult.success) {
+				expect(historyResult.data.submissions).toHaveLength(1);
+
+				const entry = historyResult.data.submissions[0];
+				expect(entry.filename).toContain('ILR-');
+				expect(entry.learnerCount).toBe(1);
+				expect(entry.checksum).toBeDefined();
+				expect(entry.schema).toBe('2526'); // Collection year
+				expect(entry.learnerRefs).toContain('ABC123');
+			}
+		});
 	});
 
 	describe('error handling', () => {

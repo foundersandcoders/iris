@@ -104,6 +104,17 @@ export const sampleMetadata: SubmissionMetadata = {
 	checksum: 'abc123',
 };
 
+export const sampleEsfaMetadata: SubmissionMetadata = {
+	timestamp: '2025-01-15T10:30:00.000Z',
+	learnerCount: 5,
+	schema: 'ESFA/ILR/2025-26',
+	checksum: 'abc123',
+	ukprn: 10085696,
+	collectionYear: '2526',
+	serialNo: '01',
+	collection: 'ILR',
+};
+
 export const userSchemaContent = '<?xml version="1.0"?><xs:schema>USER VERSION</xs:schema>';
 
 export const customSchemaContent = '<xs:schema/>';

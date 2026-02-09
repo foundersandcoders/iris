@@ -131,19 +131,42 @@ export async function* checkWorkflow(
 	const currentFilename = basename(input.filePath);
 	const currentDir = dirname(input.filePath);
 
-	// Find the most recent submission that is NOT the current file AND exists on filesystem
-	const candidates = history.submissions
-		.filter(s => s.filename !== currentFilename)
-		.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
 	let previousSubmission: HistoryEntry | undefined;
-	for (const candidate of candidates) {
-		// Check if file exists in same directory as current file
-		const candidatePath = join(currentDir, candidate.filename);
-		const file = Bun.file(candidatePath);
-		if (await file.exists()) {
-			previousSubmission = candidate;
-			break;
+
+	if (input.previousFilePath) {
+		// User explicitly chose previous file — parse for comparison data
+		const prevFile = Bun.file(input.previousFilePath);
+		if (!(await prevFile.exists())) throw new Error(`Previous file not found: ${input.previousFilePath}`);
+		const prevXml = await prevFile.text();
+		const prevParse = parseILR(prevXml);
+		if (!prevParse.success) throw new Error(`Failed to parse previous XML: ${prevParse.error.message}`);
+
+		previousSubmission = {
+			filename: basename(input.previousFilePath),
+			timestamp: 'unknown',
+			learnerCount: prevParse.data.learners.length,
+			checksum: '',
+			schema: prevParse.data.header.collectionDetails.year || 'unknown',
+			learnerRefs: prevParse.data.learners
+				.map(l => String(l.learnRefNumber))
+				.filter(ref => ref && ref !== 'undefined' && ref.trim().length > 0),
+		};
+
+		loadHistoryStep.message = `Using selected file: ${basename(input.previousFilePath)}`;
+	} else {
+		// Find the most recent submission that is NOT the current file AND exists on filesystem
+		const candidates = history.submissions
+			.filter(s => s.filename !== currentFilename)
+			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+		for (const candidate of candidates) {
+			// Check if file exists in same directory as current file
+			const candidatePath = join(currentDir, candidate.filename);
+			const file = Bun.file(candidatePath);
+			if (await file.exists()) {
+				previousSubmission = candidate;
+				break;
+			}
 		}
 	}
 

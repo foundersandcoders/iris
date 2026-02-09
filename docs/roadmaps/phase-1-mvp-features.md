@@ -152,18 +152,7 @@ title: M2A — Core TUI Features (post-migration)
 ---
 graph TD
 
-2TI.29["`*2TI.29*<br/>**MUST**<br/>fix schema resolution`"]:::must-open
-1WA.20["`*1WA.20*<br/>**MUST**<br/>ESFA filename format`"]:::must-open
-1WA.21["`*1WA.21*<br/>**MUST**<br/>append to history`"]:::must-open
-1WA.22["`*1WA.22*<br/>**MUST**<br/>block invalid output`"]:::must-open
-1WA.23["`*1WA.23*<br/>**MUST**<br/>fix validate routing`"]:::must-open
-2TI.30["`*2TI.30*<br/>**MUST**<br/>fix validation explorer`"]:::must-open
-2TI.32["`*2TI.32*<br/>**MUST**<br/>two-file-picker`"]:::must-open
-2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked
-2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
-
-2TI.32 --> 2TI.15
-2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
+2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-open
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -180,18 +169,18 @@ classDef mile fill:#E8EFF6,color:#000;
 - [x] **2TI.13** — Build convert workflow screen (generic `WorkflowScreen` handles file select → process → results for all workflow types)
 - [x] **2TI.7** — Build validation results explorer (tab-filtered issue browser with detail panel; `TabSelectRenderable` for error/warning/all, `SelectRenderable` for issue list)
 - [x] **2TI.14** — Build validate workflow screen (file select → validate → explore errors; shares generic `WorkflowScreen` with convert)
-- [ ] **2TI.15** — Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view) — **blocked by 2TI.32**
-- [ ] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
-- [ ] **1WA.20** — Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
-- [ ] **1WA.21** — Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()` — cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
-- [ ] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
-- [ ] **1WA.23** — Fix validate workflow routing — currently routes to failure screen on first missing field instead of collecting all validation issues and showing the explorer. The validator itself collects all issues; the workflow layer treats the first error as fatal.
-- [ ] **2TI.30** — Fix validation explorer UX issues:
+- [x] **2TI.15** — Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view)
+- [x] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
+- [x] **1WA.20** — Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
+- [x] **1WA.21** — Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()` — cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
+- [x] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
+- [x] **1WA.23** — Fix validate workflow routing — currently routes to failure screen on first missing field instead of collecting all validation issues and showing the explorer. The validator itself collects all issues; the workflow layer treats the first error as fatal.
+- [x] **2TI.30** — Fix validation explorer UX issues:
 	- Status bar says `[Tab] Switch filter` but `TabSelectRenderable` uses `[←→]` arrows
 	- Tab switching causes display glitches (same bordered-container rendering issue as check-results)
 	- Row numbers 0-indexed — should display as 1-indexed for non-dev users
 	- Single-issue display doesn't indicate it's the first occurrence of a repeated error
-- [ ] **2TI.32** — Two-file-picker for cross-check workflow — user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
+- [x] **2TI.32** — Two-file-picker for cross-check workflow — user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
 - [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
 
 ### Should Have
@@ -272,6 +261,8 @@ graph TD
 2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-blocked
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>**COULD**<br/>history cleanup utility`"]:::could-blocked
+2TC.3["`*2TC.3*<br/>**COULD**<br/>dual-picker screen`"]:::could-blocked
+2TC.4["`*2TC.4*<br/>**COULD**<br/>bordered detail panel`"]:::could-blocked
 
 2TI.12["`*2TI.12*<br/>M2A task<br/>contextual help`"]:::should-blocked
 1SS.8["`*1SS.8*<br/>M2A task<br/>default directories`"]:::should-blocked
@@ -295,7 +286,8 @@ phase1{"`**M2C**<br/>Complete`"}:::mile
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
-2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 -.->|optional| phase1
+2TC.2 -.->|optional| 2TC.3 & 2TC.4
+2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
 
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-blocked fill:#A45A84,color:#fff;
@@ -326,6 +318,8 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
 - [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
 - [ ] **2TC.2** — Implement history cleanup utility on startup (remove history entries where corresponding XML file no longer exists; runs when TUI launches) — **depends on 2TS.2 (optional)**
+- [ ] **2TC.3** — Dual-picker screen for cross-check (single screen with two file selection slots instead of sequential pickers; fancier UX than 2TI.32) — **depends on 2TC.2 (optional)**
+- [ ] **2TC.4** — Bordered detail panel in validation explorer (investigate OpenTUI container redraw; re-add border to detail panel if rendering issue resolved) — **depends on 2TC.2 (optional)**
 
 </details>
 
@@ -340,18 +334,10 @@ title: Phase 1 — Complete Picture
 graph TD
 
 %% M2A Open — bugs/fixes before real-data testing %%
-2TI.29["`*2TI.29*<br/>fix<br/>schema resolution`"]:::must-open
-1WA.20["`*1WA.20*<br/>fix<br/>ESFA filename`"]:::must-open
-1WA.21["`*1WA.21*<br/>fix<br/>history append`"]:::must-open
-1WA.22["`*1WA.22*<br/>fix<br/>block invalid output`"]:::must-open
-1WA.23["`*1WA.23*<br/>fix<br/>validate routing`"]:::must-open
-2TI.30["`*2TI.30*<br/>fix<br/>validation explorer UX`"]:::must-open
-2TI.32["`*2TI.32*<br/>feat<br/>two-file-picker`"]:::must-open
-2TI.15["`*2TI.15*<br/>screen<br/>check`"]:::must-blocked
 2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-open
 1SS.8["`*1SS.8*<br/>enhance<br/>default directories`"]:::should-open
 2TI.31["`*2TI.31*<br/>enhance<br/>success proof`"]:::should-open
-2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-blocked
+2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-open
 
 %% M2B Tasks %%
 2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-blocked
@@ -374,13 +360,13 @@ graph TD
 2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-blocked
 2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>util<br/>history cleanup`"]:::could-blocked
+2TC.3["`*2TC.3*<br/>enhance<br/>dual-picker`"]:::could-blocked
+2TC.4["`*2TC.4*<br/>enhance<br/>bordered panel`"]:::could-blocked
 
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2A Dependencies %%
-2TI.32 --> 2TI.15
-2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
 
 %% M2B Dependencies %%
 2TI.17 --> 2DC.2
@@ -403,7 +389,8 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
-2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 -.->|optional| phase1
+2TC.2 -.->|optional| 2TC.3 & 2TC.4
+2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
