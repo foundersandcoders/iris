@@ -320,6 +320,25 @@ describe('IrisStorage', () => {
 			}
 		});
 
+		it('saves submission with ESFA-compliant filename when metadata has ESFA fields', async () => {
+			const result = await storage.saveSubmission(fixtures.sampleXml, fixtures.sampleEsfaMetadata);
+			expect(result.success).toBe(true);
+
+			if (result.success) {
+				const filename = result.data.split('/').pop()!;
+
+				// Format: ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML
+				expect(filename).toMatch(/^ILR-10085696-2526-\d{8}-\d{6}-01\.XML$/);
+
+				// Uppercase extension per ESFA spec
+				expect(filename).toMatch(/\.XML$/);
+
+				// File exists on disk
+				const fileExists = await Bun.file(result.data).exists();
+				expect(fileExists).toBe(true);
+			}
+		});
+
 		it('saves submission with metadata', async () => {
 			const result = await storage.saveSubmission(fixtures.sampleXml, fixtures.sampleMetadata);
 			expect(result.success).toBe(true);
