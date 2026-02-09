@@ -29,8 +29,8 @@ export class Dashboard implements Screen {
 
 	private menuItems: MenuItem[] = [
 		{ key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
-		{ key: 'validate', label: 'Validate XML Submission', implemented: false },
-		{ key: 'check', label: 'Cross-Submission Check', implemented: false },
+		{ key: 'validate', label: 'Validate XML Submission', implemented: true },
+		{ key: 'check', label: 'Cross-Submission Check', implemented: true },
 		{ key: 'history', label: 'Browse Submission History', implemented: false },
 		{ key: 'settings', label: 'Settings & Configuration', implemented: false },
 		{ key: 'quit', label: 'Quit', implemented: true },
@@ -110,6 +110,36 @@ export class Dashboard implements Screen {
 
 				if (item.key === 'quit') {
 					resolve({ action: 'quit' });
+				} else if (item.key === 'convert') {
+					resolve({
+						action: 'push',
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.csv',
+							title: 'Select CSV File',
+							workflowType: 'convert',
+						},
+					});
+				} else if (item.key === 'validate') {
+					resolve({
+						action: 'push',
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.csv,.xml',
+							title: 'Select File to Validate',
+							workflowType: 'validate',
+						},
+					});
+				} else if (item.key === 'check') {
+					resolve({
+						action: 'push',
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.xml',
+							title: 'Select XML File',
+							workflowType: 'check',
+						},
+					});
 				} else if (item.implemented) {
 					resolve({ action: 'push', screen: item.key });
 				}
