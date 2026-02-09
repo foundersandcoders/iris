@@ -325,8 +325,11 @@ describe('IrisStorage', () => {
 			expect(result.success).toBe(true);
 
 			if (result.success) {
-				// Check metadata file exists
-				const metadataPath = `${result.data}.meta.json`;
+				// Extract filename from submission path
+				const filename = result.data.split('/').pop()!;
+
+				// Check metadata file exists in internal directory (not user output directory)
+				const metadataPath = join(storage.paths.internalSubmissions, `${filename}.meta.json`);
 				const metadataExists = await Bun.file(metadataPath).exists();
 				expect(metadataExists).toBe(true);
 
