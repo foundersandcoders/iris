@@ -180,8 +180,6 @@ export class ValidationExplorerScreen implements Screen {
 		// Detail panel
 		this.detailPanel = new BoxRenderable(this.renderer, {
 			flexDirection: 'column',
-			border: { type: 'single', fg: theme.border },
-			padding: { left: 1, right: 1 },
 		});
 		this.container.add(this.detailPanel);
 
@@ -189,7 +187,7 @@ export class ValidationExplorerScreen implements Screen {
 
 		// Status bar
 		const statusBar = new TextRenderable(this.renderer, {
-			content: '[↑↓] Navigate  [Tab] Switch filter  [ESC/q] Back',
+			content: '[↑↓] Navigate  [←→] Switch filter  [ESC/q] Back',
 			fg: theme.textMuted,
 		});
 		this.container.add(statusBar);
@@ -245,6 +243,19 @@ export class ValidationExplorerScreen implements Screen {
 
 		const issue = filtered[index];
 		if (!issue) return;
+
+		// Count occurrences of this error pattern
+		const samePattern = filtered.filter(
+			(i) => i.code === issue.code && i.field === issue.field
+		);
+		if (samePattern.length > 1) {
+			const position = samePattern.indexOf(issue) + 1;
+			this.detailPanel.add(new TextRenderable(this.renderer, {
+				content: `Occurrence ${position} of ${samePattern.length}`,
+				fg: theme.textMuted,
+			}));
+			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+		}
 
 		// Field
 		const fieldLabel = new TextRenderable(this.renderer, {
