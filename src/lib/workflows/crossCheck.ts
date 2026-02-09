@@ -17,7 +17,7 @@ import type {
 	WorkflowResult,
 } from '../types/workflowTypes';
 import type { SubmissionHistory, HistoryEntry } from '../types/storageTypes';
-import { basename } from 'path';
+import { basename, dirname, join } from 'path';
 
 const STEPS = {
 	load: { id: 'load', name: 'Load XML File' },
@@ -79,7 +79,9 @@ export async function* checkWorkflow(
 
 		const { data } = parseResult;
 		learnerCount = data.learners.length;
-		learnerRefs = data.learners.map((l) => String(l.learnRefNumber));
+		learnerRefs = data.learners
+			.map((l) => String(l.learnRefNumber))
+			.filter(ref => ref && ref !== 'undefined' && ref.trim().length > 0);
 
 		// Extract collection year from header (e.g., "2526" for 2025-26)
 		collectionYear = data.header.collectionDetails.year || 'unknown';
@@ -127,11 +129,23 @@ export async function* checkWorkflow(
 
 	const issues: CheckIssue[] = [];
 	const currentFilename = basename(input.filePath);
+	const currentDir = dirname(input.filePath);
 
-	// Find the most recent submission that is NOT the current file
-	const previousSubmission = history.submissions
+	// Find the most recent submission that is NOT the current file AND exists on filesystem
+	const candidates = history.submissions
 		.filter(s => s.filename !== currentFilename)
-		.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+		.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+	let previousSubmission: HistoryEntry | undefined;
+	for (const candidate of candidates) {
+		// Check if file exists in same directory as current file
+		const candidatePath = join(currentDir, candidate.filename);
+		const file = Bun.file(candidatePath);
+		if (await file.exists()) {
+			previousSubmission = candidate;
+			break;
+		}
+	}
 
 	try {
 		// Check 1: Learner count variance
