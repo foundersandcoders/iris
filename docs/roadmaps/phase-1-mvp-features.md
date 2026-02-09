@@ -137,7 +137,8 @@ graph TD
 
 ## Open Milestones
 
-### M2A: Core TUI Screens
+<details>
+<summary><h3>M2A: Core TUI Screens</h3></summary>
 
 > [!IMPORTANT]
 > **Goal:** Beautiful, interactive terminal interface for core workflows
@@ -200,9 +201,12 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session) — **depends on 2TI.10**
 - [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
 
+</details>
+
 ---
 
-## M2B: Direct Commands
+<details>
+<summary><h3>M2B: Direct Commands</h3></summary>
 
 > [!IMPORTANT]
 > **Goal:** Scriptable commands for automation and power users
@@ -237,9 +241,10 @@ classDef mile fill:#E8EFF6,color:#000;
 
 - [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2TI.18**
 
----
+</details>
 
-## M2C: Advanced TUI + Polish + Docs
+<details>
+<summary><h3>M2C: Advanced TUI + Polish + Docs</h3></summary>
 
 > [!IMPORTANT]
 > **Goal:** Mapping builder, schema management, settings, and documentation
@@ -319,6 +324,8 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
 - [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
 - [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
+
+</details>
 
 ---
 
