@@ -1,6 +1,6 @@
 [package]
 name = "Iris"
-version = "3.5.0"
+version = "3.6.0"
 description = "ILR Toolkit: CSV to ILR XML conversion with semantic validation"
 authors = ["you"]
 license = ""
