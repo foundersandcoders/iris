@@ -268,8 +268,10 @@ graph TD
 
 2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
+2TC.1["`*2TC.1*<br/>**SHOULD**<br/>clean test history`"]:::should-blocked
 2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-blocked
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
+2TC.2["`*2TC.2*<br/>**COULD**<br/>history cleanup utility`"]:::could-blocked
 
 2TI.12["`*2TI.12*<br/>M2A task<br/>contextual help`"]:::should-blocked
 1SS.8["`*1SS.8*<br/>M2A task<br/>default directories`"]:::should-blocked
@@ -284,7 +286,7 @@ graph TD
 %% Required dependencies %%
 2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
-2TI.18 --> 2DC.4
+2TI.18 --> 2DC.4 & 2TC.1
 2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
@@ -292,8 +294,8 @@ phase1{"`**M2C**<br/>Complete`"}:::mile
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
-2TS.2 -.->|optional| 2TS.3 & 2TI.19
-2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 -.->|optional| phase1
+2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
+2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 -.->|optional| phase1
 
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-blocked fill:#A45A84,color:#fff;
@@ -314,6 +316,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 - [ ] **2TI.9** — Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections) — **depends on 2TM.4**
 - [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
+- [ ] **2TC.1** — Clean test history after test runs (prevent test submissions from polluting global history; use isolated history per test or cleanup in afterEach) — **depends on 2TI.18**
 
 ### Could Have
 
@@ -322,6 +325,7 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
 - [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
 - [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
+- [ ] **2TC.2** — Implement history cleanup utility on startup (remove history entries where corresponding XML file no longer exists; runs when TUI launches) — **depends on 2TS.2 (optional)**
 
 </details>
 
@@ -366,8 +370,10 @@ graph TD
 2TI.19["`*2TI.19*<br/>enhance<br/>schema settings`"]:::could-blocked
 2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-blocked
+2TC.1["`*2TC.1*<br/>test<br/>clean history`"]:::should-blocked
 2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-blocked
 2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-blocked
+2TC.2["`*2TC.2*<br/>util<br/>history cleanup`"]:::could-blocked
 
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
@@ -388,7 +394,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TM.4 --> 2TI.9
 2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
-2TI.18 --> 2DC.4
+2TI.18 --> 2DC.4 & 2TC.1
 2TS.3 --> 2TS.4
 2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
 
@@ -396,8 +402,8 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
-2TS.2 -.->|optional| 2TS.3 & 2TI.19
-2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 -.->|optional| phase1
+2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
+2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 -.->|optional| phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
