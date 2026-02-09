@@ -33,6 +33,10 @@ export class FilePicker implements Screen {
 	private emptyMessage?: TextRenderable;
 	private keyHandler?: (key: KeyEvent) => void;
 
+	private title: string = 'Select CSV File';
+	private fileExtensions: string[] = ['.csv'];
+	private workflowType: string = 'convert';
+
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 		this.currentPath = process.cwd();
@@ -42,6 +46,14 @@ export class FilePicker implements Screen {
 		if (data?.path && typeof data.path === 'string') {
 			this.currentPath = data.path;
 		}
+
+		// Read configuration from data
+		this.title = (data?.title as string) || 'Select CSV File';
+		this.workflowType = (data?.workflowType as string) || 'convert';
+
+		// Parse file extensions
+		const extensionParam = (data?.fileExtension as string) || '.csv';
+		this.fileExtensions = extensionParam.split(',').map((ext) => ext.trim());
 
 		await this.loadDirectory();
 
@@ -74,7 +86,7 @@ export class FilePicker implements Screen {
 
 		header.add(
 			new TextRenderable(this.renderer, {
-				content: 'Select CSV File',
+				content: this.title,
 				fg: theme.primary,
 			})
 		);
@@ -90,7 +102,7 @@ export class FilePicker implements Screen {
 		// File list or empty message
 		if (this.entries.length === 0) {
 			this.emptyMessage = new TextRenderable(this.renderer, {
-				content: '  No CSV files found in this directory.',
+				content: `  No ${this.fileExtensions.join('/')} files found in this directory.`,
 				fg: theme.textMuted,
 				flexGrow: 1,
 			});
@@ -142,8 +154,8 @@ export class FilePicker implements Screen {
 					} else {
 						resolve({
 							action: 'push',
-							screen: 'processing',
-							data: { filePath: entry.path },
+							screen: 'workflow',
+							data: { filePath: entry.path, workflowType: this.workflowType },
 						});
 					}
 				}
@@ -203,8 +215,9 @@ export class FilePicker implements Screen {
 			const filtered = dirents.filter((d) => {
 				if (d.name.startsWith('.') && d.name !== '..') return false;
 				if (d.isDirectory()) return true;
-				if (d.name.toLowerCase().endsWith('.csv')) return true;
-				return false;
+				// Check if file matches any of the configured extensions
+				const lowerName = d.name.toLowerCase();
+				return this.fileExtensions.some((ext) => lowerName.endsWith(ext.toLowerCase()));
 			});
 
 			const mapped: FileEntry[] = filtered.map((d) => ({
