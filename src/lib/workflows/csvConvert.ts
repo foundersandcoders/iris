@@ -180,7 +180,7 @@ export async function* convertWorkflow(
 			timestamp: new Date().toISOString(),
 			learnerCount: csvData.rows.length,
 			checksum,
-			schema: input.registry.namespace,
+			schema: collectionYear, // Store 4-char year for consistency with cross-check display
 			learnerRefs,
 		};
 

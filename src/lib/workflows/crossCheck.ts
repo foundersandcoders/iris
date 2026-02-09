@@ -126,7 +126,12 @@ export async function* checkWorkflow(
 	yield stepEvent('step:start', checkStep);
 
 	const issues: CheckIssue[] = [];
-	const previousSubmission = history.submissions[history.submissions.length - 1];
+	const currentFilename = basename(input.filePath);
+
+	// Find the most recent submission that is NOT the current file
+	const previousSubmission = history.submissions
+		.filter(s => s.filename !== currentFilename)
+		.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
 
 	try {
 		// Check 1: Learner count variance
