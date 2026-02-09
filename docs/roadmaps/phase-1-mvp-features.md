@@ -228,7 +228,7 @@ graph TD
 
 2DC.3["`*2DC.3*<br/>M2B task<br/>validate cmd`"]:::should-blocked
 
-2DC.3 --> 2TM.2 & 2TI.10 & 2TI.18 & 2UD.1
+2DC.3 --> 2TI.18
 
 2TM.2["`*2TM.2*<br/>**MUST**<br/>CSV→XML mapping UI`"]:::must-blocked --> 2TM.3
 2TM.3["`*2TM.3*<br/>**MUST**<br/>mapping preview`"]:::must-blocked --> 2TM.1
@@ -240,7 +240,7 @@ graph TD
 2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
 2TC.1["`*2TC.1*<br/>**SHOULD**<br/>clean test history`"]:::should-blocked
-2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-blocked
+2UD.1["`*2UD.1*<br/>**SHOULD**<br/>user guide`"]:::should-blocked
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>**COULD**<br/>history cleanup utility`"]:::could-blocked
 2TC.3["`*2TC.3*<br/>**COULD**<br/>dual-picker screen`"]:::could-blocked
@@ -263,14 +263,14 @@ graph TD
 2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> 2BD.1
+2TI.9 & 2TI.10 & 2TI.18 & 2TM.4 --> 2BD.1
 2BD.1 --> phase1
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
 %% Optional dependencies %%
-2BD.1 -.->|optional| 2BD.2
+2BD.1 -.->|optional| 2UD.1 & 2BD.2
 2BD.2 -.->|optional| phase1
-2UD.1 -.->|optional| 2UD.2
+2UD.1 -.->|optional| 2UD.2 & phase1
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
@@ -286,18 +286,18 @@ classDef mile fill:#E8EFF6,color:#000;
 ### Must Have
 
 - [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11, 2TI.10**
-- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter) — **depends on 2DC.3**
+- [ ] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter)
 - [ ] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues; uses `BoxRenderable` for preview panel, `TextRenderable` for status) — **depends on 2TM.2**
 - [ ] **2TM.1** — Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout) — **depends on 2TM.3**
 - [ ] **2TM.4** — Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`) — **depends on 2TM.1**
-- [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards) — **depends on 2DC.3**
-- [ ] **2UD.1** — Write user guide for non-technical users (includes download/install instructions for end users) — **depends on 2DC.3**
-- [ ] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS + Windows; single binary, no runtime dependency) — **depends on 2TI.9, 2TI.10, 2TI.18, 2UD.1, 2TM.4**
+- [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards)
+- [ ] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS + Windows; single binary, no runtime dependency) — **depends on 2TI.9, 2TI.10, 2TI.18, 2TM.4**
 
 ### Should Have
 
 - [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session) — **depends on 2TI.10**
 - [ ] **2TI.9** — Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections) — **depends on 2TM.4**
+- [ ] **2UD.1** — Write user guide for non-technical users (includes download/install instructions for end users) — **depends on 2BD.1 (optional)**
 - [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
 - [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
 - [ ] **2TC.1** — Clean test history after test runs (prevent test submissions from polluting global history; use isolated history per test or cleanup in afterEach) — **depends on 2TI.18**
@@ -349,7 +349,7 @@ graph TD
 2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-blocked
 2TC.1["`*2TC.1*<br/>test<br/>clean history`"]:::should-blocked
-2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::must-blocked
+2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::should-blocked
 2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>util<br/>history cleanup`"]:::could-blocked
 2TC.3["`*2TC.3*<br/>enhance<br/>dual-picker`"]:::could-blocked
@@ -366,7 +366,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2B Dependencies %%
 2DC.2 --> 2DC.3
-2DC.3 --> 2TM.2 & 2TI.10 & 2TI.18 & 2UD.1
+2DC.3 --> 2TI.18
 
 %% M2C Dependencies %%
 2TM.2 --> 2TM.3
@@ -377,13 +377,13 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
 2TS.3 --> 2TS.4
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> 2BD.1
+2TI.9 & 2TI.10 & 2TI.18 & 2TM.4 --> 2BD.1
 2BD.1 --> phase1
 
 %% OPTIONAL %%
-2BD.1 -.->|optional| 2BD.2
+2BD.1 -.->|optional| 2UD.1 & 2BD.2
 2BD.2 -.->|optional| phase1
-2UD.1 -.->|optional| 2UD.2
+2UD.1 -.->|optional| 2UD.2 & phase1
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
