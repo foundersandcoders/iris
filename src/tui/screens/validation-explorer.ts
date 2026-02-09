@@ -61,13 +61,14 @@ export class ValidationExplorerScreen implements Screen {
 		// Wait for user interaction
 		return new Promise((resolve) => {
 			// Tab change handler
-			this.tabs?.on('change', (tabValue: TabFilter) => {
+			this.tabs?.on('selectionChanged', (_index: number, option: { value?: string }) => {
+				const tabValue = (option.value || 'all') as TabFilter;
 				this.currentFilter = tabValue;
 				this.updateIssueList();
 			});
 
 			// Issue selection handler
-			this.issueList?.on('change', (index: number) => {
+			this.issueList?.on('selectionChanged', (index: number) => {
 				this.updateDetailPanel(index);
 			});
 
@@ -155,8 +156,11 @@ export class ValidationExplorerScreen implements Screen {
 
 		// Tabs
 		this.tabs = new TabSelectRenderable(this.renderer, {
-			tabs: ['Errors', 'Warnings', 'All'],
-			values: ['errors', 'warnings', 'all'],
+			options: [
+				{ name: 'Errors', description: '', value: 'errors' },
+				{ name: 'Warnings', description: '', value: 'warnings' },
+				{ name: 'All', description: '', value: 'all' },
+			],
 		});
 		this.container.add(this.tabs);
 
@@ -165,7 +169,6 @@ export class ValidationExplorerScreen implements Screen {
 		// Issue list (initially empty, will be populated by updateIssueList)
 		this.issueList = new SelectRenderable(this.renderer, {
 			options: [],
-			values: [],
 			showScrollIndicator: true,
 		});
 		this.container.add(this.issueList);
@@ -206,18 +209,13 @@ export class ValidationExplorerScreen implements Screen {
 		});
 
 		// Build options
-		const options = filtered.map((issue) => {
+		const options = filtered.map((issue, i) => {
 			const rowDisplay = issue.row !== undefined ? ` (row ${issue.row})` : '';
 			const icon = issue.severity === 'error' ? '✗' : '⚠';
-			return `${icon} ${issue.field}${rowDisplay}`;
+			return { name: `${icon} ${issue.field}${rowDisplay}`, description: '', value: String(i) };
 		});
 
-		// Update SelectRenderable
-		// Note: OpenTUI SelectRenderable doesn't have a direct update method
-		// We need to rebuild it or update its internal state
-		// For now, we'll store filtered issues and update detail panel on selection
 		this.issueList.options = options;
-		this.issueList.values = filtered.map((_, i) => String(i));
 
 		// Update detail panel for first issue
 		if (filtered.length > 0) {

@@ -45,10 +45,8 @@ export class SuccessScreen implements Screen {
 			} else if (this.menu) {
 				// Success mode: use menu
 				this.menu.focus();
-				this.menu.once('resolve', (selectedValue: string) => {
-					if (selectedValue === 'dashboard') {
-						resolve({ action: 'replace', screen: 'dashboard' });
-					} else if (selectedValue === 'view-issues') {
+				this.menu.once('itemSelected', (_index: number, option: { value?: string }) => {
+					if (option.value === 'view-issues') {
 						resolve({
 							action: 'replace',
 							screen: 'validation-explorer',
@@ -57,6 +55,8 @@ export class SuccessScreen implements Screen {
 								sourceType: 'csv', // TODO: pass through from workflow
 							},
 						});
+					} else {
+						resolve({ action: 'replace', screen: 'dashboard' });
 					}
 				});
 			}
@@ -164,19 +164,33 @@ export class SuccessScreen implements Screen {
 			this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Menu
-			const menuOptions = ['Return to Dashboard'];
-			const menuValues = ['dashboard'];
+			const menuOptions: Array<{ name: string; description: string; value: string }> = [
+				{ name: 'Return to Dashboard', description: '', value: 'dashboard' },
+			];
 
 			if (hasIssues && type === 'convert') {
-				menuOptions.push('View Issues');
-				menuValues.push('view-issues');
+				menuOptions.push({ name: 'View Issues', description: '', value: 'view-issues' });
 			}
 
 			this.menu = new SelectRenderable(this.renderer, {
 				options: menuOptions,
-				values: menuValues,
+				backgroundColor: theme.background,
+				focusedBackgroundColor: theme.background,
+				selectedBackgroundColor: theme.highlight,
+				selectedTextColor: theme.text,
+				textColor: theme.textMuted,
 			});
+
 			this.container.add(this.menu);
+
+			// Hint text
+			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			this.container.add(
+				new TextRenderable(this.renderer, {
+					content: '[↑↓] Select  [Enter] Confirm',
+					fg: theme.textMuted,
+				})
+			);
 		}
 
 		this.renderer.root.add(this.container);

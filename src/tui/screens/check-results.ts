@@ -36,7 +36,7 @@ export class CheckResultsScreen implements Screen {
 		return new Promise((resolve) => {
 			// Issue selection handler
 			if (hasIssues && this.issueList) {
-				this.issueList.on('change', (index: number) => {
+				this.issueList.on('selectionChanged', (index: number) => {
 					this.updateDetailPanel(report.issues[index]);
 				});
 
@@ -76,53 +76,44 @@ export class CheckResultsScreen implements Screen {
 
 		this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
-		// Submission comparison
-		const comparisonBox = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-			border: { type: 'single', fg: theme.border },
-			padding: { left: 1, right: 1 },
-		});
-
 		// Current submission
-		comparisonBox.add(
+		this.container.add(
 			new TextRenderable(this.renderer, {
 				content: `Current: ${report.currentSubmission.filename}`,
 				fg: theme.text,
 			})
 		);
-		comparisonBox.add(
+		this.container.add(
 			new TextRenderable(this.renderer, {
 				content: `  Learners: ${report.currentSubmission.learnerCount}  Schema: ${report.currentSubmission.schema}`,
 				fg: theme.textMuted,
 			})
 		);
 
-		comparisonBox.add(new TextRenderable(this.renderer, { content: '' }));
+		this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Previous submission
 		if (report.previousSubmission) {
-			comparisonBox.add(
+			this.container.add(
 				new TextRenderable(this.renderer, {
 					content: `Previous: ${report.previousSubmission.filename}`,
 					fg: theme.text,
 				})
 			);
-			comparisonBox.add(
+			this.container.add(
 				new TextRenderable(this.renderer, {
 					content: `  Learners: ${report.previousSubmission.learnerCount}  Schema: ${report.previousSubmission.schema}`,
 					fg: theme.textMuted,
 				})
 			);
 		} else {
-			comparisonBox.add(
+			this.container.add(
 				new TextRenderable(this.renderer, {
 					content: 'Previous: None (first submission)',
 					fg: theme.textMuted,
 				})
 			);
 		}
-
-		this.container.add(comparisonBox);
 
 		this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
@@ -147,15 +138,19 @@ export class CheckResultsScreen implements Screen {
 		// Issues section
 		if (hasIssues && report.issues.length > 0) {
 			// Issue list
-			const issueOptions = report.issues.map((issue) => {
+			const issueOptions = report.issues.map((issue, i) => {
 				const icon = this.getSeverityIcon(issue.severity);
-				return `${icon} ${issue.message}`;
+				return { name: `${icon} ${issue.message}`, description: '', value: String(i) };
 			});
 
 			this.issueList = new SelectRenderable(this.renderer, {
 				options: issueOptions,
-				values: report.issues.map((_, i) => String(i)),
 				showScrollIndicator: true,
+				backgroundColor: theme.background,
+				focusedBackgroundColor: theme.background,
+				selectedBackgroundColor: theme.highlight,
+				selectedTextColor: theme.text,
+				textColor: theme.textMuted,
 			});
 			this.container.add(this.issueList);
 
@@ -164,8 +159,6 @@ export class CheckResultsScreen implements Screen {
 			// Detail panel
 			this.detailPanel = new BoxRenderable(this.renderer, {
 				flexDirection: 'column',
-				border: { type: 'single', fg: theme.border },
-				padding: { left: 1, right: 1 },
 			});
 			this.container.add(this.detailPanel);
 
@@ -197,69 +190,42 @@ export class CheckResultsScreen implements Screen {
 	private updateDetailPanel(issue: CheckIssue): void {
 		if (!this.detailPanel) return;
 
-		// Clear existing content
-		this.detailPanel.clear?.() || this.detailPanel.children?.splice(0);
+		// Clear existing children
+		for (const child of this.detailPanel.getChildren()) {
+			this.detailPanel.remove(child.id);
+		}
 
-		// Category
-		const categoryLabel = new TextRenderable(this.renderer, {
-			content: 'Category:',
-			fg: theme.textMuted,
-		});
-		this.detailPanel.add(categoryLabel);
-
-		const categoryValue = new TextRenderable(this.renderer, {
-			content: this.formatCategory(issue.category),
-			fg: theme.text,
-		});
-		this.detailPanel.add(categoryValue);
-
-		this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
-
-		// Severity
-		const severityLabel = new TextRenderable(this.renderer, {
-			content: 'Severity:',
-			fg: theme.textMuted,
-		});
-		this.detailPanel.add(severityLabel);
-
-		const severityValue = new TextRenderable(this.renderer, {
-			content: issue.severity.toUpperCase(),
-			fg: this.getSeverityColor(issue.severity),
-		});
-		this.detailPanel.add(severityValue);
+		// Issue title
+		this.detailPanel.add(
+			new TextRenderable(this.renderer, {
+				content: `${this.getSeverityIcon(issue.severity)} ${this.formatCategory(issue.category)}`,
+				fg: this.getSeverityColor(issue.severity),
+			})
+		);
 
 		this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Message
-		const messageLabel = new TextRenderable(this.renderer, {
-			content: 'Message:',
-			fg: theme.textMuted,
-		});
-		this.detailPanel.add(messageLabel);
-
-		const messageValue = new TextRenderable(this.renderer, {
-			content: issue.message,
-			fg: theme.text,
-		});
-		this.detailPanel.add(messageValue);
+		this.detailPanel.add(
+			new TextRenderable(this.renderer, {
+				content: issue.message,
+				fg: theme.text,
+			})
+		);
 
 		// Details (if present)
 		if (issue.details && Object.keys(issue.details).length > 0) {
 			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
-			const detailsLabel = new TextRenderable(this.renderer, {
-				content: 'Details:',
-				fg: theme.textMuted,
-			});
-			this.detailPanel.add(detailsLabel);
-
-			// Format details nicely
 			for (const [key, value] of Object.entries(issue.details)) {
-				const detailLine = new TextRenderable(this.renderer, {
-					content: `  ${key}: ${JSON.stringify(value)}`,
-					fg: theme.text,
-				});
-				this.detailPanel.add(detailLine);
+				const displayValue =
+					Array.isArray(value) ? value.join(', ') : String(value);
+				this.detailPanel.add(
+					new TextRenderable(this.renderer, {
+						content: `  ${key}: ${displayValue}`,
+						fg: theme.textMuted,
+					})
+				);
 			}
 		}
 	}
