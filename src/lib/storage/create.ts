@@ -48,6 +48,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				await adapter.ensureDir(paths.schemas);
 				await adapter.ensureDir(paths.history);
 				await adapter.ensureDir(paths.reports);
+				await adapter.ensureDir(paths.internalSubmissions);
 
 				// Ensure output directories exist
 				await adapter.ensureDir(paths.output);
@@ -289,15 +290,36 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 			metadata?: SubmissionMetadata
 		): Promise<StorageResult<string>> {
 			try {
-				const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-				const filename = `ILR-${timestamp}.xml`;
-				const submissionPath = join(paths.submissions, filename);
+				const now = new Date();
+				let filename: string;
 
+				// Use ESFA-compliant format if all required fields present
+				if (metadata?.ukprn && metadata?.collectionYear && metadata?.serialNo) {
+					// Format: ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML
+					const dateStr = [
+						String(now.getFullYear()),
+						String(now.getMonth() + 1).padStart(2, '0'),
+						String(now.getDate()).padStart(2, '0'),
+					].join('');
+					const timeStr = [
+						String(now.getHours()).padStart(2, '0'),
+						String(now.getMinutes()).padStart(2, '0'),
+						String(now.getSeconds()).padStart(2, '0'),
+					].join('');
+					const collection = metadata.collection ?? 'ILR';
+					filename = `${collection}-${metadata.ukprn}-${metadata.collectionYear}-${dateStr}-${timeStr}-${metadata.serialNo}.XML`;
+				} else {
+					// Fallback for incomplete metadata
+					const timestamp = now.toISOString().replace(/[:.]/g, '-');
+					filename = `ILR-${timestamp}.xml`;
+				}
+
+				const submissionPath = join(paths.submissions, filename);
 				await adapter.write(submissionPath, xml);
 
-				// Save metadata if provided
+				// Save metadata to internal directory if provided
 				if (metadata) {
-					const metadataPath = join(paths.submissions, `${filename}.meta.json`);
+					const metadataPath = join(paths.internalSubmissions, `${filename}.meta.json`);
 					await adapter.writeJson(metadataPath, metadata);
 				}
 
@@ -315,11 +337,13 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 
 		async listSubmissions(): Promise<StorageResult<SubmissionInfo[]>> {
 			try {
-				const files = await adapter.list(paths.submissions, {
-					pattern: 'ILR-*.xml',
+				// Match both .xml and .XML extensions (backward compat + new ESFA format)
+				const allFiles = await adapter.list(paths.submissions, {
+					pattern: 'ILR-*',
 					sortBy: 'modified',
 					order: 'desc',
 				});
+				const files = allFiles.filter(f => f.endsWith('.xml') || f.endsWith('.XML'));
 
 				const submissions: SubmissionInfo[] = [];
 

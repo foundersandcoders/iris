@@ -1,5 +1,5 @@
-/** ====== Processing Screen ======
- * Displays live progress as the convert workflow runs
+/** ====== Workflow Screen ======
+ * Generic workflow runner that handles convert, validate, and check flows
  */
 import { BoxRenderable, TextRenderable, type KeyEvent } from '@opentui/core';
 import { SpinnerRenderable } from 'opentui-spinner';
@@ -8,14 +8,22 @@ import { theme } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
+import { validateWorkflow } from '../../lib/workflows/csvValidate';
+import { xmlValidateWorkflow } from '../../lib/workflows/xmlValidate';
+import { checkWorkflow } from '../../lib/workflows/crossCheck';
 import { facAirtableMapping } from '../../lib/mappings/fac-airtable-2025';
 import { createStorage } from '../../lib/storage';
 import type {
 	WorkflowStepEvent,
 	WorkflowResult,
 	ConvertOutput,
+	ValidateOutput,
+	CheckOutput,
 } from '../../lib/types/workflowTypes';
 import type { ValidationResult } from '../../lib/utils/csv/csvValidator';
+
+type WorkflowType = 'convert' | 'validate' | 'check';
+type WorkflowOutput = ConvertOutput | ValidateOutput | CheckOutput;
 
 interface StepDisplay {
 	id: string;
@@ -35,25 +43,57 @@ interface StepRenderables {
 	errorsContainer: BoxRenderable | null;
 }
 
-const CONTAINER_ID = 'processing-root';
+interface WorkflowConfig {
+	title: string;
+	steps: Array<{ id: string; name: string }>;
+}
 
-export class ProcessingScreen implements Screen {
-	readonly name = 'processing';
+const CONTAINER_ID = 'workflow-root';
+
+// Step configurations per workflow type
+const WORKFLOW_CONFIGS: Record<WorkflowType, WorkflowConfig> = {
+	convert: {
+		title: 'Converting',
+		steps: [
+			{ id: 'parse', name: 'Parse CSV' },
+			{ id: 'validate', name: 'Validate Data' },
+			{ id: 'generate', name: 'Generate XML' },
+			{ id: 'save', name: 'Save Output' },
+		],
+	},
+	validate: {
+		title: 'Validating',
+		steps: [
+			{ id: 'load', name: 'Load File' },
+			{ id: 'parse', name: 'Parse File' },
+			{ id: 'validate', name: 'Run Validation' },
+			{ id: 'report', name: 'Generate Report' },
+		],
+	},
+	check: {
+		title: 'Checking',
+		steps: [
+			{ id: 'load', name: 'Load XML File' },
+			{ id: 'parse', name: 'Parse XML' },
+			{ id: 'loadHistory', name: 'Load Submission History' },
+			{ id: 'check', name: 'Run Cross-Submission Checks' },
+			{ id: 'report', name: 'Generate Report' },
+		],
+	},
+};
+
+export class WorkflowScreen implements Screen {
+	readonly name = 'workflow';
 	private renderer: Renderer;
 	private container?: BoxRenderable;
 	private stepsContainer?: BoxRenderable;
-	private resultContainer?: BoxRenderable;
 	private statusBar?: TextRenderable;
 	private keyHandler?: (key: KeyEvent) => void;
 
-	private steps: StepDisplay[] = [
-		{ id: 'parse', name: 'Parse CSV', status: 'pending' },
-		{ id: 'validate', name: 'Validate Data', status: 'pending' },
-		{ id: 'generate', name: 'Generate XML', status: 'pending' },
-		{ id: 'save', name: 'Save Output', status: 'pending' },
-	];
+	private workflowType: WorkflowType = 'convert';
+	private steps: StepDisplay[] = [];
 	private stepRenderables: Map<string, StepRenderables> = new Map();
-	private result: WorkflowResult<ConvertOutput> | null = null;
+	private result: WorkflowResult<WorkflowOutput> | null = null;
 	private error: Error | null = null;
 
 	constructor(ctx: RenderContext) {
@@ -62,29 +102,40 @@ export class ProcessingScreen implements Screen {
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
 		const filePath = data?.filePath as string;
+		const workflowType = (data?.workflowType as WorkflowType) || 'convert';
+
 		if (!filePath) return { action: 'pop' };
 
-		const storage = createStorage();
-		const schemaResult = await storage.loadSchema('schemafile25.xsd');
+		this.workflowType = workflowType;
+		const config = WORKFLOW_CONFIGS[workflowType];
 
-		if (!schemaResult.success) {
-			this.error = new Error(`Failed to load schema: ${schemaResult.error.message}`);
-			this.buildUI();
-			this.showError();
-			return this.waitForKeyThenPop();
+		// Initialise steps from config
+		this.steps = config.steps.map((s) => ({
+			id: s.id,
+			name: s.name,
+			status: 'pending' as const,
+		}));
+
+		// Load schema for convert/validate workflows only
+		let registry;
+		if (workflowType === 'convert' || workflowType === 'validate') {
+			const storage = createStorage();
+			const schemaResult = await storage.loadSchema('schemafile25.xsd');
+
+			if (!schemaResult.success) {
+				this.error = new Error(`Failed to load schema: ${schemaResult.error.message}`);
+				this.buildUI(config.title);
+				return this.waitForKeyThenReplace();
+			}
+
+			registry = buildSchemaRegistry(schemaResult.data);
 		}
 
-		const registry = buildSchemaRegistry(schemaResult.data);
+		this.buildUI(config.title);
 
-		this.buildUI();
-
-		// Single-pass workflow execution (fixes double-generator bug)
+		// Execute workflow
 		try {
-			const gen = convertWorkflow({
-				filePath,
-				registry,
-				mapping: facAirtableMapping,
-			});
+			const gen = this.createWorkflowGenerator(workflowType, filePath, registry);
 
 			while (true) {
 				const next = await gen.next();
@@ -98,8 +149,8 @@ export class ProcessingScreen implements Screen {
 			this.error = err instanceof Error ? err : new Error(String(err));
 		}
 
-		this.showResult();
-		return this.waitForKeyThenPop();
+		// Route to appropriate result screen
+		return this.routeToResultScreen();
 	}
 
 	cleanup(): void {
@@ -115,7 +166,152 @@ export class ProcessingScreen implements Screen {
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
-	private buildUI(): void {
+	private createWorkflowGenerator(
+		type: WorkflowType,
+		filePath: string,
+		registry?: any
+	): AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void> {
+		switch (type) {
+			case 'convert':
+				return convertWorkflow({
+					filePath,
+					registry,
+					mapping: facAirtableMapping,
+				}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
+
+			case 'validate': {
+				// Auto-detect CSV vs XML
+				const ext = filePath.toLowerCase();
+				if (ext.endsWith('.xml')) {
+					// XML validation doesn't actually use mapping, but ValidateInput requires it
+					return xmlValidateWorkflow({
+						filePath,
+						registry,
+						mapping: facAirtableMapping, // Unused for XML validation
+					}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
+				} else {
+					return validateWorkflow({
+						filePath,
+						registry,
+						mapping: facAirtableMapping,
+					}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
+				}
+			}
+
+			case 'check':
+				return checkWorkflow({
+					filePath,
+				}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
+
+			default:
+				throw new Error(`Unknown workflow type: ${type}`);
+		}
+	}
+
+	private routeToResultScreen(): ScreenResult {
+		if (this.error || (this.result && !this.result.success)) {
+			// Failure: go to success screen with error
+			return {
+				action: 'replace',
+				screen: 'success',
+				data: {
+					type: this.workflowType,
+					failed: true,
+					error: this.error || this.result?.error,
+				},
+			};
+		}
+
+		if (!this.result) {
+			// Should never happen, but handle gracefully
+			return { action: 'replace', screen: 'dashboard' };
+		}
+
+		const { data, duration } = this.result;
+
+		switch (this.workflowType) {
+			case 'convert': {
+				const convertData = data as ConvertOutput;
+
+				// If blocked by validation errors, route to validation explorer
+				if (convertData.blocked) {
+					return {
+						action: 'replace',
+						screen: 'validation-explorer',
+						data: {
+							validation: convertData.validation,
+							sourceType: 'csv',
+						},
+					};
+				}
+
+				const hasIssues = !convertData.validation.valid;
+
+				return {
+					action: 'replace',
+					screen: 'success',
+					data: {
+						type: 'convert',
+						duration,
+						outputPath: convertData.outputPath,
+						learnerCount: convertData.csvData.rows.length,
+						hasIssues,
+						validation: convertData.validation,
+					},
+				};
+			}
+
+			case 'validate': {
+				const validateData = data as ValidateOutput;
+				const hasIssues = !validateData.validation.valid;
+
+				if (hasIssues) {
+					// Route to validation explorer
+					return {
+						action: 'replace',
+						screen: 'validation-explorer',
+						data: {
+							validation: validateData.validation,
+							sourceType: this.isXMLSource(validateData) ? 'xml' : 'csv',
+						},
+					};
+				} else {
+					// No issues: success screen
+					return {
+						action: 'replace',
+						screen: 'success',
+						data: {
+							type: 'validate',
+							duration,
+							validation: validateData.validation,
+						},
+					};
+				}
+			}
+
+			case 'check': {
+				const checkData = data as CheckOutput;
+				return {
+					action: 'replace',
+					screen: 'check-results',
+					data: {
+						report: checkData.report,
+						hasIssues: checkData.hasIssues,
+						duration,
+					},
+				};
+			}
+
+			default:
+				return { action: 'replace', screen: 'dashboard' };
+		}
+	}
+
+	private isXMLSource(validateData: ValidateOutput): boolean {
+		return typeof validateData.sourceData === 'string'; // XML is string, CSV is CSVData object
+	}
+
+	private buildUI(title: string): void {
 		// Root container
 		this.container = new BoxRenderable(this.renderer, {
 			id: CONTAINER_ID,
@@ -126,11 +322,11 @@ export class ProcessingScreen implements Screen {
 		});
 
 		// Title
-		const title = new TextRenderable(this.renderer, {
-			content: 'Converting',
+		const titleText = new TextRenderable(this.renderer, {
+			content: title,
 			fg: theme.primary,
 		});
-		this.container.add(title);
+		this.container.add(titleText);
 
 		// Spacer
 		this.container.add(new TextRenderable(this.renderer, { content: '' }));
@@ -179,12 +375,6 @@ export class ProcessingScreen implements Screen {
 
 		this.container.add(this.stepsContainer);
 
-		// Result container (initially empty)
-		this.resultContainer = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-		});
-		this.container.add(this.resultContainer);
-
 		// Status bar
 		this.statusBar = new TextRenderable(this.renderer, {
 			content: 'Processing...',
@@ -218,27 +408,29 @@ export class ProcessingScreen implements Screen {
 			});
 			renderables.iconContainer.add(renderables.spinner);
 
-			// Update name color
+			// Update name colour
 			renderables.nameText.fg = theme.primary;
 		} else if (event.type === 'step:complete') {
-			step.status = 'complete';
+			// Check if step was skipped (e.g. blocked by validation)
+			const isSkipped = event.step.status === 'skipped';
+			step.status = isSkipped ? 'skipped' : 'complete';
 
-			// Stop spinner, replace with success icon
+			// Stop spinner, replace with appropriate icon
 			if (renderables.spinner) {
 				renderables.spinner.stop();
 				renderables.iconContainer.remove(renderables.spinner.id);
 				renderables.spinner = null;
 			}
 			renderables.iconText = new TextRenderable(this.renderer, {
-				content: this.getStatusIcon('complete'),
-				fg: this.getStatusColor('complete'),
+				content: this.getStatusIcon(step.status),
+				fg: this.getStatusColor(step.status),
 			});
 			renderables.iconContainer.add(renderables.iconText);
 
-			// Update name color
-			renderables.nameText.fg = theme.success;
+			// Update name colour
+			renderables.nameText.fg = isSkipped ? theme.textMuted : theme.success;
 
-			// Special handling for validate step
+			// Special handling for validate step in convert/validate workflows
 			if (step.id === 'validate' && event.step.data) {
 				const validation = event.step.data as ValidationResult;
 				const errorCount = validation.errorCount;
@@ -309,7 +501,7 @@ export class ProcessingScreen implements Screen {
 			});
 			renderables.iconContainer.add(renderables.iconText);
 
-			// Update name color
+			// Update name colour
 			renderables.nameText.fg = theme.error;
 
 			// Add error message
@@ -323,56 +515,16 @@ export class ProcessingScreen implements Screen {
 		}
 	}
 
-	private showError(): void {
-		if (!this.error || !this.resultContainer) return;
-
-		const errorText = new TextRenderable(this.renderer, {
-			content: `Error: ${this.error.message}`,
-			fg: theme.error,
-		});
-		this.resultContainer.add(errorText);
-	}
-
-	private showResult(): void {
-		if (!this.result || !this.resultContainer) return;
-
-		this.resultContainer.add(new TextRenderable(this.renderer, { content: '' }));
-
-		if (this.result.success) {
-			const successText = new TextRenderable(this.renderer, {
-				content: '✓ Conversion complete',
-				fg: theme.success,
-			});
-			this.resultContainer.add(successText);
-
-			const durationText = new TextRenderable(this.renderer, {
-				content: `Duration: ${this.result.duration}ms`,
-				fg: theme.textMuted,
-			});
-			this.resultContainer.add(durationText);
-		} else {
-			const failText = new TextRenderable(this.renderer, {
-				content: '✗ Conversion failed',
-				fg: theme.error,
-			});
-			this.resultContainer.add(failText);
-
-			if (this.result.error) {
-				const errorText = new TextRenderable(this.renderer, {
-					content: this.result.error.message,
-					fg: theme.textMuted,
-				});
-				this.resultContainer.add(errorText);
-			}
-		}
-	}
-
-	private waitForKeyThenPop(): Promise<ScreenResult> {
+	private waitForKeyThenReplace(): Promise<ScreenResult> {
 		if (this.statusBar) {
 			this.statusBar.content = '[Any key] Continue';
 		}
 		return new Promise((resolve) => {
-			this.keyHandler = () => resolve({ action: 'pop' });
+			this.keyHandler = () =>
+				resolve({
+					action: 'replace',
+					screen: 'dashboard',
+				});
 			this.renderer.keyInput.once('keypress', this.keyHandler);
 		});
 	}

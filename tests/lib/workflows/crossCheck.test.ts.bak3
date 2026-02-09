@@ -137,9 +137,10 @@ describe('checkWorkflow', () => {
 			await writeFile(testXmlPath, fixtures.validXmlFiveLearners);
 			await mockStorageHistory(fixtures.historyWithOnePrevious);
 
-			// Create the previous submission file so filesystem check passes
-			const previousFile = join(testDir, 'ILR-2026-01-15T10-00-00.xml');
-			await writeFile(previousFile, fixtures.validXmlTwoLearners);
+ttt// Create the previous submission file so filesystem check passes
+tttconst previousFile = join(testDir, 'ILR-2026-01-15T10-00-00.xml');
+tttawait writeFile(previousFile, fixtures.validXmlTwoLearners);
+
 
 			const { result } = await consumeWorkflow(
 				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
@@ -157,12 +158,13 @@ describe('checkWorkflow', () => {
 		});
 
 		it('detects schema version changes', async () => {
+
+ttt// Create the previous submission file so filesystem check passes
+tttconst previousFile = join(testDir, 'ILR-2025-09-01T10-00-00.xml');
+tttawait writeFile(previousFile, fixtures.validXmlTwoLearners);
+
 			await writeFile(testXmlPath, fixtures.validXmlDifferentSchema);
 			await mockStorageHistory(fixtures.historyWithDifferentSchema);
-
-			// Create the previous submission file so filesystem check passes
-			const previousFile = join(testDir, 'ILR-2025-09-01T10-00-00.xml');
-			await writeFile(previousFile, fixtures.validXmlTwoLearners);
 
 			const { result } = await consumeWorkflow(
 				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
@@ -194,10 +196,6 @@ describe('checkWorkflow', () => {
 					},
 				],
 			});
-
-			// Create the previous submission file so filesystem check passes
-			const previousFile = join(testDir, 'ILR-2026-01-01.xml');
-			await writeFile(previousFile, fixtures.validXmlTwoLearners);
 
 			const { result } = await consumeWorkflow(
 				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })
@@ -243,10 +241,6 @@ describe('checkWorkflow', () => {
 		it('includes previous submission details when available', async () => {
 			await writeFile(testXmlPath, fixtures.validXmlTwoLearners);
 			await mockStorageHistory(fixtures.historyWithOnePrevious);
-
-			// Create the previous submission file so filesystem check passes
-			const previousFile = join(testDir, 'ILR-2026-01-15T10-00-00.xml');
-			await writeFile(previousFile, fixtures.validXmlTwoLearners);
 
 			const { result } = await consumeWorkflow(
 				checkWorkflow({ filePath: testXmlPath, internalRoot: testInternalRoot })

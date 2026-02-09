@@ -16,6 +16,7 @@ export interface StoragePaths {
 	schemas: string; // ~/.iris/schemas/
 	history: string; // ~/.iris/history/
 	reports: string; // ~/.iris/reports/
+	internalSubmissions: string; // ~/.iris/submissions/ (metadata only)
 
 	// User output (visible)
 	output: string; // ~/Documents/Iris (or config.outputDir)
@@ -58,6 +59,7 @@ export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths
 		schemas: join(internal, 'schemas'),
 		history: join(internal, 'history'),
 		reports: join(internal, 'reports'),
+		internalSubmissions: join(internal, 'submissions'),
 
 		// Output
 		output,

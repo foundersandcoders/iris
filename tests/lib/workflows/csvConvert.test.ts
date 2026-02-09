@@ -126,7 +126,7 @@ describe('convertWorkflow', () => {
 			expect(result.error).toBeDefined();
 		});
 
-		it('reports validation errors but continues', async () => {
+		it('blocks conversion when validation finds errors', async () => {
 			await writeFile(testCsvPath, fixtures.invalidCsvContent);
 
 			const { result } = await consumeWorkflow(
@@ -139,8 +139,11 @@ describe('convertWorkflow', () => {
 			);
 
 			expect(result.success).toBe(true);
+			expect(result.data?.blocked).toBe(true);
 			expect(result.data?.validation.valid).toBe(false);
 			expect(result.data?.validation.errorCount).toBeGreaterThan(0);
+			expect(result.data?.xml).toBe('');
+			expect(result.data?.outputPath).toBe('');
 		});
 	});
 

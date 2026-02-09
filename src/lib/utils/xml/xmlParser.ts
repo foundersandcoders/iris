@@ -128,33 +128,26 @@ function extractHeader(raw: unknown): Header {
  * Convert a raw learner XML node into a typed Learner object.
  *
  * Coerces and maps XML properties into the Learner shape, converting numeric fields to numbers
- * and leaving optional textual fields as strings or undefined. Required learner fields
- * 'ULN', 'Ethnicity' and 'LLDDHealthProb' must be present.
+ * and leaving optional textual fields as strings or undefined. Missing required numeric fields
+ * ('ULN', 'Ethnicity', 'LLDDHealthProb') are set to `NaN`, allowing downstream validation to
+ * catch the constraint violation.
  *
  * @param raw - Raw parsed XML node representing a learner
  * @returns A Learner object with typed properties (numeric fields converted to numbers; optional text fields as strings or `undefined`)
- * @throws {StructureError} If any required learner field ('ULN', 'Ethnicity', 'LLDDHealthProb') is missing
  */
 function extractLearner(raw: unknown): Learner {
 	const l = raw as Record<string, unknown>;
 	const deliveries = (l?.LearningDelivery as unknown[]) ?? [];
 
-	const requiredFields = ['ULN', 'Ethnicity', 'LLDDHealthProb'] as const;
-	for (const field of requiredFields) {
-		if (l?.[field] === undefined) {
-			throw new StructureError(`Missing required learner field: ${field}`);
-		}
-	}
-
 	return {
 		learnRefNumber: String(l?.LearnRefNumber ?? ''),
-		uln: Number(l.ULN),
+		uln: l?.ULN !== undefined ? Number(l.ULN) : NaN,
 		familyName: l?.FamilyName as string | undefined,
 		givenNames: l?.GivenNames as string | undefined,
 		dateOfBirth: l?.DateOfBirth as string | undefined,
-		ethnicity: Number(l.Ethnicity),
+		ethnicity: l?.Ethnicity !== undefined ? Number(l.Ethnicity) : NaN,
 		sex: String(l?.Sex ?? ''),
-		llddHealthProb: Number(l.LLDDHealthProb),
+		llddHealthProb: l?.LLDDHealthProb !== undefined ? Number(l.LLDDHealthProb) : NaN,
 		niNumber: l?.NINumber as string | undefined,
 		postcodePrior: String(l?.PostcodePrior ?? ''),
 		postcode: String(l?.Postcode ?? ''),
@@ -166,31 +159,26 @@ function extractLearner(raw: unknown): Learner {
 /**
  * Constructs a LearningDelivery object from a raw parsed XML node.
  *
+ * Missing required numeric fields ('AimType', 'AimSeqNumber', 'FundModel', 'CompStatus') are
+ * set to `NaN`, allowing downstream validation to catch constraint violations.
+ *
  * @param raw - The raw parsed XML node representing a single learning delivery
  * @returns A LearningDelivery populated from `raw` with numeric fields converted to numbers; optional numeric fields are `undefined` when absent and string fields default to empty string when missing
- * @throws StructureError if any required delivery field (`AimType`, `AimSeqNumber`, `FundModel`, `CompStatus`) is missing
  */
 function extractLearningDelivery(raw: unknown): LearningDelivery {
 	const ld = raw as Record<string, unknown>;
 
-	const requiredFields = ['AimType', 'AimSeqNumber', 'FundModel', 'CompStatus'] as const;
-	for (const field of requiredFields) {
-		if (ld?.[field] === undefined) {
-			throw new StructureError(`Missing required delivery field: ${field}`);
-		}
-	}
-
 	return {
 		learnAimRef: String(ld?.LearnAimRef ?? ''),
-		aimType: Number(ld.AimType),
-		aimSeqNumber: Number(ld.AimSeqNumber),
+		aimType: ld?.AimType !== undefined ? Number(ld.AimType) : NaN,
+		aimSeqNumber: ld?.AimSeqNumber !== undefined ? Number(ld.AimSeqNumber) : NaN,
 		learnStartDate: String(ld?.LearnStartDate ?? ''),
 		learnPlanEndDate: String(ld?.LearnPlanEndDate ?? ''),
-		fundModel: Number(ld.FundModel),
+		fundModel: ld?.FundModel !== undefined ? Number(ld.FundModel) : NaN,
 		progType: ld?.ProgType !== undefined ? Number(ld.ProgType) : undefined,
 		stdCode: ld?.StdCode !== undefined ? Number(ld.StdCode) : undefined,
 		delLocPostCode: String(ld?.DelLocPostCode ?? ''),
-		compStatus: Number(ld.CompStatus),
+		compStatus: ld?.CompStatus !== undefined ? Number(ld.CompStatus) : NaN,
 		learnActEndDate: ld?.LearnActEndDate as string | undefined,
 		outcome: ld?.Outcome !== undefined ? Number(ld.Outcome) : undefined,
 	};

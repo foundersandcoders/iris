@@ -88,14 +88,15 @@ describe('parseILR', () => {
 			expect(result.error.message).toContain('Message');
 		});
 
-		it('returns error for missing required learner fields', () => {
+		it('parses XML with missing required learner fields (uses NaN for missing numerics)', () => {
 			const result = parseILR(fixtures.missingRequiredFieldsXml);
 
-			expect(result.success).toBe(false);
-			if (result.success) return;
+			expect(result.success).toBe(true);
+			if (!result.success) return;
 
-			expect(result.error.code).toBe('INVALID_STRUCTURE');
-			expect(result.error.message).toContain('ULN');
+			// Verify the parser succeeded and used NaN for missing numeric field
+			expect(result.data.learners).toHaveLength(1);
+			expect(Number.isNaN(result.data.learners[0].uln)).toBe(true);
 		});
 	});
 
