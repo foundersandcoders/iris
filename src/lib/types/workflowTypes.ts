@@ -41,6 +41,7 @@ export interface ConvertOutput {
 	outputPath: string;
 	csvData: CSVData;
 	validation: ValidationResult;
+	blocked?: boolean; // True when validation errors blocked further steps
 }
 
 // |------------|| VALIDATION ||------------|

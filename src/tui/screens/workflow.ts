@@ -232,6 +232,19 @@ export class WorkflowScreen implements Screen {
 		switch (this.workflowType) {
 			case 'convert': {
 				const convertData = data as ConvertOutput;
+
+				// If blocked by validation errors, route to validation explorer
+				if (convertData.blocked) {
+					return {
+						action: 'replace',
+						screen: 'validation-explorer',
+						data: {
+							validation: convertData.validation,
+							sourceType: 'csv',
+						},
+					};
+				}
+
 				const hasIssues = !convertData.validation.valid;
 
 				return {
@@ -398,22 +411,24 @@ export class WorkflowScreen implements Screen {
 			// Update name colour
 			renderables.nameText.fg = theme.primary;
 		} else if (event.type === 'step:complete') {
-			step.status = 'complete';
+			// Check if step was skipped (e.g. blocked by validation)
+			const isSkipped = event.step.status === 'skipped';
+			step.status = isSkipped ? 'skipped' : 'complete';
 
-			// Stop spinner, replace with success icon
+			// Stop spinner, replace with appropriate icon
 			if (renderables.spinner) {
 				renderables.spinner.stop();
 				renderables.iconContainer.remove(renderables.spinner.id);
 				renderables.spinner = null;
 			}
 			renderables.iconText = new TextRenderable(this.renderer, {
-				content: this.getStatusIcon('complete'),
-				fg: this.getStatusColor('complete'),
+				content: this.getStatusIcon(step.status),
+				fg: this.getStatusColor(step.status),
 			});
 			renderables.iconContainer.add(renderables.iconText);
 
 			// Update name colour
-			renderables.nameText.fg = theme.success;
+			renderables.nameText.fg = isSkipped ? theme.textMuted : theme.success;
 
 			// Special handling for validate step in convert/validate workflows
 			if (step.id === 'validate' && event.step.data) {
