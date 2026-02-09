@@ -256,14 +256,20 @@ graph TD
 
 2DC.4["`*2DC.4*<br/>M2B task<br/>iris check`"]:::could-blocked
 
+2BD.1["`*2BD.1*<br/>**MUST**<br/>standalone binary`"]:::must-blocked
+2BD.2["`*2BD.2*<br/>**COULD**<br/>GH Actions release`"]:::could-blocked
+
 %% Required dependencies %%
 2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
+2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> 2BD.1
+2BD.1 --> phase1
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
 %% Optional dependencies %%
+2BD.1 -.->|optional| 2BD.2
+2BD.2 -.->|optional| phase1
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
@@ -285,7 +291,8 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TM.1** — Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout) — **depends on 2TM.3**
 - [ ] **2TM.4** — Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`) — **depends on 2TM.1**
 - [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards) — **depends on 2DC.3**
-- [ ] **2UD.1** — Write user guide for non-technical users — **depends on 2DC.3**
+- [ ] **2UD.1** — Write user guide for non-technical users (includes download/install instructions for end users) — **depends on 2DC.3**
+- [ ] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS + Windows; single binary, no runtime dependency) — **depends on 2TI.9, 2TI.10, 2TI.18, 2UD.1, 2TM.4**
 
 ### Should Have
 
@@ -304,6 +311,7 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`) — **depends on 2TI.12, 1SS.8, 2TI.31**
 - [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2 (optional)**
 - [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
+- [ ] **2BD.2** — Create GitHub Actions release workflow (on tag push: build binaries for macOS + Windows, create GitHub Release with downloadable assets) — **depends on 2BD.1 (optional)**
 - [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
 
 </details>
@@ -347,6 +355,10 @@ graph TD
 2TC.3["`*2TC.3*<br/>enhance<br/>dual-picker`"]:::could-blocked
 2TC.4["`*2TC.4*<br/>enhance<br/>bordered panel`"]:::could-blocked
 
+%% Build & Distribution %%
+2BD.1["`*2BD.1*<br/>build<br/>standalone binary`"]:::must-blocked
+2BD.2["`*2BD.2*<br/>build<br/>GH Actions release`"]:::could-blocked
+
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
@@ -365,9 +377,12 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
 2TS.3 --> 2TS.4
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
+2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> 2BD.1
+2BD.1 --> phase1
 
 %% OPTIONAL %%
+2BD.1 -.->|optional| 2BD.2
+2BD.2 -.->|optional| phase1
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
