@@ -424,6 +424,11 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				const history = historyResult.data;
 				history.submissions.push(entry);
 
+				// Sort by timestamp descending (newest first)
+				history.submissions.sort((a, b) =>
+					new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+				);
+
 				const historyPath = join(paths.history, 'submissions.json');
 				await adapter.writeJson(historyPath, history);
 

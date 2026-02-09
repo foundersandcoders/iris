@@ -148,7 +148,10 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', saveStep);
 
 	try {
-		const storage = createStorage({ outputDir: input.outputDir });
+		const storage = createStorage({
+			outputDir: input.outputDir,
+			internalRoot: input.internalRoot,
+		});
 		await storage.init(); // Ensures directories exist
 
 		const collectionYear = deriveCollectionYear(input.registry.namespace);

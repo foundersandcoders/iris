@@ -429,7 +429,35 @@ describe('IrisStorage', () => {
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.submissions).toHaveLength(2);
-				expect(result.data.submissions).toEqual([fixtures.historyEntry1, fixtures.historyEntry2]);
+				// Sorted newest first (entry2 has later timestamp)
+				expect(result.data.submissions).toEqual([fixtures.historyEntry2, fixtures.historyEntry1]);
+			}
+
+			// Cleanup
+			await rm(freshTestRoot, { recursive: true, force: true });
+		});
+
+		it('sorts history entries by timestamp descending (newest first)', async () => {
+			const freshTestRoot = join(tmpdir(), `iris-storage-test-sort-${Date.now()}`);
+			const freshStorage = createStorage({
+				outputDir: join(freshTestRoot, 'output'),
+				internalRoot: join(freshTestRoot, '.iris'),
+			});
+			await freshStorage.init();
+
+			// Append in chronological order (oldest first)
+			await freshStorage.appendHistory(fixtures.historyEntry1); // 2025-01-01
+			await freshStorage.appendHistory(fixtures.historyEntry2); // 2025-01-02
+			await freshStorage.appendHistory(fixtures.historyEntryWithRefs); // 2025-01-15
+
+			const result = await freshStorage.loadHistory();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.submissions).toHaveLength(3);
+				// Should be sorted newest first
+				expect(result.data.submissions[0].timestamp).toBe('2025-01-15T10:30:00Z');
+				expect(result.data.submissions[1].timestamp).toBe('2025-01-02T00:00:00Z');
+				expect(result.data.submissions[2].timestamp).toBe('2025-01-01T00:00:00Z');
 			}
 
 			// Cleanup

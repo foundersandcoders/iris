@@ -32,6 +32,7 @@ export interface WorkflowResult<T = unknown> {
 export interface ConvertInput {
 	filePath: string;
 	outputDir?: string;
+	internalRoot?: string; // Override ~/.iris for testing
 	registry: SchemaRegistry;
 	mapping: MappingConfig;
 }
