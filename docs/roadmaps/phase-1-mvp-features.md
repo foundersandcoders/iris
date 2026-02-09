@@ -152,7 +152,6 @@ title: M2A — Core TUI Features (post-migration)
 ---
 graph TD
 
-2TI.29["`*2TI.29*<br/>**MUST**<br/>fix schema resolution`"]:::must-open
 1WA.20["`*1WA.20*<br/>**MUST**<br/>ESFA filename format`"]:::must-open
 1WA.21["`*1WA.21*<br/>**MUST**<br/>append to history`"]:::must-open
 1WA.22["`*1WA.22*<br/>**MUST**<br/>block invalid output`"]:::must-open
@@ -163,7 +162,7 @@ graph TD
 2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
 
 2TI.32 --> 2TI.15
-2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
+1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -181,7 +180,7 @@ classDef mile fill:#E8EFF6,color:#000;
 - [x] **2TI.7** — Build validation results explorer (tab-filtered issue browser with detail panel; `TabSelectRenderable` for error/warning/all, `SelectRenderable` for issue list)
 - [x] **2TI.14** — Build validate workflow screen (file select → validate → explore errors; shares generic `WorkflowScreen` with convert)
 - [ ] **2TI.15** — Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view) — **blocked by 2TI.32**
-- [ ] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
+- [x] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
 - [ ] **1WA.20** — Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
 - [ ] **1WA.21** — Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()` — cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
 - [ ] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
@@ -340,7 +339,6 @@ title: Phase 1 — Complete Picture
 graph TD
 
 %% M2A Open — bugs/fixes before real-data testing %%
-2TI.29["`*2TI.29*<br/>fix<br/>schema resolution`"]:::must-open
 1WA.20["`*1WA.20*<br/>fix<br/>ESFA filename`"]:::must-open
 1WA.21["`*1WA.21*<br/>fix<br/>history append`"]:::must-open
 1WA.22["`*1WA.22*<br/>fix<br/>block invalid output`"]:::must-open
@@ -380,7 +378,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 
 %% M2A Dependencies %%
 2TI.32 --> 2TI.15
-2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
+1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
 
 %% M2B Dependencies %%
 2TI.17 --> 2DC.2
