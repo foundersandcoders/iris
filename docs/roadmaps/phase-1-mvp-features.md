@@ -159,9 +159,6 @@ graph TD
 2TI.30["`*2TI.30*<br/>**MUST**<br/>fix validation explorer`"]:::must-open
 2TI.32["`*2TI.32*<br/>**MUST**<br/>two-file-picker`"]:::must-open
 2TI.15["`*2TI.15*<br/>**MUST**<br/>check screen`"]:::must-blocked
-2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-open
-1SS.8["`*1SS.8*<br/>**SHOULD**<br/>default directories`"]:::should-open
-2TI.31["`*2TI.31*<br/>**SHOULD**<br/>success proof`"]:::should-open
 2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-blocked
 
 2TI.32 --> 2TI.15
