@@ -9,7 +9,8 @@
 
 The MVP development has been split into three distinct phases:
 
-### [Phase 1: MVP Features](./phase-1-mvp-features.md)
+<details>
+<summary><h3><a href="./phase-1-mvp-features.md">Phase 1: MVP Features</a></h3></summary>
 **Core functionality for terminal users**
 
 - **M2A:** OpenTUI Migration + Core TUI Screens (migrate terminal-kit → OpenTUI, then keyboard nav, workflows, validation explorer)
@@ -18,9 +19,10 @@ The MVP development has been split into three distinct phases:
 
 **Status:** In progress (M2A — OpenTUI migration is the next task)
 
----
+</details>
 
-### [Phase 2: Production Features](./phase-2-production-features.md)
+<details>
+<summary><h3><a href="./phase-2-production-features.md">Phase 2: Production Features</a></h3></summary>
 **Complete CLI and desktop application**
 
 - **M3:** CLI Completion (help system, automation testing, interactive flag)
@@ -29,9 +31,10 @@ The MVP development has been split into three distinct phases:
 
 **Status:** Blocked (awaiting Phase 1 completion)
 
----
+</details>
 
-### [Phase 3: Future Features](./phase-3-future-features.md)
+<details>
+<summary><h3><a href="./phase-3-future-features.md">Phase 3: Future Features</a></h3></summary>
 **Exploratory enhancements beyond MVP**
 
 - Post-submission error prediction
@@ -42,6 +45,8 @@ The MVP development has been split into three distinct phases:
 - Schema diff viewer and migration suggestions
 
 **Status:** Exploratory (no concrete tasks yet)
+
+</details>
 
 ---
 
