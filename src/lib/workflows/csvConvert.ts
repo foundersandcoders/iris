@@ -8,6 +8,8 @@ import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/configTypes';
 import { mapCsvToSchemaWithAims } from '../schema/columnMapper';
+import { deriveCollectionYear } from '../utils/config/namespace';
+import { createStep, stepEvent, failedResult } from './utils';
 import type {
 	ConvertInput,
 	ConvertOutput,
@@ -15,6 +17,7 @@ import type {
 	WorkflowStepEvent,
 	WorkflowResult,
 } from '../types/workflowTypes';
+import type { HistoryEntry } from '../types/storageTypes';
 import { createStorage } from '../storage';
 import type { SchemaRegistry } from '$lib/schema';
 import type { MappingConfig } from '../types/schemaTypes';
@@ -35,6 +38,9 @@ export async function* convertWorkflow(
 ): AsyncGenerator<WorkflowStepEvent, WorkflowResult<ConvertOutput>, void> {
 	const startTime = Date.now();
 	const steps: WorkflowStep[] = [];
+
+	// Load config once for reuse (needed for buildILRMessage and save metadata)
+	const config = await getConfig();
 
 	// --- Step 1: Parse CSV ---
 	let csvData: CSVData;
@@ -80,15 +86,43 @@ export async function* convertWorkflow(
 		return failedResult(steps, validateStep.error, startTime);
 	}
 
+	// Hard block: abort if validation found errors
+	if (validation.errorCount > 0) {
+		// Mark generate and save steps as skipped
+		const generateStep = createStep(STEPS.generate);
+		generateStep.status = 'skipped';
+		steps.push(generateStep);
+		yield stepEvent('step:complete', generateStep);
+
+		const saveStep = createStep(STEPS.save);
+		saveStep.status = 'skipped';
+		steps.push(saveStep);
+		yield stepEvent('step:complete', saveStep);
+
+		return {
+			success: true,
+			data: {
+				xml: '',
+				outputPath: '',
+				csvData,
+				validation,
+				blocked: true,
+			},
+			steps,
+			duration: Date.now() - startTime,
+		};
+	}
+
 	// --- Step 3: Generate XML ---
 	let xml: string;
+	let message: Record<string, unknown>; // Hoist for later use in save step (history)
 	const generateStep = createStep(STEPS.generate);
 	steps.push(generateStep);
 
 	yield stepEvent('step:start', generateStep);
 
 	try {
-		const message = await buildILRMessage(csvData, input.registry, input.mapping);
+		message = await buildILRMessage(csvData, input.registry, input.mapping, config);
 		const result = generateFromSchema(message, input.registry);
 		xml = result.xml;
 
@@ -117,7 +151,16 @@ export async function* convertWorkflow(
 		const storage = createStorage({ outputDir: input.outputDir });
 		await storage.init(); // Ensures directories exist
 
-		const saveResult = await storage.saveSubmission(xml);
+		const collectionYear = deriveCollectionYear(input.registry.namespace);
+		const saveResult = await storage.saveSubmission(xml, {
+			timestamp: new Date().toISOString(),
+			learnerCount: csvData.rows.length,
+			schema: input.registry.namespace,
+			ukprn: config.provider.ukprn,
+			collectionYear,
+			serialNo: config.serialNo ?? '01',
+			collection: config.collection ?? 'ILR',
+		});
 
 		if (!saveResult.success) {
 			throw new Error(`Failed to save submission: ${saveResult.error.message}`);
@@ -126,9 +169,30 @@ export async function* convertWorkflow(
 		outputPath = saveResult.data;
 		const filename = outputPath.split('/').pop() ?? 'unknown';
 
+		// Append to submission history (non-fatal — log warning if fails)
+		const checksum = new Bun.CryptoHasher('sha256').update(xml).digest('hex');
+		const learnerRefs = (message.Learner as Record<string, unknown>[])
+			.map(l => String(l.LearnRefNumber ?? ''))
+			.filter(ref => ref.length > 0);
+
+		const historyEntry: HistoryEntry = {
+			filename,
+			timestamp: new Date().toISOString(),
+			learnerCount: csvData.rows.length,
+			checksum,
+			schema: input.registry.namespace,
+			learnerRefs,
+		};
+
+		const historyResult = await storage.appendHistory(historyEntry);
+		if (!historyResult.success) {
+			saveStep.message = `Saved to ${filename}, but history update failed: ${historyResult.error.message}`;
+		} else {
+			saveStep.message = `Saved to ${filename}`;
+		}
+
 		saveStep.status = 'complete';
 		saveStep.progress = 100;
-		saveStep.message = `Saved to ${filename}`;
 		yield stepEvent('step:complete', saveStep);
 	} catch (error) {
 		saveStep.status = 'failed';
@@ -146,51 +210,22 @@ export async function* convertWorkflow(
 	};
 }
 
-// === Helpers ===
-function createStep(def: { id: string; name: string }): WorkflowStep {
-	return {
-		id: def.id,
-		name: def.name,
-		status: 'pending',
-		progress: 0,
-	};
-}
-
-function stepEvent<T>(
-	type: WorkflowStepEvent['type'],
-	step: WorkflowStep<T>
-): WorkflowStepEvent<T> {
-	return { type, step: { ...step }, timestamp: Date.now() };
-}
-
-function failedResult(
-	steps: WorkflowStep[],
-	error: Error,
-	startTime: number
-): WorkflowResult<ConvertOutput> {
-	return {
-		success: false,
-		error,
-		steps,
-		duration: Date.now() - startTime,
-	};
-}
 
 // === CSV --> ILR Message Mapping ===
 async function buildILRMessage(
 	csvData: CSVData,
 	registry: SchemaRegistry,
-	mapping: MappingConfig
+	mapping: MappingConfig,
+	config: Awaited<ReturnType<typeof getConfig>>
 ): Promise<Record<string, unknown>> {
 	const now = new Date();
-	const config = await getConfig();
 
 	// Build header and provider sections (not from CSV)
 	const baseStructure: Record<string, unknown> = {
 		Header: {
 			CollectionDetails: {
 				Collection: config.collection ?? 'ILR',
-				Year: '2526',
+				Year: deriveCollectionYear(registry.namespace),
 				FilePreparationDate: now.toISOString().split('T')[0],
 			},
 			Source: {
