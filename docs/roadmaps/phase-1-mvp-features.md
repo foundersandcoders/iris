@@ -203,8 +203,6 @@ classDef mile fill:#E8EFF6,color:#000;
 
 </details>
 
----
-
 <details>
 <summary><h3>M2B: Direct Commands</h3></summary>
 
