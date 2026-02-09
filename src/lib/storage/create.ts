@@ -48,6 +48,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				await adapter.ensureDir(paths.schemas);
 				await adapter.ensureDir(paths.history);
 				await adapter.ensureDir(paths.reports);
+				await adapter.ensureDir(paths.internalSubmissions);
 
 				// Ensure output directories exist
 				await adapter.ensureDir(paths.output);
@@ -316,9 +317,9 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				const submissionPath = join(paths.submissions, filename);
 				await adapter.write(submissionPath, xml);
 
-				// Save metadata if provided
+				// Save metadata to internal directory if provided
 				if (metadata) {
-					const metadataPath = join(paths.submissions, `${filename}.meta.json`);
+					const metadataPath = join(paths.internalSubmissions, `${filename}.meta.json`);
 					await adapter.writeJson(metadataPath, metadata);
 				}
 
