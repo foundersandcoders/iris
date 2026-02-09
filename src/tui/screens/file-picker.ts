@@ -32,6 +32,7 @@ export class FilePicker implements Screen {
 	private breadcrumb?: TextRenderable;
 	private emptyMessage?: TextRenderable;
 	private keyHandler?: (key: KeyEvent) => void;
+	private screenData?: ScreenData;
 
 	private title: string = 'Select CSV File';
 	private fileExtensions: string[] = ['.csv'];
@@ -43,6 +44,9 @@ export class FilePicker implements Screen {
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
+		// Store data for forwarding in two-step check flow
+		this.screenData = data;
+
 		if (data?.path && typeof data.path === 'string') {
 			this.currentPath = data.path;
 		}
@@ -151,7 +155,31 @@ export class FilePicker implements Screen {
 						if (this.breadcrumb) {
 							this.breadcrumb.content = this.shortenPath(this.currentPath);
 						}
+					} else if (this.workflowType === 'check-current') {
+						// First step of check flow: selected current file, now pick previous
+						resolve({
+							action: 'push',
+							screen: 'file-picker',
+							data: {
+								fileExtension: '.xml',
+								title: 'Select Previous XML Submission',
+								workflowType: 'check-previous',
+								currentFilePath: entry.path,
+							},
+						});
+					} else if (this.workflowType === 'check-previous') {
+						// Second step of check flow: selected previous file, go to workflow
+						resolve({
+							action: 'push',
+							screen: 'workflow',
+							data: {
+								filePath: this.screenData?.currentFilePath as string,
+								previousFilePath: entry.path,
+								workflowType: 'check',
+							},
+						});
 					} else {
+						// Normal single-file workflows
 						resolve({
 							action: 'push',
 							screen: 'workflow',

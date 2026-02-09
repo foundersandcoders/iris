@@ -136,8 +136,8 @@ export class Dashboard implements Screen {
 						screen: 'file-picker',
 						data: {
 							fileExtension: '.xml',
-							title: 'Select XML File',
-							workflowType: 'check',
+							title: 'Select Current XML Submission',
+							workflowType: 'check-current',
 						},
 					});
 				} else if (item.implemented) {

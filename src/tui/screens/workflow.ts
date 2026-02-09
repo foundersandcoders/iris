@@ -135,7 +135,7 @@ export class WorkflowScreen implements Screen {
 
 		// Execute workflow
 		try {
-			const gen = this.createWorkflowGenerator(workflowType, filePath, registry);
+			const gen = this.createWorkflowGenerator(workflowType, filePath, registry, data);
 
 			while (true) {
 				const next = await gen.next();
@@ -169,7 +169,8 @@ export class WorkflowScreen implements Screen {
 	private createWorkflowGenerator(
 		type: WorkflowType,
 		filePath: string,
-		registry?: any
+		registry?: any,
+		data?: ScreenData
 	): AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void> {
 		switch (type) {
 			case 'convert':
@@ -201,6 +202,7 @@ export class WorkflowScreen implements Screen {
 			case 'check':
 				return checkWorkflow({
 					filePath,
+					previousFilePath: data?.previousFilePath as string | undefined,
 				}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
 
 			default:
@@ -446,7 +448,7 @@ export class WorkflowScreen implements Screen {
 					: `${errorCount} errors, ${warningCount} warnings`;
 
 				step.errorSamples = sampleErrors.map((e) => {
-					const rowDisplay = e.row !== undefined ? ` (row ${e.row})` : '';
+					const rowDisplay = e.row !== undefined ? ` (row ${e.row + 1})` : '';
 					const valueDisplay =
 						e.actualValue !== undefined ? ` [value: ${JSON.stringify(e.actualValue)}]` : '';
 					return `${e.field || 'general'}: ${e.message}${rowDisplay}${valueDisplay}`;
