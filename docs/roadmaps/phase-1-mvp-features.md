@@ -115,14 +115,8 @@ graph TD
 
 </details>
 
----
-
-## Open Milestones
-
-### M2A: Core TUI Screens
-
 <details>
-<summary><strong>✅ OpenTUI Migration (Complete)</strong></summary>
+<summary><strong>✅ Milestone 2X: OpenTUI Migration (Complete)</strong></summary>
 
 1. Foundation ✅
 	- [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
@@ -138,6 +132,12 @@ graph TD
 	- [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
 
 </details>
+
+---
+
+## Open Milestones
+
+### M2A: Core TUI Screens
 
 > [!IMPORTANT]
 > **Goal:** Beautiful, interactive terminal interface for core workflows
