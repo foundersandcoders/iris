@@ -133,12 +133,8 @@ graph TD
 
 </details>
 
----
-
-## Open Milestones
-
 <details>
-<summary><h3>M2A: Core TUI Screens</h3></summary>
+<summary><strong>✅ M2A: Core TUI Screens</strong></summary>
 
 > [!IMPORTANT]
 > **Goal:** Beautiful, interactive terminal interface for core workflows
@@ -146,22 +142,7 @@ graph TD
 > [!NOTE]
 > These tasks build **on top of the OpenTUI migration**. OpenTUI's built-in keyboard/focus system, `SelectRenderable`, `ScrollBox`, `BoxRenderable`, `ASCIIFontRenderable`, and Timeline API simplify most of these significantly compared to building them on terminal-kit.
 
-```mermaid
----
-title: M2A — Core TUI Features (post-migration)
----
-graph TD
-
-2TI.17["`*2TI.17*<br/>**MUST**<br/>test w/ real data`"]:::must-open
-
-classDef must-open fill:#D6A3BF,color:#000;
-classDef must-blocked fill:#F3D8E6,color:#000;
-classDef should-open fill:#6F2A52,color:#fff;
-classDef should-blocked fill:#A45A84,color:#fff;
-classDef could-open fill:#3E7F96,color:#fff;
-classDef could-blocked fill:#5FA3BA,color:#fff;
-classDef mile fill:#E8EFF6,color:#000;
-```
+All tasks complete — no open tasks in M2A.
 
 ### Must Have
 
@@ -181,13 +162,17 @@ classDef mile fill:#E8EFF6,color:#000;
 	- Row numbers 0-indexed — should display as 1-indexed for non-dev users
 	- Single-issue display doesn't indicate it's the first occurrence of a repeated error
 - [x] **2TI.32** — Two-file-picker for cross-check workflow — user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
-- [ ] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
+- [x] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
 
 ### Should Have
 
 - [x] **2TI.8** — Implement success/completion screen (generic for all workflow types; conditional "View Issues" menu, duration/output/learner count display)
 
 </details>
+
+---
+
+## Open Milestones
 
 <details>
 <summary><h3>M2B: Direct Commands</h3></summary>
@@ -333,14 +318,13 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% M2A Open — bugs/fixes before real-data testing %%
+%% M2A Tasks (optional enhancements) %%
 2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-open
 1SS.8["`*1SS.8*<br/>enhance<br/>default directories`"]:::should-open
 2TI.31["`*2TI.31*<br/>enhance<br/>success proof`"]:::should-open
-2TI.17["`*2TI.17*<br/>test<br/>real data`"]:::must-open
 
 %% M2B Tasks %%
-2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-blocked
+2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-open
 2DC.3["`*2DC.3*<br/>command<br/>validate`"]:::should-blocked
 2DC.4["`*2DC.4*<br/>command<br/>check`"]:::could-blocked
 
@@ -369,7 +353,6 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 %% M2A Dependencies %%
 
 %% M2B Dependencies %%
-2TI.17 --> 2DC.2
 2DC.2 --> 2DC.3
 2DC.3 --> 2TM.2 & 2TI.10 & 2TI.18 & 2UD.1
 
