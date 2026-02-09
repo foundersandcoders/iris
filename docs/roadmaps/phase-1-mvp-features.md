@@ -166,7 +166,6 @@ graph TD
 
 2TI.32 --> 2TI.15
 2TI.29 & 1WA.20 & 1WA.21 & 1WA.22 & 1WA.23 & 2TI.30 & 2TI.15 --> 2TI.17
-2TI.12 & 1SS.8 & 2TI.31 -.->|optional| 2TI.17
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -199,10 +198,10 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Should Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11**
+- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11, 2TI.10**
 - [x] **2TI.8** — Implement success/completion screen (generic for all workflow types; conditional "View Issues" menu, duration/output/learner count display)
-- [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session)
-- [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid)
+- [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session) — **depends on 2TI.10**
+- [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
 
 ---
 
@@ -222,11 +221,8 @@ graph TD
 2TI.17 --> 2DC.2
 
 2DC.2["`*2DC.2*<br/>**SHOULD**<br/>iris convert`"]:::should-blocked --> 2DC.3
-2DC.3["`*2DC.3*<br/>**SHOULD**<br/>iris validate`"]:::should-blocked -.-> 2DC.4
+2DC.3["`*2DC.3*<br/>**SHOULD**<br/>iris validate`"]:::should-blocked
 
-2DC.4["`*2DC.4*<br/>**COULD**<br/>iris check`"]:::could-blocked
-
-2DC.4 -.->|optional| phase1
 phase1{"`**M2B**<br/>Complete`"}:::mile
 
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -242,7 +238,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Could Have
 
-- [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2DC.3 (optional)**
+- [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2TI.18**
 
 ---
 
@@ -261,7 +257,7 @@ graph TD
 
 2DC.3["`*2DC.3*<br/>M2B task<br/>validate cmd`"]:::should-blocked
 
-2DC.3 --> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1
+2DC.3 --> 2TM.2 & 2TI.10 & 2TI.18 & 2UD.1
 
 2TM.2["`*2TM.2*<br/>**MUST**<br/>CSV→XML mapping UI`"]:::must-blocked --> 2TM.3
 2TM.3["`*2TM.3*<br/>**MUST**<br/>mapping preview`"]:::must-blocked --> 2TM.1
@@ -270,28 +266,34 @@ graph TD
 
 2TI.9["`*2TI.9*<br/>**SHOULD**<br/>settings screen`"]:::should-blocked
 
-2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-blocked
-2TS.3["`*2TS.3*<br/>**COULD**<br/>schema version selector`"]:::could-blocked --> 2TS.4
-2TS.4["`*2TS.4*<br/>**COULD**<br/>dynamic migration guidance`"]:::could-blocked
-
-2TI.19["`*2TI.19*<br/>**COULD**<br/>schema settings integration`"]:::could-blocked
-
 2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
 2UD.1["`*2UD.1*<br/>**MUST**<br/>user guide`"]:::must-blocked
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
 
+2TI.12["`*2TI.12*<br/>M2A task<br/>contextual help`"]:::should-blocked
+1SS.8["`*1SS.8*<br/>M2A task<br/>default directories`"]:::should-blocked
+2TI.31["`*2TI.31*<br/>M2A task<br/>success proof`"]:::should-blocked
+2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-blocked
+2TS.3["`*2TS.3*<br/>**COULD**<br/>schema version selector`"]:::could-blocked --> 2TS.4
+2TS.4["`*2TS.4*<br/>**COULD**<br/>dynamic migration guidance`"]:::could-blocked
+2TI.19["`*2TI.19*<br/>**COULD**<br/>schema settings integration`"]:::could-blocked
+
+2DC.4["`*2DC.4*<br/>M2B task<br/>iris check`"]:::could-blocked
+
 %% Required dependencies %%
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 --> phase1
+2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
+2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
+2TI.18 --> 2DC.4
+2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
 %% Optional dependencies %%
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
-2DC.3 -.->|optional| 2TS.2
 2TS.2 -.->|optional| 2TS.3 & 2TI.19
-2TI.19 & 2TS.4 & 2UD.2 -.->|optional| phase1
+2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 -.->|optional| phase1
 
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-blocked fill:#A45A84,color:#fff;
@@ -315,7 +317,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Could Have
 
-- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`) — **depends on 2DC.3 (optional)**
+- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`) — **depends on 2TI.12, 1SS.8, 2TI.31**
 - [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2 (optional)**
 - [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
 - [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
@@ -375,23 +377,23 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 %% M2B Dependencies %%
 2TI.17 --> 2DC.2
 2DC.2 --> 2DC.3
-2DC.3 -.-> 2DC.4
-2DC.3 --> 2TM.2 & 2TI.10 & 2TS.2 & 2TI.18 & 2UD.1
+2DC.3 --> 2TM.2 & 2TI.10 & 2TI.18 & 2UD.1
 
 %% M2C Dependencies %%
 2TM.2 --> 2TM.3
 2TM.3 --> 2TM.1
 2TM.1 --> 2TM.4
 2TM.4 --> 2TI.9
+2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
+2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
+2TI.18 --> 2DC.4
 2TS.3 --> 2TS.4
-2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 --> phase1
+2TI.9 & 2TI.10 & 2TI.18 & 2UD.1 & 2TM.4 --> phase1
 
 %% OPTIONAL %%
-2TI.12 & 1SS.8 & 2TI.31 -.->|optional| 2TI.17
 2UD.1 -.->|optional| 2UD.2
 2TI.9 -.->|optional| 2TI.19
 2TM.4 -.->|optional| 2TS.4
-2DC.3 -.->|optional| 2TS.2
 2TS.2 -.->|optional| 2TS.3 & 2TI.19
 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 -.->|optional| phase1
 
