@@ -33,8 +33,20 @@ interface SettingsField {
 	getValue: (config: IrisConfig) => string;
 	setValue: (config: IrisConfig, value: string) => IrisConfig;
 	type: 'text' | 'dropdown';
+	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
 }
+
+/** Contextual help text per field */
+const FIELD_HELP: Record<string, string> = {
+	'provider.ukprn': 'UK Provider Reference Number — 8-digit identifier assigned by UKRLP',
+	'provider.name': 'Organisation name as registered with the ESFA',
+	'activeSchema': 'XSD schema used for XML generation and validation',
+	'activeMapping': 'CSV→XSD mapping configuration for field translation',
+	'collection': 'ILR collection period (e.g. "R14" for final return)',
+	'serialNo': 'Auto-incremented per submission — leave blank for now',
+	'outputDir': 'Directory for generated XML files (defaults to ~/.iris/submissions/)',
+};
 
 /** Field definitions — declarative description of every editable setting */
 const FIELDS: SettingsField[] = [
@@ -94,9 +106,10 @@ const FIELDS: SettingsField[] = [
 		key: 'serialNo',
 		label: 'Serial No',
 		section: 'Submission',
-		getValue: (c) => c.serialNo ?? '',
+		getValue: (c) => c.serialNo ?? '(auto)',
 		setValue: (c, v) => ({ ...c, serialNo: v || undefined }),
 		type: 'text',
+		editable: false,
 	},
 	{
 		key: 'outputDir',
@@ -104,23 +117,6 @@ const FIELDS: SettingsField[] = [
 		section: 'Submission',
 		getValue: (c) => c.outputDir ?? '(default)',
 		setValue: (c, v) => ({ ...c, outputDir: v === '(default)' || v === '' ? undefined : v }),
-		type: 'text',
-	},
-	// Software
-	{
-		key: 'submission.softwareSupplier',
-		label: 'Supplier',
-		section: 'Software',
-		getValue: (c) => c.submission.softwareSupplier ?? '',
-		setValue: (c, v) => ({ ...c, submission: { ...c.submission, softwareSupplier: v || undefined } }),
-		type: 'text',
-	},
-	{
-		key: 'submission.softwarePackage',
-		label: 'Package',
-		section: 'Software',
-		getValue: (c) => c.submission.softwarePackage ?? '',
-		setValue: (c, v) => ({ ...c, submission: { ...c.submission, softwarePackage: v || undefined } }),
 		type: 'text',
 	},
 ];
@@ -135,7 +131,11 @@ export class SettingsScreen implements Screen {
 	private originalConfig!: IrisConfig;
 	private dirty = false;
 	private editing = false;
+	private resetConfirm = false;
 	private validation: ConfigValidationResult = { valid: true, issues: [] };
+
+	// Navigation
+	private previousIndex = 0;
 
 	// Inline edit renderables (created/destroyed per edit)
 	private editInput?: InputRenderable;
@@ -145,6 +145,7 @@ export class SettingsScreen implements Screen {
 	// Renderables
 	private container?: BoxRenderable;
 	private fieldList?: SelectRenderable;
+	private helpText?: TextRenderable;
 	private validationText?: TextRenderable;
 	private statusText?: TextRenderable;
 
@@ -175,6 +176,36 @@ export class SettingsScreen implements Screen {
 				}
 			});
 
+			// Skip section headers on navigation + update help text
+			this.fieldList?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number, option: SelectOption | null) => {
+				if (!option) return;
+				const value = option.value as string;
+
+				// Clear reset confirm on any navigation
+				if (this.resetConfirm) {
+					this.resetConfirm = false;
+					this.updateStatus();
+				}
+
+				if (value.startsWith('__section_')) {
+					const direction = index > this.previousIndex ? 1 : -1;
+					const options = this.fieldList!.options;
+					const nextIndex = index + direction;
+					if (nextIndex >= 0 && nextIndex < options.length) {
+						this.fieldList!.setSelectedIndex(nextIndex);
+					} else {
+						// At boundary — bounce back
+						this.fieldList!.setSelectedIndex(this.previousIndex);
+					}
+				} else {
+					this.previousIndex = index;
+					// Update help text
+					if (this.helpText) {
+						this.helpText.content = FIELD_HELP[value] ?? '';
+					}
+				}
+			});
+
 			// Key handler
 			this.keyHandler = (key: KeyEvent) => {
 				if (this.editing) {
@@ -188,9 +219,14 @@ export class SettingsScreen implements Screen {
 					this.renderer.keyInput.off('keypress', this.keyHandler!);
 					resolve({ action: 'pop' });
 				} else if (key.name === 's') {
+					if (this.resetConfirm) { this.resetConfirm = false; this.updateStatus(); }
 					this.save();
 				} else if (key.name === 'r') {
 					this.resetToDefaults();
+				} else if (this.resetConfirm) {
+					// Any other key cancels reset confirm
+					this.resetConfirm = false;
+					this.updateStatus();
 				}
 			};
 			this.renderer.keyInput.on('keypress', this.keyHandler);
@@ -242,6 +278,15 @@ export class SettingsScreen implements Screen {
 
 		this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
+		// Help text (context-sensitive)
+		this.helpText = new TextRenderable(this.renderer, {
+			content: '',
+			fg: theme.textMuted,
+		});
+		this.container.add(this.helpText);
+
+		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+
 		// Validation
 		this.validationText = new TextRenderable(this.renderer, {
 			content: this.validation.valid
@@ -255,7 +300,7 @@ export class SettingsScreen implements Screen {
 
 		// Status bar
 		this.statusText = new TextRenderable(this.renderer, {
-			content: '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset  [ESC] Back',
+			content: '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back',
 			fg: theme.textMuted,
 		});
 		this.container.add(this.statusText);
@@ -278,11 +323,14 @@ export class SettingsScreen implements Screen {
 				lastSection = field.section;
 			}
 
+			const editable = field.editable !== false;
 			const value = field.getValue(this.config);
 			const padding = ' '.repeat(Math.max(1, 22 - field.label.length));
 			options.push({
-				name: `    ${field.label}${padding}${value}`,
-				description: '',
+				name: editable
+					? `    ${field.label}${padding}${value}`
+					: `    ${field.label}${padding}${value}`,
+				description: editable ? '' : 'read-only',
 				value: field.key,
 			});
 		}
@@ -296,6 +344,7 @@ export class SettingsScreen implements Screen {
 		// Map list index to field index (accounting for section headers)
 		const field = this.getFieldFromListIndex(listIndex);
 		if (!field) return; // Hit a section header
+		if (field.editable === false) return; // Non-editable field
 
 		this.editing = true;
 		this.editFieldIndex = FIELDS.indexOf(field);
@@ -315,6 +364,10 @@ export class SettingsScreen implements Screen {
 			value: currentValue === '(default)' ? '' : currentValue,
 			placeholder: field.label,
 			width: '40%',
+			textColor: theme.text,
+			backgroundColor: theme.background,
+			focusedTextColor: theme.text,
+			focusedBackgroundColor: theme.highlightFocused,
 		});
 
 		// Replace the field list option with input (visual feedback)
@@ -395,9 +448,7 @@ export class SettingsScreen implements Screen {
 				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
 
-		if (this.statusText) {
-			this.statusText.content = '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset  [ESC] Back';
-		}
+		this.updateStatus();
 
 		// Refocus field list
 		this.fieldList?.focus();
@@ -416,6 +467,18 @@ export class SettingsScreen implements Screen {
 		return FIELDS.find((f) => f.key === key) ?? null;
 	}
 
+	// === Status ===
+
+	private updateStatus(): void {
+		if (!this.statusText) return;
+
+		if (this.resetConfirm) {
+			this.statusText.content = `${symbols.info.warning} Press [r] again to confirm reset to defaults, or any other key to cancel`;
+		} else {
+			this.statusText.content = '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back';
+		}
+	}
+
 	// === Actions ===
 
 	private async save(): Promise<void> {
@@ -427,12 +490,20 @@ export class SettingsScreen implements Screen {
 			this.originalConfig = { ...this.config };
 			this.dirty = false;
 			if (this.statusText) {
-				this.statusText.content = `${symbols.info.success} Saved!  [↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset  [ESC] Back`;
+				this.statusText.content = `${symbols.info.success} Saved!  [↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back`;
 			}
 		}
 	}
 
 	private resetToDefaults(): void {
+		// Two-press confirm
+		if (!this.resetConfirm) {
+			this.resetConfirm = true;
+			this.updateStatus();
+			return;
+		}
+
+		this.resetConfirm = false;
 		this.config = { ...DEFAULT_CONFIG };
 		this.dirty = true;
 		this.validation = validateConfig(this.config);
@@ -446,5 +517,7 @@ export class SettingsScreen implements Screen {
 				? `${symbols.info.success} Configuration valid (reset to defaults)`
 				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
+
+		this.updateStatus();
 	}
 }
