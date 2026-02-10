@@ -32,11 +32,13 @@ export class HistoryScreen implements Screen {
 
 	// State
 	private historyItems: HistoryListItem[] = [];
+	private deleteConfirmIndex = -1;
 
 	// Renderables
 	private container?: BoxRenderable;
 	private submissionList?: SelectRenderable;
 	private detailPanel?: BoxRenderable;
+	private statusText?: TextRenderable;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -48,9 +50,11 @@ export class HistoryScreen implements Screen {
 
 		// Wait for user interaction
 		return new Promise((resolve) => {
-			// Selection change handler — update detail panel
+			// Selection change handler — update detail panel and reset delete confirm
 			this.submissionList?.on('selectionChanged', (index: number) => {
+				this.deleteConfirmIndex = -1;
 				this.updateDetailPanel(index);
+				this.updateStatus();
 			});
 
 			// Item selected handler (Enter key)
@@ -58,13 +62,14 @@ export class HistoryScreen implements Screen {
 				const item = this.historyItems[index];
 				if (!item || item.isBroken) return;
 
-				// Default action: validate
+				// Default action: validate, then return to history
 				resolve({
 					action: 'push',
 					screen: 'workflow',
 					data: {
 						filePath: item.filePath!,
 						workflowType: 'validate',
+						returnTo: 'history',
 					},
 				});
 			});
@@ -84,6 +89,7 @@ export class HistoryScreen implements Screen {
 							data: {
 								filePath: item.filePath,
 								workflowType: 'validate',
+								returnTo: 'history',
 							},
 						});
 					}
@@ -100,9 +106,21 @@ export class HistoryScreen implements Screen {
 								title: 'Select Previous Submission to Compare',
 								workflowType: 'check-previous',
 								currentFilePath: item.filePath,
+								returnTo: 'history',
 							},
 						});
 					}
+				} else if (key.name === 'x') {
+					// Delete broken entry (don't resolve - stay on screen)
+					this.handleDelete().catch(() => {
+						if (this.statusText) {
+							this.statusText.content = `${symbols.info.error} Delete failed — try again`;
+						}
+					});
+				} else if (this.deleteConfirmIndex >= 0) {
+					// Any other key cancels delete confirmation
+					this.deleteConfirmIndex = -1;
+					this.updateStatus();
 				}
 			};
 			this.renderer.keyInput.on('keypress', this.keyHandler);
@@ -234,20 +252,17 @@ export class HistoryScreen implements Screen {
 		this.container.add(this.detailPanel);
 
 		// Status bar
-		const statusText = this.historyItems.length === 0
-			? '[ESC/q] Back to Dashboard'
-			: '[↑↓] Navigate  [ENTER/v] Validate  [c] Cross-check  [ESC/q] Back';
-		this.container.add(
-			new TextRenderable(this.renderer, {
-				content: statusText,
-				fg: theme.textMuted,
-			})
-		);
+		this.statusText = new TextRenderable(this.renderer, {
+			content: '',
+			fg: theme.textMuted,
+		});
+		this.container.add(this.statusText);
 
 		// Add to renderer
 		this.renderer.root.add(this.container);
 
-		// Initial detail panel update
+		// Initial status and detail panel
+		this.updateStatus();
 		if (this.historyItems.length > 0) {
 			this.updateDetailPanel(0);
 		}
@@ -405,5 +420,102 @@ export class HistoryScreen implements Screen {
 				);
 			}
 		}
+	}
+
+	// === Delete Handling ===
+
+	private async handleDelete(): Promise<void> {
+		const index = this.submissionList?.selectedIndex ?? -1;
+		if (index < 0 || index >= this.historyItems.length) return;
+
+		const item = this.historyItems[index];
+
+		// Only allow deletion of broken entries
+		if (!item.isBroken) return;
+
+		// Two-press confirm pattern
+		if (this.deleteConfirmIndex === index) {
+			// Confirmed — delete from history
+			const storage = createStorage();
+			const result = await storage.deleteHistoryEntry(item.entry.checksum);
+
+			if (!result.success) {
+				if (this.statusText) {
+					this.statusText.content = `${symbols.info.error} Failed to delete history entry`;
+				}
+				this.deleteConfirmIndex = -1;
+				return;
+			}
+
+			this.deleteConfirmIndex = -1;
+
+			// Refresh history list
+			await this.loadHistory();
+			this.rebuildListAndHandlers();
+			this.updateStatus();
+
+			// Update detail panel for current selection (or clear if empty)
+			const newIndex = Math.min(index, this.historyItems.length - 1);
+			if (newIndex >= 0 && this.submissionList) {
+				this.submissionList.setSelectedIndex(newIndex);
+				this.updateDetailPanel(newIndex);
+			}
+		} else {
+			// First press — ask for confirmation
+			this.deleteConfirmIndex = index;
+			this.updateStatus();
+		}
+	}
+
+	private updateStatus(): void {
+		if (!this.statusText) return;
+
+		if (this.deleteConfirmIndex >= 0) {
+			this.statusText.content = `${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`;
+		} else {
+			const statusText = this.historyItems.length === 0
+				? '[ESC/q] Back to Dashboard'
+				: '[↑↓] Navigate  [ENTER/v] Validate  [c] Cross-check  [x] Delete broken  [ESC/q] Back';
+			this.statusText.content = statusText;
+		}
+	}
+
+	private rebuildListAndHandlers(): void {
+		if (!this.submissionList || !this.container) return;
+
+		// Remove old list
+		this.container.remove(this.submissionList.id);
+
+		// Rebuild list with updated options
+		this.submissionList = new SelectRenderable(this.renderer, {
+			options: this.buildListOptions(),
+			backgroundColor: theme.background,
+			focusedBackgroundColor: theme.background,
+			selectedBackgroundColor: theme.highlightFocused,
+			selectedTextColor: theme.text,
+			textColor: theme.text,
+			focusedTextColor: theme.text,
+			descriptionColor: theme.textMuted,
+			flexGrow: 1,
+		});
+
+		// Re-attach selection change handler
+		this.submissionList.on('selectionChanged', (index: number) => {
+			this.deleteConfirmIndex = -1;
+			this.updateDetailPanel(index);
+			this.updateStatus();
+		});
+
+		// Re-add to container (before detail panel and status bar)
+		// Container children order: title, subtitle, spacer, list, detail, status
+		const children = this.container.getChildren();
+		const detailPanelIndex = children.findIndex(c => c.id === this.detailPanel?.id);
+		if (detailPanelIndex > 0) {
+			this.container.insertBefore(this.submissionList, children[detailPanelIndex].id);
+		} else {
+			this.container.add(this.submissionList);
+		}
+
+		this.submissionList.focus();
 	}
 }

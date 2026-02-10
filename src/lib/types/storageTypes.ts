@@ -120,4 +120,5 @@ export interface IrisStorage {
 	// History (cross-submission checks)
 	loadHistory(): Promise<StorageResult<SubmissionHistory>>;
 	appendHistory(entry: HistoryEntry): Promise<StorageResult<void>>;
+	deleteHistoryEntry(checksum: string): Promise<StorageResult<void>>;
 }

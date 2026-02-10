@@ -475,5 +475,41 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				};
 			}
 		},
+
+		async deleteHistoryEntry(checksum: string): Promise<StorageResult<void>> {
+			try {
+				const historyResult = await this.loadHistory();
+				if (!historyResult.success) {
+					return historyResult;
+				}
+
+				const history = historyResult.data;
+				const originalLength = history.submissions.length;
+
+				// Filter out entry with matching checksum
+				history.submissions = history.submissions.filter(
+					(entry) => entry.checksum !== checksum
+				);
+
+				// If nothing was removed, return success (idempotent)
+				if (history.submissions.length === originalLength) {
+					return { success: true, data: undefined };
+				}
+
+				// Write updated history
+				const historyPath = join(paths.history, 'submissions.json');
+				await adapter.writeJson(historyPath, history);
+
+				return { success: true, data: undefined };
+			} catch (error) {
+				return {
+					success: false,
+					error:
+						error instanceof StorageError
+							? error
+							: StorageError.writeFailed(paths.history, error as Error),
+				};
+			}
+		},
 	};
 }
