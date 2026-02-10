@@ -9,7 +9,7 @@ import {
 	type SchemaElement,
 	isRequired,
 	isRepeatable,
-} from '$lib/types/interpreterTypes';
+} from '../../types/interpreterTypes';
 
 export interface GeneratorOptions {
 	namespace?: string;
