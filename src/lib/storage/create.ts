@@ -211,6 +211,36 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 			}
 		},
 
+		async deleteMapping(id: string): Promise<StorageResult<void>> {
+			try {
+				// Block deletion of bundled mappings
+				if (id === facAirtableMapping.id) {
+					return {
+						success: false,
+						error: StorageError.permissionDenied(
+							`Bundled mapping '${id}' cannot be deleted`
+						),
+					};
+				}
+
+				const mappingPath = join(paths.mappings, `${id}.json`);
+				if (!(await adapter.exists(mappingPath))) {
+					return { success: false, error: StorageError.notFound(mappingPath) };
+				}
+
+				await adapter.delete(mappingPath);
+				return { success: true, data: undefined };
+			} catch (error) {
+				return {
+					success: false,
+					error:
+						error instanceof StorageError
+							? error
+							: StorageError.writeFailed(join(paths.mappings, id), error as Error),
+				};
+			}
+		},
+
 		async listMappings(): Promise<StorageResult<string[]>> {
 			try {
 				// Start with bundled mappings

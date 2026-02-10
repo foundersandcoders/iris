@@ -106,6 +106,7 @@ export interface IrisStorage {
 	// Mappings
 	loadMapping(id: string): Promise<StorageResult<import('../types/schemaTypes').MappingConfig>>;
 	saveMapping(mapping: import('../types/schemaTypes').MappingConfig): Promise<StorageResult<void>>;
+	deleteMapping(id: string): Promise<StorageResult<void>>;
 	listMappings(): Promise<StorageResult<string[]>>;
 
 	// Schemas
