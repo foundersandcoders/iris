@@ -12,7 +12,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../../../brand/theme';
+import { theme, PALETTE, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
 interface FileEntry {
@@ -37,6 +37,7 @@ export class FilePicker implements Screen {
 	private title: string = 'Select CSV File';
 	private fileExtensions: string[] = ['.csv'];
 	private workflowType: string = 'convert';
+	private selectionMode: 'file' | 'directory' = 'file';
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -54,6 +55,7 @@ export class FilePicker implements Screen {
 		// Read configuration from data
 		this.title = (data?.title as string) || 'Select CSV File';
 		this.workflowType = (data?.workflowType as string) || 'convert';
+		this.selectionMode = (data?.selectionMode as 'file' | 'directory') || 'file';
 
 		// Parse file extensions
 		const extensionParam = (data?.fileExtension as string) || '.csv';
@@ -104,7 +106,8 @@ export class FilePicker implements Screen {
 		container.add(header);
 
 		// File list or empty message
-		if (this.entries.length === 0) {
+		const hasOptions = this.entries.length > 0 || this.selectionMode === 'directory';
+		if (!hasOptions) {
 			this.emptyMessage = new TextRenderable(this.renderer, {
 				content: `  No ${this.fileExtensions.join('/')} files found in this directory.`,
 				fg: theme.textMuted,
@@ -129,7 +132,9 @@ export class FilePicker implements Screen {
 		// Status bar
 		container.add(
 			new TextRenderable(this.renderer, {
-				content: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
+				content: this.selectionMode === 'directory'
+					? '[↑↓] Nav  [ENTER] Open/Select  [BACKSPACE] Up  [ESC] Cancel'
+					: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
 				fg: theme.textMuted,
 			})
 		);
@@ -148,6 +153,17 @@ export class FilePicker implements Screen {
 					const entry = option.value as FileEntry;
 					if (!entry) return;
 
+					if (this.selectionMode === 'directory' && entry.name === '__select__') {
+						resolve({
+							action: 'pop',
+							data: {
+								selectedDirectory: this.currentPath,
+								fieldKey: this.screenData?.fieldKey,
+							},
+						});
+						return;
+					}
+
 					if (entry.isDirectory) {
 						this.currentPath = entry.path;
 						await this.loadDirectory();
@@ -165,6 +181,7 @@ export class FilePicker implements Screen {
 								title: 'Select Previous XML Submission',
 								workflowType: 'check-previous',
 								currentFilePath: entry.path,
+								path: this.screenData?.path,
 							},
 						});
 					} else if (this.workflowType === 'check-previous') {
@@ -222,7 +239,8 @@ export class FilePicker implements Screen {
 	private updateSelectOptions(): void {
 		if (!this.select) return;
 
-		if (this.entries.length === 0) {
+		const hasOptions = this.entries.length > 0 || this.selectionMode === 'directory';
+		if (!hasOptions) {
 			this.select.visible = false;
 			if (this.emptyMessage) {
 				this.emptyMessage.visible = true;
@@ -239,11 +257,25 @@ export class FilePicker implements Screen {
 	}
 
 	private entriesToOptions(): SelectOption[] {
-		return this.entries.map((entry) => ({
-			name: `${entry.isDirectory ? '📁' : '📄'}  ${entry.name}`,
-			description: '',
-			value: entry,
-		}));
+		const options: SelectOption[] = [];
+
+		if (this.selectionMode === 'directory') {
+			options.push({
+				name: `${symbols.info.success}  Select this directory`,
+				description: this.shortenPath(this.currentPath),
+				value: { name: '__select__', isDirectory: true, path: this.currentPath },
+			});
+		}
+
+		for (const entry of this.entries) {
+			options.push({
+				name: `${entry.isDirectory ? '📁' : '📄'}  ${entry.name}`,
+				description: '',
+				value: entry,
+			});
+		}
+
+		return options;
 	}
 
 	private async loadDirectory(): Promise<void> {
@@ -253,6 +285,7 @@ export class FilePicker implements Screen {
 			const filtered = dirents.filter((d) => {
 				if (d.name.startsWith('.') && d.name !== '..') return false;
 				if (d.isDirectory()) return true;
+				if (this.selectionMode === 'directory') return false;
 				// Check if file matches any of the configured extensions
 				const lowerName = d.name.toLowerCase();
 				return this.fileExtensions.some((ext) => lowerName.endsWith(ext.toLowerCase()));
