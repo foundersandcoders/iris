@@ -5,9 +5,13 @@ import {
 	BoxRenderable,
 	TextRenderable,
 	type KeyEvent,
+	t,
+	fg,
+	link,
+	underline,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme, PALETTE } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { DEFAULT_CONFIG } from '../../lib/types/configTypes';
 
@@ -74,21 +78,29 @@ export class AboutScreen implements Screen {
 		container.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Software info
-		const fields: [string, string, string?][] = [
-			['Software Package', 'Iris', 'github.com/fac/iris'],
-			['Software Supplier', 'Founders and Coders', 'foundersandcoders.com'],
-			['Version', packageJson.version],
-			['Runtime', `Bun ${typeof Bun !== 'undefined' ? Bun.version : 'unknown'}`],
-			['Platform', `${process.platform} ${process.arch}`],
+		const labelColour = theme.text;
+		const linkColour = PALETTE.foreground.alt.midi;
+
+		const fields: { label: string; value: string; url?: string }[] = [
+			{ label: 'Software Package', value: 'Iris', url: 'https://github.com/fac/iris' },
+			{ label: 'Software Supplier', value: 'Founders and Coders', url: 'https://foundersandcoders.com' },
+			{ label: 'Version', value: packageJson.version },
+			{ label: 'Runtime', value: `Bun ${typeof Bun !== 'undefined' ? Bun.version : 'unknown'}` },
+			{ label: 'Platform', value: `${process.platform} ${process.arch}` },
 		];
 
-		for (const [label, value, url] of fields) {
-			const padding = ' '.repeat(Math.max(1, 22 - label.length));
-			const display = url ? `${value} (${url})` : value;
-			container.add(new TextRenderable(this.renderer, {
-				content: `  ${label}${padding}${display}`,
-				fg: theme.text,
-			}));
+		for (const field of fields) {
+			const padding = ' '.repeat(Math.max(1, 22 - field.label.length));
+			if (field.url) {
+				container.add(new TextRenderable(this.renderer, {
+					content: t`  ${fg(labelColour)(`${field.label}${padding}`)}${link(field.url)(underline(fg(linkColour)(field.value)))}`,
+				}));
+			} else {
+				container.add(new TextRenderable(this.renderer, {
+					content: `  ${field.label}${padding}${field.value}`,
+					fg: labelColour,
+				}));
+			}
 		}
 
 		// Fill remaining space
