@@ -318,9 +318,8 @@ classDef mile fill:#E8EFF6,color:#000;
 
 </details>
 
----
-
-## Phase 1 Progress Map
+<details>
+<summary><h2>Phase 1 Progress Map</h3></summary>
 
 ```mermaid
 ---
@@ -393,6 +392,6 @@ classDef could-blocked fill:#5FA3BA,color:#fff;
 classDef mile fill:#E8EFF6,color:#000;
 ```
 
----
+</details>
 
 **Next:** [Phase 2: Production Features](./phase-2-production-features.md)

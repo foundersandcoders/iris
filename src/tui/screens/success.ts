@@ -36,10 +36,10 @@ export class SuccessScreen implements Screen {
 		// Wait for user selection
 		return new Promise((resolve) => {
 			if (failed) {
-				// Failure mode: any key returns to dashboard
+				// Failure mode: any key pops back
 				const handler = () => {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
+					resolve({ action: 'pop' });
 				};
 				this.renderer.keyInput.once('keypress', handler);
 			} else if (this.menu) {
@@ -56,7 +56,7 @@ export class SuccessScreen implements Screen {
 							},
 						});
 					} else {
-						resolve({ action: 'replace', screen: 'dashboard' });
+						resolve({ action: 'pop' });
 					}
 				});
 			}

@@ -178,6 +178,7 @@ export class WorkflowScreen implements Screen {
 					filePath,
 					registry,
 					mapping: facAirtableMapping,
+					outputDir: data?.outputDir as string | undefined,
 				}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
 
 			case 'validate': {

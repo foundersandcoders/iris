@@ -27,7 +27,7 @@ export class CheckResultsScreen implements Screen {
 		const duration = data?.duration as number;
 
 		if (!report) {
-			return { action: 'replace', screen: 'dashboard' };
+			return { action: 'pop' };
 		}
 
 		this.buildUI(report, hasIssues, duration);
@@ -47,7 +47,7 @@ export class CheckResultsScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
+					resolve({ action: 'pop' });
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);

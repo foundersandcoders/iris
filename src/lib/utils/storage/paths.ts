@@ -65,7 +65,11 @@ export interface StoragePathsOptions {
 export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths {
 	const home = homedir();
 	const internal = options.internalRoot ?? join(home, '.iris');
+
+	// If user explicitly configured outputDir, use it as-is (final destination)
+	// Otherwise use default with /submissions appended
 	const output = options.outputDir ?? getDefaultOutputDir();
+	const submissions = options.outputDir ?? join(getDefaultOutputDir(), 'submissions');
 
 	return {
 		// Internal
@@ -80,6 +84,6 @@ export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths
 
 		// Output
 		output,
-		submissions: join(output, 'submissions'),
+		submissions,
 	};
 }

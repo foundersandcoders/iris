@@ -50,7 +50,7 @@ export class ValidationExplorerScreen implements Screen {
 		const sourceType = (data?.sourceType as 'csv' | 'xml') || 'csv';
 
 		if (!validation) {
-			return { action: 'replace', screen: 'dashboard' };
+			return { action: 'pop' };
 		}
 
 		// Normalise issues
@@ -78,7 +78,7 @@ export class ValidationExplorerScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
+					resolve({ action: 'pop' });
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);

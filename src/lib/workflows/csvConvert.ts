@@ -180,6 +180,7 @@ export async function* convertWorkflow(
 
 		const historyEntry: HistoryEntry = {
 			filename,
+			filePath: outputPath, // Store full path for reliable file access
 			timestamp: new Date().toISOString(),
 			learnerCount: csvData.rows.length,
 			checksum,
