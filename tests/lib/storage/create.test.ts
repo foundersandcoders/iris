@@ -358,6 +358,26 @@ describe('IrisStorage', () => {
 			}
 		});
 
+		it('round-trip: saves metadata and retrieves it via listSubmissions', async () => {
+			const result = await storage.saveSubmission(fixtures.sampleXml, fixtures.sampleMetadata);
+			expect(result.success).toBe(true);
+
+			if (result.success) {
+				// List submissions — should include metadata
+				const listResult = await storage.listSubmissions();
+				expect(listResult.success).toBe(true);
+
+				if (listResult.success) {
+					expect(listResult.data.length).toBe(1);
+					const submission = listResult.data[0];
+
+					// Verify metadata was loaded from internal directory
+					expect(submission.metadata).toBeDefined();
+					expect(submission.metadata).toEqual(fixtures.sampleMetadata);
+				}
+			}
+		});
+
 		it('lists submissions sorted by modification date (newest first)', async () => {
 			// Save multiple submissions with delays to ensure different timestamps
 			await storage.saveSubmission(fixtures.sampleXmlWithContent(1));
