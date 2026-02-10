@@ -23,9 +23,17 @@ import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 import { validateMappingStructure } from '../mappings/validate';
 import packageJson from '../../../package.json';
 
+// Embed schema for compiled binary
+import bundledSchemaXsd from '../../../docs/schemas/schemafile25.xsd' with { type: 'text' };
+
 /** Bundled schema dir, resolved relative to this file (not cwd).
  *  create.ts is at src/lib/storage/ — project root is 3 levels up. */
 const BUNDLED_SCHEMA_DIR = join(import.meta.dir, '..', '..', '..', 'docs', 'schemas');
+
+/** Map of embedded schemas (available in compiled binary) */
+const BUNDLED_SCHEMAS: Record<string, string> = {
+	'schemafile25.xsd': bundledSchemaXsd,
+};
 
 interface StorageOptions {
 	outputDir?: string;
@@ -272,18 +280,27 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		// === Schemas ===
 		async loadSchema(name: string): Promise<StorageResult<string>> {
 			try {
-				// Try user schemas first (precedence: user > bundled)
+				// Try user schemas first (precedence: user > embedded > bundled)
 				const userSchemaPath = join(paths.schemas, name);
 				if (await adapter.exists(userSchemaPath)) {
 					const schema = await adapter.read(userSchemaPath);
 					return { success: true, data: schema };
 				}
 
-				// Fall back to bundled schemas
-				const bundledSchemaPath = join(BUNDLED_SCHEMA_DIR, name);
-				if (await adapter.exists(bundledSchemaPath)) {
-					const schema = await adapter.read(bundledSchemaPath);
-					return { success: true, data: schema };
+				// Check embedded schemas (available in compiled binary)
+				if (BUNDLED_SCHEMAS[name]) {
+					return { success: true, data: BUNDLED_SCHEMAS[name] };
+				}
+
+				// Fall back to bundled schemas (dev mode — may not exist in compiled binary)
+				try {
+					const bundledSchemaPath = join(BUNDLED_SCHEMA_DIR, name);
+					if (await adapter.exists(bundledSchemaPath)) {
+						const schema = await adapter.read(bundledSchemaPath);
+						return { success: true, data: schema };
+					}
+				} catch {
+					// Ignore filesystem errors (expected in compiled binary)
 				}
 
 				return { success: false, error: StorageError.notFound(name) };
@@ -301,12 +318,20 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				// List user schemas
 				const userSchemas = await adapter.list(paths.schemas, { pattern: '*.xsd' });
 
-				// List bundled schemas
-				const bundledSchemaDir = BUNDLED_SCHEMA_DIR;
-				const bundledSchemas = await adapter.list(bundledSchemaDir, { pattern: '*.xsd' });
+				// Get embedded schema names
+				const embeddedSchemas = Object.keys(BUNDLED_SCHEMAS);
+
+				// Try to list bundled schemas (may fail in compiled binary)
+				let bundledSchemas: string[] = [];
+				try {
+					const bundledSchemaDir = BUNDLED_SCHEMA_DIR;
+					bundledSchemas = await adapter.list(bundledSchemaDir, { pattern: '*.xsd' });
+				} catch {
+					// Ignore — expected in compiled binary
+				}
 
 				// Combine and deduplicate (user takes precedence)
-				const allSchemas = [...new Set([...userSchemas, ...bundledSchemas])];
+				const allSchemas = [...new Set([...userSchemas, ...embeddedSchemas, ...bundledSchemas])];
 
 				return { success: true, data: allSchemas };
 			} catch (error) {
