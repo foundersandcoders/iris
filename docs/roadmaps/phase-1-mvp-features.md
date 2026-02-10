@@ -236,12 +236,15 @@ graph TD
 2TM.4["`*2TM.4*<br/>**MUST**<br/>save mapping dialog`"]:::must-blocked --> 2TI.9
 
 2TI.9["`*2TI.9*<br/>**SHOULD**<br/>settings screen`"]:::should-blocked
+2TI.33["`*2TI.33*<br/>**SHOULD**<br/>collection per convert`"]:::should-blocked
 
 2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
 2TC.1["`*2TC.1*<br/>**SHOULD**<br/>clean test history`"]:::should-blocked
 2UD.1["`*2UD.1*<br/>**SHOULD**<br/>user guide`"]:::should-blocked
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
+2TM.5["`*2TM.5*<br/>**COULD**<br/>schema short names`"]:::could-blocked
+2TM.6["`*2TM.6*<br/>**COULD**<br/>grouped schema fields`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>**COULD**<br/>history cleanup utility`"]:::could-blocked
 2TC.3["`*2TC.3*<br/>**COULD**<br/>dual-picker screen`"]:::could-blocked
 2TC.4["`*2TC.4*<br/>**COULD**<br/>bordered detail panel`"]:::could-blocked
@@ -267,6 +270,11 @@ graph TD
 2BD.1 --> phase1
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
+%% New task dependencies %%
+2TI.9 --> 2TI.33
+2TM.2 -.->|optional| 2TM.5
+2TM.5 -.->|optional| 2TM.6
+
 %% Optional dependencies %%
 2BD.1 -.->|optional| 2UD.1 & 2BD.2
 2BD.2 -.->|optional| phase1
@@ -275,7 +283,7 @@ phase1{"`**M2C**<br/>Complete`"}:::mile
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
 2TC.2 -.->|optional| 2TC.3 & 2TC.4
-2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
+2TI.33 & 2TM.5 & 2TM.6 & 2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
 
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-blocked fill:#A45A84,color:#fff;
@@ -297,6 +305,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 - [ ] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session) — **depends on 2TI.10**
 - [ ] **2TI.9** — Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections) — **depends on 2TM.4**
+- [ ] **2TI.33** — Remove collection from settings; prompt for collection when running convert workflow (collection varies per submission, not a global setting) — **depends on 2TI.9**
 - [ ] **2UD.1** — Write user guide for non-technical users (includes download/install instructions for end users) — **depends on 2BD.1 (optional)**
 - [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
 - [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
@@ -304,6 +313,8 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Could Have
 
+- [ ] **2TM.5** — Shorten schema field display in mapping editor (line 1: element `name` only e.g. "AddLine1"; line 2: path without "Message." prefix e.g. "Learner.AddLine1") — **depends on 2TM.2 (optional)**
+- [ ] **2TM.6** — Group schema fields by ancestor in mapping editor (nested layout with indented entries; section headers for containers like Learner, LearningDelivery; skip non-mappable groups in navigation) — **depends on 2TM.5 (optional)**
 - [ ] **2TC.2** — Implement history cleanup utility on startup (remove history entries where corresponding XML file no longer exists; runs when TUI launches) — **depends on 2TS.2 (optional)**
 - [ ] **2TC.3** — Dual-picker screen for cross-check (single screen with two file selection slots instead of sequential pickers; fancier UX than 2TI.32) — **depends on 2TC.2 (optional)**
 - [ ] **2TC.4** — Bordered detail panel in validation explorer (investigate OpenTUI container redraw; re-add border to detail panel if rendering issue resolved) — **depends on 2TC.2 (optional)**
@@ -342,6 +353,9 @@ graph TD
 2TM.1["`*2TM.1*<br/>screen<br/>builder`"]:::must-blocked
 2TM.4["`*2TM.4*<br/>component<br/>save dialog`"]:::must-blocked
 2TI.9["`*2TI.9*<br/>screen<br/>settings`"]:::should-blocked
+2TI.33["`*2TI.33*<br/>enhance<br/>collection per convert`"]:::should-blocked
+2TM.5["`*2TM.5*<br/>enhance<br/>schema short names`"]:::could-blocked
+2TM.6["`*2TM.6*<br/>enhance<br/>grouped fields`"]:::could-blocked
 2TS.2["`*2TS.2*<br/>feat<br/>schema mgr`"]:::could-blocked
 2TS.3["`*2TS.3*<br/>component<br/>schema selector`"]:::could-blocked
 2TS.4["`*2TS.4*<br/>component</br>migration`"]:::could-blocked
@@ -373,6 +387,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TM.3 --> 2TM.1
 2TM.1 --> 2TM.4
 2TM.4 --> 2TI.9
+2TI.9 --> 2TI.33
 2TI.10 --> 2TI.12 & 1SS.8 & 2TI.31
 2TI.12 & 1SS.8 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
@@ -385,10 +400,12 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2BD.2 -.->|optional| phase1
 2UD.1 -.->|optional| 2UD.2 & phase1
 2TI.9 -.->|optional| 2TI.19
+2TM.2 -.->|optional| 2TM.5
+2TM.5 -.->|optional| 2TM.6
 2TM.4 -.->|optional| 2TS.4
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
 2TC.2 -.->|optional| 2TC.3 & 2TC.4
-2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
+2TI.33 & 2TM.5 & 2TM.6 & 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
