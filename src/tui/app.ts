@@ -9,6 +9,10 @@ import { WorkflowScreen } from './screens/workflow';
 import { SuccessScreen } from './screens/success';
 import { ValidationExplorerScreen } from './screens/validation-explorer';
 import { CheckResultsScreen } from './screens/check-results';
+import { MappingBuilderScreen } from './screens/mapping-builder';
+import { MappingEditorScreen } from './screens/mapping-editor';
+import { MappingSaveScreen } from './screens/mapping-save';
+import { SettingsScreen } from './screens/settings';
 import type { Renderer } from './types';
 
 interface TUIOptions {
@@ -43,5 +47,9 @@ export class TUI {
 		this.router.register('success', (ctx) => new SuccessScreen(ctx));
 		this.router.register('validation-explorer', (ctx) => new ValidationExplorerScreen(ctx));
 		this.router.register('check-results', (ctx) => new CheckResultsScreen(ctx));
+		this.router.register('mapping-builder', (ctx) => new MappingBuilderScreen(ctx));
+		this.router.register('mapping-editor', (ctx) => new MappingEditorScreen(ctx));
+		this.router.register('mapping-save', (ctx) => new MappingSaveScreen(ctx));
+		this.router.register('settings', (ctx) => new SettingsScreen(ctx));
 	}
 }

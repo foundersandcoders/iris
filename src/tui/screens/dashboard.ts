@@ -31,8 +31,9 @@ export class Dashboard implements Screen {
 		{ key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
 		{ key: 'validate', label: 'Validate XML Submission', implemented: true },
 		{ key: 'check', label: 'Cross-Submission Check', implemented: true },
+		{ key: 'mapping-builder', label: 'Mapping Builder', implemented: true },
 		{ key: 'history', label: 'Browse Submission History', implemented: false },
-		{ key: 'settings', label: 'Settings & Configuration', implemented: false },
+		{ key: 'settings', label: 'Settings & Configuration', implemented: true },
 		{ key: 'quit', label: 'Quit', implemented: true },
 	];
 
@@ -94,7 +95,7 @@ export class Dashboard implements Screen {
 			// Status bar
 			container.add(
 				new TextRenderable(this.renderer, {
-					content: '[↑↓/1-6] Select  [ENTER] Confirm  [q] Quit',
+					content: '[↑↓/1-7] Select  [ENTER] Confirm  [q] Quit',
 					fg: theme.textMuted,
 				})
 			);
@@ -140,6 +141,10 @@ export class Dashboard implements Screen {
 							workflowType: 'check-current',
 						},
 					});
+				} else if (item.key === 'mapping-builder') {
+					resolve({ action: 'push', screen: 'mapping-builder' });
+				} else if (item.key === 'settings') {
+					resolve({ action: 'push', screen: 'settings' });
 				} else if (item.implemented) {
 					resolve({ action: 'push', screen: item.key });
 				}
@@ -149,7 +154,7 @@ export class Dashboard implements Screen {
 			this.keyHandler = (key: KeyEvent) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					resolve({ action: 'quit' });
-				} else if (key.name && key.name >= '1' && key.name <= '6') {
+				} else if (key.name && key.name >= '1' && key.name <= '7') {
 					const index = parseInt(key.name) - 1;
 					if (index < this.menuItems.length) {
 						select.setSelectedIndex(index);
