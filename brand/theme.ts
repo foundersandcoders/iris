@@ -59,6 +59,7 @@ export const symbols = {
 	loading: '⋯',
 	progressFilled: '█',
 	progressEmpty: '░',
+	required: '⚡︎',
 };
 
 export const borders = {
