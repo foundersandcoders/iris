@@ -176,6 +176,10 @@ export class MappingSaveScreen implements Screen {
 			value: this.nameValue,
 			placeholder: 'My Custom Mapping',
 			width: '60%',
+			textColor: theme.text,
+			backgroundColor: theme.background,
+			focusedTextColor: theme.text,
+			focusedBackgroundColor: theme.highlightFocused,
 		});
 		this.container.add(this.nameInput);
 
@@ -201,6 +205,10 @@ export class MappingSaveScreen implements Screen {
 			value: this.versionValue,
 			placeholder: '1.0.0',
 			width: '20%',
+			textColor: theme.text,
+			backgroundColor: theme.background,
+			focusedTextColor: theme.text,
+			focusedBackgroundColor: theme.highlightFocused,
 		});
 		this.container.add(this.versionInput);
 

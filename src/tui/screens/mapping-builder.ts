@@ -27,6 +27,7 @@ interface MappingListItem {
 	version: string;
 	fieldCount: number;
 	isBundled: boolean;
+	isBroken: boolean;
 	schemaDisplay?: string;
 }
 
@@ -65,12 +66,22 @@ export class MappingBuilderScreen implements Screen {
 			this.listSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
 				const value = option.value as string;
 
+				// Block edit on broken entries
+				const itemIndex = index - 1;
+				const item = itemIndex >= 0 ? this.mappingItems[itemIndex] : null;
+				if (item?.isBroken) return;
+
 				if (value === '__create__') {
 					this.renderer.keyInput.off('keypress', this.keyHandler!);
 					resolve({
 						action: 'push',
-						screen: 'mapping-editor',
-						data: { mode: 'create' },
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.csv',
+							title: 'Select CSV for New Mapping',
+							workflowType: 'mapping-create',
+							mode: 'create',
+						},
 					});
 				} else {
 					this.renderer.keyInput.off('keypress', this.keyHandler!);
@@ -91,13 +102,22 @@ export class MappingBuilderScreen implements Screen {
 					this.renderer.keyInput.off('keypress', this.keyHandler!);
 					resolve({
 						action: 'push',
-						screen: 'mapping-editor',
-						data: { mode: 'create' },
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.csv',
+							title: 'Select CSV for New Mapping',
+							workflowType: 'mapping-create',
+							mode: 'create',
+						},
 					});
 				} else if (key.name === 'd') {
 					this.duplicateSelected(resolve);
 				} else if (key.name === 'x') {
-					this.handleDelete(resolve);
+					this.handleDelete(resolve).catch(() => {
+						if (this.statusText) {
+							this.statusText.content = `${symbols.info.error} Delete failed — try again`;
+						}
+					});
 				}
 			};
 			this.renderer.keyInput.on('keypress', this.keyHandler);
@@ -136,16 +156,18 @@ export class MappingBuilderScreen implements Screen {
 					version: mapping.mappingVersion,
 					fieldCount: mapping.mappings.length,
 					isBundled: mapping.id === BUNDLED_ID,
+					isBroken: false,
 					schemaDisplay: mapping.targetSchema.displayName,
 				});
 			} else {
 				// Mapping exists but failed to load — show as broken
 				this.mappingItems.push({
 					id,
-					name: `${id} (failed to load)`,
+					name: id,
 					version: '?',
 					fieldCount: 0,
 					isBundled: id === BUNDLED_ID,
+					isBroken: true,
 				});
 			}
 		}
@@ -221,13 +243,21 @@ export class MappingBuilderScreen implements Screen {
 
 		// Existing mappings
 		for (const item of this.mappingItems) {
-			const prefix = item.isBundled ? `${symbols.bullet.dot} ` : '  ';
-			const suffix = item.isBundled ? ' (bundled)' : '';
-			options.push({
-				name: `${prefix}${item.name}${suffix}`,
-				description: `${item.fieldCount} fields ${symbols.bullet.dot} v${item.version}`,
-				value: item.id,
-			});
+			if (item.isBroken) {
+				options.push({
+					name: `${symbols.info.error} ${item.name} (corrupt)`,
+					description: 'Failed to load — press [x] to delete',
+					value: item.id,
+				});
+			} else {
+				const prefix = item.isBundled ? `${symbols.bullet.dot} ` : '  ';
+				const suffix = item.isBundled ? ' (bundled)' : '';
+				options.push({
+					name: `${prefix}${item.name}${suffix}`,
+					description: `${item.fieldCount} fields ${symbols.bullet.dot} v${item.version}`,
+					value: item.id,
+				});
+			}
 		}
 
 		return options;
@@ -253,6 +283,18 @@ export class MappingBuilderScreen implements Screen {
 		}
 
 		const item = this.mappingItems[itemIndex];
+
+		if (item.isBroken) {
+			this.detailPanel.add(new TextRenderable(this.renderer, {
+				content: `${symbols.info.error} ${item.name} — corrupt or unreadable`,
+				fg: theme.error,
+			}));
+			this.detailPanel.add(new TextRenderable(this.renderer, {
+				content: 'Press [x] to delete this entry',
+				fg: theme.textMuted,
+			}));
+			return;
+		}
 
 		this.detailPanel.add(new TextRenderable(this.renderer, {
 			content: `Name: ${item.name}`,
@@ -312,14 +354,26 @@ export class MappingBuilderScreen implements Screen {
 
 		const item = this.mappingItems[index];
 
-		// Block bundled deletion
-		if (item.isBundled) return;
+		// Block bundled deletion (unless broken — always allow cleaning up corrupt entries)
+		if (item.isBundled && !item.isBroken) {
+			if (this.statusText) {
+				this.statusText.content = `${symbols.info.warning} Bundled mappings cannot be deleted — duplicate to customise`;
+			}
+			return;
+		}
 
 		// Two-press confirm
 		if (this.deleteConfirmIndex === index) {
 			// Confirmed — delete
 			const storage = createStorage();
-			await storage.deleteMapping(item.id);
+			const result = await storage.deleteMapping(item.id);
+			if (!result.success) {
+				if (this.statusText) {
+					this.statusText.content = `${symbols.info.error} Failed to delete mapping`;
+				}
+				this.deleteConfirmIndex = -1;
+				return;
+			}
 			this.deleteConfirmIndex = -1;
 
 			// Refresh

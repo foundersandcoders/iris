@@ -178,6 +178,16 @@ export class FilePicker implements Screen {
 								workflowType: 'check',
 							},
 						});
+					} else if (this.workflowType === 'mapping-create') {
+						// CSV selected for new mapping — push to mapping editor
+						resolve({
+							action: 'push',
+							screen: 'mapping-editor',
+							data: {
+								mode: this.screenData?.mode ?? 'create',
+								csvFilePath: entry.path,
+							},
+						});
 					} else {
 						// Normal single-file workflows
 						resolve({
