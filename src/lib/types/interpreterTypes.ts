@@ -83,5 +83,49 @@ export function isOptional(element: SchemaElement): boolean {
 	return element.cardinality.min === 0;
 }
 
+/**
+ * Determines if an element is effectively required given current mappings.
+ * Walks the ancestor chain: if any optional ancestor has no mapped descendants,
+ * it won't be generated — so its mandatory children aren't truly required.
+ * If an optional ancestor DOES have mapped descendants, its mandatory children
+ * become effectively required.
+ */
+export function isEffectivelyRequired(
+	element: SchemaElement,
+	registry: SchemaRegistry,
+	mappedPaths: Set<string>,
+): boolean {
+	// Element itself is optional — never effectively required
+	if (element.cardinality.min < 1) return false;
+
+	// Walk up ancestor chain via path decomposition
+	const segments = element.path.split('.');
+	for (let i = 1; i < segments.length - 1; i++) {
+		const ancestorPath = segments.slice(0, i + 1).join('.');
+		const ancestor = registry.elementsByPath.get(ancestorPath);
+		if (!ancestor) continue;
+
+		// Only care about optional ancestors
+		if (ancestor.cardinality.min >= 1) continue;
+
+		// Optional ancestor found — check if any mapped path falls under it
+		const prefix = ancestorPath + '.';
+		let hasMapping = false;
+		for (const mp of mappedPaths) {
+			if (mp.startsWith(prefix)) {
+				hasMapping = true;
+				break;
+			}
+		}
+
+		// If no mappings under this optional ancestor, it won't be generated
+		// so this element isn't effectively required
+		if (!hasMapping) return false;
+	}
+
+	// All ancestors either mandatory or have mappings — element is required
+	return true;
+}
+
 export const DEFAULT_CARDINALITY: Cardinality = { min: 1, max: 1 };
 export const EMPTY_CONSTRAINTS: SchemaConstraints = {};

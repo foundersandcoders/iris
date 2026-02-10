@@ -31,6 +31,10 @@ export interface IrisConfig {
 	serialNo?: string;
 	/** Custom output directory for submissions */
 	outputDir?: string;
+	/** Starting directory when browsing for CSV files */
+	csvInputDir?: string;
+	/** Directory for user XSD schema files */
+	schemaDir?: string;
 }
 
 /** Default configuration values */

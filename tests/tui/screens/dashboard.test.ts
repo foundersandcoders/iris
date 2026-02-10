@@ -2,6 +2,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Dashboard } from '../../../src/tui/screens/dashboard';
 import * as fixtures from '../../fixtures/tui/tui';
 
+// Mock storage so render() can load config without hitting the filesystem
+vi.mock('../../../src/lib/storage', () => ({
+	createStorage: () => ({
+		loadConfig: vi.fn().mockResolvedValue({ success: true, data: {} }),
+	}),
+}));
+
 describe('Dashboard', () => {
 	let mockContext: ReturnType<typeof fixtures.createMockContext>;
 
@@ -22,9 +29,11 @@ describe('Dashboard', () => {
 		expect(result).toBeInstanceOf(Promise);
 	});
 
-	it('adds renderable tree to renderer root on render', () => {
+	it('adds renderable tree to renderer root on render', async () => {
 		const dashboard = new Dashboard(mockContext);
 		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
@@ -32,9 +41,11 @@ describe('Dashboard', () => {
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
 	});
 
-	it('registers keypress handler on renderer', () => {
+	it('registers keypress handler on renderer', async () => {
 		const dashboard = new Dashboard(mockContext);
 		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		expect(mockContext.renderer.keyInput.on).toHaveBeenCalledWith(
 			'keypress',
@@ -42,9 +53,12 @@ describe('Dashboard', () => {
 		);
 	});
 
-	it('cleanup removes keypress handler and container', () => {
+	it('cleanup removes keypress handler and container', async () => {
 		const dashboard = new Dashboard(mockContext);
 		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
 		dashboard.cleanup();
 
 		expect(mockContext.renderer.keyInput.off).toHaveBeenCalledWith(

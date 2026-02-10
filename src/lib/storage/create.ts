@@ -29,6 +29,7 @@ const BUNDLED_SCHEMA_DIR = join(import.meta.dir, '..', '..', '..', 'docs', 'sche
 
 interface StorageOptions {
 	outputDir?: string;
+	schemaDir?: string;
 	internalRoot?: string;
 	adapter?: StorageAdapter;
 }
@@ -36,6 +37,7 @@ interface StorageOptions {
 export function createStorage(options: StorageOptions = {}): IrisStorage {
 	const paths = getStoragePaths({
 		outputDir: options.outputDir,
+		schemaDir: options.schemaDir,
 		internalRoot: options.internalRoot,
 	});
 	const adapter = options.adapter ?? createBunAdapter();
@@ -207,6 +209,36 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 						error instanceof StorageError
 							? error
 							: StorageError.writeFailed(join(paths.mappings, mapping.id), error as Error),
+				};
+			}
+		},
+
+		async deleteMapping(id: string): Promise<StorageResult<void>> {
+			try {
+				// Block deletion of bundled mappings
+				if (id === facAirtableMapping.id) {
+					return {
+						success: false,
+						error: StorageError.permissionDenied(
+							`Bundled mapping '${id}' cannot be deleted`
+						),
+					};
+				}
+
+				const mappingPath = join(paths.mappings, `${id}.json`);
+				if (!(await adapter.exists(mappingPath))) {
+					return { success: false, error: StorageError.notFound(mappingPath) };
+				}
+
+				await adapter.delete(mappingPath);
+				return { success: true, data: undefined };
+			} catch (error) {
+				return {
+					success: false,
+					error:
+						error instanceof StorageError
+							? error
+							: StorageError.writeFailed(join(paths.mappings, id), error as Error),
 				};
 			}
 		},
