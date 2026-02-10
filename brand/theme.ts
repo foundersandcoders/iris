@@ -27,6 +27,8 @@ export const THEMES = {
 		secondary: PALETTE.foreground.alt.midi, // Blueglass Midi
 		accent: PALETTE.line.main.colour, // Vein
 		highlight: PALETTE.background.main.nav, // Rosewash Nav (Selection backgrounds)
+		highlightFocused: PALETTE.foreground.alt.lite, // Rosewash Nav — active/focused panel selection
+		highlightUnfocused: PALETTE.background.main.nav, // Blueglass Lite — inactive panel selection
 
 		// Neutral
 		text: PALETTE.foreground.main.dark, // Tyrian Dark (Main text)
@@ -43,6 +45,8 @@ export const THEMES = {
 		secondary: PALETTE.foreground.alt.midi,
 		accent: PALETTE.line.main.colour,
 		highlight: PALETTE.background.main.nav,
+		highlightFocused: PALETTE.background.main.nav,
+		highlightUnfocused: PALETTE.foreground.alt.lite,
 		text: PALETTE.foreground.main.dark,
 		textMuted: PALETTE.foreground.main.lite,
 		border: PALETTE.background.main.nav,
@@ -51,15 +55,28 @@ export const THEMES = {
 };
 
 export const symbols = {
-	success: '✓',
-	error: '✗',
-	warning: '⚠',
-	arrow: '→',
-	bullet: '•',
-	loading: '⋯',
-	progressFilled: '█',
-	progressEmpty: '░',
-	required: '⚡︎',
+	arrows: {
+		up: '',
+		down: '',
+		left: '',
+		right: '→',
+	},
+	bullet: {
+		dot: '•',
+	},
+	info: {
+		success: '✓',
+		error: '✗',
+		warning: '⚠',
+		required: '⚡︎',
+	},
+	progress: {
+		filled: '█',
+		empty: '░',
+	},
+	status: {
+		loading: '⋯',
+	},
 };
 
 export const borders = {
@@ -82,8 +99,21 @@ export const borders = {
 };
 
 export const spinners = {
-	dots: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
-	arrow: ['←', '↖', '↑', '↗', '→', '↘', '↓', '↙'],
+	arcs: {
+		spinR: ['◜', '◝', '◞', '◟'],
+	},
+	arrow: {
+		spinR: ['←', '↖', '↑', '↗', '→', '↘', '↓', '↙'],
+	},
+	boxes: {
+		spinR: ['◰', '◳', '◲', '◱'],
+	},
+	dots: {
+		spinR: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
+	},
+	hexagram: {
+		scrollU: ['☷', '☳', '☵', '☶', '☳', '☱', '☲', '☰'],
+	},
 };
 
 /** ====== OpenTUI Adapter ====== */
@@ -102,6 +132,8 @@ export const rgba = {
 	secondary: RGBA.fromHex(THEMES.themeLight.secondary),
 	accent: RGBA.fromHex(THEMES.themeLight.accent),
 	highlight: RGBA.fromHex(THEMES.themeLight.highlight),
+	highlightFocused: RGBA.fromHex(THEMES.themeLight.highlightFocused),
+	highlightUnfocused: RGBA.fromHex(THEMES.themeLight.highlightUnfocused),
 	text: RGBA.fromHex(THEMES.themeLight.text),
 	textMuted: RGBA.fromHex(THEMES.themeLight.textMuted),
 	border: RGBA.fromHex(THEMES.themeLight.border),

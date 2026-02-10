@@ -231,7 +231,7 @@ export class SettingsScreen implements Screen {
 			options: this.buildFieldOptions(),
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			selectedTextColor: theme.text,
 			textColor: theme.text,
 			focusedTextColor: theme.text,
@@ -245,8 +245,8 @@ export class SettingsScreen implements Screen {
 		// Validation
 		this.validationText = new TextRenderable(this.renderer, {
 			content: this.validation.valid
-				? `${symbols.success} Configuration valid`
-				: `${symbols.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`,
+				? `${symbols.info.success} Configuration valid`
+				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`,
 			fg: this.validation.valid ? theme.success : theme.error,
 		});
 		this.container.add(this.validationText);
@@ -337,12 +337,12 @@ export class SettingsScreen implements Screen {
 
 		this.editDropdown = new SelectRenderable(this.renderer, {
 			options: options.map((opt) => ({
-				name: opt === currentValue ? `${symbols.success} ${opt}` : `  ${opt}`,
+				name: opt === currentValue ? `${symbols.info.success} ${opt}` : `  ${opt}`,
 				description: '',
 				value: opt,
 			})),
 			backgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			textColor: theme.text,
 		});
 
@@ -391,8 +391,8 @@ export class SettingsScreen implements Screen {
 
 		if (this.validationText) {
 			this.validationText.content = this.validation.valid
-				? `${symbols.success} Configuration valid`
-				: `${symbols.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
+				? `${symbols.info.success} Configuration valid`
+				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
 
 		if (this.statusText) {
@@ -427,7 +427,7 @@ export class SettingsScreen implements Screen {
 			this.originalConfig = { ...this.config };
 			this.dirty = false;
 			if (this.statusText) {
-				this.statusText.content = `${symbols.success} Saved!  [↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset  [ESC] Back`;
+				this.statusText.content = `${symbols.info.success} Saved!  [↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset  [ESC] Back`;
 			}
 		}
 	}
@@ -443,8 +443,8 @@ export class SettingsScreen implements Screen {
 
 		if (this.validationText) {
 			this.validationText.content = this.validation.valid
-				? `${symbols.success} Configuration valid (reset to defaults)`
-				: `${symbols.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
+				? `${symbols.info.success} Configuration valid (reset to defaults)`
+				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
 	}
 }

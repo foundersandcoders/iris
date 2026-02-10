@@ -209,11 +209,11 @@ export class MappingSaveScreen implements Screen {
 		// Active mapping toggle
 		this.activeToggle = new SelectRenderable(this.renderer, {
 			options: [
-				{ name: `${this.setActive ? symbols.success : '○'} Set as active mapping`, description: '', value: this.setActive ? 'no' : 'yes' },
+				{ name: `${this.setActive ? symbols.info.success : '○'} Set as active mapping`, description: '', value: this.setActive ? 'no' : 'yes' },
 			],
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			textColor: theme.text,
 		});
 		this.container.add(this.activeToggle);
@@ -246,7 +246,7 @@ export class MappingSaveScreen implements Screen {
 			],
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			textColor: theme.text,
 		});
 		this.container.add(this.buttonSelect);
@@ -311,7 +311,7 @@ export class MappingSaveScreen implements Screen {
 		const derivedId = toKebabCase(this.nameValue);
 
 		if (this.isDuplicate) {
-			this.warningText.content = `${symbols.warning} Mapping "${derivedId}" already exists (will overwrite)`;
+			this.warningText.content = `${symbols.info.warning} Mapping "${derivedId}" already exists (will overwrite)`;
 		} else {
 			this.warningText.content = '';
 		}
@@ -324,9 +324,9 @@ export class MappingSaveScreen implements Screen {
 		const validation = validateMappingStructure(config);
 
 		if (validation.valid) {
-			this.validationText.content = `${symbols.success} ${config.mappings.length} mappings, 0 issues`;
+			this.validationText.content = `${symbols.info.success} ${config.mappings.length} mappings, 0 issues`;
 		} else {
-			this.validationText.content = `${symbols.error} ${validation.issues.length} issue${validation.issues.length === 1 ? '' : 's'}: ${validation.issues[0].message}`;
+			this.validationText.content = `${symbols.info.error} ${validation.issues.length} issue${validation.issues.length === 1 ? '' : 's'}: ${validation.issues[0].message}`;
 		}
 	}
 

@@ -116,7 +116,7 @@ export class FilePicker implements Screen {
 				options: this.entriesToOptions(),
 				backgroundColor: theme.background,
 				focusedBackgroundColor: theme.background,
-				selectedBackgroundColor: theme.highlight,
+				selectedBackgroundColor: theme.highlightFocused,
 				selectedTextColor: theme.text,
 				textColor: theme.text,
 				focusedTextColor: theme.text,
@@ -192,7 +192,7 @@ export class FilePicker implements Screen {
 
 		// Screen-level key handler
 		this.keyHandler = async (key: KeyEvent) => {
-			if (key.name === 'backspace' || key.name === 'left') {
+			if (key.name === 'backspace') {
 				const parent = path.dirname(this.currentPath);
 				if (parent !== this.currentPath) {
 					this.currentPath = parent;

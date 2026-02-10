@@ -214,7 +214,7 @@ export class MappingEditorScreen implements Screen {
 					});
 				} else if (key.name === 't' && this.activePanel === 'left') {
 					this.cycleTransform();
-				} else if (key.name === 'd' && this.activePanel === 'left') {
+				} else if (key.name === 'x' && this.activePanel === 'left') {
 					this.removeSelectedMapping();
 				} else if (key.name === '/') {
 					// Focus search
@@ -300,7 +300,7 @@ export class MappingEditorScreen implements Screen {
 		const mappingCount = this.displayMappings.length;
 		const validation = validateMappingStructure(this.buildMappingConfig());
 		this.summaryText = new TextRenderable(this.renderer, {
-			content: `${mappingCount} mappings ${symbols.bullet} ${validation.issues.length} issues`,
+			content: `${mappingCount} mappings ${symbols.bullet.dot} ${validation.issues.length} issues`,
 			fg: theme.textMuted,
 		});
 		this.container.add(this.summaryText);
@@ -328,7 +328,7 @@ export class MappingEditorScreen implements Screen {
 			options: this.buildLeftOptions(),
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			selectedTextColor: theme.text,
 			textColor: theme.text,
 			focusedTextColor: theme.text,
@@ -358,7 +358,7 @@ export class MappingEditorScreen implements Screen {
 			options: this.buildRightOptions(),
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightUnfocused,
 			selectedTextColor: theme.text,
 			textColor: theme.text,
 			focusedTextColor: theme.text,
@@ -384,7 +384,7 @@ export class MappingEditorScreen implements Screen {
 
 		// Status bar
 		this.statusText = new TextRenderable(this.renderer, {
-			content: '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [d] Delete  [s] Save  [ESC] Back',
+			content: '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Delete  [s] Save  [ESC] Back',
 			fg: theme.textMuted,
 		});
 		this.container.add(this.statusText);
@@ -400,10 +400,10 @@ export class MappingEditorScreen implements Screen {
 			const aimCount = isTemplate ? countAimExpansions(this.mappings, m.csvColumn) : 0;
 			const pathShort = m.xsdPath.split('.').slice(-1)[0];
 			const transformLabel = m.transform ? ` [${m.transform}]` : '';
-			const aimLabel = isTemplate ? ` (${symbols.bullet}${aimCount} aims)` : '';
+			const aimLabel = isTemplate ? ` (${symbols.bullet.dot}${aimCount} aims)` : '';
 
 			options.push({
-				name: `${m.csvColumn} ${symbols.arrow} ${pathShort}${transformLabel}${aimLabel}`,
+				name: `${m.csvColumn} ${symbols.arrows.right} ${pathShort}${transformLabel}${aimLabel}`,
 				description: m.xsdPath,
 				value: m.xsdPath,
 			});
@@ -425,7 +425,7 @@ export class MappingEditorScreen implements Screen {
 			const el = this.registry?.elementsByPath.get(path);
 			const required = el && isRequired(el);
 			const isMapped = mapped.has(path);
-			const prefix = isMapped ? `${symbols.success} ` : required ? `${symbols.required} ` : '  ';
+			const prefix = isMapped ? `${symbols.info.success} ` : required ? `${symbols.info.required} ` : '  ';
 			const shortPath = path.split('.').slice(-2).join('.');
 
 			return {
@@ -446,8 +446,12 @@ export class MappingEditorScreen implements Screen {
 	private focusActivePanel(): void {
 		if (this.activePanel === 'left') {
 			this.leftSelect?.focus();
+			if (this.leftSelect) this.leftSelect.selectedBackgroundColor = theme.highlightFocused;
+			if (this.rightSelect) this.rightSelect.selectedBackgroundColor = theme.highlightUnfocused;
 		} else {
 			this.rightSelect?.focus();
+			if (this.rightSelect) this.rightSelect.selectedBackgroundColor = theme.highlightFocused;
+			if (this.leftSelect) this.leftSelect.selectedBackgroundColor = theme.highlightUnfocused;
 		}
 	}
 
@@ -571,7 +575,7 @@ export class MappingEditorScreen implements Screen {
 		if (!this.summaryText) return;
 		const mappingCount = this.displayMappings.length;
 		const validation = validateMappingStructure(this.buildMappingConfig());
-		this.summaryText.content = `${mappingCount} mappings ${symbols.bullet} ${validation.issues.length} issues${this.dirty ? ' ${symbols.bullet} unsaved' : ''}`;
+		this.summaryText.content = `${mappingCount} mappings ${symbols.bullet.dot} ${validation.issues.length} issues${this.dirty ? ' ${symbols.bullet.dot} unsaved' : ''}`;
 	}
 
 	private updatePreview(): void {
@@ -604,7 +608,7 @@ export class MappingEditorScreen implements Screen {
 
 		// Summary line
 		this.previewPanel.add(new TextRenderable(this.renderer, {
-			content: `${symbols.success} ${mappedCount} mapped  ${symbols.error} ${unmappedRequired} unmapped required`,
+			content: `${symbols.info.success} ${mappedCount} mapped  ${symbols.info.error} ${unmappedRequired} unmapped required`,
 			fg: unmappedRequired > 0 ? theme.warning : theme.success,
 		}));
 

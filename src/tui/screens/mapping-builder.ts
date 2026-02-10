@@ -96,7 +96,7 @@ export class MappingBuilderScreen implements Screen {
 					});
 				} else if (key.name === 'd') {
 					this.duplicateSelected(resolve);
-				} else if (key.name === 'delete' || key.name === 'backspace') {
+				} else if (key.name === 'x') {
 					this.handleDelete(resolve);
 				}
 			};
@@ -180,7 +180,7 @@ export class MappingBuilderScreen implements Screen {
 			options: this.buildListOptions(),
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlight,
+			selectedBackgroundColor: theme.highlightFocused,
 			selectedTextColor: theme.text,
 			textColor: theme.text,
 			focusedTextColor: theme.text,
@@ -201,7 +201,7 @@ export class MappingBuilderScreen implements Screen {
 
 		// Status bar
 		this.statusText = new TextRenderable(this.renderer, {
-			content: '[ENTER] Edit  [n] New  [d] Duplicate  [DEL] Delete  [ESC] Back',
+			content: '[ENTER] Edit  [n] New  [d] Duplicate  [x] Delete  [ESC] Back',
 			fg: theme.textMuted,
 		});
 		this.container.add(this.statusText);
@@ -221,11 +221,11 @@ export class MappingBuilderScreen implements Screen {
 
 		// Existing mappings
 		for (const item of this.mappingItems) {
-			const prefix = item.isBundled ? `${symbols.bullet} ` : '  ';
+			const prefix = item.isBundled ? `${symbols.bullet.dot} ` : '  ';
 			const suffix = item.isBundled ? ' (bundled)' : '';
 			options.push({
 				name: `${prefix}${item.name}${suffix}`,
-				description: `${item.fieldCount} fields ${symbols.bullet} v${item.version}`,
+				description: `${item.fieldCount} fields ${symbols.bullet.dot} v${item.version}`,
 				value: item.id,
 			});
 		}
@@ -260,7 +260,7 @@ export class MappingBuilderScreen implements Screen {
 		}));
 
 		this.detailPanel.add(new TextRenderable(this.renderer, {
-			content: `Version: ${item.version} ${symbols.bullet} Schema: ${item.schemaDisplay || 'Unknown'}`,
+			content: `Version: ${item.version} ${symbols.bullet.dot} Schema: ${item.schemaDisplay || 'Unknown'}`,
 			fg: theme.textMuted,
 		}));
 
@@ -271,7 +271,7 @@ export class MappingBuilderScreen implements Screen {
 
 		if (item.isBundled) {
 			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: `${symbols.warning} Bundled mapping — read-only, duplicate to customise`,
+				content: `${symbols.info.warning} Bundled mapping — read-only, duplicate to customise`,
 				fg: theme.warning,
 			}));
 		}
@@ -281,9 +281,9 @@ export class MappingBuilderScreen implements Screen {
 		if (!this.statusText) return;
 
 		if (this.deleteConfirmIndex >= 0) {
-			this.statusText.content = `${symbols.warning} Press DEL again to confirm deletion, or any other key to cancel`;
+			this.statusText.content = `${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`;
 		} else {
-			this.statusText.content = '[ENTER] Edit  [n] New  [d] Duplicate  [DEL] Delete  [ESC] Back';
+			this.statusText.content = '[ENTER] Edit  [n] New  [d] Duplicate  [x] Delete  [ESC] Back';
 		}
 	}
 
