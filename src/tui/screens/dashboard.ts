@@ -128,6 +128,7 @@ export class Dashboard implements Screen {
 							title: 'Select CSV File',
 							workflowType: 'convert',
 							path: config.csvInputDir,
+							outputDir: config.outputDir,
 						},
 					});
 				} else if (item.key === 'validate') {
@@ -138,7 +139,7 @@ export class Dashboard implements Screen {
 							fileExtension: '.csv,.xml',
 							title: 'Select File to Validate',
 							workflowType: 'validate',
-							path: config.csvInputDir,
+							path: config.outputDir,
 						},
 					});
 				} else if (item.key === 'check') {

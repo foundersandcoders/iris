@@ -30,17 +30,16 @@ export class SuccessScreen implements Screen {
 		const learnerCount = data?.learnerCount as number;
 		const hasIssues = data?.hasIssues as boolean;
 		const validation = data?.validation;
-		const returnTo = (data?.returnTo as string) || 'dashboard';
 
 		this.buildUI(type, failed, error, duration, outputPath, learnerCount, hasIssues);
 
 		// Wait for user selection
 		return new Promise((resolve) => {
 			if (failed) {
-				// Failure mode: any key returns to specified screen
+				// Failure mode: any key pops back
 				const handler = () => {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: returnTo });
+					resolve({ action: 'pop' });
 				};
 				this.renderer.keyInput.once('keypress', handler);
 			} else if (this.menu) {
@@ -57,7 +56,7 @@ export class SuccessScreen implements Screen {
 							},
 						});
 					} else {
-						resolve({ action: 'replace', screen: returnTo });
+						resolve({ action: 'pop' });
 					}
 				});
 			}

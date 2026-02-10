@@ -193,7 +193,6 @@ export class FilePicker implements Screen {
 								filePath: this.screenData?.currentFilePath as string,
 								previousFilePath: entry.path,
 								workflowType: 'check',
-								returnTo: this.screenData?.returnTo as string | undefined,
 							},
 						});
 					} else if (this.workflowType === 'mapping-create') {
@@ -211,7 +210,11 @@ export class FilePicker implements Screen {
 						resolve({
 							action: 'push',
 							screen: 'workflow',
-							data: { filePath: entry.path, workflowType: this.workflowType },
+							data: {
+								filePath: entry.path,
+								workflowType: this.workflowType,
+								outputDir: this.screenData?.outputDir,
+							},
 						});
 					}
 				}

@@ -25,10 +25,9 @@ export class CheckResultsScreen implements Screen {
 		const report = data?.report as CheckReport;
 		const hasIssues = data?.hasIssues as boolean;
 		const duration = data?.duration as number;
-		const returnTo = (data?.returnTo as string) || 'dashboard';
 
 		if (!report) {
-			return { action: 'replace', screen: returnTo };
+			return { action: 'pop' };
 		}
 
 		this.buildUI(report, hasIssues, duration);
@@ -48,7 +47,7 @@ export class CheckResultsScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: returnTo });
+					resolve({ action: 'pop' });
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);

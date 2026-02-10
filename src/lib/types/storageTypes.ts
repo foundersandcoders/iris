@@ -54,6 +54,7 @@ export interface SubmissionInfo {
  */
 export interface HistoryEntry {
 	filename: string;
+	filePath: string; // Full path to the XML file
 	timestamp: string;
 	learnerCount: number;
 	checksum: string;

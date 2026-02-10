@@ -62,14 +62,13 @@ export class HistoryScreen implements Screen {
 				const item = this.historyItems[index];
 				if (!item || item.isBroken) return;
 
-				// Default action: validate, then return to history
+				// Default action: validate
 				resolve({
 					action: 'push',
 					screen: 'workflow',
 					data: {
 						filePath: item.filePath!,
 						workflowType: 'validate',
-						returnTo: 'history',
 					},
 				});
 			});
@@ -89,7 +88,6 @@ export class HistoryScreen implements Screen {
 							data: {
 								filePath: item.filePath,
 								workflowType: 'validate',
-								returnTo: 'history',
 							},
 						});
 					}
@@ -106,15 +104,15 @@ export class HistoryScreen implements Screen {
 								title: 'Select Previous Submission to Compare',
 								workflowType: 'check-previous',
 								currentFilePath: item.filePath,
-								returnTo: 'history',
 							},
 						});
 					}
 				} else if (key.name === 'x') {
 					// Delete broken entry (don't resolve - stay on screen)
-					this.handleDelete().catch(() => {
+					this.handleDelete().catch((error) => {
 						if (this.statusText) {
-							this.statusText.content = `${symbols.info.error} Delete failed — try again`;
+							const msg = error instanceof Error ? error.message : 'Unknown error';
+							this.statusText.content = `${symbols.info.error} Delete failed: ${msg}`;
 						}
 					});
 				} else if (this.deleteConfirmIndex >= 0) {
@@ -148,14 +146,15 @@ export class HistoryScreen implements Screen {
 		this.historyItems = [];
 
 		for (const entry of history.submissions) {
-			// Resolve expected file path in user-visible submissions directory
-			const filePath = join(storage.paths.submissions, entry.filename);
+			// Use stored filePath from history entry (reliable source of truth)
+			// Fall back to constructing path from filename for legacy entries without filePath
+			const filePath = entry.filePath ?? join(storage.paths.submissions, entry.filename);
 			let fileSize: number | undefined;
 			let metadata: SubmissionMetadata | undefined;
 			let isBroken = false;
 
 			try {
-				// Check if XML file exists on disk
+				// Check if XML file exists on disk at stored path
 				const fileStat = await stat(filePath);
 				fileSize = fileStat.size;
 
@@ -171,7 +170,7 @@ export class HistoryScreen implements Screen {
 					// Metadata is optional — ignore read errors
 				}
 			} catch {
-				// File doesn't exist or is unreadable
+				// File doesn't exist or is unreadable at stored path
 				isBroken = true;
 			}
 
@@ -451,14 +450,30 @@ export class HistoryScreen implements Screen {
 
 			// Refresh history list
 			await this.loadHistory();
-			this.rebuildListAndHandlers();
-			this.updateStatus();
 
-			// Update detail panel for current selection (or clear if empty)
-			const newIndex = Math.min(index, this.historyItems.length - 1);
-			if (newIndex >= 0 && this.submissionList) {
-				this.submissionList.setSelectedIndex(newIndex);
-				this.updateDetailPanel(newIndex);
+			try {
+				this.rebuildListAndHandlers();
+				this.updateStatus();
+
+				// Update detail panel for current selection (or clear if empty)
+				const newIndex = Math.min(index, this.historyItems.length - 1);
+				if (newIndex >= 0 && this.submissionList) {
+					this.submissionList.setSelectedIndex(newIndex);
+					this.updateDetailPanel(newIndex);
+				}
+
+				// Show success message briefly
+				if (this.statusText) {
+					const originalStatus = this.statusText.content;
+					this.statusText.content = `${symbols.info.success} Entry deleted`;
+					setTimeout(() => {
+						if (this.statusText) {
+							this.statusText.content = originalStatus;
+						}
+					}, 2000);
+				}
+			} catch (error) {
+				throw new Error(`UI rebuild failed: ${error instanceof Error ? error.message : String(error)}`);
 			}
 		} else {
 			// First press — ask for confirmation
@@ -472,10 +487,17 @@ export class HistoryScreen implements Screen {
 
 		if (this.deleteConfirmIndex >= 0) {
 			this.statusText.content = `${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`;
+		} else if (this.historyItems.length === 0) {
+			this.statusText.content = '[ESC/q] Back to Dashboard';
 		} else {
-			const statusText = this.historyItems.length === 0
-				? '[ESC/q] Back to Dashboard'
-				: '[↑↓] Navigate  [ENTER/v] Validate  [c] Cross-check  [x] Delete broken  [ESC/q] Back';
+			// Check if current selection is broken to show/hide delete option
+			const index = this.submissionList?.selectedIndex ?? -1;
+			const currentItem = this.historyItems[index];
+			const showDelete = currentItem?.isBroken ?? false;
+
+			const statusText = showDelete
+				? '[↑↓] Navigate  [ENTER/v] Validate  [c] Cross-check  [x] Delete  [ESC/q] Back'
+				: '[↑↓] Navigate  [ENTER/v] Validate  [c] Cross-check  [ESC/q] Back';
 			this.statusText.content = statusText;
 		}
 	}
