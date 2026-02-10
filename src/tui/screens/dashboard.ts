@@ -34,7 +34,7 @@ export class Dashboard implements Screen {
 		{ key: 'validate', label: 'Validate XML Submission', implemented: true },
 		{ key: 'check', label: 'Cross-Submission Check', implemented: true },
 		{ key: 'mapping-builder', label: 'Mapping Builder', implemented: true },
-		{ key: 'history', label: 'Browse Submission History', implemented: false },
+		{ key: 'history', label: 'Browse Submission History', implemented: true },
 		{ key: 'settings', label: 'Settings & Configuration', implemented: true },
 		{ key: 'about', label: 'About Iris', implemented: true },
 		{ key: 'quit', label: 'Quit', implemented: true },
@@ -158,6 +158,8 @@ export class Dashboard implements Screen {
 					resolve({ action: 'push', screen: 'settings' });
 				} else if (item.key === 'about') {
 					resolve({ action: 'push', screen: 'about' });
+				} else if (item.key === 'history') {
+					resolve({ action: 'push', screen: 'history' });
 				} else if (item.implemented) {
 					resolve({ action: 'push', screen: item.key });
 				}
