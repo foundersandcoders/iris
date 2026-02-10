@@ -95,6 +95,7 @@ export class WorkflowScreen implements Screen {
 	private stepRenderables: Map<string, StepRenderables> = new Map();
 	private result: WorkflowResult<WorkflowOutput> | null = null;
 	private error: Error | null = null;
+	private returnTo?: string; // Screen to return to after completion
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -103,6 +104,7 @@ export class WorkflowScreen implements Screen {
 	async render(data?: ScreenData): Promise<ScreenResult> {
 		const filePath = data?.filePath as string;
 		const workflowType = (data?.workflowType as WorkflowType) || 'convert';
+		this.returnTo = data?.returnTo as string | undefined;
 
 		if (!filePath) return { action: 'pop' };
 
@@ -220,13 +222,14 @@ export class WorkflowScreen implements Screen {
 					type: this.workflowType,
 					failed: true,
 					error: this.error || this.result?.error,
+					returnTo: this.returnTo,
 				},
 			};
 		}
 
 		if (!this.result) {
 			// Should never happen, but handle gracefully
-			return { action: 'replace', screen: 'dashboard' };
+			return { action: 'replace', screen: this.returnTo || 'dashboard' };
 		}
 
 		const { data, duration } = this.result;
@@ -259,6 +262,7 @@ export class WorkflowScreen implements Screen {
 						learnerCount: convertData.csvData.rows.length,
 						hasIssues,
 						validation: convertData.validation,
+						returnTo: this.returnTo,
 					},
 				};
 			}
@@ -275,6 +279,7 @@ export class WorkflowScreen implements Screen {
 						data: {
 							validation: validateData.validation,
 							sourceType: this.isXMLSource(validateData) ? 'xml' : 'csv',
+							returnTo: this.returnTo,
 						},
 					};
 				} else {
@@ -286,6 +291,7 @@ export class WorkflowScreen implements Screen {
 							type: 'validate',
 							duration,
 							validation: validateData.validation,
+							returnTo: this.returnTo,
 						},
 					};
 				}
@@ -300,12 +306,13 @@ export class WorkflowScreen implements Screen {
 						report: checkData.report,
 						hasIssues: checkData.hasIssues,
 						duration,
+						returnTo: this.returnTo,
 					},
 				};
 			}
 
 			default:
-				return { action: 'replace', screen: 'dashboard' };
+				return { action: 'replace', screen: this.returnTo || 'dashboard' };
 		}
 	}
 

@@ -48,9 +48,10 @@ export class ValidationExplorerScreen implements Screen {
 			| ValidationResult
 			| { issues: SchemaValidationIssue[]; valid: boolean; errorCount: number; warningCount: number };
 		const sourceType = (data?.sourceType as 'csv' | 'xml') || 'csv';
+		const returnTo = (data?.returnTo as string) || 'dashboard';
 
 		if (!validation) {
-			return { action: 'replace', screen: 'dashboard' };
+			return { action: 'replace', screen: returnTo };
 		}
 
 		// Normalise issues
@@ -78,7 +79,7 @@ export class ValidationExplorerScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
+					resolve({ action: 'replace', screen: returnTo });
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);
