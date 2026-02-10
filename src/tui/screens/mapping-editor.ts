@@ -18,11 +18,12 @@ import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { ColumnMapping, MappingConfig, SchemaReference } from '../../lib/types/schemaTypes';
 import type { SchemaElement, SchemaRegistry } from '../../lib/types/interpreterTypes';
-import { isRequired } from '../../lib/types/interpreterTypes';
+import { isRequired, isEffectivelyRequired } from '../../lib/types/interpreterTypes';
 import { createStorage } from '../../lib/storage';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { validateMappingStructure } from '../../lib/mappings/validate';
 import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
+import { parseCSV } from '../../lib/utils/csv/csvParser';
 
 const CONTAINER_ID = 'mapping-editor-root';
 
@@ -106,6 +107,9 @@ export class MappingEditorScreen implements Screen {
 	private filteredPaths: string[] = [];
 	private searchQuery = '';
 
+	// CSV headers (for new mappings)
+	private csvHeaders: string[] = [];
+
 	// UI state
 	private activePanel: 'left' | 'right' = 'left';
 	private displayMappings: ColumnMapping[] = [];
@@ -119,6 +123,10 @@ export class MappingEditorScreen implements Screen {
 	private statusText?: TextRenderable;
 	private titleText?: TextRenderable;
 	private summaryText?: TextRenderable;
+
+	// CSV column picker overlay
+	private csvPickerSelect?: SelectRenderable;
+	private pendingXsdPath?: string;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -139,6 +147,17 @@ export class MappingEditorScreen implements Screen {
 			this.mappingId = '';
 		}
 
+		// Load CSV headers for new mappings
+		const csvFilePath = data?.csvFilePath as string | undefined;
+		if (csvFilePath) {
+			try {
+				const csvData = await parseCSV(csvFilePath);
+				this.csvHeaders = csvData.headers;
+			} catch {
+				// CSV parsing failed — editor still works, just no CSV column picker
+			}
+		}
+
 		// Build collapsed display mappings
 		this.displayMappings = collapseAimMappings(this.mappings);
 
@@ -148,6 +167,15 @@ export class MappingEditorScreen implements Screen {
 			// Left panel: mapping list interactions
 			this.leftSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 				const value = option.value as string;
+
+				// CSV column picker mode — intercept selection
+				if (this.csvPickerSelect && this.pendingXsdPath) {
+					if (value === '__header__') return; // Skip header row
+					this.dismissCsvPicker();
+					this.commitAddMapping(this.pendingXsdPath!, value);
+					return;
+				}
+
 				if (value === '__add__') {
 					// Switch to right panel to pick an XSD path for a new mapping
 					this.activePanel = 'right';
@@ -187,6 +215,13 @@ export class MappingEditorScreen implements Screen {
 
 			// Key handler
 			this.keyHandler = (key: KeyEvent) => {
+				// Dismiss CSV column picker on ESC
+				if (this.csvPickerSelect && key.name === 'escape') {
+					this.dismissCsvPicker();
+					this.focusActivePanel();
+					return;
+				}
+
 				if (key.name === 'tab') {
 					this.togglePanel();
 				} else if (key.name === 'escape') {
@@ -351,6 +386,10 @@ export class MappingEditorScreen implements Screen {
 		this.searchInput = new InputRenderable(this.renderer, {
 			placeholder: 'Search XSD paths...',
 			width: '100%',
+			textColor: theme.text,
+			backgroundColor: theme.background,
+			focusedTextColor: theme.text,
+			focusedBackgroundColor: theme.highlightFocused,
 		});
 		rightCol.add(this.searchInput);
 
@@ -384,7 +423,7 @@ export class MappingEditorScreen implements Screen {
 
 		// Status bar
 		this.statusText = new TextRenderable(this.renderer, {
-			content: '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Delete  [s] Save  [ESC] Back',
+			content: '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Unmap  [s] Save  [ESC] Back',
 			fg: theme.textMuted,
 		});
 		this.container.add(this.statusText);
@@ -419,12 +458,14 @@ export class MappingEditorScreen implements Screen {
 	}
 
 	private buildRightOptions(): SelectOption[] {
-		const mapped = new Set(this.mappings.map((m) => m.xsdPath));
+		const mappedPaths = new Set(this.mappings.map((m) => m.xsdPath));
 
 		return this.filteredPaths.map((path) => {
 			const el = this.registry?.elementsByPath.get(path);
-			const required = el && isRequired(el);
-			const isMapped = mapped.has(path);
+			const required = el && this.registry
+				? isEffectivelyRequired(el, this.registry, mappedPaths)
+				: false;
+			const isMapped = mappedPaths.has(path);
 			const prefix = isMapped ? `${symbols.info.success} ` : required ? `${symbols.info.required} ` : '  ';
 			const shortPath = path.split('.').slice(-2).join('.');
 
@@ -456,13 +497,65 @@ export class MappingEditorScreen implements Screen {
 	}
 
 	private addMapping(xsdPath: string): void {
-		// Prompt-less add: use the last segment as default CSV column name
-		const csvColumn = xsdPath.split('.').slice(-1)[0];
-
 		// Check if already mapped
 		const existing = this.mappings.find((m) => m.xsdPath === xsdPath && !m.aimNumber);
 		if (existing) return; // Already mapped
 
+		if (this.csvHeaders.length > 0) {
+			// Show CSV column picker
+			this.showCsvColumnPicker(xsdPath);
+		} else {
+			// Fallback: use the last segment as default CSV column name
+			this.commitAddMapping(xsdPath, xsdPath.split('.').slice(-1)[0]);
+		}
+	}
+
+	private showCsvColumnPicker(xsdPath: string): void {
+		this.pendingXsdPath = xsdPath;
+
+		if (!this.leftSelect) return;
+
+		// Replace left panel options with CSV column headers
+		const usedColumns = new Set(this.mappings.map((m) => m.csvColumn));
+		const shortPath = xsdPath.split('.').slice(-1)[0];
+
+		this.leftSelect.options = [
+			{ name: `Select CSV column for: ${shortPath}`, description: '', value: '__header__' },
+			...this.csvHeaders
+				.filter((h) => !usedColumns.has(h))
+				.map((header) => ({
+					name: `  ${header}`,
+					description: '',
+					value: header,
+				})),
+		];
+		this.leftSelect.setSelectedIndex(1); // Skip header
+
+		// Temporarily rebind left panel selection
+		this.csvPickerSelect = this.leftSelect; // Track that we're in picker mode
+
+		if (this.statusText) {
+			this.statusText.content = 'Select CSV column  [ENTER] Confirm  [ESC] Cancel';
+		}
+
+		// Switch to left panel
+		this.activePanel = 'left';
+		this.focusActivePanel();
+	}
+
+	private dismissCsvPicker(): void {
+		this.pendingXsdPath = undefined;
+		this.csvPickerSelect = undefined;
+
+		// Restore left panel
+		this.refreshDisplay();
+
+		if (this.statusText) {
+			this.statusText.content = '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Unmap  [s] Save  [ESC] Back';
+		}
+	}
+
+	private commitAddMapping(xsdPath: string, csvColumn: string): void {
 		this.mappings.push({
 			csvColumn,
 			xsdPath,
@@ -600,7 +693,7 @@ export class MappingEditorScreen implements Screen {
 
 			if (mappedPaths.has(path)) {
 				mappedCount++;
-			} else if (isRequired(el)) {
+			} else if (isEffectivelyRequired(el, this.registry, mappedPaths)) {
 				unmappedRequired++;
 				unmappedRequiredFields.push(path.split('.').slice(-1)[0]);
 			}
@@ -612,13 +705,10 @@ export class MappingEditorScreen implements Screen {
 			fg: unmappedRequired > 0 ? theme.warning : theme.success,
 		}));
 
-		// Show first few unmapped required fields
+		// Show all unmapped required fields
 		if (unmappedRequiredFields.length > 0) {
-			const shown = unmappedRequiredFields.slice(0, 5);
-			const remaining = unmappedRequiredFields.length - shown.length;
-			const list = shown.join(', ') + (remaining > 0 ? `, +${remaining} more` : '');
 			this.previewPanel.add(new TextRenderable(this.renderer, {
-				content: `  Missing: ${list}`,
+				content: `  Missing: ${unmappedRequiredFields.join(', ')}`,
 				fg: theme.textMuted,
 			}));
 		}
