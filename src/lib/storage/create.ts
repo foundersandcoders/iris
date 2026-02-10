@@ -388,7 +388,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 					const fileStat = await stat(filePath);
 
 					// Try to load metadata if it exists
-					const metadataPath = join(paths.submissions, `${filename}.meta.json`);
+					const metadataPath = join(paths.internalSubmissions, `${filename}.meta.json`);
 					let metadata: SubmissionMetadata | undefined;
 					if (await adapter.exists(metadataPath)) {
 						try {
