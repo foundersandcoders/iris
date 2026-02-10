@@ -2,9 +2,10 @@
 
 | Sub-Milestone | Focus | Status |
 |---------------|-------|--------|
-| **M2A** | OpenTUI Migration + Core TUI Screens | In Progress (migration first) |
-| **M2B** | Direct Commands | Blocked (depends on M2A) |
-| **M2C** | Advanced TUI + Polish + Docs | Blocked (depends on M2A + M2B) |
+| **M2A** | OpenTUI Migration + Core TUI Screens | ✅ Complete |
+| **M2B** | Direct Commands | Open (M2A complete) |
+| **M2C** | Advanced TUI + Polish + Docs | In Progress |
+| **M2D** | Homebrew Distribution | Open (2BD.1 complete) |
 
 <details>
 <summary><strong>Colour Key</strong></summary>
@@ -186,16 +187,12 @@ title: M2B — Direct Commands
 ---
 graph TD
 
-2TI.17["`*2TI.17*<br/>M2A task<br/>test real data`"]:::must-blocked
-
-2TI.17 --> 2DC.2
-
-2DC.2["`*2DC.2*<br/>**SHOULD**<br/>iris convert`"]:::should-blocked --> 2DC.3
+2DC.2["`*2DC.2*<br/>**SHOULD**<br/>iris convert`"]:::should-open --> 2DC.3
 2DC.3["`*2DC.3*<br/>**SHOULD**<br/>iris validate`"]:::should-blocked
 
 phase1{"`**M2B**<br/>Complete`"}:::mile
 
-classDef must-blocked fill:#F3D8E6,color:#000;
+classDef should-open fill:#6F2A52,color:#fff;
 classDef should-blocked fill:#A45A84,color:#fff;
 classDef could-blocked fill:#5FA3BA,color:#fff;
 classDef mile fill:#E8EFF6,color:#000;
@@ -209,6 +206,40 @@ classDef mile fill:#E8EFF6,color:#000;
 ### Could Have
 
 - [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2TI.18**
+
+</details>
+
+<details>
+<summary><h3>M2D: Homebrew Distribution</h3></summary>
+
+> [!IMPORTANT]
+> **Goal:** Zero-friction installation via Homebrew tap (no terminal commands, no Gatekeeper warnings, no Apple Developer account)
+
+```mermaid
+---
+title: M2D — Homebrew Distribution
+---
+graph TD
+
+2HB.1["`*2HB.1*<br/>**MUST**<br/>homebrew tap setup`"]:::must-open
+
+phase1{"`**M2D**<br/>Complete`"}:::mile
+
+2HB.1 --> phase1
+
+classDef must-open fill:#D6A3BF,color:#000;
+classDef mile fill:#E8EFF6,color:#000;
+```
+
+### Must Have
+
+- [ ] **2HB.1** — Set up Homebrew tap for frictionless macOS distribution — **depends on 2BD.1**
+  - Create `foundersandcoders/homebrew-iris` repository
+  - Write `Formula/iris.rb` with binary URLs and SHA256 checksums
+  - Support both ARM64 and Intel architectures
+  - Document user installation: `brew install foundersandcoders/iris/iris`
+  - Document maintainer workflow for version bumps
+  - Consider GitHub Actions automation for tap updates (optional enhancement)
 
 </details>
 
@@ -232,10 +263,10 @@ graph TD
 
 2TI.33["`*2TI.33*<br/>**SHOULD**<br/>collection per convert`"]:::should-open
 
-2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-blocked
+2TI.10["`*2TI.10*<br/>**MUST**<br/>submission history browser`"]:::must-open
 2TI.18["`*2TI.18*<br/>**SHOULD**<br/>visual feedback/polish`"]:::should-blocked
 2TC.1["`*2TC.1*<br/>**SHOULD**<br/>clean test history`"]:::should-blocked
-2UD.1["`*2UD.1*<br/>**SHOULD**<br/>user guide`"]:::should-blocked
+2UD.1["`*2UD.1*<br/>**SHOULD**<br/>user guide`"]:::should-open
 2UD.2["`*2UD.2*<br/>**COULD**<br/>validation rules docs`"]:::could-blocked
 2TM.5["`*2TM.5*<br/>**COULD**<br/>schema short names`"]:::could-open
 2TM.6["`*2TM.6*<br/>**COULD**<br/>grouped schema fields`"]:::could-blocked
@@ -243,8 +274,8 @@ graph TD
 2TC.3["`*2TC.3*<br/>**COULD**<br/>dual-picker screen`"]:::could-blocked
 2TC.4["`*2TC.4*<br/>**COULD**<br/>bordered detail panel`"]:::could-blocked
 
-2TI.12["`*2TI.12*<br/>M2A task<br/>contextual help`"]:::should-blocked
-2TI.31["`*2TI.31*<br/>M2A task<br/>success proof`"]:::should-blocked
+2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-blocked
+2TI.31["`*2TI.31*<br/>**SHOULD**<br/>success proof`"]:::should-blocked
 2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-blocked
 2TS.3["`*2TS.3*<br/>**COULD**<br/>schema version selector`"]:::could-blocked --> 2TS.4
 2TS.4["`*2TS.4*<br/>**COULD**<br/>dynamic migration guidance`"]:::could-blocked
@@ -252,28 +283,26 @@ graph TD
 
 2DC.4["`*2DC.4*<br/>M2B task<br/>iris check`"]:::could-blocked
 
-2BD.1["`*2BD.1*<br/>**MUST**<br/>standalone binary`"]:::must-blocked
-2BD.2["`*2BD.2*<br/>**COULD**<br/>GH Actions release`"]:::could-blocked
+2BD.2["`*2BD.2*<br/>**COULD**<br/>GH Actions release`"]:::could-open
 
 %% Required dependencies %%
 2TI.10 --> 2TI.12 & 2TI.31
 2TI.12 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
-2TI.10 & 2TI.18 --> 2BD.1
-2BD.1 --> phase1
+
 phase1{"`**M2C**<br/>Complete`"}:::mile
 
 %% New task dependencies %%
 2TM.5 -.->|optional| 2TM.6
 
 %% Optional dependencies %%
-2BD.1 -.->|optional| 2UD.1 & 2BD.2
 2BD.2 -.->|optional| phase1
 2UD.1 -.->|optional| 2UD.2 & phase1
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
 2TC.2 -.->|optional| 2TC.3 & 2TC.4
 2TI.33 & 2TM.5 & 2TM.6 & 2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
 
+classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
 classDef should-open fill:#6F2A52,color:#fff;
 classDef should-blocked fill:#A45A84,color:#fff;
@@ -284,13 +313,13 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.11, 2TI.10**
+- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.10**
 - [x] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter)
 - [x] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues; uses `BoxRenderable` for preview panel, `TextRenderable` for status) — **depends on 2TM.2**
 - [x] **2TM.1** — Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout) — **depends on 2TM.3**
 - [x] **2TM.4** — Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`) — **depends on 2TM.1**
 - [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards)
-- [ ] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS + Windows; single binary, no runtime dependency) — **depends on 2TI.10, 2TI.18**
+- [x] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS; single binary, no runtime dependency)
 
 ### Should Have
 
@@ -327,16 +356,15 @@ title: Phase 1 — Complete Picture
 ---
 graph TD
 
-%% M2A Tasks (optional enhancements) %%
-2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-open
-2TI.31["`*2TI.31*<br/>enhance<br/>success proof`"]:::should-open
-
 %% M2B Tasks %%
 2DC.2["`*2DC.2*<br/>command<br/>convert`"]:::should-open
 2DC.3["`*2DC.3*<br/>command<br/>validate`"]:::should-blocked
 2DC.4["`*2DC.4*<br/>command<br/>check`"]:::could-blocked
 
 %% M2C Tasks %%
+2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-open
+2TI.12["`*2TI.12*<br/>component<br/>help`"]:::should-blocked
+2TI.31["`*2TI.31*<br/>enhance<br/>success proof`"]:::should-blocked
 2TI.33["`*2TI.33*<br/>enhance<br/>collection per convert`"]:::should-open
 2TM.5["`*2TM.5*<br/>enhance<br/>schema short names`"]:::could-open
 2TM.6["`*2TM.6*<br/>enhance<br/>grouped fields`"]:::could-blocked
@@ -344,23 +372,20 @@ graph TD
 2TS.3["`*2TS.3*<br/>component<br/>schema selector`"]:::could-blocked
 2TS.4["`*2TS.4*<br/>component</br>migration`"]:::could-blocked
 2TI.19["`*2TI.19*<br/>enhance<br/>schema settings`"]:::could-blocked
-2TI.10["`*2TI.10*<br/>screen<br/>history`"]:::must-blocked
 2TI.18["`*2TI.18*<br/>enhance<br/>polish`"]:::should-blocked
 2TC.1["`*2TC.1*<br/>test<br/>clean history`"]:::should-blocked
-2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::should-blocked
+2UD.1["`*2UD.1*<br/>doc<br/>user guide`"]:::should-open
 2UD.2["`*2UD.2*<br/>doc<br/>val rules`"]:::could-blocked
 2TC.2["`*2TC.2*<br/>util<br/>history cleanup`"]:::could-blocked
 2TC.3["`*2TC.3*<br/>enhance<br/>dual-picker`"]:::could-blocked
 2TC.4["`*2TC.4*<br/>enhance<br/>bordered panel`"]:::could-blocked
 
 %% Build & Distribution %%
-2BD.1["`*2BD.1*<br/>build<br/>standalone binary`"]:::must-blocked
-2BD.2["`*2BD.2*<br/>build<br/>GH Actions release`"]:::could-blocked
+2BD.2["`*2BD.2*<br/>build<br/>GH Actions release`"]:::could-open
+2HB.1["`*2HB.1*<br/>dist<br/>homebrew tap`"]:::must-open
 
 %% Milestone nodes %%
 phase1{"`**Phase 1**<br/>Complete`"}:::mile
-
-%% M2A Dependencies %%
 
 %% M2B Dependencies %%
 2DC.2 --> 2DC.3
@@ -372,11 +397,11 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2TI.12 & 2TI.31 --> 2TS.2
 2TI.18 --> 2DC.4 & 2TC.1
 2TS.3 --> 2TS.4
-2TI.10 & 2TI.18 --> 2BD.1
-2BD.1 --> phase1
+
+%% M2D Dependencies %%
+2HB.1 --> phase1
 
 %% OPTIONAL %%
-2BD.1 -.->|optional| 2UD.1 & 2BD.2
 2BD.2 -.->|optional| phase1
 2UD.1 -.->|optional| 2UD.2 & phase1
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2

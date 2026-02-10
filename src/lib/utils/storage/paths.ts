@@ -28,13 +28,28 @@ export function getDefaultSchemaDir(): string {
 	const home = homedir();
 	const documentsDir = join(home, 'Documents');
 	if (existsSync(documentsDir)) {
-		return join(documentsDir, 'Iris', 'schemas');
+		return join(documentsDir, 'Iris', 'Schemas');
 	}
-	return join(home, 'Iris', 'schemas');
+	return join(home, 'Iris', 'Schemas');
 }
 
-/** Get default CSV input directory (current working directory) */
+/** Get default CSV input directory with cascade: ~/Downloads/Airtable/ → ~/Downloads/ → cwd */
 export function getDefaultCsvInputDir(): string {
+	const home = homedir();
+
+	// First try: ~/Downloads/Airtable/
+	const airtableDir = join(home, 'Downloads', 'Airtable');
+	if (existsSync(airtableDir)) {
+		return airtableDir;
+	}
+
+	// Second try: ~/Downloads/
+	const downloadsDir = join(home, 'Downloads');
+	if (existsSync(downloadsDir)) {
+		return downloadsDir;
+	}
+
+	// Final fallback: current working directory
 	return process.cwd();
 }
 
@@ -67,9 +82,9 @@ export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths
 	const internal = options.internalRoot ?? join(home, '.iris');
 
 	// If user explicitly configured outputDir, use it as-is (final destination)
-	// Otherwise use default with /submissions appended
+	// Otherwise use default with /Submissions appended
 	const output = options.outputDir ?? getDefaultOutputDir();
-	const submissions = options.outputDir ?? join(getDefaultOutputDir(), 'submissions');
+	const submissions = options.outputDir ?? join(getDefaultOutputDir(), 'Submissions');
 
 	return {
 		// Internal

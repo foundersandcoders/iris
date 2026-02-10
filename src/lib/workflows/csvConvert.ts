@@ -19,7 +19,7 @@ import type {
 } from '../types/workflowTypes';
 import type { HistoryEntry } from '../types/storageTypes';
 import { createStorage } from '../storage';
-import type { SchemaRegistry } from '$lib/schema';
+import type { SchemaRegistry } from '../schema';
 import type { MappingConfig } from '../types/schemaTypes';
 import packageJson from '../../../package.json';
 
