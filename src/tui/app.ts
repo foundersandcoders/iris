@@ -14,6 +14,7 @@ import { MappingEditorScreen } from './screens/mapping-editor';
 import { MappingSaveScreen } from './screens/mapping-save';
 import { SettingsScreen } from './screens/settings';
 import { AboutScreen } from './screens/about';
+import { HistoryScreen } from './screens/history';
 import type { Renderer } from './types';
 
 interface TUIOptions {
@@ -53,5 +54,6 @@ export class TUI {
 		this.router.register('mapping-save', (ctx) => new MappingSaveScreen(ctx));
 		this.router.register('settings', (ctx) => new SettingsScreen(ctx));
 		this.router.register('about', (ctx) => new AboutScreen(ctx));
+		this.router.register('history', (ctx) => new HistoryScreen(ctx));
 	}
 }
