@@ -51,6 +51,11 @@ export class MappingBuilderScreen implements Screen {
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
+		// Load config for csvInputDir used by file-picker
+		const storage = createStorage();
+		const configResult = await storage.loadConfig();
+		const csvInputDir = configResult.success ? configResult.data.csvInputDir : undefined;
+
 		await this.loadMappings();
 		this.buildUI();
 
@@ -81,6 +86,7 @@ export class MappingBuilderScreen implements Screen {
 							title: 'Select CSV for New Mapping',
 							workflowType: 'mapping-create',
 							mode: 'create',
+							path: csvInputDir,
 						},
 					});
 				} else {
@@ -108,6 +114,7 @@ export class MappingBuilderScreen implements Screen {
 							title: 'Select CSV for New Mapping',
 							workflowType: 'mapping-create',
 							mode: 'create',
+							path: csvInputDir,
 						},
 					});
 				} else if (key.name === 'd') {
