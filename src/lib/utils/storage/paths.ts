@@ -1,7 +1,7 @@
 /** |===================|| Storage Paths ||==================|
  *  | Cross-platform path construction for Iris storage.
- *  | Internal: ~/.iris (config, history, schemas)
- *  | Output: ~/Documents/Iris (user-visible submissions)
+ *  | Internal: ~/.iris (config, history, mappings)
+ *  | Output: ~/Documents/Iris (user-visible submissions, schemas)
  *  |=========================================================|
  */
 import { homedir } from 'os';
@@ -13,7 +13,7 @@ export interface StoragePaths {
 	internal: string; // ~/.iris
 	config: string; // ~/.iris/config.json
 	mappings: string; // ~/.iris/mappings/
-	schemas: string; // ~/.iris/schemas/
+	schemas: string; // ~/Documents/Iris/schemas/ (or config.schemaDir)
 	history: string; // ~/.iris/history/
 	reports: string; // ~/.iris/reports/
 	internalSubmissions: string; // ~/.iris/submissions/ (metadata only)
@@ -21,6 +21,21 @@ export interface StoragePaths {
 	// User output (visible)
 	output: string; // ~/Documents/Iris (or config.outputDir)
 	submissions: string; // ~/Documents/Iris/submissions/
+}
+
+/** Get default schema directory for user XSD files (cross-platform) */
+export function getDefaultSchemaDir(): string {
+	const home = homedir();
+	const documentsDir = join(home, 'Documents');
+	if (existsSync(documentsDir)) {
+		return join(documentsDir, 'Iris', 'schemas');
+	}
+	return join(home, 'Iris', 'schemas');
+}
+
+/** Get default CSV input directory (current working directory) */
+export function getDefaultCsvInputDir(): string {
+	return process.cwd();
 }
 
 /** Get default output directory for user-visible files (cross-platform) */
@@ -39,6 +54,7 @@ export function getDefaultOutputDir(): string {
 
 export interface StoragePathsOptions {
 	outputDir?: string;
+	schemaDir?: string;
 	internalRoot?: string; // For testing: override ~/.iris
 }
 
@@ -56,7 +72,8 @@ export function getStoragePaths(options: StoragePathsOptions = {}): StoragePaths
 		internal,
 		config: join(internal, 'config.json'),
 		mappings: join(internal, 'mappings'),
-		schemas: join(internal, 'schemas'),
+		schemas: options.schemaDir
+			?? (options.internalRoot ? join(internal, 'schemas') : getDefaultSchemaDir()),
 		history: join(internal, 'history'),
 		reports: join(internal, 'reports'),
 		internalSubmissions: join(internal, 'submissions'),

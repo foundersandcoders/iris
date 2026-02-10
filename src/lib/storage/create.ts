@@ -29,6 +29,7 @@ const BUNDLED_SCHEMA_DIR = join(import.meta.dir, '..', '..', '..', 'docs', 'sche
 
 interface StorageOptions {
 	outputDir?: string;
+	schemaDir?: string;
 	internalRoot?: string;
 	adapter?: StorageAdapter;
 }
@@ -36,6 +37,7 @@ interface StorageOptions {
 export function createStorage(options: StorageOptions = {}): IrisStorage {
 	const paths = getStoragePaths({
 		outputDir: options.outputDir,
+		schemaDir: options.schemaDir,
 		internalRoot: options.internalRoot,
 	});
 	const adapter = options.adapter ?? createBunAdapter();

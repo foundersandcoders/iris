@@ -22,6 +22,11 @@ import {
 	type ConfigValidationResult,
 } from '../../lib/types/configTypes';
 import { createStorage } from '../../lib/storage';
+import {
+	getDefaultOutputDir,
+	getDefaultCsvInputDir,
+	getDefaultSchemaDir,
+} from '../../lib/utils/storage/paths';
 
 const CONTAINER_ID = 'settings-root';
 
@@ -32,7 +37,7 @@ interface SettingsField {
 	section: string;
 	getValue: (config: IrisConfig) => string;
 	setValue: (config: IrisConfig, value: string) => IrisConfig;
-	type: 'text' | 'dropdown';
+	type: 'text' | 'dropdown' | 'directory';
 	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
 }
@@ -45,7 +50,9 @@ const FIELD_HELP: Record<string, string> = {
 	'activeMapping': 'CSV→XSD mapping configuration for field translation',
 	'collection': 'ILR collection period (e.g. "R14" for final return)',
 	'serialNo': 'Auto-incremented per submission — leave blank for now',
-	'outputDir': 'Directory for generated XML files (defaults to ~/.iris/submissions/)',
+	'outputDir': 'Directory for generated ILR XML submissions',
+	'csvInputDir': 'Starting directory when browsing for CSV files',
+	'schemaDir': 'Directory for downloaded government XSD schema files',
 };
 
 /** Field definitions — declarative description of every editable setting */
@@ -111,13 +118,30 @@ const FIELDS: SettingsField[] = [
 		type: 'text',
 		editable: false,
 	},
+	// Directories
 	{
 		key: 'outputDir',
-		label: 'Output Directory',
-		section: 'Submission',
-		getValue: (c) => c.outputDir ?? '(default)',
-		setValue: (c, v) => ({ ...c, outputDir: v === '(default)' || v === '' ? undefined : v }),
-		type: 'text',
+		label: 'XML Outputs',
+		section: 'Directories',
+		getValue: (c) => c.outputDir ?? getDefaultOutputDir(),
+		setValue: (c, v) => ({ ...c, outputDir: v }),
+		type: 'directory',
+	},
+	{
+		key: 'csvInputDir',
+		label: 'CSV Inputs',
+		section: 'Directories',
+		getValue: (c) => c.csvInputDir ?? getDefaultCsvInputDir(),
+		setValue: (c, v) => ({ ...c, csvInputDir: v }),
+		type: 'directory',
+	},
+	{
+		key: 'schemaDir',
+		label: 'XSD Schemas',
+		section: 'Directories',
+		getValue: (c) => c.schemaDir ?? getDefaultSchemaDir(),
+		setValue: (c, v) => ({ ...c, schemaDir: v }),
+		type: 'directory',
 	},
 ];
 
@@ -125,6 +149,7 @@ export class SettingsScreen implements Screen {
 	readonly name = 'settings';
 	private renderer: Renderer;
 	private keyHandler?: (key: KeyEvent) => void;
+	private resolveRender?: (result: ScreenResult) => void;
 
 	// State
 	private config!: IrisConfig;
@@ -165,10 +190,20 @@ export class SettingsScreen implements Screen {
 			this.originalConfig = { ...DEFAULT_CONFIG };
 		}
 
+		// Handle returned directory selection from file-picker
+		if (data?.selectedDirectory && data?.fieldKey) {
+			const field = FIELDS.find(f => f.key === data.fieldKey);
+			if (field) {
+				this.config = field.setValue(this.config, data.selectedDirectory as string);
+				this.dirty = true;
+			}
+		}
+
 		this.validation = validateConfig(this.config);
 		this.buildUI();
 
 		return new Promise((resolve) => {
+			this.resolveRender = resolve;
 			// Field selection → edit on Enter
 			this.fieldList?.on(SelectRenderableEvents.ITEM_SELECTED, (index: number) => {
 				if (!this.editing) {
@@ -217,7 +252,7 @@ export class SettingsScreen implements Screen {
 
 				if (key.name === 'escape') {
 					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({ action: 'pop' });
+					this.resolveRender?.({ action: 'pop' });
 				} else if (key.name === 's') {
 					if (this.resetConfirm) { this.resetConfirm = false; this.updateStatus(); }
 					this.save();
@@ -329,8 +364,8 @@ export class SettingsScreen implements Screen {
 			options.push({
 				name: editable
 					? `    ${field.label}${padding}${value}`
-					: `    ${field.label}${padding}${value}`,
-				description: editable ? '' : 'read-only',
+					: `    ${field.label}${padding}${value}  ${symbols.bullet.dot} read-only`,
+				description: '',
 				value: field.key,
 			});
 		}
@@ -348,6 +383,11 @@ export class SettingsScreen implements Screen {
 
 		this.editing = true;
 		this.editFieldIndex = FIELDS.indexOf(field);
+
+		if (field.type === 'directory') {
+			this.startDirectoryEdit(field);
+			return;
+		}
 
 		if (field.type === 'dropdown' && field.dropdownLoader) {
 			const options = await field.dropdownLoader();
@@ -409,6 +449,22 @@ export class SettingsScreen implements Screen {
 
 		this.container?.add(this.editDropdown);
 		this.editDropdown.focus();
+	}
+
+	private startDirectoryEdit(field: SettingsField): void {
+		if (this.keyHandler) {
+			this.renderer.keyInput.off('keypress', this.keyHandler);
+		}
+		this.resolveRender?.({
+			action: 'push',
+			screen: 'file-picker',
+			data: {
+				path: field.getValue(this.config),
+				selectionMode: 'directory',
+				title: `Select ${field.label} Directory`,
+				fieldKey: field.key,
+			},
+		});
 	}
 
 	private commitEdit(field: SettingsField, newValue: string): void {
