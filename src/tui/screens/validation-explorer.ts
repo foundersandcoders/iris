@@ -78,7 +78,11 @@ export class ValidationExplorerScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'pop' });
+					resolve({ action: 'replace', screen: 'dashboard' });
+				} else if (key.name === 'left') {
+					this.tabs?.moveLeft();
+				} else if (key.name === 'right') {
+					this.tabs?.moveRight();
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);

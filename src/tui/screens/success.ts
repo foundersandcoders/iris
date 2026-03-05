@@ -39,7 +39,7 @@ export class SuccessScreen implements Screen {
 				// Failure mode: any key pops back
 				const handler = () => {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'pop' });
+					resolve({ action: 'replace', screen: 'dashboard' });
 				};
 				this.renderer.keyInput.once('keypress', handler);
 			} else if (this.menu) {
@@ -56,7 +56,7 @@ export class SuccessScreen implements Screen {
 							},
 						});
 					} else {
-						resolve({ action: 'pop' });
+						resolve({ action: 'replace', screen: 'dashboard' });
 					}
 				});
 			}

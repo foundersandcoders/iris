@@ -47,7 +47,7 @@ export class CheckResultsScreen implements Screen {
 			const handler = (key: { name: string }) => {
 				if (key.name === 'escape' || key.name === 'q') {
 					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'pop' });
+					resolve({ action: 'replace', screen: 'dashboard' });
 				}
 			};
 			this.renderer.keyInput.on('keypress', handler);
