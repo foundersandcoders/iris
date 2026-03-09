@@ -1,5 +1,249 @@
 # schema-forge
 
+## Extraction Guide
+
+Step-by-step guide to extracting schema-forge from Iris into a standalone package. Every step is designed so that Iris continues working unchanged throughout — schema-forge is built *beside* Iris, then Iris switches to consuming it as a dependency at the very end.
+
+### Step 1: Scaffold the package
+
+Create a new repo `schema-forge/` (sibling to `iris/`, not inside it). Initialise with:
+
+```bash
+mkdir schema-forge && cd schema-forge
+bun init
+# Set name to "schema-forge" in package.json
+```
+
+Set up the directory structure:
+
+```
+schema-forge/
+├── src/
+│   ├── parse/
+│   ├── registry/
+│   ├── generate/
+│   ├── validate/
+│   ├── map/
+│   ├── compatibility/
+│   ├── xml/
+│   └── types/
+├── tests/
+│   └── fixtures/
+├── package.json
+└── tsconfig.json
+```
+
+Add the single runtime dependency:
+
+```bash
+bun add fast-xml-parser@^5.3.3
+bun add -d vitest typescript
+```
+
+Configure `package.json` subpath exports:
+
+```jsonc
+{
+  "exports": {
+    "./parse":         "./src/parse/index.ts",
+    "./registry":      "./src/registry/index.ts",
+    "./generate":      "./src/generate/index.ts",
+    "./validate":      "./src/validate/index.ts",
+    "./map":           "./src/map/index.ts",
+    "./compatibility": "./src/compatibility/index.ts",
+    "./xml":           "./src/xml/index.ts",
+    "./types":         "./src/types/index.ts"
+  }
+}
+```
+
+### Step 2: Copy the generic core (no edits needed)
+
+These files have zero ILR-specific logic. Copy them into schema-forge, adjusting import paths to match the new structure.
+
+| Iris source | schema-forge destination | Notes |
+|---|---|---|
+| `src/lib/types/interpreterTypes.ts` | `src/types/interpreter.ts` | Pure types, no deps |
+| `src/lib/schema/schemaParser.ts` | `src/parse/index.ts` | Only dep: `fast-xml-parser` |
+| `src/lib/utils/schema/cardinality.ts` | `src/parse/cardinality.ts` | Deps: interpreter types, raw parser types |
+| `src/lib/utils/schema/constraints.ts` | `src/parse/constraints.ts` | Deps: interpreter types, raw parser types |
+| `src/lib/utils/schema/typeResolver.ts` | `src/parse/typeResolver.ts` | Deps: interpreter types, raw parser types, constraints |
+| `src/lib/utils/schema/elementBuilder.ts` | `src/registry/elementBuilder.ts` | Deps: interpreter types, parse utilities |
+| `src/lib/schema/registryBuilder.ts` | `src/registry/index.ts` | Deps: parse module, element builder, type resolver |
+| `src/lib/schema/schemaValidator.ts` | `src/validate/index.ts` | Deps: interpreter types, schema validation types |
+| `src/lib/utils/xml/xmlGenerator.ts` | `src/generate/index.ts` | Deps: interpreter types only |
+
+After copying, fix all import paths. Every file should import from within schema-forge — no `../../` reaching into Iris.
+
+Run tests after this step to confirm the core works standalone.
+
+### Step 3: Extract validation and mapping types
+
+`src/lib/types/schemaTypes.ts` is mixed — it contains both generic types and ILR-specific builder templates.
+
+**Copy to schema-forge** (`src/types/schema.ts`), keeping only:
+
+- `SchemaValidationSeverity`, `ConstraintViolationType`, `SchemaValidationIssue`, `SchemaValidationResult`
+- `createIssue()`, `createEmptyResult()`, `computeResultStats()`
+- `ColumnMapping`, `SchemaReference`, `MappingConfig` (generic mapping concepts)
+
+**Leave in Iris:**
+
+- `FamTemplate`, `AppFinTemplate`, `EsmField`, `EmploymentStatusConfig` (ILR builder templates)
+
+Iris keeps its original `schemaTypes.ts` unchanged. It will import these generic types from schema-forge only after the final switchover (Step 8).
+
+### Step 4: Genericise the column mapper
+
+`src/lib/schema/columnMapper.ts` has significant ILR coupling:
+
+- `../transforms/registry` → `getTransform()` (ILR date transforms)
+- `../utils/config/mapping` → `hasAimData()` (ILR aim detection)
+- `../mappings/builders` → `buildFamEntries()`, `buildAppFinRecords()`, etc.
+- `../utils/uuid` → `generateUUID()`
+
+**For schema-forge**, extract a generic `mapToSchema()` that accepts:
+
+```ts
+interface MapOptions {
+  transforms?: Record<string, (value: string) => string>;  // named transform functions
+  builders?: Record<string, (row: Record<string, string>) => Record<string, unknown>[]>;
+  generateId?: () => string;  // UUID generator (default: crypto.randomUUID)
+}
+```
+
+The generic mapper (`src/map/index.ts`) handles:
+- Flat column→path mapping with optional transforms
+- Builder injection at specified paths
+- Repeatable element array creation
+
+The ILR-specific `mapCsvToSchemaWithAims()` stays in Iris — it orchestrates the generic mapper with ILR builders, aim detection, and FAM/AppFin logic.
+
+### Step 5: Genericise schema compatibility
+
+`src/lib/schema/schemaCompatibility.ts` imports `builderPaths.ts` to check FAM, AppFin, Employment, and LLDD paths.
+
+**For schema-forge**, make builder paths pluggable:
+
+```ts
+interface CompatibilityOptions {
+  builderPaths?: string[];  // additional XSD paths to validate exist in schema
+}
+
+function validateSchemaCompatibility(
+  mapping: MappingConfig,
+  registry: SchemaRegistry,
+  options?: CompatibilityOptions
+): CompatibilityResult;
+```
+
+Iris passes its ILR-specific builder paths via the options. Schema-forge validates them generically.
+
+### Step 6: Create generic XML parser
+
+`src/lib/utils/xml/xmlParser.ts` is ILR-specific (`parseILR()`, `extractLearner()`, etc.).
+
+**For schema-forge** (`src/xml/index.ts`), create a generic parser:
+
+```ts
+interface ParseXmlOptions<T extends Record<string, unknown>> {
+  extractors?: { [K in keyof T]: (parsed: unknown) => T[K] };
+  arrayHeuristics?: (elementName: string, parentName: string) => boolean;
+}
+
+function parseXml<T extends Record<string, unknown>>(
+  xml: string,
+  options?: ParseXmlOptions<T>
+): ParseSuccess<T> | ParseError;
+```
+
+The core XML validation and `fast-xml-parser` setup lives in schema-forge. Iris implements `parseILR()` on top of this generic parser, passing ILR extractors.
+
+### Step 7: Copy and adapt tests
+
+| Iris tests | schema-forge destination | Notes |
+|---|---|---|
+| `tests/lib/schema/schemaParser.test.ts` | `tests/parse/` | Generic, copy directly |
+| `tests/lib/utils/schema/*.test.ts` | `tests/parse/` | cardinality, constraints, typeResolver |
+| `tests/lib/schema/registryBuilder-related tests` | `tests/registry/` | Generic |
+| `tests/lib/schema/schemaValidator.test.ts` | `tests/validate/` | Generic |
+| `tests/lib/utils/xml/xmlGenerator.test.ts` | `tests/generate/` | Generic |
+| `tests/fixtures/lib/schema.ts` | `tests/fixtures/` | Generic schema fixtures |
+| `tests/fixtures/lib/utils/xml/xmlGenerator.ts` | `tests/fixtures/` | Generic XML fixtures |
+
+**Stay in Iris:**
+- `tests/lib/utils/xml/xmlParser.test.ts` (ILR-specific)
+- `tests/fixtures/lib/utils/xml/xmlParser.ts` (ILR XML fixtures)
+- Any tests for `mapCsvToSchemaWithAims` or ILR builders
+
+New tests needed for genericised modules:
+- Generic mapper with pluggable transforms and builders
+- Schema compatibility with custom builder paths
+- Generic XML parser with custom extractors
+
+### Step 8: Switchover — Iris consumes schema-forge
+
+Only after schema-forge is working standalone with passing tests:
+
+```bash
+# From iris/
+bun add ../schema-forge   # or publish and install from npm
+```
+
+Replace Iris imports incrementally, module by module:
+
+```ts
+// Before (Iris internal)
+import { buildSchemaRegistry } from "../lib/schema/registryBuilder";
+import { SchemaRegistry } from "../lib/types/interpreterTypes";
+
+// After (schema-forge)
+import { buildSchemaRegistry } from "schema-forge/registry";
+import type { SchemaRegistry } from "schema-forge/types";
+```
+
+Run Iris tests after each module switch. Once all imports point to schema-forge, delete the copied source files from Iris.
+
+**Order of switchover** (least to most coupled):
+1. `types` — pure types, no runtime behaviour
+2. `parse` — no Iris consumers depend on raw parsing directly
+3. `registry` — used everywhere, but a clean swap
+4. `validate` — standalone value validation
+5. `generate` — XML generation
+6. `compatibility` — update to pass builder paths via options
+7. `map` — most coupled; update `mapCsvToSchemaWithAims` to call generic mapper with ILR config
+8. `xml` — rewrite `parseILR` to use generic parser with ILR extractors
+
+### Step 9: Clean up Iris
+
+After switchover is complete and all tests pass:
+
+- Delete extracted source files from `src/lib/schema/`, `src/lib/utils/schema/`, `src/lib/utils/xml/xmlGenerator.ts`
+- Delete extracted type definitions from `src/lib/types/` (keep ILR-specific ones)
+- Delete copied test files and fixtures
+- Update `src/lib/schema/index.ts` to re-export from schema-forge (or remove entirely)
+- Verify no remaining internal imports to deleted files
+
+### Step 10: Publish
+
+```bash
+cd schema-forge
+# Final checks
+bun test
+bun run build  # if using a build step
+
+npm publish     # or bun publish
+```
+
+Then switch Iris from the local path dependency to the published version:
+
+```bash
+cd iris
+bun add schema-forge   # from npm registry
+```
+
+---
+
 A modular TypeScript toolkit for working with XSD schemas at runtime. Parse XSD files into queryable registries, generate schema-compliant XML from arbitrary data, validate values against schema constraints, and map flat data sources into nested schema structures.
 
 ## Why schema-forge?
