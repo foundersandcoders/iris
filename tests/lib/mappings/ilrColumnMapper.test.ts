@@ -3,7 +3,7 @@ import { mapCsvToSchemaWithAims } from '../../../src/lib/mappings/ilrColumnMappe
 import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
+import type { IlrMappingConfig } from '../../../src/lib/types/ilrMappingTypes';
 
 describe('ilrColumnMapper', () => {
 	// Load actual schema for path validation
@@ -22,7 +22,7 @@ describe('ilrColumnMapper', () => {
 				'Start date (aim 3)': '2025-10-01',
 			};
 
-			const config: MappingConfig = {
+			const config: IlrMappingConfig = {
 				id: 'test-multi-aim',
 				name: 'Test Multi-Aim',
 				mappingVersion: '1.0.0',
@@ -38,29 +38,29 @@ describe('ilrColumnMapper', () => {
 					{
 						csvColumn: 'Programme aim 1 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 1,
+						group: 1,
 					},
 					{
 						csvColumn: 'Start date (aim 1)',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
-						aimNumber: 1,
+						group: 1,
 					},
 					// Aim 2
 					{
 						csvColumn: 'Programme aim 2 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 2,
+						group: 2,
 					},
 					// Aim 3
 					{
 						csvColumn: 'Programme aim 3 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 3,
+						group: 3,
 					},
 					{
 						csvColumn: 'Start date (aim 3)',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnStartDate',
-						aimNumber: 3,
+						group: 3,
 					},
 				],
 			};
@@ -91,7 +91,7 @@ describe('ilrColumnMapper', () => {
 				'Programme aim 3 Learning ref ': '',
 			};
 
-			const config: MappingConfig = {
+			const config: IlrMappingConfig = {
 				id: 'test-single-aim',
 				name: 'Test Single Aim',
 				mappingVersion: '1.0.0',
@@ -105,17 +105,17 @@ describe('ilrColumnMapper', () => {
 					{
 						csvColumn: 'Programme aim 1 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 1,
+						group: 1,
 					},
 					{
 						csvColumn: 'Programme aim 2 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 2,
+						group: 2,
 					},
 					{
 						csvColumn: 'Programme aim 3 Learning ref ',
 						xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
-						aimNumber: 3,
+						group: 3,
 					},
 				],
 			};

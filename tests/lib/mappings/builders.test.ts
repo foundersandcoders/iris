@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildFamEntries, buildAppFinRecords, buildEmploymentStatuses } from '../../../src/lib/mappings/builders';
-import type { FamTemplate, AppFinTemplate, EmploymentStatusConfig } from '../../../src/lib/types/schemaTypes';
+import type { FamTemplate, AppFinTemplate, EmploymentStatusConfig } from '../../../src/lib/types/ilrMappingTypes';
 
 describe('buildFamEntries', () => {
 	const famTemplates: FamTemplate[] = [

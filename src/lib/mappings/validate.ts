@@ -86,7 +86,7 @@ export function validateMappingStructure(mapping: unknown): MappingValidationRes
 			if (typeof e.xsdPath !== 'string' || e.xsdPath.trim() === '') {
 				issues.push({ field: `mappings[${index}].xsdPath`, message: 'Must be a non-empty string' });
 			}
-			// transform and aimNumber are optional, no validation needed
+			// transform and group are optional, no validation needed
 		});
 	}
 

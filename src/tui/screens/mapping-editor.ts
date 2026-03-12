@@ -16,7 +16,8 @@ import {
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { ColumnMapping, MappingConfig, SchemaReference } from '../../lib/types/schemaTypes';
+import type { ColumnMapping, SchemaReference } from '../../lib/types/schemaTypes';
+import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import type { SchemaElement, SchemaRegistry } from '../../lib/types/interpreterTypes';
 import { isRequired, isEffectivelyRequired } from '../../lib/types/interpreterTypes';
 import { createStorage } from '../../lib/storage';
@@ -51,7 +52,7 @@ function collapseAimMappings(mappings: ColumnMapping[]): ColumnMapping[] {
 	const nonAim: ColumnMapping[] = [];
 
 	for (const m of mappings) {
-		if (m.aimNumber !== undefined) {
+		if (m.group !== undefined) {
 			// Reconstruct template key from the pattern
 			const templateCsv = m.csvColumn.replace(/\d+/, '{n}');
 			const key = `${templateCsv}::${m.xsdPath}`;
@@ -74,13 +75,13 @@ function collapseAimMappings(mappings: ColumnMapping[]): ColumnMapping[] {
 function countAimExpansions(mappings: ColumnMapping[], templateCsv: string): number {
 	const pattern = templateCsv.replace('{n}', '\\d+');
 	const regex = new RegExp(`^${pattern}$`, 'i');
-	const aimNumbers = new Set<number>();
+	const groups = new Set<number>();
 	for (const m of mappings) {
-		if (m.aimNumber !== undefined && regex.test(m.csvColumn)) {
-			aimNumbers.add(m.aimNumber);
+		if (m.group !== undefined && regex.test(m.csvColumn)) {
+			groups.add(m.group);
 		}
 	}
-	return aimNumbers.size || 5; // Default to 5 if no existing expansions
+	return groups.size || 5; // Default to 5 if no existing expansions
 }
 
 export class MappingEditorScreen implements Screen {
@@ -498,7 +499,7 @@ export class MappingEditorScreen implements Screen {
 
 	private addMapping(xsdPath: string): void {
 		// Check if already mapped
-		const existing = this.mappings.find((m) => m.xsdPath === xsdPath && !m.aimNumber);
+		const existing = this.mappings.find((m) => m.xsdPath === xsdPath && !m.group);
 		if (existing) return; // Already mapped
 
 		if (this.csvHeaders.length > 0) {
@@ -716,7 +717,7 @@ export class MappingEditorScreen implements Screen {
 
 	// === Config Building ===
 
-	private buildMappingConfig(): MappingConfig {
+	private buildMappingConfig(): IlrMappingConfig {
 		return {
 			id: this.mappingId || 'unsaved',
 			name: this.mappingName,

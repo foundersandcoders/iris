@@ -3,7 +3,7 @@
  * Loads schema, builds registry, and validates compatibility in one call.
  */
 
-import type { MappingConfig } from '../types/schemaTypes';
+import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import type { IrisStorage } from '../storage';
 import { buildSchemaRegistry } from '../schema/registryBuilder';
 import { validateSchemaCompatibility, type CompatibilityResult } from '../schema/schemaCompatibility';
@@ -20,7 +20,7 @@ export interface MappingCompatibilityResult {
  * Loads the schema, builds registry, and checks compatibility.
  */
 export async function validateMappingCompatibility(params: {
-	mapping: MappingConfig;
+	mapping: IlrMappingConfig;
 	schemaFile: string;
 	storage: IrisStorage;
 }): Promise<MappingCompatibilityResult> {

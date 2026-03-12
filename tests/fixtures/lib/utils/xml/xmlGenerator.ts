@@ -2,7 +2,7 @@ import type {
 	ILRMessage,
 	Learner,
 	LearningDelivery,
-} from '../../../../../src/lib/utils/xml/xmlGenerator.legacy';
+} from '../../../../../src/lib/mappings/legacy/xmlGenerator.legacy';
 
 /** Dynamic Schema-Driven Generator Fixtures */
 

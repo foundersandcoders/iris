@@ -15,7 +15,7 @@ import {
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { MappingConfig } from '../../lib/types/schemaTypes';
+import type { IlrIlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import { createStorage } from '../../lib/storage';
 import { validateMappingStructure } from '../../lib/mappings/validate';
 
@@ -38,7 +38,7 @@ export class MappingSaveScreen implements Screen {
 	private keyHandler?: (key: KeyEvent) => void;
 
 	// Data from mapping-editor
-	private mapping!: MappingConfig;
+	private mapping!: IlrMappingConfig;
 	private existingId?: string;
 
 	// Form state
@@ -67,7 +67,7 @@ export class MappingSaveScreen implements Screen {
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
-		this.mapping = data?.mapping as MappingConfig;
+		this.mapping = data?.mapping as IlrMappingConfig;
 		this.existingId = data?.existingId as string | undefined;
 
 		if (!this.mapping) {
@@ -366,7 +366,7 @@ export class MappingSaveScreen implements Screen {
 		resolve({ action: 'pop', data: { saved: true } });
 	}
 
-	private buildSaveConfig(): MappingConfig {
+	private buildSaveConfig(): IlrMappingConfig {
 		const derivedId = toKebabCase(this.nameValue);
 		return {
 			...this.mapping,

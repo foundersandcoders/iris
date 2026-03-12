@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { validateMappingStructure } from '../../../src/lib/mappings/validate';
-import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
+import type { IlrMappingConfig } from '../../../src/lib/types/ilrMappingTypes';
 
 describe('validateMappingStructure', () => {
-	const validMapping: MappingConfig = {
+	const validMapping: IlrIlrMappingConfig = {
 		id: 'test-mapping',
 		name: 'Test Mapping',
 		mappingVersion: '1.0.0',
@@ -29,7 +29,7 @@ describe('validateMappingStructure', () => {
 		});
 
 		it('should validate mapping with optional fields', () => {
-			const mappingWithOptionals: MappingConfig = {
+			const mappingWithOptionals: IlrMappingConfig = {
 				...validMapping,
 				famTemplates: [],
 				appFinTemplates: [],
@@ -42,15 +42,15 @@ describe('validateMappingStructure', () => {
 			expect(result.issues).toHaveLength(0);
 		});
 
-		it('should validate mapping with transform and aimNumber', () => {
-			const mappingWithExtras: MappingConfig = {
+		it('should validate mapping with transform and group', () => {
+			const mappingWithExtras: IlrMappingConfig = {
 				...validMapping,
 				mappings: [
 					{
 						csvColumn: 'TestColumn',
 						xsdPath: 'Test.Path',
 						transform: 'trim',
-						aimNumber: 1,
+						group: 1,
 					},
 				],
 			};

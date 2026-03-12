@@ -4,10 +4,10 @@
  *  |================================================================|
  */
 
-import type { MappingConfig } from '../types/schemaTypes';
+import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import { generateAimMappings } from './aimUtils';
 
-export const facAirtableMapping: MappingConfig = {
+export const facAirtableMapping: IlrMappingConfig = {
 	id: 'fac-airtable-2025',
 	name: 'Founders and Coders Airtable Export (2025-26)',
 	mappingVersion: '2.0.0',

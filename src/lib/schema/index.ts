@@ -4,7 +4,7 @@
  */
 
 /** ====== Schema Module ======
- * XSD-driven schema system for dynamic ILR validation and generation.
+ * XSD-driven schema system for dynamic validation and generation.
  * Exports types, utilities, and (eventually) parser/registry/validator.
  */
 

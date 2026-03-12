@@ -13,7 +13,7 @@
 import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
-import type { SchemaValidationIssue, ColumnMapping, MappingConfig } from '../../types/schemaTypes';
+import type { SchemaValidationIssue, ColumnMapping } from '../../types/schemaTypes';
 import { getTransform } from '../../transforms/registry';
 
 // === Types ===
@@ -52,7 +52,7 @@ export function validateRows(
 	rows: CSVRow[],
 	headers: string[],
 	registry: SchemaRegistry,
-	mapping: MappingConfig,
+	mapping: { mappings: ColumnMapping[] },
 	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationResult {
 	const issues: ValidationIssue[] = [];
@@ -80,20 +80,20 @@ export function validateRows(
 
 /**
  * Check that all required headers are present based on mapping and schema
- * Note: Only validates learner-level fields. Aim-specific fields are validated
- * per-row based on whether that aim exists.
+ * Note: Only validates non-grouped fields. Grouped fields are validated
+ * per-row based on whether that group has data.
  */
 function validateRequiredHeaders(
 	headers: string[],
 	registry: SchemaRegistry,
-	mapping: MappingConfig,
+	mapping: { mappings: ColumnMapping[] },
 	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	const headerSet = new Set(headers.map((h) => h.trim().toLowerCase()));
 
 	for (const m of mapping.mappings) {
-		// Skip mappings the caller wants to handle separately (e.g. aim-specific)
+		// Skip mappings the caller wants to handle separately (e.g. grouped fields)
 		if (shouldSkipMapping?.(m)) continue;
 
 		const element = registry.elementsByPath.get(m.xsdPath);
@@ -120,7 +120,7 @@ function validateRow(
 	row: CSVRow,
 	rowIndex: number,
 	registry: SchemaRegistry,
-	mapping: MappingConfig,
+	mapping: { mappings: ColumnMapping[] },
 	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
@@ -129,7 +129,7 @@ function validateRow(
 		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
-		// Skip mappings the caller wants to handle separately (e.g. aim-specific without data)
+		// Skip mappings the caller wants to handle separately (e.g. grouped fields without data)
 		if (shouldSkipMapping?.(m, row)) {
 			continue;
 		}

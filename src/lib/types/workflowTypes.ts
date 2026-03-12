@@ -6,7 +6,7 @@
 import type { CSVData, CSVRow } from '../utils/csv/csvParser';
 import type { ValidationResult } from '../utils/csv/csvValidator';
 import type { SchemaRegistry } from './interpreterTypes';
-import type { MappingConfig } from './schemaTypes';
+import type { IlrMappingConfig } from './ilrMappingTypes';
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
 
@@ -34,7 +34,7 @@ export interface ConvertInput {
 	outputDir?: string;
 	internalRoot?: string; // Override ~/.iris for testing
 	registry: SchemaRegistry;
-	mapping: MappingConfig;
+	mapping: IlrMappingConfig;
 }
 
 export interface ConvertOutput {
@@ -49,7 +49,7 @@ export interface ConvertOutput {
 export interface ValidateInput {
 	filePath: string;
 	registry: SchemaRegistry;
-	mapping: MappingConfig;
+	mapping: IlrMappingConfig;
 }
 
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`

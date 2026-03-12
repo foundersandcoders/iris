@@ -4,7 +4,7 @@
  *  |===========================================================================|
  */
 
-import { parseILR } from '../utils/xml/xmlParser';
+import { parseILR } from '../mappings/legacy/xmlParser';
 import { createStorage } from '../storage';
 import { createStep, stepEvent, failedResult } from './utils';
 import type {

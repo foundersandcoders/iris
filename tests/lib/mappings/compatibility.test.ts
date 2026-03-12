@@ -5,7 +5,7 @@ import { rm } from 'fs/promises';
 import { createStorage } from '$lib/storage';
 import { validateMappingCompatibility } from '../../../src/lib/mappings/compatibility';
 import { facAirtableMapping } from '../../../src/lib/mappings/fac-airtable-2025';
-import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
+import type { IlrMappingConfig } from '../../../src/lib/types/ilrMappingTypes';
 
 describe('mappings/compatibility', () => {
 	let testRoot: string;
@@ -43,7 +43,7 @@ describe('mappings/compatibility', () => {
 		});
 
 		it('should fail for mapping with fake xsdPaths', async () => {
-			const fakeMapping: MappingConfig = {
+			const fakeMapping: IlrMappingConfig = {
 				id: 'fake-mapping',
 				name: 'Fake Mapping',
 				mappingVersion: '1.0.0',
@@ -74,7 +74,7 @@ describe('mappings/compatibility', () => {
 		});
 
 		it('should fail for mapping with wrong namespace', async () => {
-			const wrongNamespaceMapping: MappingConfig = {
+			const wrongNamespaceMapping: IlrMappingConfig = {
 				...facAirtableMapping,
 				targetSchema: {
 					...facAirtableMapping.targetSchema,

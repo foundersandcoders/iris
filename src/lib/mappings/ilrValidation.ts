@@ -11,8 +11,8 @@ import { hasAimData } from './aimUtils';
  */
 export function createAimSkipFilter(detectionField: string = 'Programme aim {n} Learning ref') {
 	return (mapping: ColumnMapping, row?: Record<string, string>): boolean => {
-		if (!mapping.aimNumber) return false;
+		if (!mapping.group) return false;
 		if (!row) return true; // header-level: skip all aim mappings
-		return !hasAimData(row, mapping.aimNumber, detectionField);
+		return !hasAimData(row, mapping.group, detectionField);
 	};
 }

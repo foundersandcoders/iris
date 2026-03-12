@@ -7,8 +7,8 @@
 import { readFileSync } from 'fs';
 
 import { createStep, stepEvent, failedResult } from './utils';
-import { parseILR, type ParseResult } from '../utils/xml/xmlParser';
-import type { ILRMessage } from '../utils/xml/xmlGenerator.legacy';
+import { parseILR, type ParseResult } from '../mappings/legacy/xmlParser';
+import type { ILRMessage } from '../mappings/legacy/xmlGenerator.legacy';
 import type { SchemaRegistry } from '../types/interpreterTypes';
 import { validateValue } from '../schema/schemaValidator';
 

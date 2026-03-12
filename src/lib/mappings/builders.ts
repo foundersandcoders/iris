@@ -9,7 +9,7 @@ import type {
 	AppFinTemplate,
 	EmploymentStatusConfig,
 	EsmField,
-} from '../types/schemaTypes';
+} from '../types/ilrMappingTypes';
 import { getTransform } from '../transforms/registry';
 
 /**

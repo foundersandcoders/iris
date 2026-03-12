@@ -42,8 +42,8 @@ export function mapCsvToSchema(
  * - Uses registry to determine if an element should be an array
  *
  * @example
- * setNestedValue({}, "Message.Learner.LearnRefNumber", "12345", registry)
- * // Returns: { Message: { Learner: [{ LearnRefNumber: "12345" }] } }
+ * setNestedValue({}, "Root.Parent.Field", "12345", registry)
+ * // Returns: { Root: { Parent: [{ Field: "12345" }] } }
  */
 function setNestedValue(
 	obj: Record<string, unknown>,
