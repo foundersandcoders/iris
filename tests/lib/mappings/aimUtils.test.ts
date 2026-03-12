@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateAimMappings, hasAimData } from '../../../../src/lib/utils/config/mapping';
+import { generateAimMappings, hasAimData } from '../../../src/lib/mappings/aimUtils';
 
 describe('mappings/utils', () => {
 	describe('generateAimMappings', () => {

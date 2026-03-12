@@ -9,6 +9,7 @@
 import { createStep, stepEvent, failedResult } from './utils';
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
+import { createAimSkipFilter } from '../mappings/ilrValidation';
 import type {
 	ValidateInput,
 	ValidateOutput,
@@ -93,7 +94,8 @@ export async function* validateWorkflow(
 	yield stepEvent('step:start', validateStep);
 
 	try {
-		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping);
+		const skipFilter = createAimSkipFilter(input.mapping.aimDetectionField);
+		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping, skipFilter);
 
 		validateStep.status = 'complete';
 		validateStep.progress = 100;

@@ -3,7 +3,7 @@
  *  |==================================================================|
  */
 import { describe, it, expect } from 'vitest';
-import { deriveCollectionYear } from '$lib/utils/config/namespace';
+import { deriveCollectionYear } from '../../../src/lib/mappings/namespace';
 
 describe('deriveCollectionYear', () => {
 	it('derives year from 2025-26 namespace', () => {

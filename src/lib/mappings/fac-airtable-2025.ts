@@ -5,7 +5,7 @@
  */
 
 import type { MappingConfig } from '../types/schemaTypes';
-import { generateAimMappings } from '../utils/config/mapping';
+import { generateAimMappings } from './aimUtils';
 
 export const facAirtableMapping: MappingConfig = {
 	id: 'fac-airtable-2025',

@@ -5,7 +5,6 @@
 
 import type { MappingConfig, SchemaReference } from '../types/schemaTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
-import { FAM_PATHS, APP_FIN_PATHS, LLDD_PATHS, EMPLOYMENT_PATHS } from '../mappings/builderPaths';
 
 export interface CompatibilityResult {
 	compatible: boolean;
@@ -15,10 +14,15 @@ export interface CompatibilityResult {
 
 /**
  * Check if a mapping config is compatible with a loaded schema registry
+ *
+ * @param mapping - Mapping configuration to validate
+ * @param registry - Schema registry to check against
+ * @param additionalPaths - Extra XSD paths to validate exist in registry (e.g. builder paths)
  */
 export function validateSchemaCompatibility(
 	mapping: MappingConfig,
-	registry: SchemaRegistry
+	registry: SchemaRegistry,
+	additionalPaths?: string[]
 ): CompatibilityResult {
 	const errors: string[] = [];
 	const warnings: string[] = [];
@@ -53,35 +57,10 @@ export function validateSchemaCompatibility(
 		}
 	}
 
-	// Validate builder paths (conditionally based on template presence)
-	if (mapping.famTemplates && mapping.famTemplates.length > 0) {
-		for (const path of FAM_PATHS) {
-			if (!registry.elementsByPath.has(path)) {
-				errors.push(`Builder path not found in schema: ${path}`);
-			}
-		}
-	}
-
-	if (mapping.appFinTemplates && mapping.appFinTemplates.length > 0) {
-		for (const path of APP_FIN_PATHS) {
-			if (!registry.elementsByPath.has(path)) {
-				errors.push(`Builder path not found in schema: ${path}`);
-			}
-		}
-	}
-
-	if (mapping.employmentStatuses && mapping.employmentStatuses.length > 0) {
-		for (const path of EMPLOYMENT_PATHS) {
-			if (!registry.elementsByPath.has(path)) {
-				errors.push(`Builder path not found in schema: ${path}`);
-			}
-		}
-	}
-
-	// LLDD paths are always checked (learner-level, not template-based)
-	for (const path of LLDD_PATHS) {
+	// Validate additional paths (e.g. builder paths for domain-specific features)
+	for (const path of additionalPaths ?? []) {
 		if (!registry.elementsByPath.has(path)) {
-			errors.push(`Builder path not found in schema: ${path}`);
+			errors.push(`Path not found in schema: ${path}`);
 		}
 	}
 
