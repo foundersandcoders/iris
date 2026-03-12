@@ -6,9 +6,11 @@ import { buildSchemaRegistry } from '../../../../src/lib/schema/registryBuilder'
 import type { SchemaRegistry } from '../../../../src/lib/types/interpreterTypes';
 import * as fixtures from '../../../fixtures/lib/utils/csv/csvValidator';
 import { facAirtableMapping } from '../../../../src/lib/mappings/fac-airtable-2025';
+import { createAimSkipFilter } from '../../../../src/lib/mappings/ilrValidation';
 
 describe('validator', () => {
 	let registry: SchemaRegistry;
+	const skipFilter = createAimSkipFilter(facAirtableMapping.aimDetectionField);
 
 	beforeAll(() => {
 		const xsdPath = join(process.cwd(), 'docs/schemas/schemafile25.xsd');
@@ -22,7 +24,8 @@ describe('validator', () => {
 				[fixtures.validRow],
 				fixtures.validHeaders,
 				registry,
-				facAirtableMapping
+				facAirtableMapping,
+			skipFilter
 			);
 
 			expect(result.valid).toBe(true);
@@ -32,7 +35,7 @@ describe('validator', () => {
 		});
 
 		it('detects missing required headers', () => {
-			const result = validateRows([], fixtures.incompleteHeaders, registry, facAirtableMapping);
+			const result = validateRows([], fixtures.incompleteHeaders, registry, facAirtableMapping, skipFilter);
 
 			expect(result.valid).toBe(false);
 			expect(result.errorCount).toBeGreaterThan(0);
@@ -46,7 +49,8 @@ describe('validator', () => {
 				[fixtures.rowWithEmptyULN],
 				fixtures.validHeaders,
 				registry,
-				facAirtableMapping
+				facAirtableMapping,
+			skipFilter
 			);
 
 			expect(result.valid).toBe(false);
@@ -62,7 +66,8 @@ describe('validator', () => {
 				[fixtures.rowWithWhitespaceLearnRef],
 				fixtures.validHeaders,
 				registry,
-				facAirtableMapping
+				facAirtableMapping,
+			skipFilter
 			);
 
 			expect(result.valid).toBe(false);
@@ -75,7 +80,8 @@ describe('validator', () => {
 				fixtures.multipleRowsWithErrors,
 				fixtures.validHeaders,
 				registry,
-				facAirtableMapping
+				facAirtableMapping,
+			skipFilter
 			);
 
 			expect(result.valid).toBe(false);
@@ -92,7 +98,8 @@ describe('validator', () => {
 				[fixtures.validRow],
 				fixtures.validHeaders,
 				registry,
-				facAirtableMapping
+				facAirtableMapping,
+			skipFilter
 			);
 
 			expect(result.errorCount).toBe(0);

@@ -5,6 +5,7 @@ import {
 } from '../../../src/lib/schema/schemaCompatibility';
 import type { MappingConfig } from '../../../src/lib/types/schemaTypes';
 import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
+import { FAM_PATHS, LLDD_PATHS } from '../../../src/lib/mappings/builderPaths';
 
 describe('schema/schemaCompatibility', () => {
       const mockRegistry: SchemaRegistry = {
@@ -132,7 +133,7 @@ describe('schema/schemaCompatibility', () => {
                       expect(result.errors.length).toBeGreaterThan(2);
               });
 
-              it('should validate FAM builder paths when famTemplates present', () => {
+              it('should validate additional paths when provided', () => {
                       const registryWithFamPaths: SchemaRegistry = {
                               ...mockRegistry,
                               elementsByPath: new Map([
@@ -144,40 +145,32 @@ describe('schema/schemaCompatibility', () => {
                               ]),
                       };
 
-                      const mappingWithFam: MappingConfig = {
-                              ...mockMapping,
-                              famTemplates: [{ type: 'FFI', codeCsv: 'Funding indicator (aim {n})' }],
-                      };
-
-                      const result = validateSchemaCompatibility(mappingWithFam, registryWithFamPaths);
+                      const result = validateSchemaCompatibility(
+                              mockMapping,
+                              registryWithFamPaths,
+                              [...FAM_PATHS]
+                      );
 
                       expect(result.compatible).toBe(true);
                       expect(result.errors).toHaveLength(0);
               });
 
-              it('should fail when FAM builder paths missing', () => {
-                      const mappingWithFam: MappingConfig = {
-                              ...mockMapping,
-                              famTemplates: [{ type: 'FFI', codeCsv: 'Funding indicator (aim {n})' }],
-                      };
-
-                      const result = validateSchemaCompatibility(mappingWithFam, mockRegistry);
+              it('should fail when additional paths are missing from registry', () => {
+                      const result = validateSchemaCompatibility(
+                              mockMapping,
+                              mockRegistry,
+                              [...FAM_PATHS]
+                      );
 
                       expect(result.compatible).toBe(false);
                       expect(result.errors.some((e) => e.includes('LearnDelFAMType'))).toBe(true);
               });
 
-              it('should skip FAM validation when no famTemplates', () => {
-                      const mappingWithoutFam: MappingConfig = {
-                              ...mockMapping,
-                              famTemplates: undefined,
-                      };
+              it('should pass when no additional paths provided', () => {
+                      const result = validateSchemaCompatibility(mockMapping, mockRegistry);
 
-                      const result = validateSchemaCompatibility(mappingWithoutFam, mockRegistry);
-
-                      // Should pass now (LLDD paths exist in mock, FAM not required)
                       expect(result.compatible).toBe(true);
-                      expect(result.errors.every((e) => !e.includes('LearnDelFAM'))).toBe(true);
+                      expect(result.errors).toHaveLength(0);
               });
       });
 

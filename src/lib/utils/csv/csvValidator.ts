@@ -4,7 +4,7 @@
  */
 
 /**
- * Semantic Validator for ILR Data
+ * Semantic Validator for CSV Data
  *
  * Validates parsed CSV data against schema constraints.
  * Uses SchemaRegistry for dynamic validation rules.
@@ -13,8 +13,7 @@
 import type { CSVRow } from './csvParser';
 import type { SchemaRegistry, SchemaElement } from '../../types/interpreterTypes';
 import { validateValue } from '../../schema/schemaValidator';
-import type { SchemaValidationIssue, MappingConfig } from '../../types/schemaTypes';
-import { hasAimData } from '../config/mapping';
+import type { SchemaValidationIssue, ColumnMapping, MappingConfig } from '../../types/schemaTypes';
 import { getTransform } from '../../transforms/registry';
 
 // === Types ===
@@ -44,23 +43,27 @@ export interface ValidationResult {
  * @param headers - CSV headers from the file
  * @param registry - Schema registry for validation rules
  * @param mapping - Mapping configuration to use
+ * @param shouldSkipMapping - Optional callback to skip certain mappings during validation.
+ *   Called with (mapping) for header validation, (mapping, row) for row validation.
+ *   Return true to skip the mapping.
  * @returns Validation result with all issues found
  */
 export function validateRows(
 	rows: CSVRow[],
 	headers: string[],
 	registry: SchemaRegistry,
-	mapping: MappingConfig
+	mapping: MappingConfig,
+	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationResult {
 	const issues: ValidationIssue[] = [];
 
 	// Check for missing required headers (based on mapping and schema)
-	const missingHeaders = validateRequiredHeaders(headers, registry, mapping);
+	const missingHeaders = validateRequiredHeaders(headers, registry, mapping, shouldSkipMapping);
 	issues.push(...missingHeaders);
 
 	// Validate each row against schema
 	rows.forEach((row, index) => {
-		const rowIssues = validateRow(row, index, registry, mapping);
+		const rowIssues = validateRow(row, index, registry, mapping, shouldSkipMapping);
 		issues.push(...rowIssues);
 	});
 
@@ -83,14 +86,15 @@ export function validateRows(
 function validateRequiredHeaders(
 	headers: string[],
 	registry: SchemaRegistry,
-	mapping: MappingConfig
+	mapping: MappingConfig,
+	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	const headerSet = new Set(headers.map((h) => h.trim().toLowerCase()));
 
 	for (const m of mapping.mappings) {
-		// Skip aim-specific mappings - these are validated per-row based on aim existence
-		if (m.aimNumber) continue;
+		// Skip mappings the caller wants to handle separately (e.g. aim-specific)
+		if (shouldSkipMapping?.(m)) continue;
 
 		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
@@ -116,17 +120,17 @@ function validateRow(
 	row: CSVRow,
 	rowIndex: number,
 	registry: SchemaRegistry,
-	mapping: MappingConfig
+	mapping: MappingConfig,
+	shouldSkipMapping?: (mapping: ColumnMapping, row?: Record<string, string>) => boolean
 ): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
-	const detectionField = mapping.aimDetectionField || 'Programme aim {n} Learning ref';
 
 	for (const m of mapping.mappings) {
 		const element = registry.elementsByPath.get(m.xsdPath);
 		if (!element) continue;
 
-		// Skip aim-specific mappings if that aim has no data
-		if (m.aimNumber && !hasAimData(row, m.aimNumber, detectionField)) {
+		// Skip mappings the caller wants to handle separately (e.g. aim-specific without data)
+		if (shouldSkipMapping?.(m, row)) {
 			continue;
 		}
 

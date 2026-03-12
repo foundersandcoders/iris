@@ -5,10 +5,11 @@
  */
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
+import { createAimSkipFilter } from '../mappings/ilrValidation';
 import { generateFromSchema } from '../utils/xml/xmlGenerator';
 import { getConfig } from '../types/configTypes';
-import { mapCsvToSchemaWithAims } from '../schema/columnMapper';
-import { deriveCollectionYear } from '../utils/config/namespace';
+import { mapCsvToSchemaWithAims } from '../mappings/ilrColumnMapper';
+import { deriveCollectionYear } from '../mappings/namespace';
 import { createStep, stepEvent, failedResult } from './utils';
 import type {
 	ConvertInput,
@@ -71,7 +72,8 @@ export async function* convertWorkflow(
 	yield stepEvent('step:start', validateStep);
 
 	try {
-		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping);
+		const skipFilter = createAimSkipFilter(input.mapping.aimDetectionField);
+		validation = validateRows(csvData.rows, csvData.headers, input.registry, input.mapping, skipFilter);
 		validateStep.status = 'complete';
 		validateStep.progress = 100;
 		validateStep.data = validation;

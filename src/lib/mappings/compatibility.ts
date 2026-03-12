@@ -7,6 +7,7 @@ import type { MappingConfig } from '../types/schemaTypes';
 import type { IrisStorage } from '../storage';
 import { buildSchemaRegistry } from '../schema/registryBuilder';
 import { validateSchemaCompatibility, type CompatibilityResult } from '../schema/schemaCompatibility';
+import { FAM_PATHS, APP_FIN_PATHS, LLDD_PATHS, EMPLOYMENT_PATHS } from './builderPaths';
 
 export interface MappingCompatibilityResult {
 	success: boolean;
@@ -45,8 +46,16 @@ export async function validateMappingCompatibility(params: {
 		};
 	}
 
+	// Compute ILR-specific builder paths to validate
+	const builderPaths = [
+		...(mapping.famTemplates?.length ? FAM_PATHS : []),
+		...(mapping.appFinTemplates?.length ? APP_FIN_PATHS : []),
+		...(mapping.employmentStatuses?.length ? EMPLOYMENT_PATHS : []),
+		...LLDD_PATHS,
+	];
+
 	// Validate compatibility
-	const compatibility = validateSchemaCompatibility(mapping, registry);
+	const compatibility = validateSchemaCompatibility(mapping, registry, builderPaths);
 
 	return {
 		success: true,
