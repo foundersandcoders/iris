@@ -13,7 +13,7 @@ import {
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { MappingConfig } from '../../lib/types/schemaTypes';
+import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import { createStorage } from '../../lib/storage';
 
 const CONTAINER_ID = 'mapping-builder-root';

@@ -1,4 +1,5 @@
-import type { ColumnMapping, MappingConfig } from '../types/schemaTypes';
+import type { ColumnMapping } from '../types/schemaTypes';
+import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import type { SchemaRegistry } from '../types/interpreterTypes';
 import { mapCsvToSchema } from '../schema/columnMapper';
 import { getTransform } from '../transforms/registry';
@@ -24,21 +25,21 @@ import { generateUUID } from '../utils/uuid';
  */
 export function mapCsvToSchemaWithAims(
 	csvRow: Record<string, string>,
-	config: MappingConfig,
+	config: IlrMappingConfig,
 	registry: SchemaRegistry
 ): Record<string, unknown> {
 	// Separate learner-level and aim-specific mappings
-	const learnerMappings = config.mappings.filter((m) => !m.aimNumber);
-	const aimMappings = config.mappings.filter((m) => m.aimNumber);
+	const learnerMappings = config.mappings.filter((m) => !m.group);
+	const aimMappings = config.mappings.filter((m) => m.group);
 
 	// Group aim mappings by aim number
 	const aimGroups = new Map<number, ColumnMapping[]>();
 	for (const mapping of aimMappings) {
-		if (!mapping.aimNumber) continue;
-		if (!aimGroups.has(mapping.aimNumber)) {
-			aimGroups.set(mapping.aimNumber, []);
+		if (!mapping.group) continue;
+		if (!aimGroups.has(mapping.group)) {
+			aimGroups.set(mapping.group, []);
 		}
-		aimGroups.get(mapping.aimNumber)!.push(mapping);
+		aimGroups.get(mapping.group)!.push(mapping);
 	}
 
 	// Apply learner-level mappings using generic mapper

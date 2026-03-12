@@ -19,13 +19,13 @@ describe('mappings/utils', () => {
 				csvColumn: 'Programme aim 1 Learning ref',
 				xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
 				transform: 'uppercase',
-				aimNumber: 1,
+				group: 1,
 			});
 			expect(result[4]).toEqual({
 				csvColumn: 'Programme aim 5 Learning ref',
 				xsdPath: 'Message.Learner.LearningDelivery.LearnAimRef',
 				transform: 'uppercase',
-				aimNumber: 5,
+				group: 5,
 			});
 		});
 

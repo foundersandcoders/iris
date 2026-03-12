@@ -1,5 +1,5 @@
 /** |===================|| Schema-Driven XML Generator ||==================|
- *  | Generate ILR XML by traversing SchemaRegistry instead of hardcoded
+ *  | Generate XML by traversing SchemaRegistry instead of hardcoded
  *  | interfaces. Element structure and ordering come from XSD at runtime.
  *  |======================================================================|
  */

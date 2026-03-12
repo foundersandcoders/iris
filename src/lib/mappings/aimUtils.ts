@@ -33,7 +33,7 @@ export function generateAimMappings(templates: AimFieldTemplate[]): ColumnMappin
 				csvColumn: template.csv.replace('{n}', String(aimNumber)),
 				xsdPath: template.xsd,
 				transform: template.transform,
-				aimNumber,
+				group: aimNumber,
 			});
 		}
 	}

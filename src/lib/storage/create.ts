@@ -15,7 +15,7 @@ import type {
 	HistoryEntry,
 } from '../types/storageTypes';
 import { DEFAULT_CONFIG, validateConfig, type IrisConfig } from '../types/configTypes';
-import type { MappingConfig } from '../types/schemaTypes';
+import type { IlrIlrMappingConfig } from '../types/ilrMappingTypes';
 import { getStoragePaths, type StoragePaths } from '../utils/storage/paths';
 import { StorageError } from './errors';
 import { createBunAdapter } from './adapters/bun';
@@ -135,7 +135,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		},
 
 		// === Mappings ===
-		async loadMapping(id: string): Promise<StorageResult<MappingConfig>> {
+		async loadMapping(id: string): Promise<StorageResult<IlrMappingConfig>> {
 			try {
 				// Check bundled mappings first
 				if (id === facAirtableMapping.id) {
@@ -145,7 +145,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 				// Try user mappings
 				const mappingPath = join(paths.mappings, `${id}.json`);
 				if (await adapter.exists(mappingPath)) {
-					const mapping = await adapter.readJson<MappingConfig>(mappingPath);
+					const mapping = await adapter.readJson<IlrMappingConfig>(mappingPath);
 
 					// Validate mapping structure
 					const validation = validateMappingStructure(mapping);
@@ -177,7 +177,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 			}
 		},
 
-		async saveMapping(mapping: MappingConfig): Promise<StorageResult<void>> {
+		async saveMapping(mapping: IlrMappingConfig): Promise<StorageResult<void>> {
 			try {
 				// Reject attempts to overwrite bundled mapping IDs
 				if (mapping.id === facAirtableMapping.id) {

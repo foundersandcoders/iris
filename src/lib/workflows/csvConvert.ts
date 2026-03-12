@@ -21,7 +21,7 @@ import type {
 import type { HistoryEntry } from '../types/storageTypes';
 import { createStorage } from '../storage';
 import type { SchemaRegistry } from '../schema';
-import type { MappingConfig } from '../types/schemaTypes';
+import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import packageJson from '../../../package.json';
 
 const STEPS = {
@@ -221,7 +221,7 @@ export async function* convertWorkflow(
 async function buildILRMessage(
 	csvData: CSVData,
 	registry: SchemaRegistry,
-	mapping: MappingConfig,
+	mapping: IlrMappingConfig,
 	config: Awaited<ReturnType<typeof getConfig>>
 ): Promise<Record<string, unknown>> {
 	const now = new Date();

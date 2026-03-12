@@ -50,7 +50,7 @@ export interface NamedSimpleType {
 }
 
 export interface SchemaRegistry {
-	/** "ESFA/ILR/2025-26" */
+	/** Target namespace from the XSD */
 	namespace: string;
 	/** XSD schema version attribute (e.g., "1.0") */
 	schemaVersion?: string;

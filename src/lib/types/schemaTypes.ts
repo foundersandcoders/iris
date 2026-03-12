@@ -115,91 +115,34 @@ export function computeResultStats(
 export interface ColumnMapping {
 	/** CSV column header (case-insensitive match) */
 	csvColumn: string;
-	/** XSD path in dot notation (e.g., "Message.Learner.LearnRefNumber") */
+	/** XSD path in dot notation (e.g., "Root.Parent.Field") */
 	xsdPath: string;
 	/** Optional transformation function applied before validation */
 	transform?: string;
-	/** Aim group number (1-5) for multi-aim handling (optional) */
-	aimNumber?: number;
+	/** Group identifier for repeating-group partitioning */
+	group?: number;
 }
 
 /** Schema reference for mapping compatibility validation */
 export interface SchemaReference {
-	/** Expected namespace (e.g., "ESFA/ILR/2025-26") */
+	/** Expected namespace */
 	namespace: string;
-	/** Expected XSD version attribute (e.g., "1.0") */
+	/** Expected XSD version attribute */
 	version?: string;
-	/** Human-readable schema identifier (e.g., "ILR 2025-26") */
+	/** Human-readable schema identifier */
 	displayName?: string;
 }
 
-/** Complete mapping configuration for CSV→ILR conversion */
+/** Complete mapping configuration for CSV→schema conversion */
 export interface MappingConfig {
-	/** Unique identifier for this mapping (e.g., "fac-airtable-2025") */
+	/** Unique identifier for this mapping */
 	id: string;
 	/** Human-readable name */
 	name: string;
 	/** Mapping content version (semver) */
 	mappingVersion: string;
-	/** Target ILR schema reference */
+	/** Target schema reference */
 	targetSchema: SchemaReference;
 	/** Column mappings */
 	mappings: ColumnMapping[];
-	/** Field to check for aim data presence (supports {n} placeholder for aim number) */
-	aimDetectionField?: string;
-	/** FAM templates for building LearningDeliveryFAM entries */
-	famTemplates?: FamTemplate[];
-	/** AppFinRecord templates for building AppFinRecord entries */
-	appFinTemplates?: AppFinTemplate[];
-	/** Employment status configurations */
-	employmentStatuses?: EmploymentStatusConfig[];
-}
-
-// |------------------------|| Builder Templates ||-------------------------|
-/** Template for generating LearningDeliveryFAM entries from CSV columns */
-export interface FamTemplate {
-	/** Constant FAM type value (e.g., 'FFI', 'SOF', 'ACT') - use this OR typeCsv */
-	type?: string;
-	/** CSV column for FAM type (supports {n} placeholder) - use this OR type */
-	typeCsv?: string;
-	/** CSV column for FAM code (supports {n} placeholder) */
-	codeCsv: string;
-	/** Optional CSV column for DateFrom (supports {n} placeholder) */
-	dateFromCsv?: string;
-	/** Optional CSV column for DateTo (supports {n} placeholder) */
-	dateToCsv?: string;
-}
-
-/** Template for generating AppFinRecord entries from CSV columns */
-export interface AppFinTemplate {
-	/** CSV column for financial type (supports {n} placeholder) */
-	typeCsv: string;
-	/** CSV column for financial code (supports {n} placeholder) */
-	codeCsv: string;
-	/** CSV column for financial date (supports {n} placeholder) */
-	dateCsv: string;
-	/** CSV column for financial amount (supports {n} placeholder) */
-	amountCsv: string;
-}
-
-/** Employment status monitoring field configuration */
-export interface EsmField {
-	/** Exact CSV column name (no {n} placeholder) */
-	csvColumn: string;
-	/** Derived ESM type constant */
-	esmType: string;
-	/** Transform to apply to the value */
-	transform: string;
-}
-
-/** Configuration for a single employment status set */
-export interface EmploymentStatusConfig {
-	/** CSV column for DateEmpStatApp */
-	dateEmpStatAppCsv: string;
-	/** CSV column for EmpStat */
-	empStatCsv: string;
-	/** CSV column for EmpId (optional in XSD) */
-	empIdCsv: string;
-	/** Array of monitoring fields */
-	monitoring: EsmField[];
 }
