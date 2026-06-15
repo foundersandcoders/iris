@@ -226,7 +226,7 @@ theme genuinely dark and switchable (Phase D).
 
 ## 7. The app shell
 
-```
+```text
 ┌─ Iris ──────────────────── FAC · UKPRN 10001234 · ILR 2025-26 ─┐   header
 │                                                                 │   (context + breadcrumb)
 │  Dashboard ▸ Convert                                            │
@@ -252,7 +252,7 @@ inherits the same frame; screens only fill the content region.
 ### 8.1 Dashboard
 
 **Before (today):**
-```
+```text
    ___      _
   |_ _|_ _ (_)___      ← ASCII logo
    | || '_|| (_-<
@@ -273,7 +273,7 @@ panel, context in the header, keybar in the footer.
 ### 8.2 Workflow / processing
 
 **Before (today):**
-```
+```text
 Converting
 
 ● Parse CSV
@@ -287,7 +287,7 @@ Processing...
 ```
 
 **After:**
-```
+```text
 ╭─ Converting · learners.csv ────────────────────────────────────╮
 │ ✓ Parse CSV                                       1,204 rows    │
 │ ◐ Validate Data                                                 │
@@ -306,7 +306,7 @@ Processing...
 **Before:** two stacked text regions (list, then detail), tabs as plain text.
 
 **After:**
-```
+```text
 ╭─ Issues  [ Errors ·12 ] [ Warnings ·8 ] [ All ] ─╮ ╭─ Detail ──────────────╮
 │ ✗ aimType        row 2                           │ │ Field    aimType       │
 │ ✗ ukprn          row 5                  ▸focused │ │ Row      2             │
