@@ -7,6 +7,14 @@
 | **M2C** | Advanced TUI + Polish + Docs | In Progress |
 | **M2D** | Homebrew Distribution | Open (2BD.1 complete) |
 
+> [!NOTE]
+> **Pointer (not a separate tracker):** items remain tracked here in Phase 1.
+> The broader TUI aesthetic/UX overhaul (framed panels, app shell, help overlay,
+> semantic colours) is *designed and sequenced* in
+> [tui-redesign.md](./tui-redesign.md), informed by
+> [tui-design-review.md](../technical/tui-design-review.md) — see those docs for
+> the design rationale and branch ordering behind 2TI.12, 2TI.18, 2TM.5/2TM.6.
+
 <details>
 <summary><strong>Colour Key</strong></summary>
 
