@@ -1,6 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { THEMES, symbols, borders, spinners, rgba, theme } from '../../brand/theme';
+import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme } from '../../brand/theme';
 import { RGBA } from '@opentui/core';
+
+const hexPattern = /^#[0-9a-f]{6}$/i;
+
+describe('PALETTE.semantic vocabulary', () => {
+	it('defines Verdant / Ember / Flare with fg + accent tones', () => {
+		for (const role of ['verdant', 'ember', 'flare'] as const) {
+			const hue = PALETTE.semantic[role];
+			expect(hue.fg).toMatch(hexPattern);
+			expect(hue.accent).toMatch(hexPattern);
+			// Accent is a brighter register, so it must differ from the fg tone.
+			expect(hue.accent).not.toBe(hue.fg);
+		}
+	});
+
+	it('maps the documented semantic hues', () => {
+		expect(PALETTE.semantic.verdant.fg).toBe('#2E6F4E');
+		expect(PALETTE.semantic.ember.fg).toBe('#B25A2A');
+		expect(PALETTE.semantic.flare.fg).toBe('#B11A46');
+	});
+});
 
 describe('THEMES.themeLight', () => {
 	const themeLight = THEMES.themeLight;
@@ -10,6 +30,21 @@ describe('THEMES.themeLight', () => {
 		expect(themeLight.warning).toBeDefined();
 		expect(themeLight.error).toBeDefined();
 		expect(themeLight.info).toBeDefined();
+	});
+
+	it('exports status accent colors', () => {
+		expect(themeLight.successAccent).toBeDefined();
+		expect(themeLight.warningAccent).toBeDefined();
+		expect(themeLight.errorAccent).toBeDefined();
+		expect(themeLight.infoAccent).toBeDefined();
+	});
+
+	it('status colours read as distinct states', () => {
+		const { success, warning, error, info } = themeLight;
+		const states = new Set([success, warning, error, info]);
+		expect(states.size).toBe(4);
+		// warning previously collided with textMuted — guard against regression.
+		expect(themeLight.warning).not.toBe(themeLight.textMuted);
 	});
 
 	it('exports UI colors', () => {
@@ -27,23 +62,56 @@ describe('THEMES.themeLight', () => {
 	});
 
 	it('all colors are valid hex codes', () => {
-		const hexPattern = /^#[0-9a-f]{6}$/i;
 		Object.values(themeLight).forEach((color) => {
 			expect(color).toMatch(hexPattern);
 		});
 	});
 });
 
+describe('THEMES.themeDark', () => {
+	const themeDark = THEMES.themeDark;
+
+	it('all colors are valid hex codes', () => {
+		Object.values(themeDark).forEach((color) => {
+			expect(color).toMatch(hexPattern);
+		});
+	});
+
+	it('is a genuinely dark variant on chasm', () => {
+		expect(themeDark.background).toBe(PALETTE.dark.colour);
+		// Light/dark must not share a background, and text must be light on dark.
+		expect(themeDark.background).not.toBe(THEMES.themeLight.background);
+		expect(themeDark.text).toBe(PALETTE.background.main.main);
+	});
+
+	it('exports the same token set as themeLight', () => {
+		expect(Object.keys(themeDark).sort()).toEqual(Object.keys(THEMES.themeLight).sort());
+	});
+});
+
 describe('symbols', () => {
-	it('exports all required symbols', () => {
-		expect(symbols.success).toBe('✓');
-		expect(symbols.error).toBe('✗');
-		expect(symbols.warning).toBe('⚠');
-		expect(symbols.arrow).toBe('→');
-		expect(symbols.bullet).toBe('•');
-		expect(symbols.loading).toBe('⋯');
-		expect(symbols.progressFilled).toBe('█');
-		expect(symbols.progressEmpty).toBe('░');
+	it('exports info symbols', () => {
+		expect(symbols.info.success).toBe('✓');
+		expect(symbols.info.error).toBe('✗');
+		expect(symbols.info.warning).toBe('⚠');
+		expect(symbols.info.required).toBe('⚡︎');
+	});
+
+	it('exports bullet, loading and progress symbols', () => {
+		expect(symbols.bullet.dot).toBe('•');
+		expect(symbols.status.loading).toBe('⋯');
+		expect(symbols.progress.filled).toBe('█');
+		expect(symbols.progress.empty).toBe('░');
+	});
+
+	it('exports all four arrow directions (none empty)', () => {
+		expect(symbols.arrows.up).toBe('↑');
+		expect(symbols.arrows.down).toBe('↓');
+		expect(symbols.arrows.left).toBe('←');
+		expect(symbols.arrows.right).toBe('→');
+		Object.values(symbols.arrows).forEach((arrow) => {
+			expect(arrow.length).toBeGreaterThan(0);
+		});
 	});
 });
 
@@ -69,13 +137,13 @@ describe('borders', () => {
 
 describe('spinners', () => {
 	it('exports dots spinner with 10 frames', () => {
-		expect(spinners.dots).toHaveLength(10);
-		expect(spinners.dots[0]).toBe('⠋');
+		expect(spinners.dots.spinR).toHaveLength(10);
+		expect(spinners.dots.spinR[0]).toBe('⠋');
 	});
 
 	it('exports arrow spinner with 8 frames', () => {
-		expect(spinners.arrow).toHaveLength(8);
-		expect(spinners.arrow[0]).toBe('←');
+		expect(spinners.arrow.spinR).toHaveLength(8);
+		expect(spinners.arrow.spinR[0]).toBe('←');
 	});
 });
 
@@ -90,6 +158,7 @@ describe('rgba (OpenTUI adapter)', () => {
 		expect(rgba.primary).toEqual(RGBA.fromHex(theme.primary));
 		expect(rgba.background).toEqual(RGBA.fromHex(theme.background));
 		expect(rgba.success).toEqual(RGBA.fromHex(theme.success));
+		expect(rgba.successAccent).toEqual(RGBA.fromHex(theme.successAccent));
 	});
 });
 

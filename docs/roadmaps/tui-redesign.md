@@ -33,7 +33,7 @@ because the shell rollout and signature features build on them.
 > installed package before starting — dependencies were not installed during the
 > review.
 
-- [ ] **TR.A1** `feat/extend-theme-semantic-palette` — Add the semantic colour
+- [x] **TR.A1** `feat/extend-theme-semantic-palette` — Add the semantic colour
       vocabulary (Verdant / Ember / Flare + accent tones) to `PALETTE` in
       `brand/theme.ts`; remap `success`/`warning`/`error` so they read as states;
       fix the empty `symbols.arrows.up/down/left`; make `themeDark` a genuine
