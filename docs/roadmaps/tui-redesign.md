@@ -17,6 +17,7 @@ because the shell rollout and signature features build on them.
 | **B** | App-shell rollout across screens | Blocked (needs A) |
 | **C** | Signature UX features (help, toasts, progress, transitions) | Blocked (needs A) |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs A/B) |
+| **E** | Tutorial & demo resources (Charm VHS recordings) | Blocked (needs B/C) |
 
 > [!NOTE]
 > **Key** (new prefix `TR` = TUI Redesign; existing IDs cross-referenced where work overlaps)
@@ -85,6 +86,29 @@ registry, and a header breadcrumb.
 - [ ] **TR.D3** `feat/refine-schema-field-display` — *(roadmap 2TM.5 / 2TM.6)*
       Two-line + ancestor-grouped schema fields in mapping-editor.
 
+## Phase E — Tutorial & demo resources
+
+Use [Charm **VHS**](https://github.com/charmbracelet/vhs) to script reproducible
+terminal recordings of the redesigned TUI for the README, docs, and onboarding.
+VHS renders declarative `.tape` files (`Type`, `Enter`, `Sleep`, `Set`,
+`Output`) to GIF / MP4 / WebM via `ttyd` + `ffmpeg`, so demos are version-
+controlled and regenerable rather than hand-captured. Sequenced last because the
+recordings should show the polished UI (Phases B–C), not the current flat one.
+
+- [ ] **TR.E1** `build/add-vhs-tooling` — Add a `tapes/` directory, a
+      `bun run demos` script (or `scripts/render-tapes.ts`) that runs `vhs` over
+      every `.tape`, and document the `vhs` / `ttyd` / `ffmpeg` prerequisites in
+      the README. A reusable `tapes/_common.tape` (`Source`d by the rest) sets
+      width/height/font and a **VHS `Set Theme`** JSON mirroring the brand
+      palette (§ semantic colours) so recordings match the in-app look.
+- [ ] **TR.E2** `docs/add-workflow-demo-tapes` — One `.tape` per core workflow
+      driving `bun run cli`: convert, validate, cross-submission check, and the
+      mapping builder. Render GIFs into `docs/assets/` and embed them in the
+      README + a new `docs/tutorials/` walkthrough.
+- [ ] **TR.E3** `docs/add-quickstart-tutorial` — *(roadmap 2UD.1)* A
+      getting-started tutorial for non-technical users, illustrated with the
+      TR.E2 recordings (first launch → convert → resolve issues → submit).
+
 ---
 
 ## Per-branch definition of done
@@ -93,6 +117,9 @@ registry, and a header breadcrumb.
 - Update/extend the relevant `tests/tui/*` suite; `bun test` green.
 - Manually launch `bun run cli` and verify the change in a real terminal.
 - Keep each branch a minimal tangible improvement — when in doubt, split smaller.
+- For Phase E demo branches (no test suite): regenerate the affected recordings,
+  confirm the GIFs/MP4s render, and commit the generated assets alongside their
+  `.tape` source.
 
 ## Cross-references to existing roadmap
 
@@ -102,3 +129,4 @@ registry, and a header breadcrumb.
 | TR.C4 transitions | 2TI.18 |
 | TR.C3 workflow progress | 2TI.31 (validation proof) overlaps |
 | TR.D3 schema field display | 2TM.5 / 2TM.6 |
+| TR.E3 quickstart tutorial | 2UD.1 (user guide) |
