@@ -4,7 +4,7 @@
  */
 import { BoxRenderable, TextRenderable, SelectRenderable } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 
 const CONTAINER_ID = 'success-root';
@@ -87,7 +87,7 @@ export class SuccessScreen implements Screen {
 		// Status icon and message
 		if (failed) {
 			const icon = new TextRenderable(this.renderer, {
-				content: '✗',
+				content: symbols.info.error,
 				fg: theme.error,
 			});
 			this.container.add(icon);
@@ -115,7 +115,7 @@ export class SuccessScreen implements Screen {
 			this.container.add(hint);
 		} else {
 			const icon = new TextRenderable(this.renderer, {
-				content: '✓',
+				content: symbols.info.success,
 				fg: theme.success,
 			});
 			this.container.add(icon);

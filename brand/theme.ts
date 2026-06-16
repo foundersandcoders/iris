@@ -92,8 +92,8 @@ export const symbols = {
 	info: {
 		success: '✓',
 		error: '✗',
-		warning: '⚠',
-		required: '⚡︎',
+		warning: '(!)',  // ⚠ U+26A0 degrades to `Ar ` in some terminals
+		required: '*',   // ⚡︎ U+26A1 + U+FE0E is multi-codepoint and width-ambiguous
 	},
 	progress: {
 		filled: '█',

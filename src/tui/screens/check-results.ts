@@ -4,7 +4,7 @@
  */
 import { BoxRenderable, TextRenderable, SelectRenderable } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { CheckReport, CheckIssue } from '../../lib/types/workflowTypes';
 
@@ -167,7 +167,7 @@ export class CheckResultsScreen implements Screen {
 		} else {
 			// No issues
 			const successText = new TextRenderable(this.renderer, {
-				content: '✓ No issues found',
+				content: `${symbols.info.success} No issues found`,
 				fg: theme.success,
 			});
 			this.container.add(successText);
@@ -233,11 +233,11 @@ export class CheckResultsScreen implements Screen {
 	private getSeverityIcon(severity: CheckIssue['severity']): string {
 		switch (severity) {
 			case 'error':
-				return '✗';
+				return symbols.info.error;
 			case 'warning':
-				return '⚠';
+				return symbols.info.warning;
 			case 'info':
-				return 'ℹ';
+				return 'i';
 		}
 	}
 

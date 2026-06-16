@@ -273,7 +273,7 @@ export class FilePicker implements Screen {
 
 		for (const entry of this.entries) {
 			options.push({
-				name: `${entry.isDirectory ? '📁' : '📄'}  ${entry.name}`,
+				name: `${entry.isDirectory ? '>' : ' '}  ${entry.name}`,
 				description: '',
 				value: entry,
 			});
