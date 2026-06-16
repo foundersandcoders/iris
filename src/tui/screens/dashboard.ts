@@ -7,12 +7,12 @@ import {
 	ASCIIFontRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
-	type KeyEvent,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../../../brand/theme';
+import { theme, PALETTE, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+import { Keymap } from '../utils/keymap';
 import { createStorage } from '../../lib/storage';
 import type { IrisConfig } from '../../lib/types/configTypes';
 
@@ -27,7 +27,7 @@ const CONTAINER_ID = 'dashboard-root';
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private keymap?: Keymap;
 
 	private menuItems: MenuItem[] = [
 		{ key: 'convert', label: 'Convert CSV to ILR XML', implemented: true },
@@ -100,10 +100,38 @@ export class Dashboard implements Screen {
 			});
 			container.add(select);
 
-			// Status bar
+			// Build keymap inside the Promise so handlers close over resolve + select
+			this.keymap = new Keymap({
+				onQuit: () => resolve({ action: 'quit' }),
+				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
+				bindings: [
+					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+					{
+						keys: ['up', 'down', 'k', 'j'],
+						hint: `${symbols.arrows.up}${symbols.arrows.down}/1-8`,
+						label: 'Select',
+						handler: () => {},
+					},
+					// Enter hint — Select owns enter nav; handler is a safe passthrough
+					{ keys: ['enter'], label: 'Confirm', handler: () => select.selectCurrent() },
+					// Number shortcuts 1–8 — dispatch but hidden from the keybar
+					...this.menuItems.map((_, i) => ({
+						keys: [String(i + 1)],
+						label: `Item ${i + 1}`,
+						hidden: true,
+						when: () => i < this.menuItems.length,
+						handler: () => {
+							select.setSelectedIndex(i);
+							select.selectCurrent();
+						},
+					})),
+				],
+			});
+
+			// Footer driven by the keymap
 			container.add(
 				new TextRenderable(this.renderer, {
-					content: '[↑↓/1-8] Select  [ENTER] Confirm  [q] Quit',
+					content: this.keymap.toKeybar(),
 					fg: theme.textMuted,
 				})
 			);
@@ -111,6 +139,7 @@ export class Dashboard implements Screen {
 			// Add to renderer
 			this.renderer.root.add(container);
 			select.focus();
+			this.keymap.attach(this.renderer);
 
 			// Menu item selected
 			select.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
@@ -166,26 +195,11 @@ export class Dashboard implements Screen {
 				}
 			});
 
-			// Screen-level key handler for q/escape/number keys
-			this.keyHandler = (key: KeyEvent) => {
-				if (key.name === 'escape' || key.name === 'q') {
-					resolve({ action: 'quit' });
-				} else if (key.name && key.name >= '1' && key.name <= '8') {
-					const index = parseInt(key.name) - 1;
-					if (index < this.menuItems.length) {
-						select.setSelectedIndex(index);
-						select.selectCurrent();
-					}
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 }
