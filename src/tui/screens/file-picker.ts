@@ -105,29 +105,34 @@ export class FilePicker implements Screen {
 
 		container.add(header);
 
-		// File list or empty message
+		// Always create both renderables; toggle visibility based on whether there
+		// are entries. This avoids a one-way trap where starting in an empty directory
+		// means this.select is never created and updateSelectOptions() can never show
+		// a list even after navigating into a populated directory.
 		const hasOptions = this.entries.length > 0 || this.selectionMode === 'directory';
-		if (!hasOptions) {
-			this.emptyMessage = new TextRenderable(this.renderer, {
-				content: `  No ${this.fileExtensions.join('/')} files found in this directory.`,
-				fg: theme.textMuted,
-				flexGrow: 1,
-			});
-			container.add(this.emptyMessage);
-		} else {
-			this.select = new SelectRenderable(this.renderer, {
-				options: this.entriesToOptions(),
-				backgroundColor: theme.background,
-				focusedBackgroundColor: theme.background,
-				selectedBackgroundColor: theme.highlightFocused,
-				selectedTextColor: theme.text,
-				textColor: theme.text,
-				focusedTextColor: theme.text,
-				showScrollIndicator: true,
-				flexGrow: 1,
-			});
-			container.add(this.select);
-		}
+
+		this.emptyMessage = new TextRenderable(this.renderer, {
+			content: `  No ${this.fileExtensions.join('/')} files found in this directory.`,
+			fg: theme.textMuted,
+			flexGrow: 1,
+			visible: !hasOptions,
+		});
+		container.add(this.emptyMessage);
+
+		this.select = new SelectRenderable(this.renderer, {
+			options: this.entriesToOptions(),
+			backgroundColor: theme.background,
+			focusedBackgroundColor: theme.background,
+			selectedBackgroundColor: theme.highlightFocused,
+			selectedTextColor: theme.text,
+			textColor: theme.text,
+			focusedTextColor: theme.text,
+			showScrollIndicator: true,
+			showDescription: false,
+			flexGrow: 1,
+			visible: hasOptions,
+		});
+		container.add(this.select);
 
 		// Status bar
 		container.add(
@@ -142,12 +147,12 @@ export class FilePicker implements Screen {
 		// Add to renderer
 		this.renderer.root.add(container);
 
-		// Focus select if it exists
-		if (this.select) {
+		// Focus and wire events — select is always created
+		if (hasOptions) {
 			this.select.focus();
+		}
 
-			// Item selected
-			this.select.on(
+		this.select.on(
 				SelectRenderableEvents.ITEM_SELECTED,
 				async (index: number, option: SelectOption) => {
 					const entry = option.value as FileEntry;
@@ -219,7 +224,6 @@ export class FilePicker implements Screen {
 					}
 				}
 			);
-		}
 
 		// Screen-level key handler
 		this.keyHandler = async (key: KeyEvent) => {
@@ -241,8 +245,6 @@ export class FilePicker implements Screen {
 	}
 
 	private updateSelectOptions(): void {
-		if (!this.select) return;
-
 		const hasOptions = this.entries.length > 0 || this.selectionMode === 'directory';
 		if (!hasOptions) {
 			this.select.visible = false;

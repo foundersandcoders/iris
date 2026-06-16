@@ -93,8 +93,8 @@ describe('symbols', () => {
 	it('exports info symbols', () => {
 		expect(symbols.info.success).toBe('✓');
 		expect(symbols.info.error).toBe('✗');
-		expect(symbols.info.warning).toBe('⚠');
-		expect(symbols.info.required).toBe('⚡︎');
+		expect(symbols.info.warning).toBe('(!)'); // swapped from ⚠ — degrades to 'Ar ' in some terminals
+		expect(symbols.info.required).toBe('*');  // swapped from ⚡︎ — multi-codepoint, width-ambiguous
 	});
 
 	it('exports bullet, loading and progress symbols', () => {
