@@ -16,6 +16,7 @@ import { SettingsScreen } from './screens/settings';
 import { AboutScreen } from './screens/about';
 import { HistoryScreen } from './screens/history';
 import type { Renderer } from './types';
+import { theme } from '../../brand/theme';
 
 interface TUIOptions {
 	startCommand?: string;
@@ -31,6 +32,7 @@ export class TUI {
 	async start(): Promise<void> {
 		this.renderer = await createCliRenderer({
 			exitOnCtrlC: true,
+			backgroundColor: theme.background,
 		});
 
 		this.router = new Router(this.renderer);
