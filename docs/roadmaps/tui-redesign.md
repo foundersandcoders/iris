@@ -11,16 +11,17 @@ Each item below is a **single, independently-mergeable branch** (per the project
 small-branch convention). Phases are ordered by dependency: foundations first,
 because the shell rollout and signature features build on them.
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **A** | Foundations (theme, layout primitives, keymap) | Open |
-| **B** | App-shell rollout across screens | Blocked (needs A) |
-| **C** | Signature UX features (help, toasts, progress, transitions) | Blocked (needs A) |
+| Phase | Focus                                                        | Status |
+|-------|--------------------------------------------------------------|--------|
+| **A** |        Foundations (theme, layout primitives, keymap)        |  Open  |
+| **B** |               App-shell rollout across screens               | Blocked (needs A) |
+| **C** | Signature UX features (help, toasts, progress, transitions)  | Blocked (needs A) |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs A/B) |
-| **E** | Tutorial & demo resources (Charm VHS recordings) | Blocked (needs B/C) |
+| **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
 
 > [!NOTE]
 > **Key** (new prefix `TR` = TUI Redesign; existing IDs cross-referenced where work overlaps)
+>
 > - TR = TUI redesign work
 
 ---
@@ -123,10 +124,10 @@ recordings should show the polished UI (Phases B–C), not the current flat one.
 
 ## Cross-references to existing roadmap
 
-| This roadmap | Existing ID (phase-1-mvp-features.md) |
-|---|---|
-| TR.C1 help overlay | 2TI.12 |
-| TR.C4 transitions | 2TI.18 |
-| TR.C3 workflow progress | 2TI.31 (validation proof) overlaps |
-| TR.D3 schema field display | 2TM.5 / 2TM.6 |
-| TR.E3 quickstart tutorial | 2UD.1 (user guide) |
+| This roadmap               | Existing ID (phase-1-mvp-features.md) |
+|----------------------------|---------------------------------------|
+|     TR.C1 help overlay     |                2TI.12                 |
+|     TR.C4 transitions      |                2TI.18                 |
+|  TR.C3 workflow progress   |  2TI.31 (validation proof) overlaps   |
+| TR.D3 schema field display |             2TM.5 / 2TM.6             |
+| TR.E3 quickstart tutorial  |          2UD.1 (user guide)           |
