@@ -11,16 +11,17 @@ Each item below is a **single, independently-mergeable branch** (per the project
 small-branch convention). Phases are ordered by dependency: foundations first,
 because the shell rollout and signature features build on them.
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **A** | Foundations (theme, layout primitives, keymap) | Open |
-| **B** | App-shell rollout across screens | Blocked (needs A) |
-| **C** | Signature UX features (help, toasts, progress, transitions) | Blocked (needs A) |
+| Phase | Focus                                                        | Status |
+|-------|--------------------------------------------------------------|--------|
+| **A** |        Foundations (theme, layout primitives, keymap)        |  Open  |
+| **B** |               App-shell rollout across screens               | Blocked (needs A) |
+| **C** | Signature UX features (help, toasts, progress, transitions)  | Blocked (needs A) |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs A/B) |
-| **E** | Tutorial & demo resources (Charm VHS recordings) | Blocked (needs B/C) |
+| **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
 
 > [!NOTE]
 > **Key** (new prefix `TR` = TUI Redesign; existing IDs cross-referenced where work overlaps)
+>
 > - TR = TUI redesign work
 
 ---
@@ -33,7 +34,7 @@ because the shell rollout and signature features build on them.
 > installed package before starting — dependencies were not installed during the
 > review.
 
-- [ ] **TR.A1** `feat/extend-theme-semantic-palette` — Add the semantic colour
+- [x] **TR.A1** `feat/extend-theme-semantic-palette` — Add the semantic colour
       vocabulary (Verdant / Ember / Flare + accent tones) to `PALETTE` in
       `brand/theme.ts`; remap `success`/`warning`/`error` so they read as states;
       fix the empty `symbols.arrows.up/down/left`; make `themeDark` a genuine
@@ -46,6 +47,17 @@ because the shell rollout and signature features build on them.
       declarative per-screen bindings (`{ keys, label, when?, handler }`),
       vim+arrow aliases, consistent globals (`?`/`q`/`ESC`/`Ctrl+C`). Drives the
       footer keybar. Refactor `dashboard` as the reference adopter.
+- [ ] **TR.A4** `fix/isolate-tui-test-mocks` — The full `bun test` run has
+      order-dependent failures: TUI test files (`tests/tui/**`) call Bun's
+      global `mock.module`/`mock()` without ever calling `mock.restore()`, so a
+      leaked module mock bleeds into later files. When file order shifts (e.g.
+      new test files added), schema tests inherit a stale mock — `parseXsd` and
+      friends return `undefined`, so `buildSchemaRegistry()` yields an object
+      whose `elementsByPath` map is undefined and ~100 unrelated assertions
+      fail. **Fix:** add `afterEach(() => mock.restore())` (or a shared test
+      preload / setup file) so module mocks are torn down between files.
+      **Done when** `bun test` is green and stays green regardless of file
+      execution order.
 
 ## Phase B — App-shell rollout
 
@@ -123,10 +135,10 @@ recordings should show the polished UI (Phases B–C), not the current flat one.
 
 ## Cross-references to existing roadmap
 
-| This roadmap | Existing ID (phase-1-mvp-features.md) |
-|---|---|
-| TR.C1 help overlay | 2TI.12 |
-| TR.C4 transitions | 2TI.18 |
-| TR.C3 workflow progress | 2TI.31 (validation proof) overlaps |
-| TR.D3 schema field display | 2TM.5 / 2TM.6 |
-| TR.E3 quickstart tutorial | 2UD.1 (user guide) |
+| This roadmap               | Existing ID (phase-1-mvp-features.md) |
+|----------------------------|---------------------------------------|
+|     TR.C1 help overlay     |                2TI.12                 |
+|     TR.C4 transitions      |                2TI.18                 |
+|  TR.C3 workflow progress   |  2TI.31 (validation proof) overlaps   |
+| TR.D3 schema field display |             2TM.5 / 2TM.6             |
+| TR.E3 quickstart tutorial  |          2UD.1 (user guide)           |

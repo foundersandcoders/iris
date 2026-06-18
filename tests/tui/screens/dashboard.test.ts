@@ -67,4 +67,20 @@ describe('Dashboard', () => {
 		);
 		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(1);
 	});
+
+	it('renders a footer containing "Quit" driven by the keymap', async () => {
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// The root BoxRenderable is the single child added to renderer.root
+		const container = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const children = container.getChildren();
+		// Last child is the footer TextRenderable
+		const footer = children[children.length - 1];
+		expect(footer.constructor.name).toBe('TextRenderable');
+		const footerText: string = footer.content.chunks[0].text;
+		expect(footerText).toContain('Quit');
+	});
 });

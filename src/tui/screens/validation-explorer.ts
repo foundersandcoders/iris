@@ -9,7 +9,7 @@ import {
 	TabSelectRenderable,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme, symbols } from '../../../brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { ValidationIssue, ValidationResult } from '../../lib/utils/csv/csvValidator';
 import type { SchemaValidationIssue } from '../../lib/types/schemaTypes';
@@ -215,7 +215,7 @@ export class ValidationExplorerScreen implements Screen {
 		// Build options
 		const options = filtered.map((issue, i) => {
 			const rowDisplay = issue.row !== undefined ? ` (row ${issue.row + 1})` : '';
-			const icon = issue.severity === 'error' ? '✗' : '⚠';
+			const icon = issue.severity === 'error' ? symbols.info.error : symbols.info.warning;
 			return { name: `${icon} ${issue.field}${rowDisplay}`, description: '', value: String(i) };
 		});
 

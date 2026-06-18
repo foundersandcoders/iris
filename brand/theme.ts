@@ -12,15 +12,30 @@ export const PALETTE = {
 		main: { name: 'vein', colour: '#7A2A57' },
 		alt: { name: 'scar', colour: '#3E1026' },
 	},
+	// Semantic state hues — analogous/harmonious with the Tyrian × Blueglass duo,
+	// each with a `fg` tone (text/icons on light bg) and a brighter `accent` tone
+	// (borders/fills/progress, and promoted to FG on the dark theme).
+	// See docs/technical/tui-design-review.md §6.
+	semantic: {
+		verdant: { name: 'verdant', fg: '#2E6F4E', accent: '#4FAE7C' }, // valid / success
+		ember: { name: 'ember', fg: '#B25A2A', accent: '#E0934A' }, // caution / warning
+		flare: { name: 'flare', fg: '#B11A46', accent: '#D94E74' }, // blocking / error
+	},
 };
 
 export const THEMES = {
 	themeLight: {
-		// Status
-		success: PALETTE.foreground.alt.dark,
-		warning: PALETTE.foreground.main.lite,
-		error: PALETTE.line.alt.colour,
-		info: PALETTE.foreground.alt.midi,
+		// Status — fg tones read as states on the light ground
+		success: PALETTE.semantic.verdant.fg, // Verdant
+		warning: PALETTE.semantic.ember.fg, // Ember
+		error: PALETTE.semantic.flare.fg, // Flare
+		info: PALETTE.foreground.alt.midi, // Blueglass Midi
+
+		// Status accents — brighter register for borders/fills/progress
+		successAccent: PALETTE.semantic.verdant.accent,
+		warningAccent: PALETTE.semantic.ember.accent,
+		errorAccent: PALETTE.semantic.flare.accent,
+		infoAccent: PALETTE.foreground.alt.lite, // Blueglass Lite
 
 		// UI
 		primary: PALETTE.foreground.main.midi, // Tyrian Midi (Brand)
@@ -37,28 +52,38 @@ export const THEMES = {
 		background: PALETTE.background.main.main, // Rosewash Main
 	},
 	themeDark: {
-		success: PALETTE.foreground.alt.dark,
-		warning: PALETTE.foreground.main.lite,
-		error: PALETTE.line.alt.colour,
-		info: PALETTE.foreground.alt.midi,
-		primary: PALETTE.foreground.main.midi,
-		secondary: PALETTE.foreground.alt.midi,
-		accent: PALETTE.line.main.colour,
-		highlight: PALETTE.background.main.nav,
-		highlightFocused: PALETTE.background.main.nav,
-		highlightUnfocused: PALETTE.foreground.alt.lite,
-		text: PALETTE.foreground.main.dark,
-		textMuted: PALETTE.foreground.main.lite,
-		border: PALETTE.background.main.nav,
-		background: PALETTE.background.main.main,
+		// Status — accent tones promoted to FG (brighter reads better on dark)
+		success: PALETTE.semantic.verdant.accent,
+		warning: PALETTE.semantic.ember.accent,
+		error: PALETTE.semantic.flare.accent,
+		info: PALETTE.foreground.alt.lite, // Blueglass Lite
+
+		successAccent: PALETTE.semantic.verdant.accent,
+		warningAccent: PALETTE.semantic.ember.accent,
+		errorAccent: PALETTE.semantic.flare.accent,
+		infoAccent: PALETTE.foreground.alt.lite,
+
+		// UI — lifted so brand hues read on the chasm ground
+		primary: PALETTE.foreground.main.lite, // Tyrian Lite
+		secondary: PALETTE.foreground.alt.lite, // Blueglass Lite
+		accent: PALETTE.line.main.colour, // Vein — focused-panel border
+		highlight: PALETTE.foreground.main.dark, // Tyrian Dark — selection backgrounds
+		highlightFocused: PALETTE.line.main.colour, // Vein — active/focused panel selection
+		highlightUnfocused: PALETTE.foreground.main.dark, // Tyrian Dark — inactive panel selection
+
+		// Neutral — light foregrounds on a genuinely dark ground
+		text: PALETTE.background.main.main, // Rosewash (light text)
+		textMuted: PALETTE.background.main.nav, // Rosewash Nav (dimmed text)
+		border: PALETTE.foreground.main.lite, // Tyrian Lite — muted border
+		background: PALETTE.dark.colour, // Chasm (dark ground)
 	},
 };
 
 export const symbols = {
 	arrows: {
-		up: '',
-		down: '',
-		left: '',
+		up: '↑',
+		down: '↓',
+		left: '←',
 		right: '→',
 	},
 	bullet: {
@@ -67,8 +92,8 @@ export const symbols = {
 	info: {
 		success: '✓',
 		error: '✗',
-		warning: '⚠',
-		required: '⚡︎',
+		warning: '(!)',  // ⚠ U+26A0 degrades to `Ar ` in some terminals
+		required: '*',   // ⚡︎ U+26A1 + U+FE0E is multi-codepoint and width-ambiguous
 	},
 	progress: {
 		filled: '█',
@@ -128,6 +153,10 @@ export const rgba = {
 	warning: RGBA.fromHex(THEMES.themeLight.warning),
 	error: RGBA.fromHex(THEMES.themeLight.error),
 	info: RGBA.fromHex(THEMES.themeLight.info),
+	successAccent: RGBA.fromHex(THEMES.themeLight.successAccent),
+	warningAccent: RGBA.fromHex(THEMES.themeLight.warningAccent),
+	errorAccent: RGBA.fromHex(THEMES.themeLight.errorAccent),
+	infoAccent: RGBA.fromHex(THEMES.themeLight.infoAccent),
 	primary: RGBA.fromHex(THEMES.themeLight.primary),
 	secondary: RGBA.fromHex(THEMES.themeLight.secondary),
 	accent: RGBA.fromHex(THEMES.themeLight.accent),

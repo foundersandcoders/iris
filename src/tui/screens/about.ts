@@ -103,8 +103,8 @@ export class AboutScreen implements Screen {
 			}
 		}
 
-		// Fill remaining space
-		container.add(new BoxRenderable(this.renderer, { flexGrow: 1 }));
+		// Fill remaining space (explicit background so it paints the theme colour, not the terminal default)
+		container.add(new BoxRenderable(this.renderer, { flexGrow: 1, backgroundColor: theme.background }));
 
 		// Status bar
 		container.add(new TextRenderable(this.renderer, {
