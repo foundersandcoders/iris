@@ -47,6 +47,17 @@ because the shell rollout and signature features build on them.
       declarative per-screen bindings (`{ keys, label, when?, handler }`),
       vim+arrow aliases, consistent globals (`?`/`q`/`ESC`/`Ctrl+C`). Drives the
       footer keybar. Refactor `dashboard` as the reference adopter.
+- [ ] **TR.A4** `fix/isolate-tui-test-mocks` — The full `bun test` run has
+      order-dependent failures: TUI test files (`tests/tui/**`) call Bun's
+      global `mock.module`/`mock()` without ever calling `mock.restore()`, so a
+      leaked module mock bleeds into later files. When file order shifts (e.g.
+      new test files added), schema tests inherit a stale mock — `parseXsd` and
+      friends return `undefined`, so `buildSchemaRegistry()` yields an object
+      whose `elementsByPath` map is undefined and ~100 unrelated assertions
+      fail. **Fix:** add `afterEach(() => mock.restore())` (or a shared test
+      preload / setup file) so module mocks are torn down between files.
+      **Done when** `bun test` is green and stays green regardless of file
+      execution order.
 
 ## Phase B — App-shell rollout
 
