@@ -42,7 +42,7 @@ const ALIASES: Record<string, string> = {
 };
 
 /** Normalise a binding key token to its canonical form (lowercase, modifier-prefixed).
- *  e.g. "J" → "up", "ctrl+C" → "ctrl+c", "escape" → "escape". */
+ *  e.g. "J" → "down", "ctrl+C" → "ctrl+c", "escape" → "escape". */
 export function normaliseKey(token: string): string {
 	const lower = token.toLowerCase();
 	const match = lower.match(/^((?:ctrl|shift|meta|option)\+)?(.+)$/);
