@@ -211,6 +211,17 @@ describe('Keymap.attach() / detach()', () => {
 		const km = new Keymap({ bindings: [] });
 		expect(() => km.detach(ctx.renderer)).not.toThrow();
 	});
+
+	it('attach is idempotent — re-attaching removes the previous listener first', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		km.attach(ctx.renderer);
+		// The second attach() must have called off() to remove the stale handler
+		expect(ctx.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
+		// Two on() calls — one per attach()
+		expect(ctx.renderer.keyInput.on).toHaveBeenCalledTimes(2);
+	});
 });
 
 // ——— globals ——————————————————————————————————————————————————————————————————

@@ -111,8 +111,10 @@ export class Keymap {
 			.join('  ');
 	}
 
-	/** Register the keypress listener on the renderer. Call inside render(). */
+	/** Register the keypress listener on the renderer. Call inside render().
+	 *  Idempotent — a prior listener is removed before registering the new one. */
 	attach(renderer: Renderer): void {
+		if (this.attachedHandler) this.detach(renderer);
 		this.attachedHandler = (key) => this.dispatch(key);
 		renderer.keyInput.on('keypress', this.attachedHandler);
 	}
