@@ -153,77 +153,77 @@ export class FilePicker implements Screen {
 		}
 
 		this.select.on(
-				SelectRenderableEvents.ITEM_SELECTED,
-				async (index: number, option: SelectOption) => {
-					const entry = option.value as FileEntry;
-					if (!entry) return;
+			SelectRenderableEvents.ITEM_SELECTED,
+			async (index: number, option: SelectOption) => {
+				const entry = option.value as FileEntry;
+				if (!entry) return;
 
-					if (this.selectionMode === 'directory' && entry.name === '__select__') {
-						resolve({
-							action: 'pop',
-							data: {
-								selectedDirectory: this.currentPath,
-								fieldKey: this.screenData?.fieldKey,
-							},
-						});
-						return;
-					}
-
-					if (entry.isDirectory) {
-						this.currentPath = entry.path;
-						await this.loadDirectory();
-						this.updateSelectOptions();
-						if (this.breadcrumb) {
-							this.breadcrumb.content = this.shortenPath(this.currentPath);
-						}
-					} else if (this.workflowType === 'check-current') {
-						// First step of check flow: selected current file, now pick previous
-						resolve({
-							action: 'push',
-							screen: 'file-picker',
-							data: {
-								fileExtension: '.xml',
-								title: 'Select Previous XML Submission',
-								workflowType: 'check-previous',
-								currentFilePath: entry.path,
-								path: this.screenData?.path,
-							},
-						});
-					} else if (this.workflowType === 'check-previous') {
-						// Second step of check flow: selected previous file, go to workflow
-						resolve({
-							action: 'push',
-							screen: 'workflow',
-							data: {
-								filePath: this.screenData?.currentFilePath as string,
-								previousFilePath: entry.path,
-								workflowType: 'check',
-							},
-						});
-					} else if (this.workflowType === 'mapping-create') {
-						// CSV selected for new mapping — push to mapping editor
-						resolve({
-							action: 'push',
-							screen: 'mapping-editor',
-							data: {
-								mode: this.screenData?.mode ?? 'create',
-								csvFilePath: entry.path,
-							},
-						});
-					} else {
-						// Normal single-file workflows
-						resolve({
-							action: 'push',
-							screen: 'workflow',
-							data: {
-								filePath: entry.path,
-								workflowType: this.workflowType,
-								outputDir: this.screenData?.outputDir,
-							},
-						});
-					}
+				if (this.selectionMode === 'directory' && entry.name === '__select__') {
+					resolve({
+						action: 'pop',
+						data: {
+							selectedDirectory: this.currentPath,
+							fieldKey: this.screenData?.fieldKey,
+						},
+					});
+					return;
 				}
-			);
+
+				if (entry.isDirectory) {
+					this.currentPath = entry.path;
+					await this.loadDirectory();
+					this.updateSelectOptions();
+					if (this.breadcrumb) {
+						this.breadcrumb.content = this.shortenPath(this.currentPath);
+					}
+				} else if (this.workflowType === 'check-current') {
+					// First step of check flow: selected current file, now pick previous
+					resolve({
+						action: 'push',
+						screen: 'file-picker',
+						data: {
+							fileExtension: '.xml',
+							title: 'Select Previous XML Submission',
+							workflowType: 'check-previous',
+							currentFilePath: entry.path,
+							path: this.screenData?.path,
+						},
+					});
+				} else if (this.workflowType === 'check-previous') {
+					// Second step of check flow: selected previous file, go to workflow
+					resolve({
+						action: 'push',
+						screen: 'workflow',
+						data: {
+							filePath: this.screenData?.currentFilePath as string,
+							previousFilePath: entry.path,
+							workflowType: 'check',
+						},
+					});
+				} else if (this.workflowType === 'mapping-create') {
+					// CSV selected for new mapping — push to mapping editor
+					resolve({
+						action: 'push',
+						screen: 'mapping-editor',
+						data: {
+							mode: this.screenData?.mode ?? 'create',
+							csvFilePath: entry.path,
+						},
+					});
+				} else {
+					// Normal single-file workflows
+					resolve({
+						action: 'push',
+						screen: 'workflow',
+						data: {
+							filePath: entry.path,
+							workflowType: this.workflowType,
+							outputDir: this.screenData?.outputDir,
+						},
+					});
+				}
+			}
+		);
 
 		// Screen-level key handler
 		this.keyHandler = async (key: KeyEvent) => {
