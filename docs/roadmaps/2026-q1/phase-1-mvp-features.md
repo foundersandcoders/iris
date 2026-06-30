@@ -284,6 +284,8 @@ graph TD
 
 2TI.12["`*2TI.12*<br/>**SHOULD**<br/>contextual help`"]:::should-blocked
 2TI.31["`*2TI.31*<br/>**SHOULD**<br/>success proof`"]:::should-blocked
+2TM.7["`*2TM.7*<br/>**SHOULD**<br/>fix mapping-config typo`"]:::should-open
+2TI.34["`*2TI.34*<br/>**SHOULD**<br/>fix crosscheck filePath`"]:::should-open
 2TS.2["`*2TS.2*<br/>**COULD**<br/>schema manager screen`"]:::could-blocked
 2TS.3["`*2TS.3*<br/>**COULD**<br/>schema version selector`"]:::could-blocked --> 2TS.4
 2TS.4["`*2TS.4*<br/>**COULD**<br/>dynamic migration guidance`"]:::could-blocked
@@ -308,7 +310,7 @@ phase1{"`**M2C**<br/>Complete`"}:::mile
 2UD.1 -.->|optional| 2UD.2 & phase1
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
 2TC.2 -.->|optional| 2TC.3 & 2TC.4
-2TI.33 & 2TM.5 & 2TM.6 & 2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
+2TI.33 & 2TM.5 & 2TM.6 & 2TI.19 & 2TS.4 & 2UD.2 & 2DC.4 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 & 2TM.7 & 2TI.34 -.->|optional| phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
@@ -338,6 +340,8 @@ classDef mile fill:#E8EFF6,color:#000;
 - [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
 - [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
 - [ ] **2TC.1** — Clean test history after test runs (prevent test submissions from polluting global history; use isolated history per test or cleanup in afterEach) — **depends on 2TI.18**
+- [ ] **2TM.7** — Fix `IlrIlrMappingConfig` typo in mapping-save & storage/create (doubled `Ilr` prefix in `import type` at `src/tui/screens/mapping-save.ts:18` and `src/lib/storage/create.ts:18` imports a non-existent type; the real `IlrMappingConfig` is used in three type positions but silently resolves to `any`. Bun erases it at runtime so no crash, but the mapping config loses all type safety. Fix the import name; `tsc` clears.)
+- [ ] **2TI.34** — Fix missing `filePath` on `previousSubmission` in cross-check workflow (the object literal at `src/lib/workflows/crossCheck.ts:144` is typed `HistoryEntry` but omits the required `filePath` field. Latent today since that branch never reads it, but it violates the type contract — any future read of `previousSubmission.filePath` yields `undefined`. Add `filePath: input.previousFilePath`.)
 
 ### Could Have
 
@@ -387,6 +391,8 @@ graph TD
 2TC.2["`*2TC.2*<br/>util<br/>history cleanup`"]:::could-blocked
 2TC.3["`*2TC.3*<br/>enhance<br/>dual-picker`"]:::could-blocked
 2TC.4["`*2TC.4*<br/>enhance<br/>bordered panel`"]:::could-blocked
+2TM.7["`*2TM.7*<br/>fix<br/>mapping-config typo`"]:::should-open
+2TI.34["`*2TI.34*<br/>fix<br/>crosscheck filePath`"]:::should-open
 
 %% Build & Distribution %%
 2BD.2["`*2BD.2*<br/>build<br/>GH Actions release`"]:::could-open
@@ -414,7 +420,7 @@ phase1{"`**Phase 1**<br/>Complete`"}:::mile
 2UD.1 -.->|optional| 2UD.2 & phase1
 2TS.2 -.->|optional| 2TS.3 & 2TI.19 & 2TC.2
 2TC.2 -.->|optional| 2TC.3 & 2TC.4
-2TI.33 & 2TM.5 & 2TM.6 & 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 -.->|optional| phase1
+2TI.33 & 2TM.5 & 2TM.6 & 2DC.4 & 2TI.19 & 2TS.4 & 2UD.2 & 2TC.1 & 2TC.2 & 2TC.3 & 2TC.4 & 2TM.7 & 2TI.34 -.->|optional| phase1
 
 classDef must-open fill:#D6A3BF,color:#000;
 classDef must-blocked fill:#F3D8E6,color:#000;
