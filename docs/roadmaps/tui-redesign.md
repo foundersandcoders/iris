@@ -13,10 +13,10 @@ because the shell rollout and signature features build on them.
 
 | Phase | Focus                                                        | Status |
 |-------|--------------------------------------------------------------|--------|
-| **A** |        Foundations (theme, layout primitives, keymap)        |  Open  |
-| **B** |               App-shell rollout across screens               | Blocked (needs A) |
-| **C** | Signature UX features (help, toasts, progress, transitions)  | Blocked (needs A) |
-| **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs A/B) |
+| **A** |        Foundations (theme, layout primitives, keymap)        | Nearly done (TR.A4 outstanding) |
+| **B** |               App-shell rollout across screens               | Ready (A foundations landed) |
+| **C** | Signature UX features (help, toasts, progress, transitions)  | Ready (A foundations landed) |
+| **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
 
 > [!NOTE]
@@ -39,11 +39,11 @@ because the shell rollout and signature features build on them.
       `brand/theme.ts`; remap `success`/`warning`/`error` so they read as states;
       fix the empty `symbols.arrows.up/down/left`; make `themeDark` a genuine
       dark variant on `chasm`. Update `tests/tui/theme.test.ts`.
-- [ ] **TR.A2** `feat/add-tui-layout-primitives` — New `src/tui/components/` dir:
+- [x] **TR.A2** `feat/add-tui-layout-primitives` — New `src/tui/components/` dir:
       `panel()` (bordered + titled box with focused/unfocused border colour) and
       `appShell()` (header band + content region + footer keybar). Add a spacing
       scale to `src/tui/utils/layout.ts`. Reuse `theme` + `borders`.
-- [ ] **TR.A3** `feat/add-keymap-registry` — `src/tui/utils/keymap.ts`:
+- [x] **TR.A3** `feat/add-keymap-registry` — `src/tui/utils/keymap.ts`:
       declarative per-screen bindings (`{ keys, label, when?, handler }`),
       vim+arrow aliases, consistent globals (`?`/`q`/`ESC`/`Ctrl+C`). Drives the
       footer keybar. Refactor `dashboard` as the reference adopter.
