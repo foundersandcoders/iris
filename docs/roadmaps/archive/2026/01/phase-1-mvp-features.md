@@ -1,11 +1,11 @@
 # Phase 1: MVP Features
 
-| Sub-Milestone | Focus | Status |
-|---------------|-------|--------|
-| **M2A** | OpenTUI Migration + Core TUI Screens | ✅ Complete |
-| **M2B** | Direct Commands | Open (M2A complete) |
-| **M2C** | Advanced TUI + Polish + Docs | In Progress |
-| **M2D** | Homebrew Distribution | Open (2BD.1 complete) |
+| Sub-Milestone | Focus                                | Status |
+|---------------|--------------------------------------|--------|
+|    **M2A**    | OpenTUI Migration + Core TUI Screens | ✅ Complete |
+|    **M2B**    |           Direct Commands            | Open (M2A complete) |
+|    **M2C**    |     Advanced TUI + Polish + Docs     | In Progress |
+|    **M2D**    |        Homebrew Distribution         | Open (2BD.1 complete) |
 
 > [!NOTE]
 > **Pointer (not a separate tracker):** items remain tracked here in Phase 1.
@@ -51,12 +51,14 @@ graph TD
 
 > [!IMPORTANT]
 > **Dynamic Schema Prerequisite**
+>
 > - Annual ESFA schema updates must not require code changes.
 > - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
 > - Phase 5 (TUI schema management) is deferred to Milestone 2.
 
 > [!NOTE]
 > **Key**
+>
 > - CL (base utils)
 > - SG (schema system)
 > - SS (schema/mapping storage)
@@ -66,27 +68,27 @@ graph TD
 - [x] 1CL.2. Create ILR XML generator (minimal valid structure)
 - [x] 1CL.3. Build semantic validator (beyond structural checks)
 - [x] 1CL.4. Create XML parser module (`src/lib/xml-parser.ts`)
-	- [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
+  - [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
 - [x] 1CL.5. Add unit tests for core transformations
 - [x] 1SG.1. Implement **Dynamic Schema (Phase 1): XSD Parser & Schema Registry**
-	- [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
-	- [x] 1SG.1b. Add fast-xml-parser dependency
-	- [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
-	- [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
-	- [x] 1SG.1e. Add tests against actual schemafile25.xsd
+  - [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
+  - [x] 1SG.1b. Add fast-xml-parser dependency
+  - [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
+  - [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
+  - [x] 1SG.1e. Add tests against actual schemafile25.xsd
 - [x] 1SG.2. Implement **Dynamic Schema (Phase 2): Schema-Driven Validator**
-	- [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
-	- [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
-	- [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
+  - [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
+  - [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
+  - [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
 - [x] 1SG.3. Implement **Dynamic Schema (Phase 3): Schema-Driven Generator**
-	- [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
-	- [x] 1SG.3b. Implement element ordering from xs:sequence
-	- [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
+  - [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
+  - [x] 1SG.3b. Implement element ordering from xs:sequence
+  - [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
 - [x] 1SG.4. Implement **Dynamic Schema (Phase 4): Column Mapping Configuration**
-	- [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
-	- [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
-	- [x] 1SG.4c. Create default FaC Airtable mapping configuration
-	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
+  - [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
+  - [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
+  - [x] 1SG.4c. Create default FaC Airtable mapping configuration
+  - [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
 - [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
 - [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
@@ -128,17 +130,17 @@ graph TD
 <summary><strong>✅ M2X: OpenTUI Migration (Complete)</strong></summary>
 
 - [x] 1. Foundation ✅
-	- [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
-	- [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
-	- [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
-	- [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
+  - [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
+  - [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
+  - [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
+  - [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
 - [x] 2. Screen Migration ✅
-	- [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
-	- [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
-	- [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
+  - [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
+  - [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
+  - [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
 - [x] 3. Cleanup ✅
-	- [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
-	- [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
+  - [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
+  - [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
 
 </details>
 
@@ -166,10 +168,10 @@ All tasks complete — no open tasks in M2A.
 - [x] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
 - [x] **1WA.23** — Fix validate workflow routing — currently routes to failure screen on first missing field instead of collecting all validation issues and showing the explorer. The validator itself collects all issues; the workflow layer treats the first error as fatal.
 - [x] **2TI.30** — Fix validation explorer UX issues:
-	- Status bar says `[Tab] Switch filter` but `TabSelectRenderable` uses `[←→]` arrows
-	- Tab switching causes display glitches (same bordered-container rendering issue as check-results)
-	- Row numbers 0-indexed — should display as 1-indexed for non-dev users
-	- Single-issue display doesn't indicate it's the first occurrence of a repeated error
+  - Status bar says `[Tab] Switch filter` but `TabSelectRenderable` uses `[←→]` arrows
+  - Tab switching causes display glitches (same bordered-container rendering issue as check-results)
+  - Row numbers 0-indexed — should display as 1-indexed for non-dev users
+  - Single-issue display doesn't indicate it's the first occurrence of a repeated error
 - [x] **2TI.32** — Two-file-picker for cross-check workflow — user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
 - [x] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
 

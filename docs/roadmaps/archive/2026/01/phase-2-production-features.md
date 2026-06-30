@@ -1,10 +1,10 @@
 # Phase 2: Production Features
 
-| Milestone | Focus | Status |
-|-----------|-------|--------|
-| **M3** | CLI Completion | Blocked (depends on Phase 1) |
-| **M4** | Desktop Interface | Blocked (depends on M3) |
-| **M5** | Production Docs | Blocked (depends on M4) |
+| Milestone | Focus             | Status |
+|-----------|-------------------|--------|
+|  **M3**   |  CLI Completion   | Blocked (depends on Phase 1) |
+|  **M4**   | Desktop Interface | Blocked (depends on M3) |
+|  **M5**   |  Production Docs  | Blocked (depends on M4) |
 
 **Prerequisite:** [Phase 1: MVP Features](./phase-1-mvp-features.md) — All M2A, M2B, M2C tasks complete
 
@@ -72,6 +72,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Categories:**
+>
 > - GC (GUI Components)
 > - NB (Native Builds)
 
