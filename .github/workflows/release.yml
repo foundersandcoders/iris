@@ -1,0 +1,39 @@
+# Credit to Bad Echo - https://github.com/BadEcho/.github/blob/master/workflow-templates/release.yml
+name: Build and Release Iris TUI
+
+on:
+  push:
+    tags:
+      - "v*" # fires on: git tag v5.1.0 && git push --tags
+
+jobs:
+  build-macos:
+    name: Build macOS binary
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build TUI binary (Apple Silicon)
+        run: bun run build:tui:mac
+        # Outputs: dist/iris-darwin-arm64
+
+      - name: Verify binary
+        run: dist/iris-darwin-arm64 help
+
+      - name: Create GitHub Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/iris-darwin-arm64
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

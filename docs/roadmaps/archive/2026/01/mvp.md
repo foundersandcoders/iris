@@ -67,4 +67,4 @@ The MVP development has been split into three distinct phases:
 ## Archive
 
 The original combined roadmap (pre-restructure) has been archived at:
-[`docs/archive/mvp-original.md`](../archive/mvp-original.md)
+[`docs/archive/mvp-original.md`](../../../../archive/mvp-original.md)

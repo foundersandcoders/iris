@@ -13,11 +13,11 @@
 > [!NOTE]
 > Analyse ILR XML and predict ESFA validation errors before actual submission
 
-| | Primary | Alternate |
-|---|---------|-----------|
-| **Requirements** | • Historical submission data<br>• Actual ESFA response storage | |
-| **Plan** | Rule-based prediction based on past submission outcomes | 1. Embedded agent<br>2. Customised machine learning model |
-| **Architecture Support** | Storage abstraction must handle ESFA response data (designed in Milestone 1) | |
+|                          | Primary                                                                      | Alternate |
+|--------------------------|------------------------------------------------------------------------------|-----------|
+|     **Requirements**     |        • Historical submission data<br>• Actual ESFA response storage        |           |
+|         **Plan**         |           Rule-based prediction based on past submission outcomes            | 1. Embedded agent<br>2. Customised machine learning model |
+| **Architecture Support** | Storage abstraction must handle ESFA response data (designed in Milestone 1) |           |
 
 ---
 
@@ -27,6 +27,7 @@
 > Advanced analysis of submission patterns over time
 
 **Features:**
+
 - Historical trend reporting (submission patterns over time)
 - Anomaly detection across submission periods
 - Statistical analysis of submission outcomes
@@ -39,6 +40,7 @@
 > Make business logic configurable without code changes
 
 **Features:**
+
 - Define transformation rules in JSON/YAML
 - Make business logic configurable without code changes
 - Allow FaC staff to adjust rules themselves
@@ -51,6 +53,7 @@
 > More sophisticated validation capabilities
 
 **Features:**
+
 - Integration with ESFA validation API (if available)
 - More sophisticated semantic checks
 - Custom rule definitions for FaC-specific requirements
@@ -63,6 +66,7 @@
 > Extend Iris beyond Founders and Coders
 
 **Features:**
+
 - Export configuration for other training providers
 - Template system for different submission patterns
 - Shareable transformation rule sets
@@ -75,6 +79,7 @@
 > Enhanced schema management features for desktop GUI
 
 **Features:**
+
 - Desktop UI for schema management (mirrors TUI functionality)
 - Schema diff viewer (compare two XSD versions)
 - Automated mapping suggestions when schema changes
@@ -88,6 +93,7 @@
 > Improve UX when users change output directory settings
 
 **Features:**
+
 - Offer to migrate directory contents when user changes `outputDir` in settings
 - Prompt user before moving files
 - Handle errors gracefully if source files are in use
