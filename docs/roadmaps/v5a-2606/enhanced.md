@@ -633,6 +633,10 @@
       color: var(--blocked);
     }
 
+    .group--waiting .group__label {
+      color: var(--accent);
+    }
+
     .group__items {
       list-style: none;
       display: flex;
@@ -669,6 +673,17 @@
     .group--blocked .task {
       border-left: 3px solid var(--blocked-accent);
       background: var(--blocked-bg);
+    }
+
+    .group--waiting .task {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .group--waiting .task__dep {
+      color: var(--accent);
+      background: var(--surface);
+      border: 1px solid var(--accent);
     }
 
     .task__id {
@@ -1270,16 +1285,22 @@
                 <span class="task__dep">depends on TR.A1 &middot; A2</span>
               </li>
               <li class="task">
-                <span class="task__id">TR.C3</span><span class="task__branch">feat/add-workflow-progress</span>
-                Progress bar (<code>progress.filled</code>/<code>empty</code>) + elapsed-time on WorkflowScreen.
-                <span class="task__dep">depends on TR.B3</span>
-                <span class="task__xref">xref 2TI.31</span>
-              </li>
-              <li class="task">
                 <span class="task__id">TR.C4</span><span class="task__branch">feat/add-screen-transitions</span>
                 Subtle fade/slide on push/pop via the OpenTUI Timeline; fast, with a reduce-motion config toggle.
                 <span class="task__dep">depends on TR.A2</span>
                 <span class="task__xref">xref 2TI.18</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="group group--waiting">
+            <div class="group__label">Waiting</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.C3</span><span class="task__branch">feat/add-workflow-progress</span>
+                Progress bar (<code>progress.filled</code>/<code>empty</code>) + elapsed-time on WorkflowScreen.
+                <span class="task__dep">waits on TR.B3</span>
+                <span class="task__xref">xref 2TI.31</span>
               </li>
             </ul>
           </div>
@@ -1369,6 +1390,10 @@
           <div class="legend-swatch" style="background:var(--todo-accent)"></div> To do
         </div>
         <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--accent)"></div> Waiting (blocked by a sibling task, not a
+          phase)
+        </div>
+        <div class="legend-item">
           <div class="legend-swatch" style="background:var(--blocked-accent)"></div> Blocked
         </div>
         <div class="legend-item">
@@ -1408,7 +1433,7 @@
 
           C1["TR.C1 help overlay"]:::ready
           C2["TR.C2 toasts + confirm"]:::ready
-          C3["TR.C3 workflow progress"]:::open
+          C3["TR.C3 workflow progress"]:::waiting
           C4["TR.C4 screen transitions"]:::ready
 
           D1["TR.D1 command palette"]:::blocked
@@ -1434,7 +1459,7 @@
 
           classDef mile fill:#3E7F9622,stroke:#3E7F96,stroke-width:2px;
           classDef ready fill:#E0934A26,stroke:#E0934A,stroke-width:1.5px;
-          classDef open fill:#A45A8422,stroke:#A45A84,stroke-width:1.5px;
+          classDef waiting fill:#7A2A5722,stroke:#7A2A57,stroke-width:1.5px;
           classDef blocked fill:#D94E7426,stroke:#D94E74,stroke-width:1.5px;
       </script>
       </section>
@@ -1443,7 +1468,7 @@
         <strong>Reading the graph.</strong> Every Phase B and C task is unblocked the moment the
         Phase A foundations land &mdash; which they have. Phases D and E are gated: D needs the shell
         rolled across screens (B), and E needs the polished UI from B&ndash;C before recording demos.
-        <code>TR.C3</code> is the one cross-phase edge inside the &ldquo;ready&rdquo; tier &mdash; it waits on
+        <code>TR.C3</code> is <strong>waiting</strong>, not blocked &mdash; it sits in Phase C but waits on
         <code>TR.B3</code> framing the workflow screen first.
       </div>
 
