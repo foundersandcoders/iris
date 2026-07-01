@@ -10,7 +10,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE, symbols } from '../../../brand/theme';
+import { theme, PALETTE, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { Keymap } from '../utils/keymap';
 import { createStorage } from '../../lib/storage';

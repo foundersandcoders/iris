@@ -5,7 +5,7 @@
  */
 import { BoxRenderable, TextRenderable } from '@opentui/core';
 import type { Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme } from '../../../assets/brand/theme';
 import { header as defaultHeader } from '../utils/layout';
 
 export interface AppShellOptions {

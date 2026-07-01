@@ -5,7 +5,7 @@
  */
 import { BoxRenderable } from '@opentui/core';
 import type { Renderer } from '../types';
-import { theme } from '../../../brand/theme';
+import { theme } from '../../../assets/brand/theme';
 import { space, type SpacingStep } from '../utils/layout';
 
 export interface PanelOptions {

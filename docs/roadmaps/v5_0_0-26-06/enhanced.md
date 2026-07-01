@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iris Roadmap • June '26</title>
+  <!--
+  Roadmap artefact for Iris' TUI Redesign roadmap.
+  Editorial + Blueprint aesthetic. Palette derived from the project's own
+  assets/brand/theme.ts (Tyrian × Blueglass duo + Verdant/Ember/Flare semantic hues)
+  rather than the generic skill default, since this roadmap exists to build
+  exactly that palette into the TUI.
+  Fonts: IBM Plex Sans + IBM Plex Mono.
+-->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ============ THEME — derived from assets/brand/theme.ts ============ */
+    :root {
+      --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+
+      /* Brand grounds */
+      --bg: #FFF1F7;
+      /* rosewash main */
+      --surface: #ffffff;
+      --surface2: #F3D8E6;
+      /* rosewash subtle */
+      --surface-elevated: #ffffff;
+      --border: rgba(58, 15, 40, 0.10);
+      /* tyrian dark @ low alpha */
+      --border-bright: rgba(58, 15, 40, 0.22);
+      --text: #3A0F28;
+      /* tyrian dark */
+      --text-dim: #A45A84;
+      /* tyrian lite */
+
+      /* Brand accents */
+      --primary: #6F2A52;
+      /* tyrian midi */
+      --primary-dim: rgba(111, 42, 82, 0.10);
+      --accent: #7A2A57;
+      /* vein */
+      --accent-dim: rgba(122, 42, 87, 0.10);
+
+      /* Milestone — blueglass family */
+      --milestone: #3E7F96;
+      /* blueglass midi */
+      --milestone-bg: #E8EFF6;
+      /* aether subtle */
+      --milestone-text: #1E3A44;
+      /* blueglass dark */
+
+      /* Task status — semantic hues */
+      --done: #2E6F4E;
+      /* verdant fg */
+      --done-accent: #4FAE7C;
+      /* verdant accent */
+      --done-bg: rgba(79, 174, 124, 0.13);
+      --in-progress: #B25A2A;
+      /* ember fg */
+      --in-progress-accent: #E0934A;
+      --in-progress-bg: rgba(224, 147, 74, 0.15);
+      --todo: #6F2A52;
+      /* tyrian midi (muted neutral-brand) */
+      --todo-accent: #A45A84;
+      --todo-bg: rgba(164, 90, 132, 0.12);
+      --blocked: #B11A46;
+      /* flare fg */
+      --blocked-accent: #D94E74;
+      --blocked-bg: rgba(217, 78, 116, 0.13);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #220817;
+        /* chasm */
+        --surface: #2F0F20;
+        --surface2: #3A0F28;
+        /* tyrian dark */
+        --surface-elevated: #38122A;
+        --border: rgba(164, 90, 132, 0.20);
+        /* tyrian lite @ low alpha */
+        --border-bright: rgba(164, 90, 132, 0.38);
+        --text: #FFF1F7;
+        /* rosewash */
+        --text-dim: #D6A3BF;
+        /* rosewash nav */
+
+        --primary: #A45A84;
+        /* tyrian lite */
+        --primary-dim: rgba(164, 90, 132, 0.18);
+        --accent: #D94E74;
+        /* flare accent reads on dark */
+        --accent-dim: rgba(217, 78, 116, 0.16);
+
+        --milestone: #5FA3BA;
+        /* blueglass lite */
+        --milestone-bg: #1E3A44;
+        /* blueglass dark */
+        --milestone-text: #CCDDE6;
+
+        --done: #4FAE7C;
+        --done-accent: #4FAE7C;
+        --done-bg: rgba(79, 174, 124, 0.18);
+        --in-progress: #E0934A;
+        --in-progress-accent: #E0934A;
+        --in-progress-bg: rgba(224, 147, 74, 0.18);
+        --todo: #D6A3BF;
+        --todo-accent: #A45A84;
+        --todo-bg: rgba(164, 90, 132, 0.16);
+        --blocked: #D94E74;
+        --blocked-accent: #D94E74;
+        --blocked-bg: rgba(217, 78, 116, 0.18);
+      }
+    }
+
+    /* ============ RESET + BASE ============ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Every grid/flex child must be able to shrink */
+    .wrap>*,
+    .card-grid>*,
+    .kpi-row>*,
+    .legend>*,
+    .ms-mini>*,
+    .group__items>* {
+      min-width: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      /* Subtle blueprint grid-line atmosphere */
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text);
+      font-family: var(--font-body);
+      padding: 32px;
+      min-height: 100vh;
+      overflow-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    /* ============ ANIMATION ============ */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeScale {
+      from {
+        opacity: 0;
+        transform: scale(0.94);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate {
+      animation: fadeUp 0.45s ease-out both;
+      animation-delay: calc(var(--i, 0) * 0.05s);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ============ LAYOUT — sticky TOC + main ============ */
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 0 44px;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .toc {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      padding: 14px 0;
+      grid-row: 1 / -1;
+      max-height: calc(100dvh - 48px);
+      overflow-y: auto;
+    }
+
+    .toc::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .toc::-webkit-scrollbar-thumb {
+      background: var(--surface2);
+      border-radius: 2px;
+    }
+
+    .toc-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      padding: 0 0 10px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc a {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 5px 8px;
+      border-radius: 5px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      line-height: 1.4;
+      margin-bottom: 1px;
+    }
+
+    .toc a:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .toc a.active {
+      color: var(--text);
+      border-left-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ============ HEADER ============ */
+    h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      margin-bottom: 6px;
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .goal {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-dim);
+      max-width: 760px;
+      margin-bottom: 32px;
+    }
+
+    /* ============ SECTION HEADINGS ============ */
+    .sec-head {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      margin: 44px 0 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      scroll-margin-top: 24px;
+    }
+
+    .sec-head::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .sec-head .sec-num {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    /* ============ CARDS ============ */
+    .ve-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      position: relative;
+    }
+
+    .ve-card--hero {
+      background: color-mix(in srgb, var(--surface) 88%, var(--accent) 12%);
+      box-shadow: 0 4px 22px rgba(58, 15, 40, 0.10), 0 1px 3px rgba(58, 15, 40, 0.05);
+      border-color: color-mix(in srgb, var(--border) 40%, var(--accent) 60%);
+      padding: 28px 30px;
+      margin-bottom: 28px;
+    }
+
+    .hero__big {
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+
+    .hero__big small {
+      font-size: 22px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .hero__label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+
+    .hero__bar {
+      height: 10px;
+      background: var(--surface2);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 18px;
+      border: 1px solid var(--border);
+    }
+
+    .hero__bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--in-progress-accent), var(--done-accent));
+      border-radius: 6px;
+    }
+
+    /* KPI row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      animation: fadeScale 0.4s ease-out both;
+      animation-delay: calc(var(--i, 0) * 0.06s);
+    }
+
+    .kpi-card__value {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-card__label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    .kpi-card--done .kpi-card__value {
+      color: var(--done);
+    }
+
+    .kpi-card--progress .kpi-card__value {
+      color: var(--in-progress);
+    }
+
+    .kpi-card--todo .kpi-card__value {
+      color: var(--todo);
+    }
+
+    .kpi-card--blocked .kpi-card__value {
+      color: var(--blocked);
+    }
+
+    /* ============ MILESTONE MINI CARDS ============ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .ms-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      animation: fadeUp 0.45s ease-out both;
+      animation-delay: calc(var(--i, 0) * 0.06s);
+    }
+
+    .ms-mini__top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .ms-mini__name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .ms-mini__phase {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--milestone);
+    }
+
+    .ms-mini__focus {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.45;
+      margin-bottom: 12px;
+      min-height: 34px;
+    }
+
+    .ms-mini__count {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .ms-mini__count strong {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .ms-mini__status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .progress-bar {
+      height: 7px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .fill--done {
+      background: var(--done-accent);
+    }
+
+    .fill--progress {
+      background: var(--in-progress-accent);
+    }
+
+    .fill--todo {
+      background: var(--todo-accent);
+    }
+
+    .fill--blocked {
+      background: var(--blocked-accent);
+    }
+
+    /* ============ COLLAPSIBLE MILESTONE CARDS ============ */
+    details.milestone {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      background: var(--surface);
+    }
+
+    details.milestone summary {
+      padding: 16px 20px;
+      background: var(--milestone-bg);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.15s ease;
+    }
+
+    details.milestone summary:hover {
+      filter: brightness(0.98);
+    }
+
+    details.milestone summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.milestone summary::before {
+      content: '▸';
+      font-size: 12px;
+      color: var(--milestone);
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    details.milestone[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .ms-head__phase {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--milestone-text);
+      background: var(--surface);
+      border: 1px solid var(--milestone);
+      border-radius: 5px;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .ms-head__name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--milestone-text);
+    }
+
+    .ms-head__meta {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--milestone-text);
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+
+    .ms-body {
+      padding: 6px 20px 18px;
+    }
+
+    /* status groups */
+    .group {
+      margin-top: 16px;
+    }
+
+    .group__label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .group__label::before {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .group--progress .group__label {
+      color: var(--in-progress);
+    }
+
+    .group--todo .group__label {
+      color: var(--todo);
+    }
+
+    .group--done .group__label {
+      color: var(--done);
+    }
+
+    .group--blocked .group__label {
+      color: var(--blocked);
+    }
+
+    .group__items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* IMPORTANT: never display:flex on <li> — use relative + padding-left */
+    .task {
+      position: relative;
+      padding: 10px 14px 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      font-size: 13.5px;
+      line-height: 1.55;
+      overflow-wrap: break-word;
+    }
+
+    .group--progress .task {
+      border-left: 3px solid var(--in-progress-accent);
+      background: var(--in-progress-bg);
+    }
+
+    .group--todo .task {
+      border-left: 3px solid var(--todo-accent);
+    }
+
+    .group--done .task {
+      border-left: 3px solid var(--done-accent);
+      background: var(--done-bg);
+    }
+
+    .group--blocked .task {
+      border-left: 3px solid var(--blocked-accent);
+      background: var(--blocked-bg);
+    }
+
+    .task__id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+
+    .group--done .task__id {
+      background: var(--done-bg);
+      color: var(--done);
+    }
+
+    .group--blocked .task__id {
+      background: var(--blocked-bg);
+      color: var(--blocked);
+    }
+
+    .task__branch {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-right: 6px;
+    }
+
+    .task__dep {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--blocked);
+      background: var(--blocked-bg);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-top: 6px;
+    }
+
+    .task__xref {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--milestone);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-top: 6px;
+      margin-left: 4px;
+    }
+
+    /* ============ NEXT UP ============ */
+    .nextup-group {
+      margin-top: 20px;
+    }
+
+    .nextup-group__title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--milestone);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nextup-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nextup-item {
+      position: relative;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .nextup-item--ready {
+      border-left: 3px solid var(--in-progress-accent);
+    }
+
+    .pill {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 1px 8px;
+      margin-left: 6px;
+      background: var(--milestone-bg);
+      color: var(--milestone-text);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .pill--ready {
+      background: var(--in-progress-bg);
+      color: var(--in-progress);
+      border-color: transparent;
+    }
+
+    /* ============ MERMAID ============ */
+    .mermaid-wrap {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+      overflow: auto;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 420px;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 2px;
+      z-index: 10;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px;
+    }
+
+    .zoom-controls button {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .zoom-controls button:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .mermaid-wrap {
+      cursor: grab;
+    }
+
+    .mermaid-wrap.is-panning {
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    .diagram-shell {
+      position: relative;
+    }
+
+    .diagram-shell__hint {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      opacity: 0.75;
+    }
+
+    .mermaid-viewport {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+    }
+
+    .mermaid-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .zoom-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      padding: 0 6px;
+      white-space: nowrap;
+    }
+
+    /* CRITICAL: force node/edge text to follow the page colour scheme */
+    .mermaid .nodeLabel {
+      font-family: var(--font-body) !important;
+      font-size: 16px !important;
+    }
+
+    .mermaid .edgeLabel {
+      font-family: var(--font-mono) !important;
+      font-size: 12px !important;
+      color: var(--text-dim) !important;
+      background-color: var(--bg) !important;
+    }
+
+    .mermaid .edgeLabel rect {
+      fill: var(--bg) !important;
+    }
+
+    .mermaid .node rect,
+    .mermaid .node circle,
+    .mermaid .node polygon {
+      stroke-width: 1.5px !important;
+    }
+
+    .mermaid .edge-pattern-solid {
+      stroke-width: 1.5px !important;
+    }
+
+    /* ============ LEGEND ============ */
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--milestone);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      margin-top: 18px;
+    }
+
+    .callout strong {
+      color: var(--text);
+    }
+
+    .callout code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 1000px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        max-height: none;
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 10px 32px;
+        margin: 0 -32px 12px;
+        grid-row: auto;
+      }
+
+      .toc::-webkit-scrollbar {
+        display: none;
+      }
+
+      .toc-title {
+        display: none;
+      }
+
+      .toc a {
+        white-space: nowrap;
+        flex-shrink: 0;
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 4px 4px 0 0;
+        padding: 6px 10px;
+        font-size: 10px;
+      }
+
+      .toc a.active {
+        border-left: none;
+        border-bottom-color: var(--accent);
+        background: var(--surface);
+      }
+
+      .sec-head {
+        scroll-margin-top: 56px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .mermaid-wrap {
+        padding: 16px 12px;
+      }
+
+      .hero__big {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <nav class="toc" id="toc">
+      <div class="toc-title">Contents</div>
+      <a href="#s1">1. Overview</a>
+      <a href="#s2">2. Phases &amp; Tasks</a>
+      <a href="#s3">3. Dependency Graph</a>
+      <a href="#s4">4. Next Up</a>
+    </nav>
+
+    <div class="main">
+
+      <h1 class="animate" style="--i:0">TUI Redesign Roadmap</h1>
+      <p class="subtitle animate" style="--i:1">iris &middot; docs/roadmaps/tui-redesign.md &middot; prefix TR</p>
+      <p class="goal animate" style="--i:2">
+        Take the Iris TUI from &ldquo;functional&rdquo; to a top-class, lazygit-class terminal application
+        &mdash; framed panels, persistent chrome, a coherent interaction grammar, and a legible semantic
+        colour system. Phases are dependency-ordered: foundations first, because the shell rollout and
+        signature features build on them.
+      </p>
+
+      <!-- ============ SECTION 1: OVERVIEW ============ -->
+      <div id="s1" class="sec-head animate" style="--i:3"><span class="sec-num">01</span> Overview</div>
+
+      <div class="ve-card ve-card--hero animate" style="--i:4">
+        <div class="hero__big">3<small>/20</small> tasks &middot; 15% complete</div>
+        <div class="hero__label">Phase A foundations landed &middot; one task (TR.A4) outstanding before B/C unblock
+          fully</div>
+        <div class="hero__bar">
+          <div class="hero__bar-fill" style="width: 15%"></div>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card kpi-card--done animate" style="--i:5">
+          <div class="kpi-card__value">3</div>
+          <div class="kpi-card__label">Done</div>
+        </div>
+        <div class="kpi-card kpi-card--progress animate" style="--i:6">
+          <div class="kpi-card__value">0</div>
+          <div class="kpi-card__label">In Progress</div>
+        </div>
+        <div class="kpi-card kpi-card--todo animate" style="--i:7">
+          <div class="kpi-card__value">11</div>
+          <div class="kpi-card__label">To Do</div>
+        </div>
+        <div class="kpi-card kpi-card--blocked animate" style="--i:8">
+          <div class="kpi-card__value">6</div>
+          <div class="kpi-card__label">Blocked</div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="ms-mini" style="--i:0">
+          <div class="ms-mini__top">
+            <span class="ms-mini__name">Foundations</span>
+            <span class="ms-mini__phase">Phase A</span>
+          </div>
+          <div class="ms-mini__focus">Theme, layout primitives, keymap registry.</div>
+          <div class="ms-mini__count"><span><strong>3</strong>/4 tasks</span><span class="ms-mini__status"
+              style="color:var(--in-progress)">Nearly done</span></div>
+          <div class="progress-bar">
+            <div class="progress-fill fill--progress" style="width: 75%"></div>
+          </div>
+        </div>
+
+        <div class="ms-mini" style="--i:1">
+          <div class="ms-mini__top">
+            <span class="ms-mini__name">App-shell rollout</span>
+            <span class="ms-mini__phase">Phase B</span>
+          </div>
+          <div class="ms-mini__focus">One branch per screen cluster onto shell + panels + keymap.</div>
+          <div class="ms-mini__count"><span><strong>0</strong>/6 tasks</span><span class="ms-mini__status"
+              style="color:var(--todo)">Ready</span></div>
+          <div class="progress-bar">
+            <div class="progress-fill fill--todo" style="width: 4%"></div>
+          </div>
+        </div>
+
+        <div class="ms-mini" style="--i:2">
+          <div class="ms-mini__top">
+            <span class="ms-mini__name">Signature UX</span>
+            <span class="ms-mini__phase">Phase C</span>
+          </div>
+          <div class="ms-mini__focus">Help overlay, toasts &amp; confirm, progress, transitions.</div>
+          <div class="ms-mini__count"><span><strong>0</strong>/4 tasks</span><span class="ms-mini__status"
+              style="color:var(--todo)">Ready</span></div>
+          <div class="progress-bar">
+            <div class="progress-fill fill--todo" style="width: 4%"></div>
+          </div>
+        </div>
+
+        <div class="ms-mini" style="--i:3">
+          <div class="ms-mini__top">
+            <span class="ms-mini__name">Polish</span>
+            <span class="ms-mini__phase">Phase D</span>
+          </div>
+          <div class="ms-mini__focus">Command palette, theme toggle, schema field display.</div>
+          <div class="ms-mini__count"><span><strong>0</strong>/3 tasks</span><span class="ms-mini__status"
+              style="color:var(--blocked)">Blocked &middot; needs B</span></div>
+          <div class="progress-bar">
+            <div class="progress-fill fill--blocked" style="width: 4%"></div>
+          </div>
+        </div>
+
+        <div class="ms-mini" style="--i:4">
+          <div class="ms-mini__top">
+            <span class="ms-mini__name">Tutorial &amp; demo</span>
+            <span class="ms-mini__phase">Phase E</span>
+          </div>
+          <div class="ms-mini__focus">Charm VHS recordings of the redesigned TUI.</div>
+          <div class="ms-mini__count"><span><strong>0</strong>/3 tasks</span><span class="ms-mini__status"
+              style="color:var(--blocked)">Blocked &middot; needs B/C</span></div>
+          <div class="progress-bar">
+            <div class="progress-fill fill--blocked" style="width: 4%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SECTION 2: PHASES & TASKS ============ -->
+      <div id="s2" class="sec-head"><span class="sec-num">02</span> Phases &amp; Tasks</div>
+
+      <!-- Phase A — open (most recently referenced task TR.A4 lives here) -->
+      <details class="milestone" open>
+        <summary>
+          <span class="ms-head__phase">A</span>
+          <span class="ms-head__name">Foundations</span>
+          <span class="ms-head__meta">3/4 done &middot; theme &middot; layout &middot; keymap</span>
+        </summary>
+        <div class="ms-body">
+
+          <div class="group group--todo">
+            <div class="group__label">To Do</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.A4</span>
+                <span class="task__branch">fix/isolate-tui-test-mocks</span>
+                Isolate TUI test mocks: <code>tests/tui/**</code> call Bun&rsquo;s global
+                <code>mock.module</code>/<code>mock()</code>
+                without <code>mock.restore()</code>, so a leaked module mock bleeds into later files and ~100 schema
+                assertions fail when file order shifts. Fix: add <code>afterEach(() =&gt; mock.restore())</code> or a
+                shared
+                setup file. Done when <code>bun test</code> is green regardless of execution order.
+              </li>
+            </ul>
+          </div>
+
+          <div class="group group--done">
+            <div class="group__label">Done</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.A1</span>
+                <span class="task__branch">feat/extend-theme-semantic-palette</span>
+                Add the semantic colour vocabulary (Verdant / Ember / Flare + accent tones) to <code>PALETTE</code>;
+                remap success/warning/error as states; fix empty <code>symbols.arrows</code>; make
+                <code>themeDark</code> a genuine dark variant.
+              </li>
+              <li class="task">
+                <span class="task__id">TR.A2</span>
+                <span class="task__branch">feat/add-tui-layout-primitives</span>
+                New <code>src/tui/components/</code>: <code>panel()</code> (bordered, titled, focus-aware) and
+                <code>appShell()</code> (header band + content + footer keybar). Spacing scale in
+                <code>layout.ts</code>.
+              </li>
+              <li class="task">
+                <span class="task__id">TR.A3</span>
+                <span class="task__branch">feat/add-keymap-registry</span>
+                Declarative per-screen bindings, vim+arrow aliases, consistent globals
+                (<code>?</code>/<code>q</code>/<code>ESC</code>/<code>Ctrl+C</code>).
+                Drives the footer keybar; dashboard is the reference adopter.
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- Phase B -->
+      <details class="milestone">
+        <summary>
+          <span class="ms-head__phase">B</span>
+          <span class="ms-head__name">App-shell rollout</span>
+          <span class="ms-head__meta">0/6 done &middot; ready</span>
+        </summary>
+        <div class="ms-body">
+          <div class="group group--todo">
+            <div class="group__label">To Do</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.B1</span><span class="task__branch">refactor/dashboard-app-shell</span>
+                Dashboard onto shell + panels + keymap; add a Recent Activity panel sourced from submission history.
+                <span class="task__dep">depends on TR.A1 &middot; A2 &middot; A3</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.B2</span><span class="task__branch">refactor/file-picker-app-shell</span>
+                File picker; framed list + (later) preview panel; consistent nav keys.
+                <span class="task__dep">depends on TR.A2 &middot; A3</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.B3</span><span class="task__branch">refactor/workflow-app-shell</span>
+                Processing screen into the frame (sets up TR.C3).
+                <span class="task__dep">depends on TR.A2 &middot; A3</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.B4</span><span class="task__branch">refactor/results-screens-app-shell</span>
+                validation-explorer + check-results + success; two-pane framing with a real focused-panel border.
+                <span class="task__dep">depends on TR.A2 &middot; A3</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.B5</span><span class="task__branch">refactor/mapping-screens-app-shell</span>
+                mapping-builder / -editor / -save; fixes the weak two-panel focus model.
+                <span class="task__dep">depends on TR.A2 &middot; A3</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.B6</span><span class="task__branch">refactor/config-screens-app-shell</span>
+                settings + history + about.
+                <span class="task__dep">depends on TR.A2 &middot; A3</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <!-- Phase C -->
+      <details class="milestone">
+        <summary>
+          <span class="ms-head__phase">C</span>
+          <span class="ms-head__name">Signature UX features</span>
+          <span class="ms-head__meta">0/4 done &middot; ready</span>
+        </summary>
+        <div class="ms-body">
+          <div class="group group--todo">
+            <div class="group__label">To Do</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.C1</span><span class="task__branch">feat/add-help-overlay</span>
+                Global <code>?</code> overlay rendered from the keymap registry, on a z-index layer over the current
+                screen.
+                <span class="task__dep">depends on TR.A3</span>
+                <span class="task__xref">xref 2TI.12</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.C2</span><span class="task__branch">feat/add-toast-and-confirm-overlays</span>
+                Transient toasts (success/info/error) + a real confirm modal; replace the double-press deletes in
+                history &amp; mapping-builder.
+                <span class="task__dep">depends on TR.A1 &middot; A2</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.C3</span><span class="task__branch">feat/add-workflow-progress</span>
+                Progress bar (<code>progress.filled</code>/<code>empty</code>) + elapsed-time on WorkflowScreen.
+                <span class="task__dep">depends on TR.B3</span>
+                <span class="task__xref">xref 2TI.31</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.C4</span><span class="task__branch">feat/add-screen-transitions</span>
+                Subtle fade/slide on push/pop via the OpenTUI Timeline; fast, with a reduce-motion config toggle.
+                <span class="task__dep">depends on TR.A2</span>
+                <span class="task__xref">xref 2TI.18</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <!-- Phase D -->
+      <details class="milestone">
+        <summary>
+          <span class="ms-head__phase">D</span>
+          <span class="ms-head__name">Polish</span>
+          <span class="ms-head__meta">0/3 done &middot; blocked (needs B)</span>
+        </summary>
+        <div class="ms-body">
+          <div class="group group--blocked">
+            <div class="group__label">Blocked</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.D1</span><span class="task__branch">feat/add-command-palette</span>
+                Global fuzzy jump-to-screen/action.
+                <span class="task__dep">needs Phase B (shell across screens)</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.D2</span><span class="task__branch">feat/add-theme-toggle</span>
+                Light/dark switch in settings, persisted to config.
+                <span class="task__dep">depends on TR.A1 dark theme &middot; TR.B6</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.D3</span><span class="task__branch">feat/refine-schema-field-display</span>
+                Two-line + ancestor-grouped schema fields in mapping-editor.
+                <span class="task__dep">depends on TR.B5</span>
+                <span class="task__xref">xref 2TM.5 / 2TM.6</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <!-- Phase E -->
+      <details class="milestone">
+        <summary>
+          <span class="ms-head__phase">E</span>
+          <span class="ms-head__name">Tutorial &amp; demo resources</span>
+          <span class="ms-head__meta">0/3 done &middot; blocked (needs B/C)</span>
+        </summary>
+        <div class="ms-body">
+          <div class="group group--blocked">
+            <div class="group__label">Blocked</div>
+            <ul class="group__items">
+              <li class="task">
+                <span class="task__id">TR.E1</span><span class="task__branch">build/add-vhs-tooling</span>
+                <code>tapes/</code> dir, a <code>bun run demos</code> script over every <code>.tape</code>, documented
+                vhs/ttyd/ffmpeg prereqs,
+                and a reusable <code>tapes/_common.tape</code> mirroring the brand palette.
+                <span class="task__dep">needs Phases B&ndash;C (polished UI)</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.E2</span><span class="task__branch">docs/add-workflow-demo-tapes</span>
+                One <code>.tape</code> per core workflow (convert, validate, check, mapping builder); render GIFs into
+                <code>docs/assets/</code>.
+                <span class="task__dep">depends on TR.E1</span>
+              </li>
+              <li class="task">
+                <span class="task__id">TR.E3</span><span class="task__branch">docs/add-quickstart-tutorial</span>
+                Getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings.
+                <span class="task__dep">depends on TR.E2</span>
+                <span class="task__xref">xref 2UD.1</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <!-- ============ SECTION 3: DEPENDENCY GRAPH ============ -->
+      <div id="s3" class="sec-head"><span class="sec-num">03</span> Dependency Graph</div>
+
+      <p class="goal" style="margin-bottom:14px">
+        Outstanding tasks only (completed A1&ndash;A3 omitted). Edges read &ldquo;blocked by&rdquo;: a task points to
+        what must land first.
+      </p>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--in-progress-accent)"></div> Ready (deps met)
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--todo-accent)"></div> To do
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--blocked-accent)"></div> Blocked
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--milestone)"></div> Phase / foundation
+        </div>
+      </div>
+
+      <section class="diagram-shell">
+        <p class="diagram-shell__hint">
+          Ctrl/Cmd + wheel to zoom. Scroll to pan. Drag to pan when zoomed. Double-click to fit.
+        </p>
+        <div class="mermaid-wrap">
+          <div class="zoom-controls">
+            <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+            <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+            <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+            <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+            <span class="zoom-label">Loading...</span>
+          </div>
+          <div class="mermaid-viewport">
+            <div class="mermaid mermaid-canvas"></div>
+          </div>
+        </div>
+        <script type="text/plain" class="diagram-source">
+        graph TD
+          FND["Phase A foundations<br/>A1 theme · A2 primitives · A3 keymap<br/>(landed)"]:::mile
+
+          A4["TR.A4<br/>isolate test mocks"]:::ready
+
+          B1["TR.B1 dashboard shell"]:::ready
+          B2["TR.B2 file-picker shell"]:::ready
+          B3["TR.B3 workflow shell"]:::ready
+          B4["TR.B4 results shells"]:::ready
+          B5["TR.B5 mapping shells"]:::ready
+          B6["TR.B6 config shells"]:::ready
+
+          C1["TR.C1 help overlay"]:::ready
+          C2["TR.C2 toasts + confirm"]:::ready
+          C3["TR.C3 workflow progress"]:::open
+          C4["TR.C4 screen transitions"]:::ready
+
+          D1["TR.D1 command palette"]:::blocked
+          D2["TR.D2 theme toggle"]:::blocked
+          D3["TR.D3 schema field display"]:::blocked
+
+          E1["TR.E1 vhs tooling"]:::blocked
+          E2["TR.E2 workflow demo tapes"]:::blocked
+          E3["TR.E3 quickstart tutorial"]:::blocked
+
+          FND --> B1 & B2 & B3 & B4 & B5 & B6
+          FND --> C1 & C2 & C4
+
+          B3 --> C3
+
+          B1 & B2 & B3 & B4 & B5 & B6 --> D1
+          B6 --> D2
+          B5 --> D3
+
+          B1 & B2 & B3 & B4 & B5 & B6 --> E1
+          C1 & C2 & C3 & C4 --> E1
+          E1 --> E2 --> E3
+
+          classDef mile fill:#3E7F9622,stroke:#3E7F96,stroke-width:2px;
+          classDef ready fill:#E0934A26,stroke:#E0934A,stroke-width:1.5px;
+          classDef open fill:#A45A8422,stroke:#A45A84,stroke-width:1.5px;
+          classDef blocked fill:#D94E7426,stroke:#D94E74,stroke-width:1.5px;
+      </script>
+      </section>
+
+      <div class="callout">
+        <strong>Reading the graph.</strong> Every Phase B and C task is unblocked the moment the
+        Phase A foundations land &mdash; which they have. Phases D and E are gated: D needs the shell
+        rolled across screens (B), and E needs the polished UI from B&ndash;C before recording demos.
+        <code>TR.C3</code> is the one cross-phase edge inside the &ldquo;ready&rdquo; tier &mdash; it waits on
+        <code>TR.B3</code> framing the workflow screen first.
+      </div>
+
+      <!-- ============ SECTION 4: NEXT UP ============ -->
+      <div id="s4" class="sec-head"><span class="sec-num">04</span> Next Up</div>
+
+      <p class="goal" style="margin-bottom:8px">
+        Tasks with all dependencies met &mdash; pick any to start. Grouped by phase, ordered by the roadmap&rsquo;s
+        dependency sequence.
+      </p>
+
+      <div class="nextup-group">
+        <div class="nextup-group__title">Phase A &middot; Foundations</div>
+        <ul class="nextup-list">
+          <li class="nextup-item nextup-item--ready">
+            <span class="task__id">TR.A4</span> Isolate TUI test mocks &mdash; the last foundation task; closes the
+            order-dependent <code>bun test</code> failures.<span class="pill pill--ready">ready</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nextup-group">
+        <div class="nextup-group__title">Phase B &middot; App-shell rollout</div>
+        <ul class="nextup-list">
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B1</span> Dashboard onto shell + panels +
+            keymap; add Recent Activity panel.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B2</span> File picker; framed list +
+            consistent nav keys.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B3</span> Workflow/processing screen into
+            the frame (sets up TR.C3).<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B4</span> Results screens; two-pane
+            framing with focused-panel border.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B5</span> Mapping screens; fixes the weak
+            two-panel focus model.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.B6</span> Config screens (settings +
+            history + about).<span class="pill pill--ready">ready</span></li>
+        </ul>
+      </div>
+
+      <div class="nextup-group">
+        <div class="nextup-group__title">Phase C &middot; Signature UX</div>
+        <ul class="nextup-list">
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.C1</span> Global <code>?</code> help
+            overlay from the keymap registry.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.C2</span> Toasts + real confirm modal;
+            replace double-press deletes.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item nextup-item--ready"><span class="task__id">TR.C4</span> Subtle screen transitions via
+            OpenTUI Timeline + reduce-motion toggle.<span class="pill pill--ready">ready</span></li>
+          <li class="nextup-item"><span class="task__id">TR.C3</span> Workflow progress bar + elapsed time.<span
+              class="pill">waits on TR.B3</span></li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <strong>Suggested first move.</strong> <code>TR.A4</code> (test isolation) and <code>TR.B1</code>
+        (dashboard, the keymap reference adopter is already there) are the cleanest starting points &mdash;
+        A4 unblocks a green test suite, B1 proves the shell pattern end-to-end before the other five
+        screen clusters follow it.
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /wrap -->
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    const config = {
+      fitPadding: 28,
+      minHeight: 360,
+      maxHeightPx: 1100,
+      maxHeightVh: 0.84,
+      maxInitialZoom: 1.8,
+      minZoom: 0.08,
+      maxZoom: 6.5,
+      zoomStep: 0.14,
+      readabilityFloor: 0.58
+    };
+
+    const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+
+    let activeDrag = null;
+    addEventListener('mousemove', (e) => activeDrag?.onMove(e));
+    addEventListener('mouseup', () => {activeDrag?.onEnd(); activeDrag = null;});
+
+    const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      look: 'classic',
+      themeVariables: {
+        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+        fontSize: '16px',
+        primaryColor: isDark ? '#1E3A44' : '#E8EFF6',
+        primaryBorderColor: isDark ? '#5FA3BA' : '#3E7F96',
+        primaryTextColor: isDark ? '#FFF1F7' : '#3A0F28',
+        secondaryColor: isDark ? '#3A0F28' : '#F3D8E6',
+        secondaryBorderColor: isDark ? '#A45A84' : '#6F2A52',
+        secondaryTextColor: isDark ? '#FFF1F7' : '#3A0F28',
+        tertiaryColor: isDark ? '#2F0F20' : '#FFF1F7',
+        tertiaryBorderColor: isDark ? '#A45A84' : '#7A2A57',
+        tertiaryTextColor: isDark ? '#FFF1F7' : '#3A0F28',
+        lineColor: isDark ? '#A45A84' : '#7A2A57',
+        noteBkgColor: isDark ? '#1E3A44' : '#E8EFF6',
+        noteTextColor: isDark ? '#FFF1F7' : '#1E3A44',
+        noteBorderColor: isDark ? '#5FA3BA' : '#3E7F96',
+      }
+    });
+
+    function initDiagram(shell) {
+      const wrap = shell.querySelector('.mermaid-wrap');
+      const viewport = shell.querySelector('.mermaid-viewport');
+      const canvas = shell.querySelector('.mermaid-canvas');
+      const source = shell.querySelector('.diagram-source');
+      const label = shell.querySelector('.zoom-label');
+
+      if (!wrap || !viewport || !canvas || !source || !label) {
+        console.error('initDiagram: missing required elements in', shell);
+        return;
+      }
+
+      let zoom = 1;
+      let fitMode = 'contain';
+      let panX = 0;
+      let panY = 0;
+      let svgW = 0;
+      let svgH = 0;
+
+      let sx = 0, sy = 0, spx = 0, spy = 0;
+      let touchDist = 0, touchCx = 0, touchCy = 0;
+
+      function constrainPan() {
+        const vpW = viewport.clientWidth;
+        const vpH = viewport.clientHeight;
+        const rW = svgW * zoom;
+        const rH = svgH * zoom;
+        const pad = config.fitPadding;
+        panX = (rW + pad * 2 <= vpW) ? (vpW - rW) / 2 : clamp(panX, vpW - rW - pad, pad);
+        panY = (rH + pad * 2 <= vpH) ? (vpH - rH) / 2 : clamp(panY, vpH - rH - pad, pad);
+      }
+
+      function applyTransform() {
+        const svg = canvas.querySelector('svg');
+        if (!svg || !svgW) return;
+        constrainPan();
+        svg.style.width = (svgW * zoom) + 'px';
+        svg.style.height = (svgH * zoom) + 'px';
+        canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+        label.textContent = Math.round(zoom * 100) + '% — ' + fitMode;
+      }
+
+      function canPan() {
+        const rW = svgW * zoom;
+        const rH = svgH * zoom;
+        return rW + config.fitPadding * 2 > viewport.clientWidth
+          || rH + config.fitPadding * 2 > viewport.clientHeight;
+      }
+
+      function computeSmartFit() {
+        const vpW = viewport.clientWidth;
+        const vpH = viewport.clientHeight;
+        const aW = Math.max(80, vpW - config.fitPadding * 2);
+        const aH = Math.max(80, vpH - config.fitPadding * 2);
+        const contain = Math.min(aW / svgW, aH / svgH);
+        let z = contain;
+        let mode = 'contain';
+        if (contain < config.readabilityFloor) {
+          const chartR = svgH / svgW;
+          const vpR = vpH / Math.max(vpW, 1);
+          if (chartR >= vpR) {z = aW / svgW; mode = 'width-priority';}
+          else {z = aH / svgH; mode = 'height-priority';}
+        }
+        return {zoom: clamp(z, config.minZoom, config.maxInitialZoom), mode};
+      }
+
+      function fitDiagram() {
+        if (!svgW) return;
+        const fit = computeSmartFit();
+        zoom = fit.zoom;
+        fitMode = fit.mode;
+        panX = (viewport.clientWidth - svgW * zoom) / 2;
+        panY = (viewport.clientHeight - svgH * zoom) / 2;
+        applyTransform();
+      }
+
+      function setOneToOne() {
+        zoom = clamp(1, config.minZoom, config.maxZoom);
+        fitMode = '1:1';
+        panX = (viewport.clientWidth - svgW * zoom) / 2;
+        panY = (viewport.clientHeight - svgH * zoom) / 2;
+        applyTransform();
+      }
+
+      function zoomAround(factor, cx, cy) {
+        const next = clamp(zoom * factor, config.minZoom, config.maxZoom);
+        const ratio = next / zoom;
+        panX = cx - ratio * (cx - panX);
+        panY = cy - ratio * (cy - panY);
+        zoom = next;
+        fitMode = 'custom';
+        applyTransform();
+      }
+
+      function readSvgNaturalSize(svg) {
+        let w = 0, h = 0;
+        if (svg.viewBox?.baseVal?.width > 0) {w = svg.viewBox.baseVal.width; h = svg.viewBox.baseVal.height;}
+        if (!w) {w = parseFloat(svg.getAttribute('width')) || 0; h = parseFloat(svg.getAttribute('height')) || 0;}
+        if (!w) {const b = svg.getBBox(); w = b.width; h = b.height;}
+        if (!w) {const r = svg.getBoundingClientRect(); w = r.width || 1000; h = r.height || 700;}
+        if (!svg.getAttribute('viewBox')) {svg.setAttribute('viewBox', `0 0 ${w} ${h}`);}
+        return {w, h};
+      }
+
+      function setAdaptiveHeight() {
+        if (!svgW) return;
+        const usableW = Math.max(280, wrap.getBoundingClientRect().width - 2);
+        const idealH = (svgH / svgW) * usableW + config.fitPadding * 2;
+        const maxVp = Math.floor(innerHeight * config.maxHeightVh);
+        const hardMax = Math.min(config.maxHeightPx, Math.max(config.minHeight + 40, maxVp));
+        wrap.style.height = Math.round(clamp(idealH, config.minHeight, hardMax)) + 'px';
+      }
+
+      function openInNewTab() {
+        const svg = canvas.querySelector('svg');
+        if (!svg) return;
+        const clone = svg.cloneNode(true);
+        clone.style.width = '';
+        clone.style.height = '';
+        const bg = isDark ? '#220817' : '#FFF1F7';
+        const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Diagram</title><style>
+      body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:${bg};padding:40px;box-sizing:border-box}
+      svg{max-width:100%;max-height:90vh;height:auto}
+      </style></head><body>${clone.outerHTML}</body></html>`;
+        open(URL.createObjectURL(new Blob([html], {type: 'text/html'})), '_blank');
+      }
+
+      async function render() {
+        try {
+          const code = source.textContent.trim();
+          if (!code) {label.textContent = 'Error: Empty source'; return;}
+          const id = 'diagram-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+          const {svg} = await mermaid.render(id, code);
+          const parsed = new DOMParser().parseFromString(svg, 'text/html');
+          const parsedSvg = parsed.body.querySelector('svg');
+          if (!parsedSvg) {label.textContent = 'Error: No SVG'; return;}
+          canvas.replaceChildren(document.adoptNode(parsedSvg));
+
+          const svgNode = canvas.querySelector('svg');
+          if (!svgNode) {label.textContent = 'Error: No SVG'; return;}
+
+          const size = readSvgNaturalSize(svgNode);
+          svgW = size.w;
+          svgH = size.h;
+
+          svgNode.removeAttribute('width');
+          svgNode.removeAttribute('height');
+          svgNode.style.maxWidth = 'none';
+          svgNode.style.display = 'block';
+
+          setAdaptiveHeight();
+          fitDiagram();
+        } catch (err) {
+          console.error('Mermaid render failed:', err);
+          label.textContent = 'Error: ' + (err.message || 'Render failed');
+        }
+      }
+
+      const actions = {
+        'zoom-in': () => zoomAround(1 + config.zoomStep, viewport.clientWidth / 2, viewport.clientHeight / 2),
+        'zoom-out': () => zoomAround(1 / (1 + config.zoomStep), viewport.clientWidth / 2, viewport.clientHeight / 2),
+        'zoom-fit': fitDiagram,
+        'zoom-one': setOneToOne,
+        'zoom-expand': openInNewTab
+      };
+
+      Object.entries(actions).forEach(([action, handler]) => {
+        wrap.querySelector(`[data-action="${action}"]`)?.addEventListener('click', handler);
+      });
+
+      viewport.addEventListener('dblclick', fitDiagram);
+
+      viewport.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const rect = viewport.getBoundingClientRect();
+          const factor = e.deltaY < 0 ? 1 + config.zoomStep : 1 / (1 + config.zoomStep);
+          zoomAround(factor, e.clientX - rect.left, e.clientY - rect.top);
+          return;
+        }
+        if (canPan()) {
+          e.preventDefault();
+          panX -= e.deltaX;
+          panY -= e.deltaY;
+          applyTransform();
+        }
+      }, {passive: false});
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.zoom-controls') || !canPan()) return;
+        wrap.classList.add('is-panning');
+        sx = e.clientX; sy = e.clientY; spx = panX; spy = panY;
+        e.preventDefault();
+        activeDrag = {
+          onMove: (ev) => {
+            panX = spx + (ev.clientX - sx);
+            panY = spy + (ev.clientY - sy);
+            applyTransform();
+          },
+          onEnd: () => {wrap.classList.remove('is-panning');}
+        };
+      });
+
+      viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          sx = e.touches[0].clientX; sy = e.touches[0].clientY; spx = panX; spy = panY;
+        } else if (e.touches.length === 2) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          touchDist = Math.sqrt(dx * dx + dy * dy);
+          const r = viewport.getBoundingClientRect();
+          touchCx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+          touchCy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+        }
+      }, {passive: true});
+
+      viewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && canPan()) {
+          if (touchDist > 0) {
+            sx = e.touches[0].clientX; sy = e.touches[0].clientY; spx = panX; spy = panY; touchDist = 0;
+          }
+          e.preventDefault();
+          panX = spx + (e.touches[0].clientX - sx);
+          panY = spy + (e.touches[0].clientY - sy);
+          applyTransform();
+        } else if (e.touches.length === 2 && touchDist > 0) {
+          e.preventDefault();
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          zoomAround(d / touchDist, touchCx, touchCy);
+          touchDist = d;
+        }
+      }, {passive: false});
+
+      new ResizeObserver(() => {
+        if (svgW) {setAdaptiveHeight(); fitDiagram();}
+      }).observe(wrap);
+
+      render();
+    }
+
+    document.querySelectorAll('.diagram-shell').forEach(initDiagram);
+  </script>
+
+  <script>
+    (function () {
+      const toc = document.getElementById('toc');
+      if (!toc) return;
+      const links = toc.querySelectorAll('a');
+      const sections = [];
+
+      links.forEach(link => {
+        const id = link.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) sections.push({id, el, link});
+      });
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove('active'));
+            const match = sections.find(s => s.el === entry.target);
+            if (match) {
+              match.link.classList.add('active');
+              if (window.innerWidth <= 1000) {
+                match.link.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'});
+              }
+            }
+          }
+        });
+      }, {rootMargin: '-10% 0px -80% 0px'});
+
+      sections.forEach(s => observer.observe(s.el));
+
+      links.forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          const id = link.getAttribute('href').slice(1);
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({behavior: 'smooth', block: 'start'});
+            history.replaceState(null, '', '#' + id);
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+
+</html>

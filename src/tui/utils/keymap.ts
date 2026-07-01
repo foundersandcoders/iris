@@ -5,7 +5,7 @@
  * screens no longer hand-roll their own keypress listeners.
  */
 import type { KeyEvent } from '@opentui/core';
-import { symbols } from '../../../brand/theme';
+import { symbols } from '../../../assets/brand/theme';
 import type { Renderer } from '../types';
 
 /** A single declarative key binding. */

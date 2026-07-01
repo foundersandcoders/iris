@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme } from '../../brand/theme';
+import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme } from '../../assets/brand/theme';
 import { RGBA } from '@opentui/core';
 
 const hexPattern = /^#[0-9a-f]{6}$/i;

@@ -11,7 +11,7 @@ import {
 	underline,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../../../brand/theme';
+import { theme, PALETTE } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { DEFAULT_CONFIG } from '../../lib/types/configTypes';
 
