@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { RGBA } from '@opentui/core';
 import { panel } from '../../../src/tui/components/panel';
-import { theme } from '../../../brand/theme';
+import { theme } from '../../../assets/brand/theme';
 import * as fixtures from '../../fixtures/tui/tui';
 
 describe('panel()', () => {

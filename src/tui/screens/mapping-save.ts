@@ -13,9 +13,9 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { IlrIlrMappingConfig } from '../../lib/types/ilrMappingTypes';
+import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import { createStorage } from '../../lib/storage';
 import { validateMappingStructure } from '../../lib/mappings/validate';
 

@@ -9,7 +9,7 @@ import {
 	TabSelectRenderable,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { ValidationIssue, ValidationResult } from '../../lib/utils/csv/csvValidator';
 import type { SchemaValidationIssue } from '../../lib/types/schemaTypes';

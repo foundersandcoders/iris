@@ -4,7 +4,7 @@
 import { BoxRenderable, TextRenderable, type KeyEvent } from '@opentui/core';
 import { SpinnerRenderable } from 'opentui-spinner';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';

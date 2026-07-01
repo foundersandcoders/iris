@@ -16,7 +16,7 @@ import { SettingsScreen } from './screens/settings';
 import { AboutScreen } from './screens/about';
 import { HistoryScreen } from './screens/history';
 import type { Renderer } from './types';
-import { theme } from '../../brand/theme';
+import { theme } from '../../assets/brand/theme';
 
 interface TUIOptions {
 	startCommand?: string;

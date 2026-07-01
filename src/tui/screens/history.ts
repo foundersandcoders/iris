@@ -10,7 +10,7 @@ import {
 import { join } from 'path';
 import { stat } from 'fs/promises';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import type { HistoryEntry, SubmissionMetadata } from '../../lib/types/storageTypes';
