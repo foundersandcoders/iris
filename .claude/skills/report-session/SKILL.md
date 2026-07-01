@@ -1,10 +1,11 @@
 ---
-description: "=== IRIS {{ Haiku }} === Generate a work record summarizing recent development"
-model: claude-haiku-4-5
+name: "Iris: Create Work Record"
+description: "Generate a work record summarizing recent development"
+model: haiku
 ---
 
 <task overview="Create a work record by analyzing recent git commits, code changes, and session context.">
-<template location=".claude/doc-templates/work-record.md" />
+<template location=".claude/templates/work-record.md" />
 <steps>
 1. Read the work record template
 2. Establish period of work you need to cover
