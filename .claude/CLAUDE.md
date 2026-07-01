@@ -1,8 +1,11 @@
 # Iris
+
 ## Project Context
+
 Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders and Coders' existing Electron-based export tool. It converts learner data from CSV exports into ILR-compliant XML for ESFA submission, with explicit validation and transformation logic.
 
 ### Key Features
+
 - **TUI-first interface:** Beautiful full-screen terminal application as primary UX
 - Header-based CSV parsing (tolerates column reordering)
 - Semantic validation (beyond structural XML validation)
@@ -15,6 +18,7 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 ---
 
 ## Tech Stack
+
 - **Runtime:** Bun
 - **TUI Framework:** @opentui/core (primary interface)
 - **Desktop Framework:** Tauri (Rust backend, no Rust code written)
@@ -26,27 +30,33 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 ---
 
 ## Conventions
+
 - **Package manager:** bun
 - **Testing framework:** Vitest
 - **Commit convention:** Conventional Commits with KSB extraction
 - **Versioning:** Semantic versioning via `svu` and automated scripts
 
 ### Version Management
+
 Version is managed from a single source of truth (`package.json`) with automated synchronization:
 
 **Single source of truth:**
+
 - `package.json` - npm/bun version (source)
 
 **Auto-synced at runtime (imports package.json):**
+
 - `src/lib/types/config.ts` - ILR submission metadata
 - `src/tui/utils/layout.ts` - TUI header display
 
 **Auto-synced at build time (via script):**
+
 - `src-tauri/Cargo.toml` - Rust package version
 - `src-tauri/tauri.conf.json` - Tauri app version
 - `README.md` - Documentation header
 
 **Workflow:**
+
 ```bash
 # After merging to main, check next version
 svu next                    # Shows what version should be next
@@ -64,21 +74,27 @@ git push --tags
 ```
 
 ### Plans
+
 - Make the plan extremely concise; sacrifice grammar in favour of concision.
 - At the end of the plan, present me with a list of unresolved questions (if any)
 
 ### Testing
+
 - **Fixtures pattern:** Test data lives in `tests/fixtures/<module>.ts` as named exports
 - **Import style:** `import * as fixtures from '../fixtures/<module>'`
 - **Rationale:** Keeps tests focused on assertions, makes test data reusable, and simplifies maintenance
 
 ### Code Editing
+
 **IMPORTANT:** Do not edit files directly unless explicitly asked. Instead:
+
 1. Show the proposed code
 2. Wait for the user to make the edit themselves
 
 ### Database
+
 No database. File-based storage for:
+
 - ILR XML outputs (saved to `~/.iris/submissions/`)
 - Cross-submission history for validation
 - User preferences and configuration
@@ -86,6 +102,7 @@ No database. File-based storage for:
 ---
 
 ## Key Commands
+
 ```bash
 # Development
 bun install              # Install dependencies
@@ -121,12 +138,15 @@ bun install -g .         # Install globally from project
 ```
 
 ## Git Workflow
+
 ### Branch Naming
+
 Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 
 **Structure:** `<prefix>/<short-description>`
 
 **Rules:**
+
 - All lowercase
 - Hyphens between words (no underscores or spaces)
 - Imperative mood: `add-feature`, not `adds-feature` or `adding-feature`
@@ -136,6 +156,7 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 **Common prefixes:** `feat/`, `fix/`, `enhance/`, `refactor/`, `test/`, `docs/`, `config/`
 
 ### Branch Granularity
+
 - Branches must represent **minimal tangible improvements**
 - Scope: Much smaller than individual roadmap tasks
 - Example: A roadmap task like "Build semantic validator" would be split into multiple branches:
@@ -146,12 +167,14 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 - When in doubt, go smaller
 
 ### Commit Granularity
+
 - Commit frequently with clear, granular changes
 - More commits = more portfolio evidence
 - Always clear code edits before making them
 - Use conventional commit format (see Versioning below)
 
 ### Verification Before Committing
+
 - Never commit code that hasn't been verified to work
 - For new features: Test manually or run automated tests
 - For bug fixes: Verify the fix resolves the issue
@@ -159,6 +182,7 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 - Always run the code before committing
 
 ### Versioning with svu
+
 - Use conventional commits for automatic semantic versioning:
   - `fix:` → patch bump (0.1.0 → 0.1.1)
   - `feat:` → minor bump (0.1.0 → 0.2.0)
@@ -168,7 +192,8 @@ Follow conventions from ~/.claude/docs/git-branch-naming-conventions.md:
 - See ~/.claude/docs/cli-tools-usage-guide.md#2.1 for full workflow
 
 ## Project Structure
-```
+
+```text
 iris/
 ├── src/
 │   ├── lib/               # Shared core logic (used by TUI, commands, and desktop)
@@ -217,6 +242,7 @@ iris/
 ```
 
 ## Development Workflow
+
 1. **Start work:** Check current roadmap milestone
 2. **During development:** Commit with conventional format
 3. **Evidence tracking:** Automatic via `post-commit` hook
@@ -224,9 +250,11 @@ iris/
 5. **Testing:** Run tests before pushing (enforced by `pre-push` hook)
 
 ## Portfolio Evidence
+
 This project uses automated evidence tracking via git hooks. Every commit with KSB-relevant work is automatically analyzed and added to `~/.claude/docs/evidence-tracker.md`.
 
 ## Getting Help
+
 - **Claude Code:** Use `/project/init` to reconfigure
 - **Roadmaps:** See `docs/roadmaps/` (archived into 3 phases: [Phase 1](docs/roadmaps/archive/2026/01/phase-1-mvp-features.md), [Phase 2](docs/roadmaps/archive/2026/01/phase-2-production-features.md), [Phase 3](docs/roadmaps/archive/2026/01/phase-3-future-features.md))
 - **Architecture:** See `docs/adrs/`
