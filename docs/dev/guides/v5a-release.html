@@ -13,63 +13,36 @@
   --font-body: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
 
-  /* Palette: deep blue + slate + amber */
-  --bg: #f4f6f9;
-  --surface: #ffffff;
-  --surface2: #eef1f6;
-  --surface-elevated: #f9fafb;
-  --border: rgba(30, 50, 90, 0.08);
-  --border-bright: rgba(30, 50, 90, 0.18);
-  --text: #1a2340;
-  --text-dim: #5c6b8a;
+  /* Palette: Iris brand, THEMES.themeDark (assets/brand/theme.ts) */
+  --bg: #220817;
+  --surface: #3a0f28;
+  --surface2: #3a0f28;
+  --surface-elevated: #451232;
+  --border: rgba(164, 90, 132, 0.20);
+  --border-bright: rgba(164, 90, 132, 0.35);
+  --text: #fff1f7;
+  --text-dim: #d6a3bf;
 
   /* Semantic accents */
-  --blue: #1d4ed8;
-  --blue-dim: rgba(29, 78, 216, 0.08);
-  --blue-mid: rgba(29, 78, 216, 0.15);
-  --amber: #b45309;
-  --amber-dim: rgba(180, 83, 9, 0.08);
-  --amber-bright: rgba(180, 83, 9, 0.16);
-  --green: #15803d;
-  --green-dim: rgba(21, 128, 61, 0.08);
-  --green-mid: rgba(21, 128, 61, 0.15);
-  --red: #b91c1c;
-  --red-dim: rgba(185, 28, 28, 0.08);
-  --red-mid: rgba(185, 28, 28, 0.15);
-  --teal: #0e7490;
-  --teal-dim: rgba(14, 116, 144, 0.08);
+  --blue: #a45a84;
+  --blue-dim: rgba(164, 90, 132, 0.12);
+  --blue-mid: rgba(164, 90, 132, 0.22);
+  --amber: #e0934a;
+  --amber-dim: rgba(224, 147, 74, 0.12);
+  --amber-bright: rgba(224, 147, 74, 0.22);
+  --green: #4fae7c;
+  --green-dim: rgba(79, 174, 124, 0.12);
+  --green-mid: rgba(79, 174, 124, 0.22);
+  --red: #d94e74;
+  --red-dim: rgba(217, 78, 116, 0.12);
+  --red-mid: rgba(217, 78, 116, 0.22);
+  --teal: #5fa3ba;
+  --teal-dim: rgba(95, 163, 186, 0.12);
+  --teal-mid: rgba(95, 163, 186, 0.22);
 
   /* Aliases */
-  --accent: var(--blue);
-  --accent-dim: var(--blue-dim);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1422;
-    --surface: #151f33;
-    --surface2: #1c2840;
-    --surface-elevated: #1a2440;
-    --border: rgba(120, 160, 240, 0.08);
-    --border-bright: rgba(120, 160, 240, 0.18);
-    --text: #dde4f4;
-    --text-dim: #7a90bc;
-
-    --blue: #60a5fa;
-    --blue-dim: rgba(96, 165, 250, 0.10);
-    --blue-mid: rgba(96, 165, 250, 0.18);
-    --amber: #fbbf24;
-    --amber-dim: rgba(251, 191, 36, 0.10);
-    --amber-bright: rgba(251, 191, 36, 0.18);
-    --green: #4ade80;
-    --green-dim: rgba(74, 222, 128, 0.10);
-    --green-mid: rgba(74, 222, 128, 0.18);
-    --red: #f87171;
-    --red-dim: rgba(248, 113, 113, 0.10);
-    --red-mid: rgba(248, 113, 113, 0.18);
-    --teal: #22d3ee;
-    --teal-dim: rgba(34, 211, 238, 0.10);
-  }
+  --accent: #7a2a57;
+  --accent-dim: rgba(122, 42, 87, 0.15);
 }
 
 /* ============ RESET ============ */
@@ -119,6 +92,11 @@ body {
 }
 
 .main { min-width: 0; }
+
+/* ============ TABS ============ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.25s ease-out both; }
+.tab-panel > h2.sec-head:first-child { margin-top: 8px; }
 
 /* ============ TOC ============ */
 nav.toc {
@@ -634,9 +612,9 @@ em { font-style: italic; }
 <nav class="toc" id="toc">
   <div class="toc-title">Contents</div>
   <a href="#s0">Overview</a>
-  <a href="#s1">1 &mdash; Distribute</a>
-  <a href="#s2">2 &mdash; Install</a>
-  <a href="#s3">3 &mdash; Replace</a>
+  <a href="#s1">1 &middot; Distribute</a>
+  <a href="#s2">2 &middot; Install</a>
+  <a href="#s3">3 &middot; Replace</a>
   <a href="#s4">Quick Reference</a>
 </nav>
 
@@ -646,7 +624,7 @@ em { font-style: italic; }
   <!-- HERO -->
   <div class="anim" style="--i:0">
     <h1>Distributing &amp; Installing Iris via GitHub Releases</h1>
-    <p class="subtitle">foundersandcoders/iris &mdash; standalone binary, macOS (Apple Silicon)</p>
+    <p class="subtitle">foundersandcoders/iris &middot; standalone binary, macOS (Apple Silicon)</p>
   </div>
 
   <div class="hero-badges anim" style="--i:1">
@@ -655,42 +633,49 @@ em { font-style: italic; }
     <span class="badge badge--green">~62 MB · darwin-arm64</span>
   </div>
 
-  <p class="lead anim" style="--i:2">
-    Iris compiles into a <strong>self-contained executable</strong> via Bun&rsquo;s
-    <code>--compile</code> mode. The Bun runtime, all npm dependencies, and the ESFA schema
-    are embedded inside a single binary. The target machine needs no Bun, no Node, and no
-    clone of the repository.
-  </p>
+  <!-- ===== TAB: OVERVIEW ===== -->
+  <section class="tab-panel active" id="s0">
+    <h2 class="sec-head anim" style="--i:2">
+      <span class="sec-num">&#8203;</span>
+      Overview
+    </h2>
 
-  <!-- LIFECYCLE DIAGRAM -->
-  <div id="s0" class="sec-head" style="display:none">Overview</div>
+    <p class="lead anim" style="--i:2">
+      Iris compiles into a <strong>self-contained executable</strong> via Bun&rsquo;s
+      <code>--compile</code> mode. The Bun runtime, all npm dependencies, and the ESFA schema
+      are embedded inside a single binary. The target machine needs no Bun, no Node, and no
+      clone of the repository.
+    </p>
 
-  <section class="diagram-shell anim" style="--i:3">
-    <p class="diagram-shell__hint">Ctrl/Cmd + scroll to zoom &middot; drag to pan &middot; double-click to fit</p>
-    <div class="mermaid-wrap">
-      <div class="zoom-controls">
-        <button type="button" data-action="zoom-in" title="Zoom in">+</button>
-        <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
-        <button type="button" data-action="zoom-fit" title="Fit">&circlearrowleft;</button>
-        <button type="button" data-action="zoom-one" title="1:1">1:1</button>
-        <button type="button" data-action="zoom-expand" title="Open full">&target;</button>
-        <span class="zoom-label">Loading&hellip;</span>
+    <!-- LIFECYCLE DIAGRAM -->
+    <section class="diagram-shell anim" style="--i:3">
+      <p class="diagram-shell__hint">Ctrl/Cmd + scroll to zoom &middot; drag to pan &middot; double-click to fit</p>
+      <div class="mermaid-wrap">
+        <div class="zoom-controls">
+          <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+          <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+          <button type="button" data-action="zoom-fit" title="Fit">&circlearrowleft;</button>
+          <button type="button" data-action="zoom-one" title="1:1">1:1</button>
+          <button type="button" data-action="zoom-expand" title="Open full">&target;</button>
+          <span class="zoom-label">Loading&hellip;</span>
+        </div>
+        <div class="mermaid-viewport">
+          <div class="mermaid mermaid-canvas"></div>
+        </div>
       </div>
-      <div class="mermaid-viewport">
-        <div class="mermaid mermaid-canvas"></div>
-      </div>
-    </div>
-    <script type="text/plain" class="diagram-source">
+      <script type="text/plain" class="diagram-source">
 flowchart LR
   A["bun run build:tui:mac<br/>(build)"] --> B["gh release create<br/>(publish)"]
   B --> C["gh release download<br/>(install)"]
   C --> D["chmod + xattr<br/>(unblock)"]
   D --> E["iris<br/>(run)"]
-    </script>
+      </script>
+    </section>
   </section>
 
-  <!-- ===== SECTION 1: DISTRIBUTE ===== -->
-  <h2 id="s1" class="sec-head anim" style="--i:4">
+  <!-- ===== TAB: SECTION 1 DISTRIBUTE ===== -->
+  <section class="tab-panel" id="s1">
+  <h2 class="sec-head anim" style="--i:4">
     <span class="sec-num">01</span>
     Distribute as a GitHub Release
   </h2>
@@ -701,7 +686,7 @@ flowchart LR
     every version tag triggers a build.
   </p>
 
-  <h3 class="sub-head anim" style="--i:6">A &mdash; Manual release (the proven path)</h3>
+  <h3 class="sub-head anim" style="--i:6">A &middot; Manual release (the proven path)</h3>
   <p class="anim" style="--i:6">
     This mirrors how <code>v5.0.0</code> was cut. You run the build locally, then create the
     GitHub Release with the <code>gh</code> CLI.
@@ -742,7 +727,7 @@ git push origin main --tags</pre>
           <code>src/cli.ts</code> into a standalone Mach-O executable at
           <code>dist/iris-darwin-arm64</code>.
           On macOS it automatically applies an <em>ad-hoc code signature</em>
-          (<code>codesign --sign -</code>) &mdash; a non-fatal step that reduces some
+          (<code>codesign --sign -</code>), a non-fatal step that reduces some
           Gatekeeper friction.
         </p>
         <div class="code-block">
@@ -793,7 +778,7 @@ git push origin main --tags</pre>
   </ol>
 
   <!-- Subsection B: Actions -->
-  <h3 class="sub-head anim" style="--i:8">B &mdash; Automate with GitHub Actions</h3>
+  <h3 class="sub-head anim" style="--i:8">B &middot; Automate with GitHub Actions</h3>
 
   <p class="anim" style="--i:8">
     Push a version tag (<code>git push --tags</code>) and GitHub Actions builds and
@@ -811,7 +796,7 @@ git push origin main --tags</pre>
   </div>
 
   <div class="code-block anim" style="--i:9">
-    <span class="code-label">.github/workflows/release.yml &mdash; create this file</span>
+    <span class="code-label">.github/workflows/release.yml &middot; create this file</span>
     <pre>name: Build and Release Iris TUI
 
 on:
@@ -864,16 +849,18 @@ git push origin main --tags     # ← triggers the workflow</pre>
     <p>The Actions run builds the binary, creates the GitHub Release, and attaches
     <code>iris-darwin-arm64</code> as an asset. No further manual steps.</p>
   </div>
+  </section>
 
-  <!-- ===== SECTION 2: INSTALL ===== -->
-  <h2 id="s2" class="sec-head anim" style="--i:11">
+  <!-- ===== TAB: SECTION 2 INSTALL ===== -->
+  <section class="tab-panel" id="s2">
+  <h2 class="sec-head anim" style="--i:11">
     <span class="sec-num">02</span>
     Install on a New Machine
   </h2>
 
   <p class="anim" style="--i:12">
     The compiled binary is fully standalone. The target machine needs
-    <strong>no Bun, no Node, no npm</strong> &mdash; just macOS on Apple Silicon.
+    <strong>no Bun, no Node, no npm</strong>, just macOS on Apple Silicon.
   </p>
 
   <div class="callout callout--info anim" style="--i:12">
@@ -930,7 +917,7 @@ gh release download --repo foundersandcoders/iris \
         <div class="code-block">
           <span class="code-label">shell</span>
           <pre>xattr -d com.apple.quarantine ~/Downloads/iris-darwin-arm64
-# If it prints "No such xattr" — that is fine. The attribute was not present.</pre>
+# If it prints "No such xattr", that is fine. The attribute was not present.</pre>
         </div>
         <div class="callout callout--warn">
           <div class="callout-title">&#9888; Gatekeeper may still block the binary</div>
@@ -963,7 +950,7 @@ mv ~/Downloads/iris-darwin-arm64 ~/.bun/bin/iris</pre>
           <div class="callout-title">&#9432; PATH is already set by Bun</div>
           <p>
             If you installed Bun, <code>~/.bun/bin</code> is already on your
-            <code>$PATH</code> &mdash; no extra configuration needed.
+            <code>$PATH</code>, no extra configuration needed.
             If <code>iris</code> is not found after moving the binary, add this
             fallback line to <code>~/.zshrc</code> and reload:
           </p>
@@ -987,7 +974,7 @@ mv ~/Downloads/iris-darwin-arm64 ~/.bun/bin/iris</pre>
 # Launches the full-screen TUI. Press q or Ctrl-C to quit.</pre>
         </div>
         <p>
-          On first run, Iris creates its data directories automatically &mdash; no manual
+          On first run, Iris creates its data directories automatically, no manual
           setup needed.
         </p>
       </div>
@@ -1016,17 +1003,19 @@ mv ~/Downloads/iris-darwin-arm64 ~/.bun/bin/iris</pre>
       </tbody>
     </table>
   </div>
+  </section>
 
-  <!-- ===== SECTION 3: REPLACE ===== -->
-  <h2 id="s3" class="sec-head anim" style="--i:15">
+  <!-- ===== TAB: SECTION 3 REPLACE ===== -->
+  <section class="tab-panel" id="s3">
+  <h2 class="sec-head anim" style="--i:15">
     <span class="sec-num">03</span>
     Replace an Old Installation
   </h2>
 
   <p class="anim" style="--i:16">
     Upgrading Iris is a simple binary swap. Because all user data lives in
-    <code>~/.iris/</code> and <code>~/Documents/Iris/</code> &mdash; not inside the binary
-    &mdash; overwriting <code>iris</code> on PATH is safe. Configuration, field mappings,
+    <code>~/.iris/</code> and <code>~/Documents/Iris/</code>, not inside the binary,
+    overwriting <code>iris</code> on PATH is safe. Configuration, field mappings,
     history, and all generated XML are untouched.
   </p>
 
@@ -1036,7 +1025,7 @@ mv ~/Downloads/iris-darwin-arm64 ~/.bun/bin/iris</pre>
       Swapping the binary replaces <strong>only the executable</strong>.
       <code>~/.iris/</code> (config, mappings, history) and
       <code>~/Documents/Iris/</code> (ILR XML output, custom schemas) are never
-      touched by the installer &mdash; they are created on first run and left alone
+      touched by the installer, they are created on first run and left alone
       on every subsequent install.
     </p>
   </div>
@@ -1112,11 +1101,13 @@ xattr -d com.apple.quarantine ~/Downloads/iris-darwin-arm64</pre>
       </div>
     </li>
   </ol>
+  </section>
 
-  <!-- ===== SECTION 4: QUICK REFERENCE ===== -->
+  <!-- ===== TAB: SECTION 4 QUICK REFERENCE ===== -->
+  <section class="tab-panel" id="s4">
   <div class="divider anim" style="--i:18"></div>
 
-  <h2 id="s4" class="sec-head anim" style="--i:18">
+  <h2 class="sec-head anim" style="--i:18">
     <span class="sec-num">&#8203;</span>
     Quick Reference
   </h2>
@@ -1147,6 +1138,7 @@ mv -f iris-darwin-arm64 \
   ~/.bun/bin/iris</pre>
     </div>
   </div>
+  </section>
 
 </div><!-- /main -->
 </div><!-- /wrap -->
@@ -1155,8 +1147,7 @@ mv -f iris-darwin-arm64 \
 <script type="module">
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-
+// Iris brand, THEMES.themeDark (assets/brand/theme.ts); this guide is permanently dark-themed
 mermaid.initialize({
   startOnLoad: false,
   theme: 'base',
@@ -1164,17 +1155,17 @@ mermaid.initialize({
   themeVariables: {
     fontFamily: "'IBM Plex Sans', 'Helvetica Neue', sans-serif",
     fontSize: '14px',
-    primaryColor:       isDark ? '#1e3a5f' : '#dbeafe',
-    primaryBorderColor: isDark ? '#60a5fa' : '#1d4ed8',
-    primaryTextColor:   isDark ? '#dde4f4' : '#1a2340',
-    secondaryColor:     isDark ? '#1a2e1a' : '#dcfce7',
-    secondaryBorderColor: isDark ? '#4ade80' : '#15803d',
-    secondaryTextColor: isDark ? '#dde4f4' : '#1a2340',
-    tertiaryColor:      isDark ? '#2e1a0a' : '#fef3c7',
-    tertiaryBorderColor: isDark ? '#fbbf24' : '#b45309',
-    tertiaryTextColor:  isDark ? '#dde4f4' : '#1a2340',
-    lineColor:          isDark ? '#7a90bc' : '#5c6b8a',
-    edgeLabelBackground: isDark ? '#151f33' : '#f4f6f9',
+    primaryColor:       '#3a0f28',
+    primaryBorderColor: '#a45a84',
+    primaryTextColor:   '#fff1f7',
+    secondaryColor:     '#1e3a2c',
+    secondaryBorderColor: '#4fae7c',
+    secondaryTextColor: '#fff1f7',
+    tertiaryColor:      '#3a2716',
+    tertiaryBorderColor: '#e0934a',
+    tertiaryTextColor:  '#fff1f7',
+    lineColor:          '#d6a3bf',
+    edgeLabelBackground: '#220817',
   }
 });
 
@@ -1221,7 +1212,7 @@ function initDiagram(shell) {
     svg.style.width  = (svgW * zoom) + 'px';
     svg.style.height = (svgH * zoom) + 'px';
     canvas.style.transform = `translate(${panX}px, ${panY}px)`;
-    label.textContent = Math.round(zoom * 100) + '% — ' + fitMode;
+    label.textContent = Math.round(zoom * 100) + '% · ' + fitMode;
   }
 
   function canPan() {
@@ -1269,7 +1260,7 @@ function initDiagram(shell) {
     const clone = svg.cloneNode(true);
     clone.style.width = '';
     clone.style.height = '';
-    const bg = isDark ? '#0d1422' : '#f4f6f9';
+    const bg = '#220817';
     const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <title>Iris Release Lifecycle</title><style>
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
@@ -1390,46 +1381,63 @@ svg{max-width:100%;max-height:90vh;height:auto}
 
   new ResizeObserver(() => { if (svgW) { setAdaptiveHeight(); fitDiagram(); } }).observe(wrap);
 
+  // Exposed so the tab-switcher can re-fit after showing a hidden diagram
+  // (display:none collapses clientWidth/clientHeight to 0 while inactive).
+  shell._refit = () => { if (svgW) { setAdaptiveHeight(); fitDiagram(); } };
+
   render();
 }
 
 document.querySelectorAll('.diagram-shell').forEach(initDiagram);
 </script>
 
-<!-- ===== SCROLL SPY ===== -->
+<!-- ===== TAB SWITCHER ===== -->
 <script>
 (function() {
   const toc = document.getElementById('toc');
   const links = Array.from(toc.querySelectorAll('a'));
-  const sections = links
-    .map(link => ({ link, el: document.getElementById(link.getAttribute('href').slice(1)) }))
-    .filter(s => s.el);
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+  const byId = id => document.getElementById(id);
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        links.forEach(l => l.classList.remove('active'));
-        const match = sections.find(s => s.el === entry.target);
-        if (match) {
-          match.link.classList.add('active');
-          if (window.innerWidth <= 1000) {
-            match.link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          }
-        }
+  function activate(id, push) {
+    const panel = byId(id);
+    if (!panel || !panel.classList.contains('tab-panel')) return;
+
+    panels.forEach(p => p.classList.remove('active'));
+    links.forEach(l => l.classList.remove('active'));
+    panel.classList.add('active');
+
+    const link = links.find(l => l.getAttribute('href') === '#' + id);
+    if (link) {
+      link.classList.add('active');
+      if (window.innerWidth <= 1000) {
+        link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
-    });
-  }, { rootMargin: '-8% 0px -82% 0px' });
+    }
 
-  sections.forEach(s => observer.observe(s.el));
+    if (push) history.replaceState(null, '', '#' + id);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Overview diagram was hidden (display:none collapses its dimensions);
+    // refit once the panel is actually laid out.
+    if (id === 's0') {
+      const shell = panel.querySelector('.diagram-shell');
+      if (shell && shell._refit) {
+        requestAnimationFrame(() => requestAnimationFrame(shell._refit));
+      }
+    }
+  }
 
   links.forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
-      const id = link.getAttribute('href').slice(1);
-      const el = document.getElementById(id);
-      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', '#' + id); }
+      activate(link.getAttribute('href').slice(1), true);
     });
   });
+
+  const initial = location.hash.slice(1);
+  const validPanel = initial && byId(initial) && byId(initial).classList.contains('tab-panel');
+  activate(validPanel ? initial : panels[0].id, false);
 })();
 </script>
 

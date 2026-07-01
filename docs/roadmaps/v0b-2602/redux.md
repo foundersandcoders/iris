@@ -159,7 +159,9 @@ graph TD
 2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
 2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2
+2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2 & 2TI.18
+
+2TI.18["`*2TI.18*<br/>**TUI Refactor**<br/>relocate theme.ts`"] --> m2
 
 m2{"`**Milestone 2**<br/>TUI App`"}:::mile
 
@@ -193,6 +195,7 @@ classDef mile fill:#9ff;
 - [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
 - [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.2**
 - [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4, 2TI.12**
+- [ ] 2TI.18. Move theme module from `assets/brand/theme.ts` to `src/tui/theme.ts` (co-locate with consumers, update 18 imports) — **depends on 2TI.17**
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -497,7 +500,9 @@ graph TD
 	2TS.4["`*2TS.4*<br/>**TUI Feat**<br/>Dynamic Migration Guidance`"] --> m2
 	2TI.9["`*2TI.9*<br/>**TUI Screen**<br/>settings management`"] --> m2
 	2TI.10["`*2TI.10*<br/>**TUI Screen**<br/>submission history`"] --> m2
-	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2
+	2TI.17["`*2TI.17*<br/>**TUI Test**<br/>with real export data`"] --> m2 & 2TI.18
+
+	2TI.18["`*2TI.18*<br/>**TUI Refactor**<br/>relocate theme.ts`"] --> m2
 
 	m2{"`**Milestone 2**<br/>TUI App`"}:::mile --> 3DC.2 & 3DC.3
 
