@@ -52,19 +52,19 @@ The MVP development has been split into three distinct phases:
 
 ## Quick Navigation
 
-| Phase | Milestone | Focus | Link |
-|-------|-----------|-------|------|
-| **1** | M2A | OpenTUI Migration + Core TUI Screens | [Phase 1](./phase-1-mvp-features.md#m2a-core-tui-screens) |
-| **1** | M2B | Direct Commands | [Phase 1](./phase-1-mvp-features.md#m2b-direct-commands) |
-| **1** | M2C | Advanced TUI + Docs | [Phase 1](./phase-1-mvp-features.md#m2c-advanced-tui--polish--docs) |
-| **2** | M3 | CLI Completion | [Phase 2](./phase-2-production-features.md#m3-cli-completion) |
-| **2** | M4 | Desktop Interface | [Phase 2](./phase-2-production-features.md#m4-desktop-interface) |
-| **2** | M5 | Production Docs | [Phase 2](./phase-2-production-features.md#m5-production-ready) |
-| **3** | — | Future Features | [Phase 3](./phase-3-future-features.md) |
+| Phase | Milestone | Focus                                | Link |
+|-------|-----------|--------------------------------------|------|
+| **1** |    M2A    | OpenTUI Migration + Core TUI Screens | [Phase 1](./phase-1-mvp-features.md#m2a-core-tui-screens) |
+| **1** |    M2B    |           Direct Commands            | [Phase 1](./phase-1-mvp-features.md#m2b-direct-commands) |
+| **1** |    M2C    |         Advanced TUI + Docs          | [Phase 1](./phase-1-mvp-features.md#m2c-advanced-tui--polish--docs) |
+| **2** |    M3     |            CLI Completion            | [Phase 2](./phase-2-production-features.md#m3-cli-completion) |
+| **2** |    M4     |          Desktop Interface           | [Phase 2](./phase-2-production-features.md#m4-desktop-interface) |
+| **2** |    M5     |           Production Docs            | [Phase 2](./phase-2-production-features.md#m5-production-ready) |
+| **3** |     —     |           Future Features            | [Phase 3](./phase-3-future-features.md) |
 
 ---
 
 ## Archive
 
 The original combined roadmap (pre-restructure) has been archived at:
-[`docs/archive/mvp-original.md`](../../../../archive/mvp-original.md)
+[`docs/archive/mvp-original.md`](./mvp-v0_0_1-26_01.md)

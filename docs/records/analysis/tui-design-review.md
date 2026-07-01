@@ -49,7 +49,7 @@ visible weakness traces back to one of them:
 
 1. **No framed panels.** The biggest single gap. lazygit's entire identity is
    bordered, titled panels with an accent border on the focused one. Iris draws
-   none — `borders` in `brand/theme.ts` is defined but never used.
+   none — `borders` in `assets/brand/theme.ts` is defined but never used.
 2. **No persistent app chrome.** No global header, footer keybar, or breadcrumb.
    Each screen reinvents its own title and status line.
 3. **No shared interaction grammar.** Every screen hand-rolls keypress handling;
@@ -68,7 +68,7 @@ Evidence is cited as `file:line`.
 ### 3.1 Aesthetic / UI
 
 - **No panel framing anywhere.** `borders.heavy` / `borders.light`
-  (`brand/theme.ts:82`) are dead code. A grep for `border`, `borderStyle`,
+  (`assets/brand/theme.ts:82`) are dead code. A grep for `border`, `borderStyle`,
   `title` across `src/tui/` returns **zero** structural usages — screens are
   flat `BoxRenderable` columns of `TextRenderable` lines (e.g. the dashboard is
   logo → spacer → "Quick Actions" → spacer → list → status line,
@@ -79,22 +79,22 @@ Evidence is cited as `file:line`.
   schema) and no global footer keybar. `router.getBreadcrumbs()` exists
   (`router.ts:108`) but is **never rendered**, so users have no "where am I"
   signal.
-- **Status colours don't read semantically** (`brand/theme.ts:18-38`):
+- **Status colours don't read semantically** (`assets/brand/theme.ts:18-38`):
   - `success` = `#1E3A44` (blueglass dark) — reads as near-black teal, not "good".
   - `warning` = `#A45A84` (tyrian lite) — *identical to* `textMuted`
-    (`brand/theme.ts:35`), so warnings are indistinguishable from dimmed text.
+    (`assets/brand/theme.ts:35`), so warnings are indistinguishable from dimmed text.
   - `error` = `#3E1026` (scar) — near-black maroon; on the `#FFF1F7` pink
     background it barely separates from normal `text` `#3A0F28`.
   - Net effect: the information hierarchy promised by the design doc
     (red/blocking > yellow/review > green/confirm) collapses into "everything is
     dark on pink".
 - **Broken symbols.** `symbols.arrows.up`, `.down`, `.left` are **empty strings**
-  (`brand/theme.ts:59-61`); only `right` is set. Any UI that renders these draws
+  (`assets/brand/theme.ts:59-61`); only `right` is set. Any UI that renders these draws
   nothing.
-- **Dark theme defined but unused.** `THEMES.themeDark` (`brand/theme.ts:39`) is
+- **Dark theme defined but unused.** `THEMES.themeDark` (`assets/brand/theme.ts:39`) is
   a near-copy of light — its `background` stays the pink `#FFF1F7`, so it isn't
   actually dark — and nothing imports it; `theme` is hard-bound to
-  `themeLight` (`brand/theme.ts:144`).
+  `themeLight` (`assets/brand/theme.ts:144`).
 - **Spacing is magic strings.** Vertical rhythm comes from empty
   `TextRenderable`s used as spacers (`dashboard.ts:72,83`); indentation is
   hard-coded `'    '` / `'      '` literals (`workflow.ts:461,474`). No spacing
@@ -129,10 +129,10 @@ Evidence is cited as `file:line`.
 - **Weak multi-panel focus model.** Two-panel screens (mapping-editor) signal
   focus only by swapping `highlightFocused` (`#5FA3BA` blueglass lite) vs
   `highlightUnfocused` (`#D6A3BF` rosewash nav) backgrounds
-  (`brand/theme.ts:30-31`) — two low-contrast tints that are hard to tell apart
+  (`assets/brand/theme.ts:30-31`) — two low-contrast tints that are hard to tell apart
   on the pink canvas. No focused-panel border.
 - **Workflow lacks a progress bar and timing.** `progress.filled` / `.empty`
-  symbols (`brand/theme.ts:73-76`) are defined but unused; the processing screen
+  symbols (`assets/brand/theme.ts:73-76`) are defined but unused; the processing screen
   shows step icons only — no overall progress bar and no elapsed time, both
   promised in `tui-ux-design.md`.
 
@@ -342,7 +342,7 @@ double-press delete.
 The architecture is sound — the redesign is additive, not a rewrite:
 - **Stack `Router`** (push/pop/replace + data threading + `cleanup()` lifecycle,
   `router.ts`). The shell and overlays layer on top of it.
-- **Centralised theme** (`brand/theme.ts`) — we extend the palette, not replace
+- **Centralised theme** (`assets/brand/theme.ts`) — we extend the palette, not replace
   the system.
 - **OpenTUI flexbox layout** — panels and shell are just composed `BoxRenderable`s.
 - **Generic `WorkflowScreen`** (`workflow.ts`) — one component already drives

@@ -1,11 +1,11 @@
 # Iris: MVP
 
-|          | Status                                      | Next Up                               | Blocked                               |
-| -------- | ------------------------------------------- | ------------------------------------- | ------------------------------------- |
-| **Core** | ✅ **Milestone 1 complete**                 | —                                     | —                                     |
-| **CLI**  | TUI launches                                | direct commands (convert, validate)   | `iris check` command (needs 3DC.2/3)  |
-| **TUI**  | Basic screens & navigation                  | keyboard abstraction (2TI.11)         | all screens (needs 2TI.11)            |
-| **GUI**  | SvelteKit configured                        | (awaiting TUI workflows)              | all functionality (needs M2 complete) |
+|          | Status                      | Next Up                             | Blocked |
+|----------|-----------------------------|-------------------------------------|---------|
+| **Core** | ✅ **Milestone 1 complete** |                  —                  |    —    |
+| **CLI**  |        TUI launches         | direct commands (convert, validate) | `iris check` command (needs 3DC.2/3) |
+| **TUI**  | Basic screens & navigation  |    keyboard abstraction (2TI.11)    | all screens (needs 2TI.11) |
+| **GUI**  |    SvelteKit configured     |      (awaiting TUI workflows)       | all functionality (needs M2 complete) |
 
 ---
 
@@ -49,18 +49,19 @@ classDef open fill:#ff9;
 classDef mile fill:#9ff;
 ```
 
-
 <details>
 <summary><a name="m1-done"><h4>Milestone 1</h4></a></summary>
 
 > [!IMPORTANT]
 > **Dynamic Schema Prerequisite**
+>
 > - Annual ESFA schema updates must not require code changes.
 > - The dynamic schema system (Phases 1-4) enables loading new XSD files at runtime.
 > - Phase 5 (TUI schema management) is deferred to Milestone 2.
 
 > [!NOTE]
 > **Key**
+>
 > - CL (base utils)
 > - SG (schema system)
 > - SS (schema/mapping storage)
@@ -70,27 +71,27 @@ classDef mile fill:#9ff;
 - [x] 1CL.2. Create ILR XML generator (minimal valid structure)
 - [x] 1CL.3. Build semantic validator (beyond structural checks)
 - [x] 1CL.4. Create XML parser module (`src/lib/xml-parser.ts`)
-	- [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
+  - [x] 1CL.4a. Add XML parser library (fast-xml-parser or equivalent)
 - [x] 1CL.5. Add unit tests for core transformations
 - [x] 1SG.1. Implement **Dynamic Schema (Phase 1): XSD Parser & Schema Registry**
-	- [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
-	- [x] 1SG.1b. Add fast-xml-parser dependency
-	- [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
-	- [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
-	- [x] 1SG.1e. Add tests against actual schemafile25.xsd
+  - [x] 1SG.1a. Create schema type definitions (SchemaElement, SchemaConstraints, SchemaRegistry)
+  - [x] 1SG.1b. Add fast-xml-parser dependency
+  - [x] 1SG.1c. Implement XSD parser (parse XSD as XML, extract element definitions)
+  - [x] 1SG.1d. Implement schema registry builder (transform XSD tree into queryable registry)
+  - [x] 1SG.1e. Add tests against actual schemafile25.xsd
 - [x] 1SG.2. Implement **Dynamic Schema (Phase 2): Schema-Driven Validator**
-	- [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
-	- [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
-	- [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
+  - [x] 1SG.2a. Create schema validator module (validates data against registry constraints)
+  - [x] 1SG.2b. Implement constraint validation (pattern, length, range, cardinality, enumeration)
+  - [x] 1SG.2c. Migrate existing validator to use schema registry (remove hardcoded REQUIRED_FIELDS)
 - [x] 1SG.3. Implement **Dynamic Schema (Phase 3): Schema-Driven Generator**
-	- [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
-	- [x] 1SG.3b. Implement element ordering from xs:sequence
-	- [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
+  - [x] 1SG.3a. Create schema generator module (generate XML by traversing registry)
+  - [x] 1SG.3b. Implement element ordering from xs:sequence
+  - [x] 1SG.3c. Migrate existing generator to use schema registry (remove hardcoded interfaces)
 - [x] 1SG.4. Implement **Dynamic Schema (Phase 4): Column Mapping Configuration**
-	- [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
-	- [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
-	- [x] 1SG.4c. Create default FaC Airtable mapping configuration
-	- [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
+  - [x] 1SG.4a. Create column mapper module (CSV column → XSD path mapping)
+  - [x] 1SG.4b. Define mapping configuration schema (ColumnMapping, MappingConfig types)
+  - [x] 1SG.4c. Create default FaC Airtable mapping configuration
+  - [x] 1SG.4d. Migrate convert workflow to use column mapper (remove hardcoded rowToLearner & rowToDelivery)
 - [x] 1SS.1. Implement storage abstractions for cross-submission history (supports config, mappings, schemas, submissions, history)
 - [x] 1SS.2. Configuration system (user preferences + custom field mappings in `~/.iris/config.json`)
 - [x] 1SS.3. Load mapping config from file (read JSON, validate structure)
@@ -126,6 +127,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Key**
+>
 > - TI (TUI screens)
 > - TM (mapping builder TUI)
 > - TS (schema mgmt TUI)
@@ -197,9 +199,9 @@ classDef mile fill:#9ff;
 - [x] 2TI.1. Set up TUI libraries (terminal-kit, consola, chalk, ora, cli-table3, boxen, figures, gradient-string, listr2)
 - [x] 2TI.2. Create TUI application scaffold and theme system
 - [x] 2TI.3. Build dashboard with menu navigation (recent activity panel pending)
-    - [x] 2TI.3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
-    - [x] 2TI.3b. Implement consistent layout system (header, content, status bar, borders)
-    - [x] 2TI.3c. Refactor dashboard to use layout system
+  - [x] 2TI.3a. Define screen routing and navigation architecture (Router class, screen stack, transitions)
+  - [x] 2TI.3b. Implement consistent layout system (header, content, status bar, borders)
+  - [x] 2TI.3c. Refactor dashboard to use layout system
 - [x] 2TI.4. Implement interactive file picker for CSV selection
 - [x] 2TI.5. Create processing screen with live progress and log viewer
 - [x] 2TI.6. Live processing screen with progress and logs
@@ -214,6 +216,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Key**
+>
 > - DC (direct commands)
 
 ```mermaid
@@ -266,6 +269,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Key**
+>
 > - GC (GUI base)
 > - GM (schema/mapping GUI)
 > - NB (native app builds)
@@ -332,6 +336,7 @@ classDef mile fill:#9ff;
 
 > [!NOTE]
 > **Key**
+>
 > - TI (TUI polish)
 > - UD (documentation)
 
@@ -377,6 +382,7 @@ classDef mile fill:#9ff;
 <h3>Post-Submission Error Prediction</h3>
 
 > [!NOTE]
+>
 > - Analyse ILR XML and predict ESFA validation errors before actual submission
 
 <table>
@@ -405,6 +411,7 @@ classDef mile fill:#9ff;
 <h3>3b. Cross-Submission Analysis</h3>
 
 > [!NOTE]
+>
 > - Historical trend reporting (submission patterns over time)
 > - Anomaly detection across submission periods
 > - Statistical analysis of submission outcomes
@@ -412,6 +419,7 @@ classDef mile fill:#9ff;
 <h3>3c. Declarative Transformation Layer</h3>
 
 > [!NOTE]
+>
 > - Define transformation rules in JSON/YAML
 > - Make business logic configurable without code changes
 > - Allow FaC staff to adjust rules themselves
@@ -419,6 +427,7 @@ classDef mile fill:#9ff;
 <h3>3d. Enhanced Validation</h3>
 
 > [!NOTE]
+>
 > - Integration with ESFA validation API (if available)
 > - More sophisticated semantic checks
 > - Custom rule definitions for FaC-specific requirements
@@ -426,6 +435,7 @@ classDef mile fill:#9ff;
 <h3>3e. Multi-Provider Support</h3>
 
 > [!NOTE]
+>
 > - Export configuration for other training providers
 > - Template system for different submission patterns
 > - Shareable transformation rule sets
@@ -433,6 +443,7 @@ classDef mile fill:#9ff;
 <h3>3f. Dynamic Schema Extensions</h3>
 
 > [!NOTE]
+>
 > - Desktop UI for schema management (mirrors TUI functionality)
 > - Schema diff viewer (compare two XSD versions)
 > - Automated mapping suggestions when schema changes
@@ -441,6 +452,7 @@ classDef mile fill:#9ff;
 <h3>3g. Directory Migration Helper</h3>
 
 > [!NOTE]
+>
 > - Offer to migrate directory contents when user changes `outputDir` in settings
 > - Prompt user before moving files
 > - Handle errors gracefully if source files are in use

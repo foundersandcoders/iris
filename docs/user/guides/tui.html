@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iris &mdash; User Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ THEME ============ */
+:root {
+  --font-body: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface2: #eef1f6;
+  --surface-elevated: #f9fafb;
+  --border: rgba(30, 50, 90, 0.08);
+  --border-bright: rgba(30, 50, 90, 0.18);
+  --text: #1a2340;
+  --text-dim: #5c6b8a;
+
+  --blue: #1d4ed8;
+  --blue-dim: rgba(29, 78, 216, 0.08);
+  --blue-mid: rgba(29, 78, 216, 0.15);
+  --amber: #b45309;
+  --amber-dim: rgba(180, 83, 9, 0.08);
+  --amber-bright: rgba(180, 83, 9, 0.16);
+  --green: #15803d;
+  --green-dim: rgba(21, 128, 61, 0.08);
+  --green-mid: rgba(21, 128, 61, 0.15);
+  --red: #b91c1c;
+  --red-dim: rgba(185, 28, 28, 0.08);
+  --red-mid: rgba(185, 28, 28, 0.15);
+  --teal: #0e7490;
+  --teal-dim: rgba(14, 116, 144, 0.08);
+  --teal-mid: rgba(14, 116, 144, 0.15);
+
+  --accent: var(--blue);
+  --accent-dim: var(--blue-dim);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1422;
+    --surface: #151f33;
+    --surface2: #1c2840;
+    --surface-elevated: #1a2440;
+    --border: rgba(120, 160, 240, 0.08);
+    --border-bright: rgba(120, 160, 240, 0.18);
+    --text: #dde4f4;
+    --text-dim: #7a90bc;
+
+    --blue: #60a5fa;
+    --blue-dim: rgba(96, 165, 250, 0.10);
+    --blue-mid: rgba(96, 165, 250, 0.18);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.10);
+    --amber-bright: rgba(251, 191, 36, 0.18);
+    --green: #4ade80;
+    --green-dim: rgba(74, 222, 128, 0.10);
+    --green-mid: rgba(74, 222, 128, 0.18);
+    --red: #f87171;
+    --red-dim: rgba(248, 113, 113, 0.10);
+    --red-mid: rgba(248, 113, 113, 0.18);
+    --teal: #22d3ee;
+    --teal-dim: rgba(34, 211, 238, 0.10);
+    --teal-mid: rgba(34, 211, 238, 0.18);
+  }
+}
+
+/* ============ RESET ============ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ============ BASE ============ */
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 70% -5%, var(--blue-dim) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 95%, var(--teal-dim) 0%, transparent 45%);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  padding: 40px 40px 80px;
+  min-height: 100vh;
+}
+
+/* ============ ANIMATION ============ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim {
+  animation: fadeUp 0.35s ease-out both;
+  animation-delay: calc(var(--i, 0) * 0.05s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============ LAYOUT ============ */
+.wrap {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 48px;
+}
+
+.main { min-width: 0; }
+
+/* ============ TOC ============ */
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 14px 0;
+  grid-row: 1 / -1;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+
+nav.toc::-webkit-scrollbar { width: 3px; }
+nav.toc::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+.toc-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  padding: 0 0 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+nav.toc a {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 5px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.4;
+  margin-bottom: 1px;
+}
+
+nav.toc a:hover { color: var(--text); background: var(--surface2); }
+nav.toc a.active { color: var(--blue); border-left-color: var(--blue); background: var(--blue-dim); }
+
+/* ============ TYPOGRAPHY ============ */
+h1 {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  text-wrap: balance;
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+}
+
+h2.sec-head {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 56px 0 4px;
+  padding-top: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  scroll-margin-top: 24px;
+}
+
+h2.sec-head .sec-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+  background: var(--blue-dim);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+h3.sub-head {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 28px 0 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h3.sub-head::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--amber);
+  flex-shrink: 0;
+}
+
+.lead {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 72ch;
+  margin-bottom: 32px;
+}
+
+p { margin-bottom: 14px; max-width: 80ch; }
+p:last-child { margin-bottom: 0; }
+
+strong { font-weight: 600; color: var(--text); }
+em { font-style: italic; }
+
+/* ============ INLINE CODE ============ */
+:not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--blue-dim);
+  color: var(--blue);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* ============ CODE / TERMINAL BLOCKS ============ */
+.code-block {
+  position: relative;
+  margin: 16px 0 24px;
+}
+
+.code-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 4px 12px;
+  display: inline-block;
+}
+
+.code-block pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 6px 6px 6px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  tab-size: 2;
+  word-break: normal;
+  white-space: pre;
+}
+
+.code-block--inline pre { border-radius: 6px; }
+
+/* ============ TERMINAL FRAME ============ */
+.term-frame {
+  background: #0d1117;
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 20px 0 28px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.term-frame__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  background: #1c2128;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.term-frame__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.term-frame__title {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.5px;
+}
+
+.term-frame__body {
+  padding: 16px 20px;
+  color: #cdd9e5;
+  overflow-x: auto;
+}
+
+.term-frame__body .iris-logo {
+  color: #60a5fa;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.term-frame__body .term-dim { color: rgba(205,217,229,0.45); }
+.term-frame__body .term-blue { color: #60a5fa; }
+.term-frame__body .term-green { color: #4ade80; }
+.term-frame__body .term-amber { color: #fbbf24; }
+.term-frame__body .term-red { color: #f87171; }
+.term-frame__body .term-sel { background: rgba(96,165,250,0.18); border-radius: 3px; padding: 1px 4px; color: #93c5fd; }
+.term-frame__body .term-row { display: block; }
+.term-frame__body .term-icon { font-style: normal; }
+.term-frame__body .keybar {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  color: rgba(205,217,229,0.5);
+  font-size: 11px;
+}
+
+/* ============ NUMBERED STEPS ============ */
+.steps { list-style: none; margin: 8px 0 24px; }
+
+.steps > li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0 16px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-mid);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-body { min-width: 0; }
+.step-body p { margin-bottom: 8px; }
+.step-body .code-block { margin-top: 8px; }
+
+/* ============ CALLOUTS ============ */
+.callout {
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 20px 0;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+.callout p { max-width: none; margin-bottom: 8px; }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout .callout-title {
+  font-weight: 700;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.callout--warn  { background: var(--amber-dim);  border-left-color: var(--amber);  color: var(--text); }
+.callout--warn  .callout-title { color: var(--amber); }
+
+.callout--success { background: var(--green-dim);  border-left-color: var(--green);  color: var(--text); }
+.callout--success .callout-title { color: var(--green); }
+
+.callout--info { background: var(--blue-dim);   border-left-color: var(--blue);   color: var(--text); }
+.callout--info .callout-title { color: var(--blue); }
+
+.callout--tip  { background: var(--teal-dim);   border-left-color: var(--teal);   color: var(--text); }
+.callout--tip  .callout-title { color: var(--teal); }
+
+/* ============ TABLES ============ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 16px 0 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table th {
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  overflow-wrap: break-word;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface2); }
+
+.data-table code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--blue-dim);
+  color: var(--blue);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ============ MENU GRID ============ */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin: 16px 0 28px;
+}
+
+.menu-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: border-color 0.15s;
+}
+
+.menu-item:hover { border-color: var(--border-bright); }
+
+.menu-item__num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-mid);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-item__label {
+  font-weight: 600;
+  font-size: 13.5px;
+  margin-bottom: 3px;
+}
+
+.menu-item__desc {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ============ KEY BADGE ============ */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-bright);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ============ ICON LEGEND ============ */
+.icon-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin: 14px 0 28px;
+}
+
+.icon-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.icon-item__sym {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ============ FILE TREE ============ */
+.file-tree {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+  margin: 14px 0 24px;
+  overflow-x: auto;
+}
+
+.file-tree .ft-dir { color: var(--blue); font-weight: 600; }
+.file-tree .ft-file { color: var(--text); }
+.file-tree .ft-comment { color: var(--text-dim); }
+
+/* ============ QUICK REF STRIP ============ */
+.ref-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 24px 0 16px;
+}
+
+.ref-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.ref-card-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.ref-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ref-card td {
+  padding: 3px 0;
+  vertical-align: middle;
+}
+
+.ref-card td:first-child {
+  width: 50%;
+  padding-right: 10px;
+}
+
+/* ============ DIVIDER ============ */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 40px 0;
+}
+
+/* ============ HERO BADGES ============ */
+.hero-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-weight: 500;
+}
+
+.badge--blue  { color: var(--blue);  border-color: var(--blue-mid);    background: var(--blue-dim);  }
+.badge--amber { color: var(--amber); border-color: var(--amber-bright); background: var(--amber-dim); }
+.badge--green { color: var(--green); border-color: var(--green-mid);    background: var(--green-dim); }
+.badge--teal  { color: var(--teal);  border-color: var(--teal-mid);     background: var(--teal-dim);  }
+
+/* ============ PROGRESS STEPS ============ */
+.progress-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 16px 0 28px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ps-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  min-width: 120px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 12.5px;
+}
+
+.ps-step__num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
+.ps-step__name {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.ps-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--border-bright);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ============ GLOSSARY ============ */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 14px 0 28px;
+}
+
+.glossary-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.glossary-item__term {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
+.glossary-item__full {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.glossary-item__def {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 1000px) {
+  body { padding: 0 0 80px; }
+
+  .wrap {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    max-height: none;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    margin: 0;
+    grid-row: auto;
+  }
+
+  nav.toc::-webkit-scrollbar { display: none; }
+  .toc-title { display: none; }
+
+  nav.toc a {
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 4px 4px 0 0;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  nav.toc a.active {
+    border-left: none;
+    border-bottom-color: var(--blue);
+    background: var(--blue-dim);
+  }
+
+  .main {
+    padding: 24px 20px 0;
+    min-width: 0;
+  }
+
+  h2.sec-head { scroll-margin-top: 56px; }
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 22px; }
+  .menu-grid { grid-template-columns: 1fr; }
+  .progress-steps { flex-wrap: wrap; gap: 6px; }
+  .ps-arrow { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ===== TOC ===== -->
+<nav class="toc" id="toc">
+  <div class="toc-title">Contents</div>
+  <a href="#s-intro">What is Iris?</a>
+  <a href="#s-start">Starting Iris</a>
+  <a href="#s-keys">Keyboard basics</a>
+  <a href="#s-menu">The main menu</a>
+  <a href="#s-setup">First-time setup</a>
+  <a href="#s-convert">Convert a CSV</a>
+  <a href="#s-validate">Validate a file</a>
+  <a href="#s-check">Cross-submission check</a>
+  <a href="#s-errors">Validation messages</a>
+  <a href="#s-history">Submission history</a>
+  <a href="#s-settings">Settings</a>
+  <a href="#s-files">Where files live</a>
+  <a href="#s-glossary">Glossary</a>
+  <a href="#s-quickref">Quick reference</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+
+  <!-- HERO -->
+  <div class="anim" style="--i:0">
+    <h1>Iris User Manual</h1>
+    <p class="subtitle">Iris v5.1.0 &mdash; foundersandcoders/iris</p>
+  </div>
+
+  <div class="hero-badges anim" style="--i:1">
+    <span class="badge badge--blue">terminal app</span>
+    <span class="badge badge--amber">keyboard-driven</span>
+    <span class="badge badge--green">no coding needed</span>
+    <span class="badge badge--teal">macOS &middot; Apple Silicon</span>
+  </div>
+
+  <!-- ===== SECTION: INTRO ===== -->
+  <h2 id="s-intro" class="sec-head anim" style="--i:2">
+    <span class="sec-num">01</span>
+    What is Iris?
+  </h2>
+
+  <p class="lead anim" style="--i:3">
+    Iris is a tool that turns your learner spreadsheet exports into the
+    specific file format the <strong>ESFA (Education and Skills Funding Agency)</strong>
+    requires for apprenticeship data submission.
+  </p>
+
+  <p class="anim" style="--i:3">
+    The ESFA needs data submitted in a format called <strong>ILR (Individualised Learner Record)</strong>
+    &mdash; specifically as an <strong>XML file</strong> (a structured text file with a
+    <code>.XML</code> extension). Creating these files by hand would be painful.
+    Iris does it for you: you give it a CSV file (a spreadsheet export, the kind
+    you download from Airtable), and it produces the correct XML file.
+  </p>
+
+  <p class="anim" style="--i:3">
+    Iris lives in the terminal &mdash; a text-only window you can open with Spotlight
+    by searching for <strong>Terminal</strong>. This might feel unfamiliar at first,
+    but Iris is fully menu-driven. You never need to type commands or remember syntax;
+    you just use the arrow keys to pick options and press Enter.
+  </p>
+
+  <div class="callout callout--success anim" style="--i:4">
+    <div class="callout-title">&#10003; You can&rsquo;t break anything</div>
+    <p>
+      Iris only <em>reads</em> your CSV and <em>writes</em> a new XML file to a
+      separate folder. It never modifies, moves, or deletes your original spreadsheet.
+      Your Airtable data is completely untouched.
+    </p>
+  </div>
+
+  <h3 class="sub-head anim" style="--i:5">The journey from spreadsheet to submission</h3>
+
+  <div class="progress-steps anim" style="--i:5">
+    <div class="ps-step">
+      <div class="ps-step__num">START</div>
+      <div class="ps-step__name">Export CSV<br>from Airtable</div>
+    </div>
+    <div class="ps-arrow">&#8594;</div>
+    <div class="ps-step">
+      <div class="ps-step__num">IRIS</div>
+      <div class="ps-step__name">Choose<br>&ldquo;Convert&rdquo;</div>
+    </div>
+    <div class="ps-arrow">&#8594;</div>
+    <div class="ps-step">
+      <div class="ps-step__num">IRIS</div>
+      <div class="ps-step__name">Validation<br>check</div>
+    </div>
+    <div class="ps-arrow">&#8594;</div>
+    <div class="ps-step">
+      <div class="ps-step__num">IRIS</div>
+      <div class="ps-step__name">XML file<br>created</div>
+    </div>
+    <div class="ps-arrow">&#8594;</div>
+    <div class="ps-step">
+      <div class="ps-step__num">YOU</div>
+      <div class="ps-step__name">Upload to<br>ESFA portal</div>
+    </div>
+  </div>
+
+  <div class="callout callout--info anim" style="--i:6">
+    <div class="callout-title">&#9432; The last step is yours</div>
+    <p>
+      Iris handles steps 2&ndash;4. Uploading the finished <code>.XML</code> file
+      to the ESFA Submit Learner Data portal is done separately, the same way
+      you always have.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: STARTING IRIS ===== -->
+  <h2 id="s-start" class="sec-head anim" style="--i:7">
+    <span class="sec-num">02</span>
+    Starting Iris
+  </h2>
+
+  <ol class="steps anim" style="--i:8">
+    <li>
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>Open the <strong>Terminal</strong> application. You can find it by pressing
+        <kbd>&#8984; Cmd</kbd> + <kbd>Space</kbd> to open Spotlight and typing
+        <strong>Terminal</strong>, then pressing <kbd>Return</kbd>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>Type the word <code>iris</code> and press <kbd>Return</kbd>.</p>
+        <div class="code-block">
+          <span class="code-label">Terminal</span>
+          <pre>iris</pre>
+        </div>
+        <p>That&rsquo;s the only command you ever need to type. Iris opens immediately
+        in full-screen mode.</p>
+      </div>
+    </li>
+  </ol>
+
+  <p class="anim" style="--i:9">Here is what you will see when Iris starts &mdash; the main menu:</p>
+
+  <div class="term-frame anim" style="--i:9">
+    <div class="term-frame__bar">
+      <div class="term-frame__dot" style="background:#ff5f57"></div>
+      <div class="term-frame__dot" style="background:#febc2e"></div>
+      <div class="term-frame__dot" style="background:#28c840"></div>
+      <div class="term-frame__title">iris &mdash; terminal</div>
+    </div>
+    <div class="term-frame__body">
+      <span class="term-row term-blue" style="font-size:15px;letter-spacing:2px;font-weight:700">&#9670; IRIS</span>
+      <span class="term-row term-dim" style="margin-bottom:14px;display:block;font-size:11px">ILR toolkit v5.1.0 &nbsp;&bull;&nbsp; foundersandcoders</span>
+      <span class="term-row term-dim" style="font-size:10px;letter-spacing:1px;margin-bottom:6px">QUICK ACTIONS</span>
+      <span class="term-row"><span class="term-sel">1 &nbsp; Convert CSV to ILR XML</span></span>
+      <span class="term-row">2 &nbsp; Validate XML Submission</span>
+      <span class="term-row">3 &nbsp; Cross-Submission Check</span>
+      <span class="term-row">4 &nbsp; Mapping Builder</span>
+      <span class="term-row">5 &nbsp; Browse Submission History</span>
+      <span class="term-row">6 &nbsp; Settings &amp; Configuration</span>
+      <span class="term-row">7 &nbsp; About Iris</span>
+      <span class="term-row">8 &nbsp; Quit</span>
+      <div class="keybar">[&#8593;&#8595;/1&ndash;8] Select &nbsp;&nbsp; [ENTER] Confirm &nbsp;&nbsp; [q] Quit</div>
+    </div>
+  </div>
+
+  <div class="callout callout--tip anim" style="--i:10">
+    <div class="callout-title">&#10003; Quitting Iris</div>
+    <p>
+      Press <kbd>Ctrl</kbd>+<kbd>C</kbd> at any time to exit Iris completely.
+      From the main menu you can also press <kbd>q</kbd> or choose option <strong>8 Quit</strong>.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: KEYBOARD ===== -->
+  <h2 id="s-keys" class="sec-head anim" style="--i:11">
+    <span class="sec-num">03</span>
+    Getting around &mdash; keyboard basics
+  </h2>
+
+  <p class="anim" style="--i:12">
+    Iris is entirely keyboard-driven &mdash; you do not need a mouse.
+    A small set of keys covers everything:
+  </p>
+
+  <table class="data-table anim" style="--i:12">
+    <thead>
+      <tr>
+        <th>Key(s)</th>
+        <th>What it does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><kbd>&#8593;</kbd> <kbd>&#8595;</kbd> &nbsp; or &nbsp; <kbd>k</kbd> <kbd>j</kbd></td>
+        <td>Move the highlight up or down through a list</td>
+      </tr>
+      <tr>
+        <td><kbd>&#8592;</kbd> <kbd>&#8594;</kbd>&nbsp; or &nbsp;<kbd>h</kbd> <kbd>l</kbd></td>
+        <td>Switch between tabs (used on the Validation Issues screen)</td>
+      </tr>
+      <tr>
+        <td><kbd>Enter</kbd> &nbsp; or &nbsp; <kbd>Return</kbd></td>
+        <td>Confirm the highlighted choice &mdash; open a folder, select a file, or activate a menu item</td>
+      </tr>
+      <tr>
+        <td><kbd>Esc</kbd> &nbsp; or &nbsp; <kbd>q</kbd></td>
+        <td>Go back to the previous screen, or cancel an action</td>
+      </tr>
+      <tr>
+        <td><kbd>Backspace</kbd></td>
+        <td>Go up one folder (in the file picker)</td>
+      </tr>
+      <tr>
+        <td><kbd>1</kbd>&ndash;<kbd>8</kbd></td>
+        <td>Jump directly to a main menu item by number</td>
+      </tr>
+      <tr>
+        <td><kbd>Ctrl</kbd>+<kbd>C</kbd></td>
+        <td>Quit Iris immediately, from anywhere</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-head anim" style="--i:13">Status icons you will see</h3>
+  <p class="anim" style="--i:13">Iris uses simple symbols to show the state of each step:</p>
+
+  <div class="icon-legend anim" style="--i:14">
+    <div class="icon-item">
+      <span class="icon-item__sym term-green">&#10003;</span>
+      <span>Done / no issues</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym term-red">&#10007;</span>
+      <span>Error / failed</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym term-amber">(!)</span>
+      <span>Warning / important note</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym term-dim">&#9675;</span>
+      <span>Waiting to run</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym term-blue">&#9680;</span>
+      <span>Currently running&hellip;</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym" style="color:#60a5fa">&#9679;</span>
+      <span>Completed</span>
+    </div>
+    <div class="icon-item">
+      <span class="icon-item__sym term-dim">&#9676;</span>
+      <span>Skipped</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION: MAIN MENU ===== -->
+  <h2 id="s-menu" class="sec-head anim" style="--i:15">
+    <span class="sec-num">04</span>
+    The main menu
+  </h2>
+
+  <p class="anim" style="--i:16">
+    Every time you run <code>iris</code> you land here. All eight options are listed
+    below. The ones you will use most often are <strong>1, 2, and 3</strong>.
+  </p>
+
+  <div class="menu-grid anim" style="--i:16">
+    <div class="menu-item">
+      <div class="menu-item__num">1</div>
+      <div>
+        <div class="menu-item__label">Convert CSV to ILR XML</div>
+        <div class="menu-item__desc">The main job. Turns your Airtable export into the XML file you submit to the ESFA.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">2</div>
+      <div>
+        <div class="menu-item__label">Validate XML Submission</div>
+        <div class="menu-item__desc">Checks an existing XML file (or CSV) for errors without converting anything. Useful for spotting problems before submission.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">3</div>
+      <div>
+        <div class="menu-item__label">Cross-Submission Check</div>
+        <div class="menu-item__desc">Compares your current XML against a previous one to catch unexpected changes &mdash; like a big drop in learner numbers.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">4</div>
+      <div>
+        <div class="menu-item__label">Mapping Builder</div>
+        <div class="menu-item__desc">For advanced use only. Defines how your CSV column headings map to ILR fields. The default mapping already works with the standard FAC Airtable export.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">5</div>
+      <div>
+        <div class="menu-item__label">Browse Submission History</div>
+        <div class="menu-item__desc">A log of every XML file Iris has created. You can re-validate or run a cross-check on any past submission from here.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">6</div>
+      <div>
+        <div class="menu-item__label">Settings &amp; Configuration</div>
+        <div class="menu-item__desc">Set your provider name and UKPRN number. These go into every XML file Iris produces.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num">7</div>
+      <div>
+        <div class="menu-item__label">About Iris</div>
+        <div class="menu-item__desc">Shows the software version, Bun runtime version, and platform details.</div>
+      </div>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item__num" style="color:var(--text-dim);background:var(--surface2);border-color:var(--border)">8</div>
+      <div>
+        <div class="menu-item__label">Quit</div>
+        <div class="menu-item__desc">Exit Iris. You can also press <kbd>q</kbd> or <kbd>Ctrl</kbd>+<kbd>C</kbd> from anywhere.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION: FIRST-TIME SETUP ===== -->
+  <h2 id="s-setup" class="sec-head anim" style="--i:17">
+    <span class="sec-num">05</span>
+    First-time setup
+  </h2>
+
+  <p class="anim" style="--i:18">
+    Iris works out of the box without any configuration. However, before you
+    create your first submission for real, you should enter your provider details
+    so they appear correctly in every XML file.
+  </p>
+
+  <div class="callout callout--warn anim" style="--i:18">
+    <div class="callout-title">&#9888; Set your UKPRN before your first conversion</div>
+    <p>
+      The <strong>UKPRN (UK Provider Reference Number)</strong> is an 8-digit number
+      assigned to your organisation by UKRLP. Iris ships with a placeholder value of
+      <code>10000000</code>. If you convert without changing it, your XML file will
+      contain this placeholder and will be rejected by the ESFA.
+    </p>
+  </div>
+
+  <h3 class="sub-head anim" style="--i:19">How to set your provider details</h3>
+
+  <ol class="steps anim" style="--i:19">
+    <li>
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>From the main menu, press <kbd>6</kbd> or arrow to <strong>Settings &amp; Configuration</strong>
+        and press <kbd>Enter</kbd>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>Arrow down to <strong>UKPRN</strong> and press <kbd>Enter</kbd> to edit it.
+        Type your 8-digit UKPRN, then press <kbd>Enter</kbd> to confirm.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <p>Arrow down to <strong>Name</strong> and press <kbd>Enter</kbd> to edit it.
+        Type your provider name, then press <kbd>Enter</kbd>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <p>Press <kbd>s</kbd> to save. You will see <em>&ldquo;&#10003; Saved!&rdquo;</em>
+        at the bottom if it worked.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">5</span>
+      <div class="step-body">
+        <p>Press <kbd>Esc</kbd> to return to the main menu.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="callout callout--success anim" style="--i:20">
+    <div class="callout-title">&#10003; Everything else is ready to go</div>
+    <p>
+      Iris ships with the correct rulebook (called a schema) for the 2025&ndash;26
+      collection year and a mapping that already understands the standard FAC
+      Airtable export format. You do not need to configure either of these.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: CONVERT ===== -->
+  <h2 id="s-convert" class="sec-head anim" style="--i:21">
+    <span class="sec-num">06</span>
+    Task: Convert a CSV to an XML submission
+  </h2>
+
+  <p class="anim" style="--i:22">
+    This is the main thing Iris does. You give it your Airtable export
+    (a <code>.csv</code> file) and it produces an XML file ready to submit.
+  </p>
+
+  <h3 class="sub-head anim" style="--i:22">Before you begin</h3>
+  <p class="anim" style="--i:22">
+    Export your learner data from Airtable as a CSV file and save it somewhere
+    you can find it &mdash; <code>Downloads</code> or <code>Desktop</code> are good choices.
+    The file must have <code>.csv</code> as its extension.
+  </p>
+
+  <h3 class="sub-head anim" style="--i:23">Steps</h3>
+
+  <ol class="steps anim" style="--i:23">
+    <li>
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>From the main menu, press <kbd>1</kbd> or select
+        <strong>Convert CSV to ILR XML</strong> and press <kbd>Enter</kbd>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>A file browser appears. At the top you will see where you currently are
+        (for example <code>~/Downloads</code>). The list shows <strong>folders</strong>
+        (marked with <code>&gt;</code>) and <strong>.csv files</strong>.</p>
+        <div class="term-frame" style="margin-top:10px">
+          <div class="term-frame__bar">
+            <div class="term-frame__dot" style="background:#ff5f57"></div>
+            <div class="term-frame__dot" style="background:#febc2e"></div>
+            <div class="term-frame__dot" style="background:#28c840"></div>
+            <div class="term-frame__title">Select CSV File</div>
+          </div>
+          <div class="term-frame__body">
+            <span class="term-row" style="font-size:11px;color:rgba(205,217,229,0.4);margin-bottom:8px;display:block">~/Downloads</span>
+            <span class="term-row term-dim">&gt; Airtable/</span>
+            <span class="term-row term-dim">&gt; Old exports/</span>
+            <span class="term-row"><span class="term-sel">learners-2526.csv</span></span>
+            <span class="term-row term-dim">previous-draft.csv</span>
+            <div class="keybar">[&#8593;&#8595;] Nav &nbsp;&nbsp; [ENTER] Select &nbsp;&nbsp; [BACKSPACE] Up Dir &nbsp;&nbsp; [ESC] Back</div>
+          </div>
+        </div>
+        <p>Use <kbd>&#8593;</kbd> and <kbd>&#8595;</kbd> to move. Press <kbd>Enter</kbd>
+        on a folder to open it. Press <kbd>Backspace</kbd> to go up one folder.
+        Press <kbd>Enter</kbd> on a <code>.csv</code> file to select it.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <p>Once you select a file, Iris runs automatically. You will see four steps
+        tick off one by one:</p>
+
+        <div class="progress-steps" style="margin:12px 0">
+          <div class="ps-step">
+            <div class="ps-step__num">STEP 1</div>
+            <div class="ps-step__name">Parse CSV</div>
+          </div>
+          <div class="ps-arrow">&#8594;</div>
+          <div class="ps-step">
+            <div class="ps-step__num">STEP 2</div>
+            <div class="ps-step__name">Validate Data</div>
+          </div>
+          <div class="ps-arrow">&#8594;</div>
+          <div class="ps-step">
+            <div class="ps-step__num">STEP 3</div>
+            <div class="ps-step__name">Generate XML</div>
+          </div>
+          <div class="ps-arrow">&#8594;</div>
+          <div class="ps-step">
+            <div class="ps-step__num">STEP 4</div>
+            <div class="ps-step__name">Save Output</div>
+          </div>
+        </div>
+
+        <p>The whole process usually takes a few seconds.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <p><strong>If everything succeeds</strong>, you will see a success screen
+        showing the filename of your new XML file and how many learners it contains.
+        Your file is now in <code>~/Documents/Iris/Submissions/</code>
+        (that is, your <strong>Documents</strong> folder &rarr; <strong>Iris</strong> folder &rarr;
+        <strong>Submissions</strong> folder).</p>
+
+        <div class="callout callout--success" style="margin-top:10px">
+          <div class="callout-title">&#10003; Where to find your XML file</div>
+          <p>
+            Open <strong>Finder</strong>, go to <strong>Documents &rarr; Iris &rarr; Submissions</strong>.
+            The filename will look like <code>ILR-10000000-2526-20260630-143005-01.XML</code>,
+            where the long number is today&rsquo;s date and time.
+            This is the file you upload to the ESFA portal.
+          </p>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <h3 class="sub-head anim" style="--i:24">What happens if errors are found</h3>
+
+  <p class="anim" style="--i:24">
+    During Step 2 (Validate Data), Iris checks every row for problems. If it finds
+    any <strong>errors</strong>, it stops immediately &mdash; steps 3 and 4 are skipped
+    and no XML file is created. You will be taken to the
+    <strong>Validation Issues</strong> screen (see <a href="#s-errors">Section 9</a>).
+  </p>
+
+  <div class="callout callout--warn anim" style="--i:24">
+    <div class="callout-title">&#9888; Errors block conversion; warnings do not</div>
+    <p>
+      <strong>Errors</strong> (marked <code>&#10007;</code>) must be fixed in your
+      spreadsheet before Iris can produce an XML file. Export a corrected CSV from
+      Airtable and try again.
+    </p>
+    <p>
+      <strong>Warnings</strong> (marked <code>(!)</code>) are noted but do not stop
+      conversion. You can choose to investigate them or proceed.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: VALIDATE ===== -->
+  <h2 id="s-validate" class="sec-head anim" style="--i:25">
+    <span class="sec-num">07</span>
+    Task: Validate an existing file
+  </h2>
+
+  <p class="anim" style="--i:26">
+    Use this to check a file for problems without converting anything.
+    You can validate either a <code>.csv</code> spreadsheet export or an
+    existing <code>.xml</code> submission.
+  </p>
+
+  <ol class="steps anim" style="--i:26">
+    <li>
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>Press <kbd>2</kbd> from the main menu, or select
+        <strong>Validate XML Submission</strong>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>The file picker appears, showing both <code>.csv</code> and <code>.xml</code>
+        files. Navigate to and select the file you want to check.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <p>Iris runs four steps: <strong>Load File &rarr; Parse File &rarr; Run Validation &rarr; Generate Report</strong>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <p><strong>No issues found:</strong> a success screen confirms the file is clean.</p>
+        <p><strong>Issues found:</strong> the Validation Issues screen opens (see below).</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3 class="sub-head anim" style="--i:27">Reading the Validation Issues screen</h3>
+
+  <div class="term-frame anim" style="--i:27">
+    <div class="term-frame__bar">
+      <div class="term-frame__dot" style="background:#ff5f57"></div>
+      <div class="term-frame__dot" style="background:#febc2e"></div>
+      <div class="term-frame__dot" style="background:#28c840"></div>
+      <div class="term-frame__title">Validation Issues</div>
+    </div>
+    <div class="term-frame__body">
+      <span class="term-row term-amber" style="margin-bottom:6px;display:block">3 errors &nbsp;&bull;&nbsp; 1 warning</span>
+      <span class="term-row" style="font-size:11px;color:rgba(205,217,229,0.4);display:flex;gap:16px;margin-bottom:6px">
+        <span class="term-sel" style="padding:2px 8px">Errors (3)</span>
+        <span>Warnings (1)</span>
+        <span>All (4)</span>
+      </span>
+      <span class="term-row term-red">&#10007; ULN &nbsp;row 4 &nbsp;Value &ldquo;ABC123&rdquo; is not a valid number</span>
+      <span class="term-row term-red">&#10007; Date of birth &nbsp;row 7 &nbsp;Must be a date (YYYY-MM-DD)</span>
+      <span class="term-row term-red">&#10007; Ethnic group &nbsp;row 12 &nbsp;Value not in allowed list</span>
+      <div class="keybar">[&#8593;&#8595;] Navigate &nbsp;&nbsp; [&#8592;&#8594;] Switch filter &nbsp;&nbsp; [ESC/q] Back</div>
+    </div>
+  </div>
+
+  <p class="anim" style="--i:28">
+    Use <kbd>&#8593;</kbd> <kbd>&#8595;</kbd> to scroll through the issue list.
+    Use <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> to switch between the
+    <strong>Errors</strong>, <strong>Warnings</strong>, and <strong>All</strong> tabs.
+    Each issue shows the <strong>field name</strong>, the <strong>row number</strong>,
+    and a short <strong>description</strong> of what is wrong.
+  </p>
+
+  <p class="anim" style="--i:28">
+    To fix errors, correct the relevant rows in your Airtable base,
+    export a fresh CSV, and run the conversion again.
+  </p>
+
+  <!-- ===== SECTION: CROSS-SUBMISSION CHECK ===== -->
+  <h2 id="s-check" class="sec-head anim" style="--i:29">
+    <span class="sec-num">08</span>
+    Task: Cross-submission check
+  </h2>
+
+  <p class="anim" style="--i:30">
+    This compares your latest XML file against a previous one to spot anything
+    unexpected before you submit. Think of it as a &ldquo;does this look right
+    compared to last time?&rdquo; sanity check.
+  </p>
+
+  <ol class="steps anim" style="--i:30">
+    <li>
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <p>Press <kbd>3</kbd> from the main menu, or select
+        <strong>Cross-Submission Check</strong>.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <p>A file picker appears with the title <strong>Select Current XML Submission</strong>.
+        Navigate to and select your <em>new</em> (most recent) XML file.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <p>A second file picker appears with the title
+        <strong>Select Previous XML Submission</strong>.
+        Navigate to and select your <em>previous</em> XML file to compare against.</p>
+      </div>
+    </li>
+    <li>
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <p>Iris runs the check and shows you a results screen comparing the two files.</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3 class="sub-head anim" style="--i:31">What the check looks for</h3>
+
+  <table class="data-table anim" style="--i:31">
+    <thead>
+      <tr>
+        <th>Finding</th>
+        <th>What it means</th>
+        <th>Severity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Learner count changed by more than 30%</td>
+        <td>Big jump or drop in the number of learners &mdash; worth double-checking before submitting</td>
+        <td><span style="color:var(--amber)">Warning</span></td>
+      </tr>
+      <tr>
+        <td>Duplicate learner references found</td>
+        <td>The same learner appears more than once in the current file</td>
+        <td><span style="color:var(--red)">Error</span></td>
+      </tr>
+      <tr>
+        <td>Collection year changed</td>
+        <td>The academic year in the file has changed &mdash; expected when starting a new year</td>
+        <td><span style="color:var(--teal)">Info</span></td>
+      </tr>
+      <tr>
+        <td>First submission (nothing to compare)</td>
+        <td>No previous file exists; this is your first submission</td>
+        <td><span style="color:var(--teal)">Info</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ===== SECTION: VALIDATION MESSAGES ===== -->
+  <h2 id="s-errors" class="sec-head anim" style="--i:32">
+    <span class="sec-num">09</span>
+    Understanding validation messages
+  </h2>
+
+  <p class="anim" style="--i:33">
+    When Iris finds a problem in your CSV, it shows an error message in plain English.
+    Here are the most common ones and how to fix them in Airtable:
+  </p>
+
+  <table class="data-table anim" style="--i:33">
+    <thead>
+      <tr>
+        <th>Message (paraphrased)</th>
+        <th>What it means</th>
+        <th>What to fix</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><em>Required column &ldquo;X&rdquo; is missing</em></td>
+        <td>The expected column heading is not present in the CSV at all</td>
+        <td>Make sure the column exists in Airtable and is included in the export</td>
+      </tr>
+      <tr>
+        <td><em>Required field &ldquo;X&rdquo; is missing &mdash; row N</em></td>
+        <td>A cell that must be filled in is blank for that learner</td>
+        <td>Open the Airtable record and fill in the missing value, then re-export</td>
+      </tr>
+      <tr>
+        <td><em>Field &ldquo;X&rdquo; must be an integer (whole number) &mdash; row N</em></td>
+        <td>The value contains letters, symbols, or a decimal point where only whole numbers are allowed</td>
+        <td>Correct the value (e.g. <code>123.0</code> should be <code>123</code>)</td>
+      </tr>
+      <tr>
+        <td><em>Field &ldquo;X&rdquo; must be a date (YYYY-MM-DD) &mdash; row N</em></td>
+        <td>The date is in the wrong format</td>
+        <td>Change the date format in Airtable to year-month-day (e.g. <code>1999-04-15</code>)</td>
+      </tr>
+      <tr>
+        <td><em>Value &ldquo;X&rdquo; is not in the allowed list &mdash; row N</em></td>
+        <td>The value must be one of a fixed set of codes, and this one isn&rsquo;t recognised</td>
+        <td>Check the ESFA ILR specification for valid codes, then correct the Airtable record</td>
+      </tr>
+      <tr>
+        <td><em>Field &ldquo;X&rdquo; must be at least N characters</em></td>
+        <td>The value is too short</td>
+        <td>Check the value in Airtable; a reference number or code may be truncated</td>
+      </tr>
+      <tr>
+        <td><em>Field &ldquo;X&rdquo; must be no more than N characters</em></td>
+        <td>The value is too long</td>
+        <td>Shorten the value; free-text fields sometimes exceed the ILR character limit</td>
+      </tr>
+      <tr>
+        <td><em>Value &ldquo;X&rdquo; does not match the required pattern</em></td>
+        <td>The value doesn&rsquo;t fit the expected format (e.g. a postcode is malformed)</td>
+        <td>Correct the format in Airtable (e.g. UK postcodes should be like <code>EC1A 1BB</code>)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--tip anim" style="--i:34">
+    <div class="callout-title">&#10003; Row numbers are 1-indexed</div>
+    <p>
+      When Iris says &ldquo;row 4&rdquo;, it means the 4th <em>data</em> row &mdash;
+      not counting the heading row. So &ldquo;row 1&rdquo; is the first learner,
+      &ldquo;row 4&rdquo; is the fourth learner, and so on.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: HISTORY ===== -->
+  <h2 id="s-history" class="sec-head anim" style="--i:35">
+    <span class="sec-num">10</span>
+    Browsing submission history
+  </h2>
+
+  <p class="anim" style="--i:36">
+    Press <kbd>5</kbd> from the main menu to see a list of every XML file Iris
+    has ever created. Each entry shows the filename, the date it was created,
+    and the number of learners it contains.
+  </p>
+
+  <table class="data-table anim" style="--i:36">
+    <thead>
+      <tr><th>Key</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>&#8593;</kbd> <kbd>&#8595;</kbd></td><td>Move through the list</td></tr>
+      <tr><td><kbd>Enter</kbd> or <kbd>v</kbd></td><td>Validate the selected submission</td></tr>
+      <tr><td><kbd>c</kbd></td><td>Run a cross-submission check starting from the selected file</td></tr>
+      <tr><td><kbd>x</kbd></td><td>Delete a broken entry (press <kbd>x</kbd> twice to confirm)</td></tr>
+      <tr><td><kbd>Esc</kbd> / <kbd>q</kbd> / <kbd>Backspace</kbd></td><td>Go back to the main menu</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--info anim" style="--i:37">
+    <div class="callout-title">&#9432; What &ldquo;broken&rdquo; means</div>
+    <p>
+      If an entry is marked as broken, it means the XML file it references has
+      been moved or deleted from <code>~/Documents/Iris/Submissions/</code>.
+      Iris keeps the history record but flags it so you know the file is gone.
+      You can press <kbd>x</kbd> twice to remove the broken entry from the list.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: SETTINGS ===== -->
+  <h2 id="s-settings" class="sec-head anim" style="--i:38">
+    <span class="sec-num">11</span>
+    Settings &amp; Configuration
+  </h2>
+
+  <p class="anim" style="--i:39">
+    Press <kbd>6</kbd> from the main menu to open Settings.
+    Use <kbd>&#8593;</kbd> <kbd>&#8595;</kbd> to navigate between fields,
+    <kbd>Enter</kbd> to edit a field, and <kbd>s</kbd> to save.
+  </p>
+
+  <table class="data-table anim" style="--i:39">
+    <thead>
+      <tr><th>Field</th><th>What it is</th><th>Default</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>UKPRN</strong></td>
+        <td>Your 8-digit UK Provider Reference Number (from UKRLP). Goes into every XML file.</td>
+        <td><code>10000000</code> &mdash; <em>must be changed</em></td>
+      </tr>
+      <tr>
+        <td><strong>Name</strong></td>
+        <td>Your organisation name as it appears on submissions.</td>
+        <td>Founders and Coders</td>
+      </tr>
+      <tr>
+        <td><strong>Active Schema</strong></td>
+        <td>The rulebook Iris validates against. Dropdown selection.</td>
+        <td>schemafile25.xsd (2025&ndash;26)</td>
+      </tr>
+      <tr>
+        <td><strong>Active Mapping</strong></td>
+        <td>Tells Iris which CSV column maps to which ILR field. Dropdown selection.</td>
+        <td>fac-airtable-2025</td>
+      </tr>
+      <tr>
+        <td><strong>Collection</strong></td>
+        <td>The submission type code. Usually left as-is.</td>
+        <td>ILR</td>
+      </tr>
+      <tr>
+        <td><strong>XML Outputs</strong></td>
+        <td>Where finished XML files are saved.</td>
+        <td>~/Documents/Iris/Submissions/</td>
+      </tr>
+      <tr>
+        <td><strong>CSV Inputs</strong></td>
+        <td>Where the file picker opens first when you choose a CSV.</td>
+        <td>~/Downloads/ or ~/Downloads/Airtable/</td>
+      </tr>
+      <tr>
+        <td><strong>XSD Schemas</strong></td>
+        <td>Where Iris looks for rulebook files you add yourself.</td>
+        <td>~/Documents/Iris/Schemas/</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-head anim" style="--i:40">Settings keyboard reference</h3>
+
+  <table class="data-table anim" style="--i:40">
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>&#8593;</kbd> <kbd>&#8595;</kbd></td><td>Move between fields</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Start editing the highlighted field</td></tr>
+      <tr><td><kbd>Enter</kbd> (while editing)</td><td>Confirm the new value</td></tr>
+      <tr><td><kbd>Esc</kbd> (while editing)</td><td>Cancel and revert</td></tr>
+      <tr><td><kbd>s</kbd></td><td>Save all settings</td></tr>
+      <tr><td><kbd>r</kbd></td><td>Reset everything to defaults (press <kbd>r</kbd> twice to confirm)</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Go back to the main menu without saving</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===== SECTION: WHERE FILES LIVE ===== -->
+  <h2 id="s-files" class="sec-head anim" style="--i:41">
+    <span class="sec-num">12</span>
+    Where your files live
+  </h2>
+
+  <p class="anim" style="--i:42">
+    Iris keeps your data in two places. The first is where your real output files go;
+    the second is where Iris stores its own settings.
+  </p>
+
+  <table class="data-table anim" style="--i:42">
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>What is stored there</th>
+        <th>Do you need to open it?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>~/Documents/Iris/Submissions/</code></td>
+        <td>Your finished XML files &mdash; the ones you upload to the ESFA</td>
+        <td><strong>Yes &mdash; regularly.</strong> This is where you find your output.</td>
+      </tr>
+      <tr>
+        <td><code>~/Documents/Iris/Schemas/</code></td>
+        <td>Optional: custom rulebook (XSD) files you have added yourself</td>
+        <td>Only if you use a custom schema.</td>
+      </tr>
+      <tr>
+        <td><code>~/.iris/</code></td>
+        <td>Iris&rsquo;s own settings, field mappings, and submission history &mdash; a hidden folder</td>
+        <td>Rarely. Iris manages this itself. Do not delete it.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--success anim" style="--i:43">
+    <div class="callout-title">&#10003; Your data survives every update</div>
+    <p>
+      When you update Iris to a new version, all of your settings, submission history,
+      and XML output files are untouched. Updating Iris only replaces the program itself.
+    </p>
+  </div>
+
+  <h3 class="sub-head anim" style="--i:43">Finding your Documents folder in Finder</h3>
+  <p class="anim" style="--i:43">
+    Open <strong>Finder</strong>, click <strong>Documents</strong> in the left sidebar,
+    then open the <strong>Iris</strong> folder, then <strong>Submissions</strong>.
+    Your XML files will be there, named with the date and time they were created.
+  </p>
+
+  <div class="callout callout--info anim" style="--i:44">
+    <div class="callout-title">&#9432; If you do not have a Documents folder</div>
+    <p>
+      On some macOS setups the Documents folder is managed by iCloud Drive and may
+      not appear in the usual place. If Iris cannot find <code>~/Documents/Iris/</code>
+      it will fall back to <code>~/Iris/</code> (a folder called <em>Iris</em>
+      directly in your home folder). Either location works identically.
+    </p>
+  </div>
+
+  <!-- ===== SECTION: GLOSSARY ===== -->
+  <h2 id="s-glossary" class="sec-head anim" style="--i:45">
+    <span class="sec-num">13</span>
+    Glossary
+  </h2>
+
+  <div class="glossary-grid anim" style="--i:46">
+    <div class="glossary-item">
+      <div class="glossary-item__term">ILR</div>
+      <div class="glossary-item__full">Individualised Learner Record</div>
+      <div class="glossary-item__def">The national standard for reporting apprenticeship and further-education learner data to the ESFA.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">ESFA</div>
+      <div class="glossary-item__full">Education and Skills Funding Agency</div>
+      <div class="glossary-item__def">The UK government body that funds apprenticeships and further education. You submit ILR data to them.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">CSV</div>
+      <div class="glossary-item__full">Comma-Separated Values</div>
+      <div class="glossary-item__def">A simple spreadsheet file format. Airtable&rsquo;s &ldquo;Export as CSV&rdquo; produces one of these.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">XML</div>
+      <div class="glossary-item__full">Extensible Markup Language</div>
+      <div class="glossary-item__def">A structured text file format. The ESFA requires ILR submissions to be in this format. Iris creates it for you.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">UKPRN</div>
+      <div class="glossary-item__full">UK Provider Reference Number</div>
+      <div class="glossary-item__def">An 8-digit number that identifies your organisation, assigned by the UKRLP register. Required on every submission.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">Schema</div>
+      <div class="glossary-item__full">XSD &mdash; XML Schema Definition</div>
+      <div class="glossary-item__def">The rulebook file that defines what a valid ILR XML file must look like. Iris ships with the 2025&ndash;26 version built in.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">Mapping</div>
+      <div class="glossary-item__full">(CSV-to-ILR field mapping)</div>
+      <div class="glossary-item__def">The configuration that tells Iris which column in your CSV corresponds to which field in the ILR. The default works with the FAC Airtable export.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">Collection year</div>
+      <div class="glossary-item__full">(Academic year code)</div>
+      <div class="glossary-item__def">The academic year a submission covers, written as a 4-digit code. For 2025&ndash;26 it is <code>2526</code>.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-item__term">Terminal</div>
+      <div class="glossary-item__full">(Command-line interface)</div>
+      <div class="glossary-item__def">A text-based window on your Mac where you type short commands. Iris runs here, but you only ever need to type one word: <code>iris</code>.</div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION: QUICK REFERENCE ===== -->
+  <div class="divider anim" style="--i:47"></div>
+
+  <h2 id="s-quickref" class="sec-head anim" style="--i:47">
+    <span class="sec-num">&thinsp;</span>
+    Quick reference
+  </h2>
+
+  <div class="ref-strip anim" style="--i:48">
+    <div class="ref-card">
+      <div class="ref-card-label">The one command</div>
+      <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--blue);padding:8px 0">iris</div>
+      <div style="font-size:12px;color:var(--text-dim)">Type this in Terminal and press Return. Everything else is inside the menu.</div>
+    </div>
+
+    <div class="ref-card">
+      <div class="ref-card-label">Navigation keys</div>
+      <table>
+        <tr><td><kbd>&#8593;</kbd> <kbd>&#8595;</kbd></td><td>Move up / down</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Choose / confirm</td></tr>
+        <tr><td><kbd>Esc</kbd> / <kbd>q</kbd></td><td>Go back</td></tr>
+        <tr><td><kbd>Backspace</kbd></td><td>Up one folder</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>Quit Iris</td></tr>
+        <tr><td><kbd>&#8592;</kbd> <kbd>&#8594;</kbd></td><td>Switch tabs</td></tr>
+      </table>
+    </div>
+
+    <div class="ref-card">
+      <div class="ref-card-label">Menu shortcuts</div>
+      <table>
+        <tr><td><kbd>1</kbd></td><td>Convert CSV</td></tr>
+        <tr><td><kbd>2</kbd></td><td>Validate file</td></tr>
+        <tr><td><kbd>3</kbd></td><td>Cross-check</td></tr>
+        <tr><td><kbd>5</kbd></td><td>History</td></tr>
+        <tr><td><kbd>6</kbd></td><td>Settings</td></tr>
+        <tr><td><kbd>8</kbd> / <kbd>q</kbd></td><td>Quit</td></tr>
+      </table>
+    </div>
+
+    <div class="ref-card">
+      <div class="ref-card-label">Settings keys</div>
+      <table>
+        <tr><td><kbd>s</kbd></td><td>Save settings</td></tr>
+        <tr><td><kbd>r</kbd> twice</td><td>Reset to defaults</td></tr>
+      </table>
+      <div class="ref-card-label" style="margin-top:14px">History keys</div>
+      <table>
+        <tr><td><kbd>v</kbd> / <kbd>Enter</kbd></td><td>Validate entry</td></tr>
+        <tr><td><kbd>c</kbd></td><td>Cross-check</td></tr>
+        <tr><td><kbd>x</kbd> twice</td><td>Delete broken entry</td></tr>
+      </table>
+    </div>
+
+    <div class="ref-card">
+      <div class="ref-card-label">Output location</div>
+      <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--blue);line-height:1.7;padding:6px 0">
+        ~/Documents/<br>
+        &nbsp;&nbsp;Iris/<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Submissions/<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ILR-&hellip;.XML
+      </div>
+      <div style="font-size:12px;color:var(--text-dim)">Open Finder &rarr; Documents &rarr; Iris &rarr; Submissions</div>
+    </div>
+
+    <div class="ref-card">
+      <div class="ref-card-label">Status icons</div>
+      <table>
+        <tr><td style="color:var(--green);font-family:var(--font-mono)">&#10003;</td><td>Success / no issues</td></tr>
+        <tr><td style="color:var(--red);font-family:var(--font-mono)">&#10007;</td><td>Error</td></tr>
+        <tr><td style="color:var(--amber);font-family:var(--font-mono)">(!) </td><td>Warning</td></tr>
+        <tr><td style="color:var(--teal);font-family:var(--font-mono)">&#9432;</td><td>Info</td></tr>
+        <tr><td style="color:var(--blue);font-family:var(--font-mono)">&#9680;</td><td>Running&hellip;</td></tr>
+        <tr><td style="color:var(--blue);font-family:var(--font-mono)">&#9679;</td><td>Complete</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /wrap -->
+
+<!-- ===== SCROLL SPY ===== -->
+<script>
+(function() {
+  const toc = document.getElementById('toc');
+  const links = Array.from(toc.querySelectorAll('a'));
+  const sections = links
+    .map(link => ({ link, el: document.getElementById(link.getAttribute('href').slice(1)) }))
+    .filter(s => s.el);
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const match = sections.find(s => s.el === entry.target);
+        if (match) {
+          match.link.classList.add('active');
+          if (window.innerWidth <= 1000) {
+            match.link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+      }
+    });
+  }, { rootMargin: '-8% 0px -82% 0px' });
+
+  sections.forEach(s => observer.observe(s.el));
+
+  links.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const id = link.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', '#' + id); }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

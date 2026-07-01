@@ -1,4 +1,4 @@
-# Iris: _ILR Toolkit_
+# Iris: ILR Toolkit
 
 ## The Current State
 
