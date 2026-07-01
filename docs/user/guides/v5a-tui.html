@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iris &mdash; User Manual</title>
+<title>Iris User Manual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -13,62 +13,34 @@
   --font-body: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
 
-  --bg: #f4f6f9;
+  /* Palette: Iris brand, THEMES.themeLight (assets/brand/theme.ts) */
+  --bg: #fff1f7;
   --surface: #ffffff;
-  --surface2: #eef1f6;
-  --surface-elevated: #f9fafb;
-  --border: rgba(30, 50, 90, 0.08);
-  --border-bright: rgba(30, 50, 90, 0.18);
-  --text: #1a2340;
-  --text-dim: #5c6b8a;
+  --surface2: #f3d8e6;
+  --surface-elevated: #ffffff;
+  --border: rgba(214, 163, 191, 0.45);
+  --border-bright: rgba(214, 163, 191, 0.7);
+  --text: #3a0f28;
+  --text-dim: #a45a84;
 
-  --blue: #1d4ed8;
-  --blue-dim: rgba(29, 78, 216, 0.08);
-  --blue-mid: rgba(29, 78, 216, 0.15);
-  --amber: #b45309;
-  --amber-dim: rgba(180, 83, 9, 0.08);
-  --amber-bright: rgba(180, 83, 9, 0.16);
-  --green: #15803d;
-  --green-dim: rgba(21, 128, 61, 0.08);
-  --green-mid: rgba(21, 128, 61, 0.15);
-  --red: #b91c1c;
-  --red-dim: rgba(185, 28, 28, 0.08);
-  --red-mid: rgba(185, 28, 28, 0.15);
-  --teal: #0e7490;
-  --teal-dim: rgba(14, 116, 144, 0.08);
-  --teal-mid: rgba(14, 116, 144, 0.15);
+  --blue: #6f2a52;
+  --blue-dim: rgba(111, 42, 82, 0.08);
+  --blue-mid: rgba(111, 42, 82, 0.15);
+  --amber: #b25a2a;
+  --amber-dim: rgba(178, 90, 42, 0.08);
+  --amber-bright: rgba(178, 90, 42, 0.16);
+  --green: #2e6f4e;
+  --green-dim: rgba(46, 111, 78, 0.08);
+  --green-mid: rgba(46, 111, 78, 0.15);
+  --red: #b11a46;
+  --red-dim: rgba(177, 26, 70, 0.08);
+  --red-mid: rgba(177, 26, 70, 0.15);
+  --teal: #3e7f96;
+  --teal-dim: rgba(62, 127, 150, 0.08);
+  --teal-mid: rgba(62, 127, 150, 0.15);
 
-  --accent: var(--blue);
-  --accent-dim: var(--blue-dim);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1422;
-    --surface: #151f33;
-    --surface2: #1c2840;
-    --surface-elevated: #1a2440;
-    --border: rgba(120, 160, 240, 0.08);
-    --border-bright: rgba(120, 160, 240, 0.18);
-    --text: #dde4f4;
-    --text-dim: #7a90bc;
-
-    --blue: #60a5fa;
-    --blue-dim: rgba(96, 165, 250, 0.10);
-    --blue-mid: rgba(96, 165, 250, 0.18);
-    --amber: #fbbf24;
-    --amber-dim: rgba(251, 191, 36, 0.10);
-    --amber-bright: rgba(251, 191, 36, 0.18);
-    --green: #4ade80;
-    --green-dim: rgba(74, 222, 128, 0.10);
-    --green-mid: rgba(74, 222, 128, 0.18);
-    --red: #f87171;
-    --red-dim: rgba(248, 113, 113, 0.10);
-    --red-mid: rgba(248, 113, 113, 0.18);
-    --teal: #22d3ee;
-    --teal-dim: rgba(34, 211, 238, 0.10);
-    --teal-mid: rgba(34, 211, 238, 0.18);
-  }
+  --accent: #7a2a57;
+  --accent-dim: rgba(122, 42, 87, 0.08);
 }
 
 /* ============ RESET ============ */
@@ -119,6 +91,11 @@ body {
 }
 
 .main { min-width: 0; }
+
+/* ============ TABS ============ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.25s ease-out both; }
+.tab-panel > h2.sec-head:first-child { margin-top: 8px; }
 
 /* ============ TOC ============ */
 nav.toc {
@@ -286,8 +263,9 @@ em { font-style: italic; }
 .code-block--inline pre { border-radius: 6px; }
 
 /* ============ TERMINAL FRAME ============ */
+/* Iris brand, THEMES.themeDark (assets/brand/theme.ts): mockup previews of the real dark TUI */
 .term-frame {
-  background: #0d1117;
+  background: #220817;
   border: 1px solid var(--border-bright);
   border-radius: 10px;
   overflow: hidden;
@@ -302,8 +280,8 @@ em { font-style: italic; }
   align-items: center;
   gap: 6px;
   padding: 9px 14px;
-  background: #1c2128;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #3a0f28;
+  border-bottom: 1px solid rgba(255,241,247,0.08);
 }
 
 .term-frame__dot {
@@ -316,37 +294,37 @@ em { font-style: italic; }
   flex: 1;
   text-align: center;
   font-size: 11px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,241,247,0.4);
   letter-spacing: 0.5px;
 }
 
 .term-frame__body {
   padding: 16px 20px;
-  color: #cdd9e5;
+  color: #fff1f7;
   overflow-x: auto;
 }
 
 .term-frame__body .iris-logo {
-  color: #60a5fa;
+  color: #a45a84;
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 1px;
   margin-bottom: 4px;
 }
 
-.term-frame__body .term-dim { color: rgba(205,217,229,0.45); }
-.term-frame__body .term-blue { color: #60a5fa; }
-.term-frame__body .term-green { color: #4ade80; }
-.term-frame__body .term-amber { color: #fbbf24; }
-.term-frame__body .term-red { color: #f87171; }
-.term-frame__body .term-sel { background: rgba(96,165,250,0.18); border-radius: 3px; padding: 1px 4px; color: #93c5fd; }
+.term-frame__body .term-dim { color: #d6a3bf; }
+.term-frame__body .term-blue { color: #a45a84; }
+.term-frame__body .term-green { color: #4fae7c; }
+.term-frame__body .term-amber { color: #e0934a; }
+.term-frame__body .term-red { color: #d94e74; }
+.term-frame__body .term-sel { background: #3a0f28; border-radius: 3px; padding: 1px 4px; color: #fff1f7; }
 .term-frame__body .term-row { display: block; }
 .term-frame__body .term-icon { font-style: normal; }
 .term-frame__body .keybar {
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  color: rgba(205,217,229,0.5);
+  border-top: 1px solid rgba(255,241,247,0.12);
+  color: #d6a3bf;
   font-size: 11px;
 }
 
@@ -791,20 +769,9 @@ kbd {
 <!-- ===== TOC ===== -->
 <nav class="toc" id="toc">
   <div class="toc-title">Contents</div>
-  <a href="#s-intro">What is Iris?</a>
-  <a href="#s-start">Starting Iris</a>
-  <a href="#s-keys">Keyboard basics</a>
-  <a href="#s-menu">The main menu</a>
-  <a href="#s-setup">First-time setup</a>
-  <a href="#s-convert">Convert a CSV</a>
-  <a href="#s-validate">Validate a file</a>
-  <a href="#s-check">Cross-submission check</a>
-  <a href="#s-errors">Validation messages</a>
-  <a href="#s-history">Submission history</a>
-  <a href="#s-settings">Settings</a>
-  <a href="#s-files">Where files live</a>
-  <a href="#s-glossary">Glossary</a>
-  <a href="#s-quickref">Quick reference</a>
+  <a href="#s-intro">Getting Started</a>
+  <a href="#s-convert">Tasks</a>
+  <a href="#s-history">Reference</a>
 </nav>
 
 <!-- ===== MAIN ===== -->
@@ -813,7 +780,7 @@ kbd {
   <!-- HERO -->
   <div class="anim" style="--i:0">
     <h1>Iris User Manual</h1>
-    <p class="subtitle">Iris v5.1.0 &mdash; foundersandcoders/iris</p>
+    <p class="subtitle">Iris v5.1.0 &middot; foundersandcoders/iris</p>
   </div>
 
   <div class="hero-badges anim" style="--i:1">
@@ -823,8 +790,20 @@ kbd {
     <span class="badge badge--teal">macOS &middot; Apple Silicon</span>
   </div>
 
+  <div class="callout callout--info anim" style="--i:1">
+    <div class="callout-title">&#9432; Work in progress</div>
+    <p>
+      The terminal screenshots throughout this guide are mockups built to match the real
+      Iris TUI, not actual captures. They will be replaced with genuine screenshots in a
+      future revision.
+    </p>
+  </div>
+
+  <!-- ===== TAB: GETTING STARTED ===== -->
+  <section class="tab-panel active" id="s-intro">
+
   <!-- ===== SECTION: INTRO ===== -->
-  <h2 id="s-intro" class="sec-head anim" style="--i:2">
+  <h2 class="sec-head anim" style="--i:2">
     <span class="sec-num">01</span>
     What is Iris?
   </h2>
@@ -836,15 +815,15 @@ kbd {
   </p>
 
   <p class="anim" style="--i:3">
-    The ESFA needs data submitted in a format called <strong>ILR (Individualised Learner Record)</strong>
-    &mdash; specifically as an <strong>XML file</strong> (a structured text file with a
+    The ESFA needs data submitted in a format called <strong>ILR (Individualised Learner Record)</strong>,
+    specifically as an <strong>XML file</strong> (a structured text file with a
     <code>.XML</code> extension). Creating these files by hand would be painful.
     Iris does it for you: you give it a CSV file (a spreadsheet export, the kind
     you download from Airtable), and it produces the correct XML file.
   </p>
 
   <p class="anim" style="--i:3">
-    Iris lives in the terminal &mdash; a text-only window you can open with Spotlight
+    Iris lives in the terminal, a text-only window you can open with Spotlight
     by searching for <strong>Terminal</strong>. This might feel unfamiliar at first,
     but Iris is fully menu-driven. You never need to type commands or remember syntax;
     you just use the arrow keys to pick options and press Enter.
@@ -898,7 +877,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: STARTING IRIS ===== -->
-  <h2 id="s-start" class="sec-head anim" style="--i:7">
+  <h2 class="sec-head anim" style="--i:7">
     <span class="sec-num">02</span>
     Starting Iris
   </h2>
@@ -926,14 +905,14 @@ kbd {
     </li>
   </ol>
 
-  <p class="anim" style="--i:9">Here is what you will see when Iris starts &mdash; the main menu:</p>
+  <p class="anim" style="--i:9">Here is what you will see when Iris starts: the main menu.</p>
 
   <div class="term-frame anim" style="--i:9">
     <div class="term-frame__bar">
       <div class="term-frame__dot" style="background:#ff5f57"></div>
       <div class="term-frame__dot" style="background:#febc2e"></div>
       <div class="term-frame__dot" style="background:#28c840"></div>
-      <div class="term-frame__title">iris &mdash; terminal</div>
+      <div class="term-frame__title">iris &middot; terminal</div>
     </div>
     <div class="term-frame__body">
       <span class="term-row term-blue" style="font-size:15px;letter-spacing:2px;font-weight:700">&#9670; IRIS</span>
@@ -960,13 +939,13 @@ kbd {
   </div>
 
   <!-- ===== SECTION: KEYBOARD ===== -->
-  <h2 id="s-keys" class="sec-head anim" style="--i:11">
+  <h2 class="sec-head anim" style="--i:11">
     <span class="sec-num">03</span>
-    Getting around &mdash; keyboard basics
+    Getting around: keyboard basics
   </h2>
 
   <p class="anim" style="--i:12">
-    Iris is entirely keyboard-driven &mdash; you do not need a mouse.
+    Iris is entirely keyboard-driven; you do not need a mouse.
     A small set of keys covers everything:
   </p>
 
@@ -988,7 +967,7 @@ kbd {
       </tr>
       <tr>
         <td><kbd>Enter</kbd> &nbsp; or &nbsp; <kbd>Return</kbd></td>
-        <td>Confirm the highlighted choice &mdash; open a folder, select a file, or activate a menu item</td>
+        <td>Confirm the highlighted choice: open a folder, select a file, or activate a menu item</td>
       </tr>
       <tr>
         <td><kbd>Esc</kbd> &nbsp; or &nbsp; <kbd>q</kbd></td>
@@ -1044,7 +1023,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: MAIN MENU ===== -->
-  <h2 id="s-menu" class="sec-head anim" style="--i:15">
+  <h2 class="sec-head anim" style="--i:15">
     <span class="sec-num">04</span>
     The main menu
   </h2>
@@ -1073,7 +1052,7 @@ kbd {
       <div class="menu-item__num">3</div>
       <div>
         <div class="menu-item__label">Cross-Submission Check</div>
-        <div class="menu-item__desc">Compares your current XML against a previous one to catch unexpected changes &mdash; like a big drop in learner numbers.</div>
+        <div class="menu-item__desc">Compares your current XML against a previous one to catch unexpected changes, like a big drop in learner numbers.</div>
       </div>
     </div>
     <div class="menu-item">
@@ -1114,7 +1093,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: FIRST-TIME SETUP ===== -->
-  <h2 id="s-setup" class="sec-head anim" style="--i:17">
+  <h2 class="sec-head anim" style="--i:17">
     <span class="sec-num">05</span>
     First-time setup
   </h2>
@@ -1183,8 +1162,13 @@ kbd {
     </p>
   </div>
 
+  </section>
+
+  <!-- ===== TAB: TASKS ===== -->
+  <section class="tab-panel" id="s-convert">
+
   <!-- ===== SECTION: CONVERT ===== -->
-  <h2 id="s-convert" class="sec-head anim" style="--i:21">
+  <h2 class="sec-head anim" style="--i:21">
     <span class="sec-num">06</span>
     Task: Convert a CSV to an XML submission
   </h2>
@@ -1197,7 +1181,7 @@ kbd {
   <h3 class="sub-head anim" style="--i:22">Before you begin</h3>
   <p class="anim" style="--i:22">
     Export your learner data from Airtable as a CSV file and save it somewhere
-    you can find it &mdash; <code>Downloads</code> or <code>Desktop</code> are good choices.
+    you can find it; <code>Downloads</code> or <code>Desktop</code> are good choices.
     The file must have <code>.csv</code> as its extension.
   </p>
 
@@ -1295,7 +1279,7 @@ kbd {
 
   <p class="anim" style="--i:24">
     During Step 2 (Validate Data), Iris checks every row for problems. If it finds
-    any <strong>errors</strong>, it stops immediately &mdash; steps 3 and 4 are skipped
+    any <strong>errors</strong>, it stops immediately: steps 3 and 4 are skipped
     and no XML file is created. You will be taken to the
     <strong>Validation Issues</strong> screen (see <a href="#s-errors">Section 9</a>).
   </p>
@@ -1314,7 +1298,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: VALIDATE ===== -->
-  <h2 id="s-validate" class="sec-head anim" style="--i:25">
+  <h2 class="sec-head anim" style="--i:25">
     <span class="sec-num">07</span>
     Task: Validate an existing file
   </h2>
@@ -1392,7 +1376,7 @@ kbd {
   </p>
 
   <!-- ===== SECTION: CROSS-SUBMISSION CHECK ===== -->
-  <h2 id="s-check" class="sec-head anim" style="--i:29">
+  <h2 class="sec-head anim" style="--i:29">
     <span class="sec-num">08</span>
     Task: Cross-submission check
   </h2>
@@ -1447,7 +1431,7 @@ kbd {
     <tbody>
       <tr>
         <td>Learner count changed by more than 30%</td>
-        <td>Big jump or drop in the number of learners &mdash; worth double-checking before submitting</td>
+        <td>Big jump or drop in the number of learners, worth double-checking before submitting</td>
         <td><span style="color:var(--amber)">Warning</span></td>
       </tr>
       <tr>
@@ -1457,7 +1441,7 @@ kbd {
       </tr>
       <tr>
         <td>Collection year changed</td>
-        <td>The academic year in the file has changed &mdash; expected when starting a new year</td>
+        <td>The academic year in the file has changed, expected when starting a new year</td>
         <td><span style="color:var(--teal)">Info</span></td>
       </tr>
       <tr>
@@ -1494,22 +1478,22 @@ kbd {
         <td>Make sure the column exists in Airtable and is included in the export</td>
       </tr>
       <tr>
-        <td><em>Required field &ldquo;X&rdquo; is missing &mdash; row N</em></td>
+        <td><em>Required field &ldquo;X&rdquo; is missing, row N</em></td>
         <td>A cell that must be filled in is blank for that learner</td>
         <td>Open the Airtable record and fill in the missing value, then re-export</td>
       </tr>
       <tr>
-        <td><em>Field &ldquo;X&rdquo; must be an integer (whole number) &mdash; row N</em></td>
+        <td><em>Field &ldquo;X&rdquo; must be an integer (whole number), row N</em></td>
         <td>The value contains letters, symbols, or a decimal point where only whole numbers are allowed</td>
         <td>Correct the value (e.g. <code>123.0</code> should be <code>123</code>)</td>
       </tr>
       <tr>
-        <td><em>Field &ldquo;X&rdquo; must be a date (YYYY-MM-DD) &mdash; row N</em></td>
+        <td><em>Field &ldquo;X&rdquo; must be a date (YYYY-MM-DD), row N</em></td>
         <td>The date is in the wrong format</td>
         <td>Change the date format in Airtable to year-month-day (e.g. <code>1999-04-15</code>)</td>
       </tr>
       <tr>
-        <td><em>Value &ldquo;X&rdquo; is not in the allowed list &mdash; row N</em></td>
+        <td><em>Value &ldquo;X&rdquo; is not in the allowed list, row N</em></td>
         <td>The value must be one of a fixed set of codes, and this one isn&rsquo;t recognised</td>
         <td>Check the ESFA ILR specification for valid codes, then correct the Airtable record</td>
       </tr>
@@ -1534,14 +1518,19 @@ kbd {
   <div class="callout callout--tip anim" style="--i:34">
     <div class="callout-title">&#10003; Row numbers are 1-indexed</div>
     <p>
-      When Iris says &ldquo;row 4&rdquo;, it means the 4th <em>data</em> row &mdash;
+      When Iris says &ldquo;row 4&rdquo;, it means the 4th <em>data</em> row,
       not counting the heading row. So &ldquo;row 1&rdquo; is the first learner,
       &ldquo;row 4&rdquo; is the fourth learner, and so on.
     </p>
   </div>
 
+  </section>
+
+  <!-- ===== TAB: REFERENCE ===== -->
+  <section class="tab-panel" id="s-history">
+
   <!-- ===== SECTION: HISTORY ===== -->
-  <h2 id="s-history" class="sec-head anim" style="--i:35">
+  <h2 class="sec-head anim" style="--i:35">
     <span class="sec-num">10</span>
     Browsing submission history
   </h2>
@@ -1576,7 +1565,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: SETTINGS ===== -->
-  <h2 id="s-settings" class="sec-head anim" style="--i:38">
+  <h2 class="sec-head anim" style="--i:38">
     <span class="sec-num">11</span>
     Settings &amp; Configuration
   </h2>
@@ -1595,7 +1584,7 @@ kbd {
       <tr>
         <td><strong>UKPRN</strong></td>
         <td>Your 8-digit UK Provider Reference Number (from UKRLP). Goes into every XML file.</td>
-        <td><code>10000000</code> &mdash; <em>must be changed</em></td>
+        <td><code>10000000</code>, <em>must be changed</em></td>
       </tr>
       <tr>
         <td><strong>Name</strong></td>
@@ -1651,7 +1640,7 @@ kbd {
   </table>
 
   <!-- ===== SECTION: WHERE FILES LIVE ===== -->
-  <h2 id="s-files" class="sec-head anim" style="--i:41">
+  <h2 class="sec-head anim" style="--i:41">
     <span class="sec-num">12</span>
     Where your files live
   </h2>
@@ -1672,8 +1661,8 @@ kbd {
     <tbody>
       <tr>
         <td><code>~/Documents/Iris/Submissions/</code></td>
-        <td>Your finished XML files &mdash; the ones you upload to the ESFA</td>
-        <td><strong>Yes &mdash; regularly.</strong> This is where you find your output.</td>
+        <td>Your finished XML files, the ones you upload to the ESFA</td>
+        <td><strong>Yes, regularly.</strong> This is where you find your output.</td>
       </tr>
       <tr>
         <td><code>~/Documents/Iris/Schemas/</code></td>
@@ -1682,7 +1671,7 @@ kbd {
       </tr>
       <tr>
         <td><code>~/.iris/</code></td>
-        <td>Iris&rsquo;s own settings, field mappings, and submission history &mdash; a hidden folder</td>
+        <td>Iris&rsquo;s own settings, field mappings, and submission history, a hidden folder</td>
         <td>Rarely. Iris manages this itself. Do not delete it.</td>
       </tr>
     </tbody>
@@ -1714,7 +1703,7 @@ kbd {
   </div>
 
   <!-- ===== SECTION: GLOSSARY ===== -->
-  <h2 id="s-glossary" class="sec-head anim" style="--i:45">
+  <h2 class="sec-head anim" style="--i:45">
     <span class="sec-num">13</span>
     Glossary
   </h2>
@@ -1747,7 +1736,7 @@ kbd {
     </div>
     <div class="glossary-item">
       <div class="glossary-item__term">Schema</div>
-      <div class="glossary-item__full">XSD &mdash; XML Schema Definition</div>
+      <div class="glossary-item__full">XSD, XML Schema Definition</div>
       <div class="glossary-item__def">The rulebook file that defines what a valid ILR XML file must look like. Iris ships with the 2025&ndash;26 version built in.</div>
     </div>
     <div class="glossary-item">
@@ -1770,7 +1759,7 @@ kbd {
   <!-- ===== SECTION: QUICK REFERENCE ===== -->
   <div class="divider anim" style="--i:47"></div>
 
-  <h2 id="s-quickref" class="sec-head anim" style="--i:47">
+  <h2 class="sec-head anim" style="--i:47">
     <span class="sec-num">&thinsp;</span>
     Quick reference
   </h2>
@@ -1844,43 +1833,66 @@ kbd {
     </div>
   </div>
 
+  </section>
+
 </div><!-- /main -->
 </div><!-- /wrap -->
 
-<!-- ===== SCROLL SPY ===== -->
+<!-- ===== TAB SWITCHER ===== -->
 <script>
 (function() {
   const toc = document.getElementById('toc');
   const links = Array.from(toc.querySelectorAll('a'));
-  const sections = links
-    .map(link => ({ link, el: document.getElementById(link.getAttribute('href').slice(1)) }))
-    .filter(s => s.el);
+  const panels = Array.from(document.querySelectorAll('.tab-panel'));
+  const byId = id => document.getElementById(id);
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        links.forEach(l => l.classList.remove('active'));
-        const match = sections.find(s => s.el === entry.target);
-        if (match) {
-          match.link.classList.add('active');
-          if (window.innerWidth <= 1000) {
-            match.link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          }
-        }
+  function activate(id, push) {
+    const panel = byId(id);
+    if (!panel || !panel.classList.contains('tab-panel')) return;
+
+    panels.forEach(p => p.classList.remove('active'));
+    links.forEach(l => l.classList.remove('active'));
+    panel.classList.add('active');
+
+    const link = links.find(l => l.getAttribute('href') === '#' + id);
+    if (link) {
+      link.classList.add('active');
+      if (window.innerWidth <= 1000) {
+        link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
-    });
-  }, { rootMargin: '-8% 0px -82% 0px' });
+    }
 
-  sections.forEach(s => observer.observe(s.el));
+    if (push) history.replaceState(null, '', '#' + id);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
 
   links.forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
-      const id = link.getAttribute('href').slice(1);
-      const el = document.getElementById(id);
-      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', '#' + id); }
+      activate(link.getAttribute('href').slice(1), true);
     });
   });
+
+  // In-content cross-links (e.g. "see Section 9") point at an id inside a tab
+  // panel rather than a tab itself, so activate the containing tab, then scroll
+  // to the actual heading.
+  document.querySelectorAll('.main a[href^="#"]').forEach(a => {
+    if (links.includes(a)) return;
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const target = byId(id);
+      if (!target) return;
+      e.preventDefault();
+      const containingPanel = target.closest('.tab-panel');
+      if (containingPanel) activate(containingPanel.id, true);
+      requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    });
+  });
+
+  // Deep-linking: honour #hash on load, else default to the first tab.
+  const initial = location.hash.slice(1);
+  const validPanel = initial && byId(initial) && byId(initial).classList.contains('tab-panel');
+  activate(validPanel ? initial : panels[0].id, false);
 })();
 </script>
 
