@@ -1,0 +1,7 @@
+[test]
+# Scope `bun test` to core library tests only. TUI/component tests under tests/tui
+# use vi.mock() (vitest module mocks), which Bun's runner cannot un-register between
+# files — mock.restore() explicitly does not reset mock.module() overrides. Keeping
+# those files off this runner entirely (rather than trying to restore mocks per-test)
+# is the only reliable fix; they run under `vitest` instead (see test:svelte script).
+root = "tests/lib"
