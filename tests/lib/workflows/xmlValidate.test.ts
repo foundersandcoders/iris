@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, unlinkSync, mkdirSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
@@ -14,7 +14,9 @@ describe('xmlValidateWorkflow', () => {
 	let tempDir: string;
 
 	beforeAll(async () => {
-		registry = buildSchemaRegistry(await Bun.file('docs/schemas/schemafile25.xsd').text());
+		registry = buildSchemaRegistry(
+			readFileSync(join(process.cwd(), 'docs/schemas/schemafile25.xsd'), 'utf-8')
+		);
 
 		tempDir = join(tmpdir(), 'iris-test-xml-validate');
 		mkdirSync(tempDir, { recursive: true });

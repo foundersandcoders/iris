@@ -5,9 +5,19 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { rm, writeFile } from 'fs/promises';
+import { rm, writeFile, readFile, access } from 'fs/promises';
 import { createStorage } from '$lib/storage';
 import * as fixtures from '../../fixtures/storage';
+
+/** fs/promises has no direct `exists()` helper — probe via access(). */
+async function pathExists(path: string): Promise<boolean> {
+	try {
+		await access(path);
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 describe('IrisStorage', () => {
 	let testRoot: string;
@@ -85,7 +95,7 @@ describe('IrisStorage', () => {
 
 		it('handles invalid JSON gracefully', async () => {
 			// Write malformed JSON to config file
-			await Bun.write(storage.paths.config, fixtures.malformedConfigJson);
+			await writeFile(storage.paths.config, fixtures.malformedConfigJson);
 
 			const result = await storage.loadConfig();
 			expect(result.success).toBe(false);
@@ -103,7 +113,7 @@ describe('IrisStorage', () => {
 				activeMapping: '', // Empty
 				configVersion: 1,
 			};
-			await Bun.write(storage.paths.config, JSON.stringify(invalidConfig));
+			await writeFile(storage.paths.config, JSON.stringify(invalidConfig));
 
 			const result = await storage.loadConfig();
 			expect(result.success).toBe(false);
@@ -274,7 +284,7 @@ describe('IrisStorage', () => {
 
 		it('user schema takes precedence over bundled', async () => {
 			// Create a user schema with same name
-			await Bun.write(join(storage.paths.schemas, 'schemafile25.xsd'), fixtures.userSchemaContent);
+			await writeFile(join(storage.paths.schemas, 'schemafile25.xsd'), fixtures.userSchemaContent);
 
 			const result = await storage.loadSchema('schemafile25.xsd');
 			expect(result.success).toBe(true);
@@ -285,7 +295,7 @@ describe('IrisStorage', () => {
 
 		it('lists schemas from both locations', async () => {
 			// Add a user schema
-			await Bun.write(join(storage.paths.schemas, 'custom.xsd'), fixtures.customSchemaContent);
+			await writeFile(join(storage.paths.schemas, 'custom.xsd'), fixtures.customSchemaContent);
 
 			const result = await storage.listSchemas();
 			expect(result.success).toBe(true);
@@ -315,7 +325,7 @@ describe('IrisStorage', () => {
 				expect(result.data).toContain('.xml');
 
 				// Verify file exists
-				const fileExists = await Bun.file(result.data).exists();
+				const fileExists = await pathExists(result.data);
 				expect(fileExists).toBe(true);
 			}
 		});
@@ -334,7 +344,7 @@ describe('IrisStorage', () => {
 				expect(filename).toMatch(/\.XML$/);
 
 				// File exists on disk
-				const fileExists = await Bun.file(result.data).exists();
+				const fileExists = await pathExists(result.data);
 				expect(fileExists).toBe(true);
 			}
 		});
@@ -349,11 +359,11 @@ describe('IrisStorage', () => {
 
 				// Check metadata file exists in internal directory (not user output directory)
 				const metadataPath = join(storage.paths.internalSubmissions, `${filename}.meta.json`);
-				const metadataExists = await Bun.file(metadataPath).exists();
+				const metadataExists = await pathExists(metadataPath);
 				expect(metadataExists).toBe(true);
 
 				// Verify metadata content
-				const savedMetadata = await Bun.file(metadataPath).json();
+				const savedMetadata = JSON.parse(await readFile(metadataPath, 'utf-8'));
 				expect(savedMetadata).toEqual(fixtures.sampleMetadata);
 			}
 		});
