@@ -23,7 +23,7 @@ describe('convertWorkflow', () => {
 	let testCsvPath: string;
 
 	beforeEach(async () => {
-		testDir = join(tmpdir(), `iris-test-${Date.now()}`);
+		testDir = join(tmpdir(), `iris-convert-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		await mkdir(testDir, { recursive: true });
 		testCsvPath = join(testDir, 'test.csv');
 	});

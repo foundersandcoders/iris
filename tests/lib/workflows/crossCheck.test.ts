@@ -34,7 +34,7 @@ describe('checkWorkflow', () => {
 	let testInternalRoot: string;
 
 	beforeEach(async () => {
-		testDir = join(tmpdir(), `iris-check-test-${Date.now()}`);
+		testDir = join(tmpdir(), `iris-check-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		await mkdir(testDir, { recursive: true });
 		testXmlPath = join(testDir, 'test.xml');
 		testInternalRoot = join(testDir, '.iris-test');
