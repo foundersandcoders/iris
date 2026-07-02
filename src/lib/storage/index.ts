@@ -6,6 +6,7 @@ export { createStorage } from './create';
 export { getStoragePaths, getDefaultOutputDir } from '../utils/storage/paths';
 export { StorageError } from './errors';
 export { createBunAdapter } from './adapters/bun';
+export { createNodeAdapter } from './adapters/node';
 
 // Re-export types
 export type {

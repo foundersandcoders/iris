@@ -19,21 +19,29 @@ import type { IlrIlrMappingConfig } from '../types/ilrMappingTypes';
 import { getStoragePaths, type StoragePaths } from '../utils/storage/paths';
 import { StorageError } from './errors';
 import { createBunAdapter } from './adapters/bun';
+import { createNodeAdapter } from './adapters/node';
 import { facAirtableMapping } from '../mappings/fac-airtable-2025';
 import { validateMappingStructure } from '../mappings/validate';
 import packageJson from '../../../package.json';
 
-// Embed schema for compiled binary
+// Embed schema for compiled binary. Under Bun this import attribute yields
+// the file's text content. Under Vite/vitest it instead resolves to an
+// asset URL (`assetsInclude` in vite.config.ts), not text — so the embedded
+// map below is only trusted under Bun; Node falls back to reading from disk.
 import bundledSchemaXsd from '../../../docs/schemas/schemafile25.xsd' with { type: 'text' };
 
 /** Bundled schema dir, resolved relative to this file (not cwd).
- *  create.ts is at src/lib/storage/ — project root is 3 levels up. */
-const BUNDLED_SCHEMA_DIR = join(import.meta.dir, '..', '..', '..', 'docs', 'schemas');
+ *  create.ts is at src/lib/storage/ — project root is 3 levels up.
+ *  `import.meta.dirname` (not the Bun-only `import.meta.dir`) works under
+ *  both Bun and Node, so this module loads cleanly under either runtime. */
+const BUNDLED_SCHEMA_DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'schemas');
 
-/** Map of embedded schemas (available in compiled binary) */
-const BUNDLED_SCHEMAS: Record<string, string> = {
-	'schemafile25.xsd': bundledSchemaXsd,
-};
+/** Map of embedded schemas (available in compiled binary).
+ *  Populated from the Bun text-import only when actually running under Bun —
+ *  under Node/vitest, `bundledSchemaXsd` holds a URL rather than XSD text, so
+ *  `loadSchema` relies on its filesystem fallback instead (see below). */
+const BUNDLED_SCHEMAS: Record<string, string> =
+	typeof Bun !== 'undefined' ? { 'schemafile25.xsd': bundledSchemaXsd } : {};
 
 interface StorageOptions {
 	outputDir?: string;
@@ -48,7 +56,9 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 		schemaDir: options.schemaDir,
 		internalRoot: options.internalRoot,
 	});
-	const adapter = options.adapter ?? createBunAdapter();
+	// Auto-detect runtime: Bun in dev/compiled-binary, Node under vitest.
+	const adapter =
+		options.adapter ?? (typeof Bun !== 'undefined' ? createBunAdapter() : createNodeAdapter());
 
 	return {
 		paths,
