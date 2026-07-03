@@ -18,6 +18,7 @@ import type {
 } from '../types/workflowTypes';
 import type { SubmissionHistory, HistoryEntry } from '../types/storageTypes';
 import { basename, dirname, join } from 'path';
+import { readFile, access } from 'fs/promises';
 
 const STEPS = {
 	load: { id: 'load', name: 'Load XML File' },
@@ -44,13 +45,17 @@ export async function* checkWorkflow(
 
 	let xmlContent: string;
 	try {
-		const file = Bun.file(input.filePath);
-		if (!(await file.exists())) throw new Error(`File not found: ${input.filePath}`);
-
 		if (!input.filePath.toLowerCase().endsWith('.xml'))
 			throw new Error('Only XML files are supported for cross-submission checks');
 
-		xmlContent = await file.text();
+		try {
+			xmlContent = await readFile(input.filePath, 'utf-8');
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				throw new Error(`File not found: ${input.filePath}`);
+			}
+			throw error;
+		}
 		loadStep.status = 'complete';
 		loadStep.progress = 100;
 		loadStep.message = `Loaded ${basename(input.filePath)}`;
@@ -135,9 +140,15 @@ export async function* checkWorkflow(
 
 	if (input.previousFilePath) {
 		// User explicitly chose previous file — parse for comparison data
-		const prevFile = Bun.file(input.previousFilePath);
-		if (!(await prevFile.exists())) throw new Error(`Previous file not found: ${input.previousFilePath}`);
-		const prevXml = await prevFile.text();
+		let prevXml: string;
+		try {
+			prevXml = await readFile(input.previousFilePath, 'utf-8');
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				throw new Error(`Previous file not found: ${input.previousFilePath}`);
+			}
+			throw error;
+		}
 		const prevParse = parseILR(prevXml);
 		if (!prevParse.success) throw new Error(`Failed to parse previous XML: ${prevParse.error.message}`);
 
@@ -162,10 +173,12 @@ export async function* checkWorkflow(
 		for (const candidate of candidates) {
 			// Check if file exists in same directory as current file
 			const candidatePath = join(currentDir, candidate.filename);
-			const file = Bun.file(candidatePath);
-			if (await file.exists()) {
+			try {
+				await access(candidatePath);
 				previousSubmission = candidate;
 				break;
+			} catch {
+				// Candidate file doesn't exist — try the next one
 			}
 		}
 	}

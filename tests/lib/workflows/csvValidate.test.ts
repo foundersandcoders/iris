@@ -23,7 +23,7 @@ describe('validateWorkflow (CSV)', () => {
 	let testCsvPath: string;
 
 	beforeEach(async () => {
-		testDir = join(tmpdir(), `iris-test-${Date.now()}`);
+		testDir = join(tmpdir(), `iris-validate-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		await mkdir(testDir, { recursive: true });
 
 		testCsvPath = join(testDir, 'test.csv');

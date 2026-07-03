@@ -3,6 +3,7 @@
  *  | step events for UI consumption.
  *  |===========================================================|
  */
+import { createHash } from 'crypto';
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
 import { createAimSkipFilter } from '../mappings/ilrValidation';
@@ -175,7 +176,7 @@ export async function* convertWorkflow(
 		const filename = outputPath.split('/').pop() ?? 'unknown';
 
 		// Append to submission history (non-fatal — log warning if fails)
-		const checksum = new Bun.CryptoHasher('sha256').update(xml).digest('hex');
+		const checksum = createHash('sha256').update(xml).digest('hex');
 		const learnerRefs = (message.Learner as Record<string, unknown>[])
 			.map(l => String(l.LearnRefNumber ?? ''))
 			.filter(ref => ref.length > 0);

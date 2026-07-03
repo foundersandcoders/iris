@@ -23,7 +23,7 @@ describe('Round-trip Integration: CSV → XML → Validate', () => {
 	});
 
 	beforeEach(async () => {
-		testDir = join(tmpdir(), `iris-roundtrip-${Date.now()}`);
+		testDir = join(tmpdir(), `iris-roundtrip-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		await mkdir(testDir, { recursive: true });
 	});
 

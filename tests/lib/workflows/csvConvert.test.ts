@@ -6,7 +6,7 @@ import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
 import * as fixtures from '../../fixtures/lib/workflows/workflow';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { mkdir, rm, writeFile } from 'fs/promises';
+import { mkdir, rm, writeFile, readFile, access } from 'fs/promises';
 import { readFileSync } from 'fs';
 import { facAirtableMapping } from '../../../src/lib/mappings/fac-airtable-2025';
 
@@ -23,7 +23,7 @@ describe('convertWorkflow', () => {
 	let testCsvPath: string;
 
 	beforeEach(async () => {
-		testDir = join(tmpdir(), `iris-test-${Date.now()}`);
+		testDir = join(tmpdir(), `iris-convert-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		await mkdir(testDir, { recursive: true });
 		testCsvPath = join(testDir, 'test.csv');
 	});
@@ -90,10 +90,10 @@ describe('convertWorkflow', () => {
 			})
 			);
 
-			const outputFile = Bun.file(result.data!.outputPath);
-			expect(await outputFile.exists()).toBe(true);
+			const outputPath = result.data!.outputPath;
+			await expect(access(outputPath)).resolves.toBeUndefined();
 
-			const content = await outputFile.text();
+			const content = await readFile(outputPath, 'utf-8');
 			expect(content).toContain('<Message xmlns="ESFA/ILR/2025-26" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">');
 			expect(content).toContain('<LearnRefNumber>ABC123</LearnRefNumber>');
 		});

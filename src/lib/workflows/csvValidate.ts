@@ -6,6 +6,7 @@
  *  |==================================================================|
  */
 
+import { stat } from 'fs/promises';
 import { createStep, stepEvent, failedResult } from './utils';
 import { parseCSV, type CSVData } from '../utils/csv/csvParser';
 import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
@@ -38,15 +39,19 @@ export async function* validateWorkflow(
 	yield stepEvent('step:start', loadStep);
 
 	try {
-		const file = Bun.file(input.filePath);
-		if (!(await file.exists())) throw new Error(`File not found: ${input.filePath}`);
+		let fileStat;
+		try {
+			fileStat = await stat(input.filePath);
+		} catch {
+			throw new Error(`File not found: ${input.filePath}`);
+		}
 
 		if (!input.filePath.toLowerCase().endsWith('.csv'))
 			throw new Error(
 				'Only CSV files are supported. For XML validation, use validate-xml workflow.'
 			);
 
-		const size = file.size;
+		const size = fileStat.size;
 		loadStep.status = 'complete';
 		loadStep.progress = 100;
 		loadStep.message = `Loaded ${(size / 1024).toFixed(1)} KB`;

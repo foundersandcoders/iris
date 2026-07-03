@@ -1,24 +1,25 @@
-/** |===================|| Bun Storage Adapter ||==================|
- *  | Bun-specific implementation of StorageAdapter interface.
- *  | Uses Bun.file(), Bun.write(), and native fs operations.
- *  |===============================================================|
+/** |===================|| Node Storage Adapter ||==================|
+ *  | Node.js-compatible implementation of StorageAdapter interface.
+ *  | Uses node:fs/promises (readFile/writeFile/access) instead of
+ *  | Bun.file()/Bun.write(). Behaviour mirrors the Bun adapter so
+ *  | callers can run identically under either runtime.
+ *  |=================================================================|
  */
-import { readdir, stat, mkdir, unlink } from 'fs/promises';
-import { join, basename } from 'path';
+import { readFile, writeFile, access, readdir, stat, mkdir, unlink } from 'fs/promises';
+import { dirname, join } from 'path';
 import { StorageError } from '../errors';
 import type { StorageAdapter, ListOptions } from '../../types/storageTypes';
 import { globToRegExp } from './globPattern';
 
-export function createBunAdapter(): StorageAdapter {
+export function createNodeAdapter(): StorageAdapter {
 	return {
 		async read(path: string): Promise<string> {
-			const file = Bun.file(path);
-			if (!(await file.exists())) {
-				throw StorageError.notFound(path);
-			}
 			try {
-				return await file.text();
+				return await readFile(path, 'utf-8');
 			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+					throw StorageError.notFound(path);
+				}
 				throw StorageError.readFailed(path, error as Error);
 			}
 		},
@@ -33,13 +34,18 @@ export function createBunAdapter(): StorageAdapter {
 		},
 
 		async exists(path: string): Promise<boolean> {
-			const file = Bun.file(path);
-			return await file.exists();
+			try {
+				await access(path);
+				return true;
+			} catch {
+				return false;
+			}
 		},
 
 		async write(path: string, content: string): Promise<void> {
 			try {
-				await Bun.write(path, content);
+				await mkdir(dirname(path), { recursive: true });
+				await writeFile(path, content, 'utf-8');
 			} catch (error) {
 				throw StorageError.writeFailed(path, error as Error);
 			}
