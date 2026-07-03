@@ -44,6 +44,7 @@ export function createNodeAdapter(): StorageAdapter {
 
 		async write(path: string, content: string): Promise<void> {
 			try {
+				await mkdir(dirname(path), { recursive: true });
 				await writeFile(path, content, 'utf-8');
 			} catch (error) {
 				throw StorageError.writeFailed(path, error as Error);
