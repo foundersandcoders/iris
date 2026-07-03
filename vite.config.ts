@@ -8,6 +8,16 @@ export default defineConfig({
 	assetsInclude: ['**/*.xsd'],
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
+		// vi.mock('@opentui/core', ...) (see tests/fixtures/tui/opentui.ts) only
+		// intercepts imports vitest transforms itself. opentui-spinner is
+		// externalised by default, so its nested `from '@opentui/core'` import
+		// reaches the real, Bun-only package instead of the mock. Inlining it
+		// routes that import through vitest's transform, where the mock applies.
+		server: {
+			deps: {
+				inline: ['opentui-spinner']
+			}
+		},
 		// bun.ts uses the global `Bun` runtime API, unavailable under vitest's Node
 		// environment. It's exercised under `bun test` instead (tests/lib is the bun
 		// test root — see bunfig.toml).
