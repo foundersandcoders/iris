@@ -6,9 +6,10 @@
  *  |=================================================================|
  */
 import { readFile, writeFile, access, readdir, stat, mkdir, unlink } from 'fs/promises';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import { StorageError } from '../errors';
 import type { StorageAdapter, ListOptions } from '../../types/storageTypes';
+import { globToRegExp } from './globPattern';
 
 export function createNodeAdapter(): StorageAdapter {
 	return {
@@ -61,7 +62,7 @@ export function createNodeAdapter(): StorageAdapter {
 				// Apply pattern filter if provided
 				let filtered = entries;
 				if (options?.pattern) {
-					const regex = new RegExp(options.pattern.replace(/\*/g, '.*').replace(/\?/g, '.'));
+					const regex = globToRegExp(options.pattern);
 					filtered = entries.filter((name) => regex.test(name));
 				}
 

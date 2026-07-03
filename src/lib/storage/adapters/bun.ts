@@ -7,6 +7,7 @@ import { readdir, stat, mkdir, unlink } from 'fs/promises';
 import { join, basename } from 'path';
 import { StorageError } from '../errors';
 import type { StorageAdapter, ListOptions } from '../../types/storageTypes';
+import { globToRegExp } from './globPattern';
 
 export function createBunAdapter(): StorageAdapter {
 	return {
@@ -56,7 +57,7 @@ export function createBunAdapter(): StorageAdapter {
 				// Apply pattern filter if provided
 				let filtered = entries;
 				if (options?.pattern) {
-					const regex = new RegExp(options.pattern.replace(/\*/g, '.*').replace(/\?/g, '.'));
+					const regex = globToRegExp(options.pattern);
 					filtered = entries.filter((name) => regex.test(name));
 				}
 
