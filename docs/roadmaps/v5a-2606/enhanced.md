@@ -14,8 +14,8 @@ because the shell rollout and signature features build on them.
 | Phase | Focus                                                        | Status |
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
-| **B** |               App-shell rollout across screens               | Ready (A foundations landed) |
-| **C** | Signature UX features (help, toasts, progress, transitions)  | Ready (A foundations landed) |
+| **B** |               App-shell rollout across screens               | Ready |
+| **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
 
@@ -66,22 +66,45 @@ because the shell rollout and signature features build on them.
       change) and removed stray `crossCheck.test.ts.bak{2,3,4}` files. **Done:**
       `bun run test:core` is 462/462 green, verified stable across repeated
       runs regardless of execution order.
-- [ ] **TR.A5** `feat/add-node-storage-adapter` — `bunx vitest run` still has
-      ~20 failing test files unrelated to TR.A4's mock leak: `createStorage()`
-      (`src/lib/storage/create.ts`) unconditionally imports the Bun-only
+- [x] **TR.A5** `feat/add-node-storage-adapter` — `bunx vitest run` had ~20
+      failing test files unrelated to TR.A4's mock leak: `createStorage()`
+      (`src/lib/storage/create.ts`) unconditionally imported the Bun-only
       adapter (`src/lib/storage/adapters/bun.ts`, uses `Bun.file`/`Bun.write`),
-      plus `create.ts` itself uses `import.meta.dir` and a Bun-specific `.xsd`
-      import assertion (`with { type: 'text' }`). There is no Node-compatible
-      adapter, so any test calling `createStorage()` — confirmed:
-      `tests/lib/types/config.test.ts`, `tests/lib/workflows/csvConvert.test.ts`,
-      `tests/lib/workflows/crossCheck.test.ts`, `tests/lib/storage/create.test.ts`,
-      `tests/lib/mappings/compatibility.test.ts`, plus TUI screen tests that
-      mock storage — cannot run under vitest's Node environment ("Bun is not
-      defined"). **Fix:** add a Node `fs`-based `StorageAdapter` implementation
-      with runtime detection (Bun vs Node) in `create.ts`, or formally decide
-      these tests stay `bun test`-only permanently. Not currently blocking
-      anything (each file runs fine under its intended runner) but blocks ever
-      having one unified green `bun run test:all`.
+      plus `create.ts` itself used `import.meta.dir` and a Bun-specific `.xsd`
+      import assertion (`with { type: 'text' }`). There was no Node-compatible
+      adapter, so any test calling `createStorage()` — `tests/lib/types/config.test.ts`,
+      `tests/lib/workflows/csvConvert.test.ts`, `tests/lib/workflows/crossCheck.test.ts`,
+      `tests/lib/storage/create.test.ts`, `tests/lib/mappings/compatibility.test.ts`,
+      plus TUI screen tests that mock storage — could not run under vitest's
+      Node environment ("Bun is not defined"). **Done:** added
+      `src/lib/storage/adapters/node.ts` (a Node `fs/promises`-based
+      `StorageAdapter`) with runtime detection in `create.ts`
+      (`typeof Bun !== 'undefined' ? createBunAdapter() : createNodeAdapter()`);
+      swapped the Bun-only `import.meta.dir` for `import.meta.dirname` (works
+      under both runtimes); guarded the bundled-XSD text-import behind a
+      `typeof Bun` check with a filesystem fallback under Node. Merged via
+      PR #72. `bun run test:svelte` now runs all storage-dependent `lib`
+      tests green — a cross-runtime test-assertion bug in
+      `csvConvert.test.ts` (`fs.access()` resolves `null` under Bun,
+      `undefined` under vitest/Node) was fixed alongside this. `bun run
+      test:all` still exits non-zero, but only because of the pre-existing
+      TUI/vitest incompatibility tracked as **TR.A6** below — unrelated to
+      storage and out of scope for this task.
+- [ ] **TR.A6** `fix/vitest-tui-suite-compat` — All 12 `tests/tui/**` suites
+      fail to *load* under `vitest` (0 tests collected, not test failures):
+      `tests/tui/app.test.ts` throws `ReferenceError: Cannot access
+      '__vi_import_1__' before initialization` (a `vi.mock` factory hoisting
+      issue); the other 11 (`theme`, `appShell`, `panel`, `keymap`,
+      `dashboard`, `file-picker`, `history`, `mapping-builder`,
+      `mapping-editor`, `mapping-save`, `settings`) all fail with
+      `TypeError: Unknown file extension ".scm"` — vitest's Node loader
+      chokes on `@opentui/core`'s bundled `highlights.scm` tree-sitter
+      asset. Confirmed still present after TR.A5 (Bun/Node storage split)
+      landed, so it's a separate blocker. **Fix:** either exclude
+      `tests/tui/**` from the vitest config (formalising what TR.A4 already
+      decided — these stay `bun test`-only) or resolve the `.scm` loader
+      and hoisting issues so they run under both. Blocks a single unified
+      green `bun run test:all`; does not block any Phase A-E branch.
 
 ## Phase B — App-shell rollout
 
