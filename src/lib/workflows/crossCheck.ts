@@ -45,16 +45,17 @@ export async function* checkWorkflow(
 
 	let xmlContent: string;
 	try {
-		try {
-			await access(input.filePath);
-		} catch {
-			throw new Error(`File not found: ${input.filePath}`);
-		}
-
 		if (!input.filePath.toLowerCase().endsWith('.xml'))
 			throw new Error('Only XML files are supported for cross-submission checks');
 
-		xmlContent = await readFile(input.filePath, 'utf-8');
+		try {
+			xmlContent = await readFile(input.filePath, 'utf-8');
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				throw new Error(`File not found: ${input.filePath}`);
+			}
+			throw error;
+		}
 		loadStep.status = 'complete';
 		loadStep.progress = 100;
 		loadStep.message = `Loaded ${basename(input.filePath)}`;
@@ -139,12 +140,15 @@ export async function* checkWorkflow(
 
 	if (input.previousFilePath) {
 		// User explicitly chose previous file — parse for comparison data
+		let prevXml: string;
 		try {
-			await access(input.previousFilePath);
-		} catch {
-			throw new Error(`Previous file not found: ${input.previousFilePath}`);
+			prevXml = await readFile(input.previousFilePath, 'utf-8');
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				throw new Error(`Previous file not found: ${input.previousFilePath}`);
+			}
+			throw error;
 		}
-		const prevXml = await readFile(input.previousFilePath, 'utf-8');
 		const prevParse = parseILR(prevXml);
 		if (!prevParse.success) throw new Error(`Failed to parse previous XML: ${prevParse.error.message}`);
 
