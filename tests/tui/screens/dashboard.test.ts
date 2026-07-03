@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Dashboard } from '../../../src/tui/screens/dashboard';
 import * as fixtures from '../../fixtures/tui/tui';
 
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
+
 // Mock storage so render() can load config without hitting the filesystem
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({

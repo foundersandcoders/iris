@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MappingSaveScreen } from '../../../src/tui/screens/mapping-save';
 import * as fixtures from '../../fixtures/tui/tui';
 
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
+
 // Mock createStorage — include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({

@@ -4,6 +4,10 @@ import * as tuiFixtures from '../../fixtures/tui/tui';
 import * as filePickerFixtures from '../../fixtures/tui/screens/file-picker';
 import fs from 'node:fs/promises';
 
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
+
 vi.mock('node:fs/promises', () => ({
 	default: {
 		readdir: vi.fn(),

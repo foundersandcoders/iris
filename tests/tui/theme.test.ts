@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../fixtures/tui/opentui'));
+
 import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme } from '../../assets/brand/theme';
 import { RGBA } from '@opentui/core';
 

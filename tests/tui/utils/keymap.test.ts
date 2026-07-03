@@ -1,4 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
+
+// keymap.ts imports assets/brand/theme, which has a concrete @opentui/core
+// import (RGBA) — see tests/fixtures/tui/opentui.ts for why the real package
+// can't load under vitest.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
+
 import { normaliseKey, eventToKey, Keymap, type Binding } from '../../../src/tui/utils/keymap';
 import type { KeyEvent } from '@opentui/core';
 import * as fixtures from '../../fixtures/tui/tui';

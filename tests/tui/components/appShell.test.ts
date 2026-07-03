@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { appShell } from '../../../src/tui/components/appShell';
 import { APP_VERSION } from '../../../src/tui/utils/layout';
 import * as fixtures from '../../fixtures/tui/tui';
+
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
 describe('appShell()', () => {
 	let ctx: ReturnType<typeof fixtures.createMockContext>;
