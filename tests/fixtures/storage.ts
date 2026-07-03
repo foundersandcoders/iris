@@ -143,3 +143,7 @@ export const historyEntryWithRefs: HistoryEntry = {
 	schema: 'ESFA/ILR/2025-26',
 	learnerRefs: ['L001', 'L002'],
 };
+
+export const adapterTextContent = 'test content';
+
+export const adapterJsonContent = { foo: 'bar', count: 42 };

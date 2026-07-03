@@ -9,6 +9,7 @@ import { tmpdir } from 'os';
 import { rm } from 'fs/promises';
 import { createNodeAdapter } from '$lib/storage/adapters/node';
 import { StorageError } from '$lib/storage/errors';
+import * as fixtures from '../../../fixtures/storage';
 
 describe('NodeAdapter', () => {
 	let adapter: ReturnType<typeof createNodeAdapter>;
@@ -27,10 +28,10 @@ describe('NodeAdapter', () => {
 	describe('write and read', () => {
 		it('writes and reads text content', async () => {
 			const filePath = join(testDir, 'test.txt');
-			await adapter.write(filePath, 'test content');
+			await adapter.write(filePath, fixtures.adapterTextContent);
 
 			const content = await adapter.read(filePath);
-			expect(content).toBe('test content');
+			expect(content).toBe(fixtures.adapterTextContent);
 		});
 
 		it('throws StorageError when reading non-existent file', async () => {
@@ -41,17 +42,16 @@ describe('NodeAdapter', () => {
 	describe('writeJson and readJson', () => {
 		it('writes and reads JSON content', async () => {
 			const filePath = join(testDir, 'test.json');
-			const data = { foo: 'bar', count: 42 };
 
-			await adapter.writeJson(filePath, data);
+			await adapter.writeJson(filePath, fixtures.adapterJsonContent);
 			const result = await adapter.readJson(filePath);
 
-			expect(result).toEqual(data);
+			expect(result).toEqual(fixtures.adapterJsonContent);
 		});
 
 		it('throws StorageError on invalid JSON', async () => {
 			const filePath = join(testDir, 'invalid.json');
-			await adapter.write(filePath, '{ invalid json }');
+			await adapter.write(filePath, fixtures.malformedConfigJson);
 
 			await expect(adapter.readJson(filePath)).rejects.toThrow(StorageError);
 		});
