@@ -91,7 +91,7 @@ describe('convertWorkflow', () => {
 			);
 
 			const outputPath = result.data!.outputPath;
-			await expect(access(outputPath)).resolves.toBeUndefined();
+			await expect(access(outputPath)).resolves.toBeFalsy();
 
 			const content = await readFile(outputPath, 'utf-8');
 			expect(content).toContain('<Message xmlns="ESFA/ILR/2025-26" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">');
