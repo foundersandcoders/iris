@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TUI } from '../../src/tui/app';
-import { createMockRenderer } from '../fixtures/tui/tui';
 
-vi.mock('@opentui/core', () => ({
-	createCliRenderer: vi.fn().mockResolvedValue(createMockRenderer()),
-}));
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double. The factory only calls import()
+// and closes over nothing, so it's safe under vi.mock's hoisting.
+vi.mock('@opentui/core', async () => import('../fixtures/tui/opentui'));
+
+import { TUI } from '../../src/tui/app';
 
 describe('TUI', () => {
 	let mockExit: any;

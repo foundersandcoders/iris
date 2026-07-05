@@ -3,6 +3,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HistoryScreen } from '../../../src/tui/screens/history';
 import * as fixtures from '../../fixtures/tui/tui';
 
+// @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
+// so it's replaced with a shared test double.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
+
 // Mock storage so render() can load history without hitting the filesystem
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({

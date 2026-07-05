@@ -91,21 +91,38 @@ because the shell rollout and signature features build on them.
       test:all` still exits non-zero, but only because of the pre-existing
       TUI/vitest incompatibility tracked as **TR.A6** below — unrelated to
       storage and out of scope for this task.
-- [ ] **TR.A6** `fix/vitest-tui-suite-compat` — All 12 `tests/tui/**` suites
-      fail to *load* under `vitest` (0 tests collected, not test failures):
-      `tests/tui/app.test.ts` throws `ReferenceError: Cannot access
-      '__vi_import_1__' before initialization` (a `vi.mock` factory hoisting
-      issue); the other 11 (`theme`, `appShell`, `panel`, `keymap`,
-      `dashboard`, `file-picker`, `history`, `mapping-builder`,
-      `mapping-editor`, `mapping-save`, `settings`) all fail with
-      `TypeError: Unknown file extension ".scm"` — vitest's Node loader
-      chokes on `@opentui/core`'s bundled `highlights.scm` tree-sitter
-      asset. Confirmed still present after TR.A5 (Bun/Node storage split)
-      landed, so it's a separate blocker. **Fix:** either exclude
-      `tests/tui/**` from the vitest config (formalising what TR.A4 already
-      decided — these stay `bun test`-only) or resolve the `.scm` loader
-      and hoisting issues so they run under both. Blocks a single unified
-      green `bun run test:all`; does not block any Phase A-E branch.
+- [x] **TR.A6** `fix/vitest-tui-suite-compat` — All 12 `tests/tui/**` suites
+      failed to *load* under `vitest` (0 tests collected, not test failures):
+      a `vi.mock` factory hoisting `ReferenceError` in `app.test.ts`, plus
+      `TypeError: Unknown file extension ".scm"` in the other 11 —
+      `@opentui/core`'s bundled `highlights.scm`/`.wasm` tree-sitter assets,
+      Bun-only `with { type: "file" }` imports vitest's Node loader can't
+      resolve. **Investigated and rejected:** stubbing the `.scm`/`.wasm`
+      imports via a Vite `load` plugin worked, but inlining `@opentui/core`
+      (required so the plugin's transform applies) surfaced a harder wall —
+      the same monolithic bundled chunk
+      (`node_modules/@opentui/core/index-h3dbfsf6.js`) has unconditional
+      top-level `import ... from "bun:ffi"` (the native Zig renderer
+      binding). `bun:ffi` has no Node polyfill, so the real package cannot
+      load under vitest at all, full stop — not a config problem. The
+      official `@opentui/core/testing` subpath doesn't help either; it
+      re-imports the same chunk. **Actual fix:** a hand-written shared test
+      double, `tests/fixtures/tui/opentui.ts` — real named classes
+      (`BoxRenderable`, `TextRenderable`, `SelectRenderable`, `RGBA`, etc.)
+      matching opentui's actual behaviour where suites assert on it
+      (constructor names, `RGBA.fromHex`/`.equals()` channel maths mirrored
+      from opentui's real `hexToRgb`, `TextRenderable.content` string→
+      StyledText coercion, colour-option coercion on both construction and
+      reassignment). Each suite adds a one-line, hoisting-safe
+      `vi.mock('@opentui/core', async () => import('.../opentui'))` —
+      the async factory only calls `import()` and closes over nothing, so
+      it's immune to the original hoisting trap. Also needed
+      `test.server.deps.inline: ['opentui-spinner']` in `vite.config.ts`:
+      that package's own nested `@opentui/core` import is externalised by
+      default, which bypasses `vi.mock` entirely unless inlined. **Done:**
+      `bunx vitest run` — 53 files, 596 tests green (14 TUI files, 134
+      tests); `bun run test:core` — 474 pass, unaffected. `bun run
+      test:all` is unified green.
 
 ## Phase S — Security & dependency maintenance
 
