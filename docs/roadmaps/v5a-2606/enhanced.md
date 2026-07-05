@@ -157,18 +157,21 @@ Not TUI redesign work, but tracked here since this is the active roadmap.
       regression is not. Revisit `rand@0.7.3`/`glib` when Tauri raises its
       own `gtk`/`glib` floor upstream. Verified: `cargo check` clean,
       `bun run test:core` 474/474 green (unaffected).
-- [ ] **TR.S2** `fix/bump-vite-vitest-majors` — Upgrade `vite`
-      (`^5.0.0` → `^6.4.3`) and `vitest` (`^2.0.0` → `^3.2.6`) — **depends on
-      TR.A6**. Resolves 4 Dependabot alerts: 1 critical (Vitest UI/browser-mode
-      arbitrary file read via path traversal, Windows + exposed `api.host`
-      only), 1 high (`vite` `server.fs.deny` bypass on Windows), 2 medium
-      (`vite`'s bundled `launch-editor` leaks the dev's NTLMv2 hash via a
-      crafted UNC path on Windows; `vite` optimized-deps `.map` path
-      traversal). Both are **major version bumps** with potential breaking
-      config changes — must be re-verified against the vitest/OpenTUI mock
-      compatibility work from TR.A6 (`tests/fixtures/tui/opentui.ts`,
-      `vite.config.ts`'s `server.deps.inline`). Re-run the full `tests/tui/**`
-      suite after bumping before merging.
+- [x] **TR.S2** `fix/bump-vite-vitest-majors` — Upgraded `vite`
+      (`^5.0.0` → `^6.4.3`) and `vitest` (`^2.0.0` → `^3.2.6`). Resolves 4
+      Dependabot alerts: 1 critical (Vitest UI/browser-mode arbitrary file
+      read via path traversal, Windows + exposed `api.host` only), 1 high
+      (`vite` `server.fs.deny` bypass on Windows), 2 medium (`vite`'s bundled
+      `launch-editor` leaks the dev's NTLMv2 hash via a crafted UNC path on
+      Windows; `vite` optimized-deps `.map` path traversal). Also bumped
+      `@sveltejs/vite-plugin-svelte` `^4.0.0` → `^6.1.4` (required for Vite 6
+      peer compatibility; `@sveltejs/kit@2.49.4` already accepted it). No
+      config changes needed — `vite.config.ts`'s `server.deps.inline` and the
+      TR.A6 OpenTUI mock (`tests/fixtures/tui/opentui.ts`) worked unchanged.
+      Verified: `bun test:core` 474/474, `test:svelte` 596/596 (all 12
+      `tests/tui/**` suites green), `bun run build` clean. Pre-existing
+      `svelte-check` errors (64, unrelated fixture typing gaps) confirmed
+      present on `main` before this branch — not introduced by the bump.
 
 ## Phase B — App-shell rollout
 
