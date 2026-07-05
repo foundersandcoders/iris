@@ -4,17 +4,18 @@
 import {
 	BoxRenderable,
 	TextRenderable,
-	ASCIIFontRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE, symbols } from '../../../assets/brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { Keymap } from '../utils/keymap';
+import { appShell, panel } from '../components';
 import { createStorage } from '../../lib/storage';
 import type { IrisConfig } from '../../lib/types/configTypes';
+import type { HistoryEntry } from '../../lib/types/storageTypes';
 
 interface MenuItem {
 	key: string;
@@ -23,6 +24,17 @@ interface MenuItem {
 }
 
 const CONTAINER_ID = 'dashboard-root';
+const RECENT_ACTIVITY_LIMIT = 5;
+
+/** One "Recent Activity" row: date, filename, learner count. */
+function formatActivityRow(entry: HistoryEntry): string {
+	const date = new Date(entry.timestamp).toLocaleDateString('en-GB', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	});
+	return `${date}  ${entry.filename}  ${entry.learnerCount} learner(s)`;
+}
 
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
@@ -45,43 +57,18 @@ export class Dashboard implements Screen {
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
-		// Load config for directory paths used by file-picker
+		// Load config for directory paths used by file-picker, and recent
+		// submission history for the Recent Activity panel.
 		const storage = createStorage();
 		const configResult = await storage.loadConfig();
 		const config: Partial<IrisConfig> = configResult.success ? configResult.data : {};
 
+		const historyResult = await storage.loadHistory();
+		const recent: HistoryEntry[] = historyResult.success
+			? historyResult.data.submissions.slice(0, RECENT_ACTIVITY_LIMIT)
+			: [];
+
 		return new Promise((resolve) => {
-			// Root container
-			const container = new BoxRenderable(this.renderer, {
-				id: CONTAINER_ID,
-				flexDirection: 'column',
-				width: '100%',
-				height: '100%',
-				backgroundColor: theme.background,
-			});
-
-			// Logo with gradient (Tyrian → Blueglass)
-			const logo = new ASCIIFontRenderable(this.renderer, {
-				text: 'Iris',
-				font: 'block',
-				color: [PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi],
-			});
-			container.add(logo);
-
-			// Spacer
-			container.add(new TextRenderable(this.renderer, { content: '' }));
-
-			// Section heading
-			container.add(
-				new TextRenderable(this.renderer, {
-					content: 'Quick Actions',
-					fg: theme.text,
-				})
-			);
-
-			// Spacer
-			container.add(new TextRenderable(this.renderer, { content: '' }));
-
 			// Menu
 			const select = new SelectRenderable(this.renderer, {
 				options: this.menuItems.map((item, index) => ({
@@ -98,9 +85,8 @@ export class Dashboard implements Screen {
 				descriptionColor: theme.textMuted,
 				flexGrow: 1,
 			});
-			container.add(select);
 
-			// Build keymap inside the Promise so handlers close over resolve + select
+			// Build keymap before the shell so its keybar can seed the footer
 			this.keymap = new Keymap({
 				onQuit: () => resolve({ action: 'quit' }),
 				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
@@ -128,16 +114,39 @@ export class Dashboard implements Screen {
 				],
 			});
 
-			// Footer driven by the keymap
-			container.add(
-				new TextRenderable(this.renderer, {
-					content: this.keymap.toKeybar(),
-					fg: theme.textMuted,
-				})
-			);
+			// Shell: header + breadcrumb, content region, footer keybar
+			const shell = appShell(this.renderer, {
+				id: CONTAINER_ID,
+				breadcrumb: 'Dashboard',
+				footer: this.keymap.toKeybar(),
+			});
+
+			// Menu panel
+			const menuPanel = panel(this.renderer, { title: 'Quick Actions', flexGrow: 1 });
+			menuPanel.add(select);
+
+			// Recent Activity panel — display-only, newest-first
+			const activityPanel = panel(this.renderer, { title: 'Recent Activity', flexGrow: 1 });
+			if (recent.length === 0) {
+				activityPanel.add(
+					new TextRenderable(this.renderer, { content: 'No submissions yet', fg: theme.textMuted })
+				);
+			} else {
+				for (const entry of recent) {
+					activityPanel.add(
+						new TextRenderable(this.renderer, { content: formatActivityRow(entry), fg: theme.text })
+					);
+				}
+			}
+
+			// Body: menu + activity side by side
+			const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
+			body.add(menuPanel.box);
+			body.add(activityPanel.box);
+			shell.content.add(body);
 
 			// Add to renderer
-			this.renderer.root.add(container);
+			this.renderer.root.add(shell.root);
 			select.focus();
 			this.keymap.attach(this.renderer);
 
