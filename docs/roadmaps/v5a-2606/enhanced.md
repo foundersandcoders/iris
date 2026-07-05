@@ -14,7 +14,7 @@ because the shell rollout and signature features build on them.
 | Phase | Focus                                                        | Status |
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
-| **S** |         Security & dependency maintenance (Dependabot)       | Ready |
+| **S** |         Security & dependency maintenance (Dependabot)       | In Progress (S1 done, S2 open) |
 | **B** |               App-shell rollout across screens               | Blocked (needs S2) |
 | **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
@@ -118,8 +118,12 @@ Not TUI redesign work, but tracked here since this is the active roadmap.
       crates. **Done:** `bytes` → `1.12.0` (≥1.11.1 fixed), `rand 0.8.5` →
       `0.8.6` (fixed), `time` → `0.3.53` (≥0.3.47 fixed — this needs Rust
       ≥1.88.0; confirmed the installed toolchain is 1.96.1 and `cargo check`
-      builds clean, so accepted even though the crate's stated
-      `rust-version = "1.85.0"` is now understated). **Investigated and left
+      builds clean, so this was taken as a working build, but it means
+      `src-tauri/Cargo.toml`'s declared `rust-version = "1.85.0"` is now
+      **inaccurate** and out of sync with the real MSRV. Left unchanged
+      pending a follow-up that bumps `rust-version` to `"1.88.0"` and
+      confirms CI's toolchain meets it — don't treat this line's `1.85.0` as
+      current). **Investigated and left
       open:** `rand@0.7.3` (a second, older `rand` in the tree) is
       unreachable via any dependency bump — it's pinned transitively through
       `kuchikiki 0.8.8-speedreader` (already the latest release) →
