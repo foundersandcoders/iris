@@ -14,7 +14,8 @@ because the shell rollout and signature features build on them.
 | Phase | Focus                                                        | Status |
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
-| **B** |               App-shell rollout across screens               | Ready |
+| **S** |         Security & dependency maintenance (Dependabot)       | In Progress (S1 done, S2 open) |
+| **B** |               App-shell rollout across screens               | Blocked (needs S2) |
 | **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
@@ -106,6 +107,52 @@ because the shell rollout and signature features build on them.
       and hoisting issues so they run under both. Blocks a single unified
       green `bun run test:all`; does not block any Phase A-E branch.
 
+## Phase S — Security & dependency maintenance
+
+Housekeeping tasks raised by GitHub Dependabot (9 alerts, 8 open as of 2026-07-03).
+Not TUI redesign work, but tracked here since this is the active roadmap.
+
+- [x] **TR.S1** `fix/bump-vulnerable-rust-deps` — Bumped `tauri`
+      (`2.9.5` → `2.11.5` in `src-tauri/Cargo.toml`, fixes CVE-2026-42184
+      origin-confusion IPC bug) and ran `cargo update` for the transitive
+      crates. **Done:** `bytes` → `1.12.0` (≥1.11.1 fixed), `rand 0.8.5` →
+      `0.8.6` (fixed), `time` → `0.3.53` (≥0.3.47 fixed — this needs Rust
+      ≥1.88.0; confirmed the installed toolchain is 1.96.1 and `cargo check`
+      builds clean, so this was taken as a working build, but it means
+      `src-tauri/Cargo.toml`'s declared `rust-version = "1.85.0"` is now
+      **inaccurate** and out of sync with the real MSRV. Left unchanged
+      pending a follow-up that bumps `rust-version` to `"1.88.0"` and
+      confirms CI's toolchain meets it — don't treat this line's `1.85.0` as
+      current). **Investigated and left
+      open:** `rand@0.7.3` (a second, older `rand` in the tree) is
+      unreachable via any dependency bump — it's pinned transitively through
+      `kuchikiki 0.8.8-speedreader` (already the latest release) →
+      `selectors 0.24.0` → `phf_codegen 0.8.0` → `phf_generator 0.8.0` →
+      `rand 0.7.3`; no newer `kuchikiki` exists to break the chain. **Known
+      regression, accepted:** the `tauri` bump itself pins `gtk ^0.18` on
+      Linux, which requires `glib ^0.18` — this silently downgrades `glib`
+      from the already-patched `0.20.0` back to the vulnerable `0.18.5`
+      (medium severity, crash-only NULL-pointer soundness bug, not remotely
+      exploitable). Confirmed via `cargo update -p glib --precise 0.20.0`
+      that this is a hard constraint from `tauri 2.11.5`'s own `Cargo.toml`,
+      not resolvable independently. Traded off deliberately: the
+      origin-confusion CVE this bump fixes is remote-triggerable, the glib
+      regression is not. Revisit `rand@0.7.3`/`glib` when Tauri raises its
+      own `gtk`/`glib` floor upstream. Verified: `cargo check` clean,
+      `bun run test:core` 474/474 green (unaffected).
+- [ ] **TR.S2** `fix/bump-vite-vitest-majors` — Upgrade `vite`
+      (`^5.0.0` → `^6.4.3`) and `vitest` (`^2.0.0` → `^3.2.6`) — **depends on
+      TR.A6**. Resolves 4 Dependabot alerts: 1 critical (Vitest UI/browser-mode
+      arbitrary file read via path traversal, Windows + exposed `api.host`
+      only), 1 high (`vite` `server.fs.deny` bypass on Windows), 2 medium
+      (`vite`'s bundled `launch-editor` leaks the dev's NTLMv2 hash via a
+      crafted UNC path on Windows; `vite` optimized-deps `.map` path
+      traversal). Both are **major version bumps** with potential breaking
+      config changes — must be re-verified against the vitest/OpenTUI mock
+      compatibility work from TR.A6 (`tests/fixtures/tui/opentui.ts`,
+      `vite.config.ts`'s `server.deps.inline`). Re-run the full `tests/tui/**`
+      suite after bumping before merging.
+
 ## Phase B — App-shell rollout
 
 One branch per screen cluster; each adopts the shell, bordered panels, the keymap
@@ -113,15 +160,18 @@ registry, and a header breadcrumb.
 
 - [ ] **TR.B1** `refactor/dashboard-app-shell` — Dashboard onto shell + panels +
       keymap; add a **Recent Activity** panel sourced from submission history.
+      — **depends on TR.S2**
 - [ ] **TR.B2** `refactor/file-picker-app-shell` — File picker; framed list +
-      (later) preview panel; consistent nav keys.
+      (later) preview panel; consistent nav keys. — **depends on TR.S2**
 - [ ] **TR.B3** `refactor/workflow-app-shell` — Processing screen into the frame
-      (sets up TR.C3).
+      (sets up TR.C3). — **depends on TR.S2**
 - [ ] **TR.B4** `refactor/results-screens-app-shell` — validation-explorer +
       check-results + success; two-pane framing with a real focused-panel border.
+      — **depends on TR.S2**
 - [ ] **TR.B5** `refactor/mapping-screens-app-shell` — mapping-builder /
-      -editor / -save; fixes the weak two-panel focus model.
+      -editor / -save; fixes the weak two-panel focus model. — **depends on TR.S2**
 - [ ] **TR.B6** `refactor/config-screens-app-shell` — settings + history + about.
+      — **depends on TR.S2**
 
 ## Phase C — Signature UX features
 
