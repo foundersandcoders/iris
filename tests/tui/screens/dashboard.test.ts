@@ -6,10 +6,13 @@ import * as fixtures from '../../fixtures/tui/tui';
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-// Mock storage so render() can load config without hitting the filesystem
+// Mock storage so render() can load config/history without hitting the filesystem.
+// loadHistory is hoisted so individual tests can override its return value.
+const loadHistoryMock = vi.fn().mockResolvedValue({ success: true, data: { submissions: [] } });
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		loadConfig: vi.fn().mockResolvedValue({ success: true, data: {} }),
+		loadHistory: loadHistoryMock,
 	}),
 }));
 
@@ -78,13 +81,117 @@ describe('Dashboard', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		// The root BoxRenderable is the single child added to renderer.root
-		const container = (mockContext.renderer.root.add as any).mock.calls[0][0];
-		const children = container.getChildren();
-		// Last child is the footer TextRenderable
+		// The shell root is the single child added to renderer.root
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const children = shellRoot.getChildren();
+		// Last child is the footer TextRenderable (header, content, footer)
 		const footer = children[children.length - 1];
 		expect(footer.constructor.name).toBe('TextRenderable');
 		const footerText: string = footer.content.chunks[0].text;
 		expect(footerText).toContain('Quit');
+	});
+
+	it('shows "No submissions yet" in the Recent Activity panel when history is empty', async () => {
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+		expect(rendered).toContain('No submissions yet');
+	});
+
+	it('lists recent submissions in the Recent Activity panel', async () => {
+		loadHistoryMock.mockResolvedValueOnce({
+			success: true,
+			data: {
+				submissions: [
+					{
+						filename: 'ILR-12345678-2526-01.xml',
+						filePath: '/tmp/ILR-12345678-2526-01.xml',
+						timestamp: '2026-06-15T10:00:00.000Z',
+						learnerCount: 42,
+						checksum: 'abc123',
+						schema: 'ILR2526',
+					},
+				],
+			},
+		});
+
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+		expect(rendered).toContain('ILR-12345678-2526-01.xml');
+		expect(rendered).toContain('42 learner(s)');
+	});
+
+	it('renders only the 5 most recent submissions, dropping older entries', async () => {
+		// loadHistory() always returns newest-first (appendHistory sorts on write);
+		// the dashboard trusts that order and only slices — it does not re-sort.
+		const submissions = Array.from({ length: 6 }, (_, i) => ({
+			filename: `ILR-1234567${i}-2526-01.xml`,
+			filePath: `/tmp/ILR-1234567${i}-2526-01.xml`,
+			// Entry 0 is newest, entry 5 is oldest.
+			timestamp: new Date(2026, 5, 20 - i).toISOString(),
+			learnerCount: i,
+			checksum: `checksum-${i}`,
+			schema: 'ILR2526',
+		}));
+		loadHistoryMock.mockResolvedValueOnce({ success: true, data: { submissions } });
+
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+
+		// Newest entry and the 5th-newest (boundary of the cap) both render.
+		expect(rendered).toContain('ILR-12345670-2526-01.xml');
+		expect(rendered).toContain('ILR-12345674-2526-01.xml');
+		// The 6th (oldest) entry is excluded by the RECENT_ACTIVITY_LIMIT cap.
+		expect(rendered).not.toContain('ILR-12345675-2526-01.xml');
+	});
+
+	it('falls back to "Unknown date" for an unparseable timestamp', async () => {
+		loadHistoryMock.mockResolvedValueOnce({
+			success: true,
+			data: {
+				submissions: [
+					{
+						filename: 'ILR-99999999-2526-01.xml',
+						filePath: '/tmp/ILR-99999999-2526-01.xml',
+						timestamp: '',
+						learnerCount: 7,
+						checksum: 'def456',
+						schema: 'ILR2526',
+					},
+				],
+			},
+		});
+
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+		expect(rendered).toContain('Unknown date');
+		expect(rendered).not.toContain('Invalid Date');
 	});
 });
