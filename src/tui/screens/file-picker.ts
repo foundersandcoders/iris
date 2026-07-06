@@ -8,12 +8,13 @@ import {
 	TextRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
-	type KeyEvent,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE, symbols } from '../../../assets/brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+import { Keymap } from '../utils/keymap';
+import { appShell, panel, type Panel } from '../components';
 
 interface FileEntry {
 	name: string;
@@ -29,9 +30,9 @@ export class FilePicker implements Screen {
 	private currentPath: string;
 	private entries: FileEntry[] = [];
 	private select?: SelectRenderable;
-	private breadcrumb?: TextRenderable;
 	private emptyMessage?: TextRenderable;
-	private keyHandler?: (key: KeyEvent) => void;
+	private keymap?: Keymap;
+	private filePanel?: Panel;
 	private screenData?: ScreenData;
 
 	private title: string = 'Select CSV File';
@@ -69,42 +70,11 @@ export class FilePicker implements Screen {
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
 	private buildUI(resolve: (result: ScreenResult) => void): void {
-		// Root container
-		const container = new BoxRenderable(this.renderer, {
-			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
-		});
-
-		// Header
-		const header = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-		});
-
-		header.add(
-			new TextRenderable(this.renderer, {
-				content: this.title,
-				fg: theme.primary,
-			})
-		);
-
-		this.breadcrumb = new TextRenderable(this.renderer, {
-			content: this.shortenPath(this.currentPath),
-			fg: theme.textMuted,
-		});
-		header.add(this.breadcrumb);
-
-		container.add(header);
-
 		// Always create both renderables; toggle visibility based on whether there
 		// are entries. This avoids a one-way trap where starting in an empty directory
 		// means this.select is never created and updateSelectOptions() can never show
@@ -117,7 +87,6 @@ export class FilePicker implements Screen {
 			flexGrow: 1,
 			visible: !hasOptions,
 		});
-		container.add(this.emptyMessage);
 
 		this.select = new SelectRenderable(this.renderer, {
 			options: this.entriesToOptions(),
@@ -132,25 +101,63 @@ export class FilePicker implements Screen {
 			flexGrow: 1,
 			visible: hasOptions,
 		});
-		container.add(this.select);
 
-		// Status bar
-		container.add(
-			new TextRenderable(this.renderer, {
-				content: this.selectionMode === 'directory'
-					? '[↑↓] Nav  [ENTER] Open/Select  [BACKSPACE] Up  [ESC] Cancel'
-					: '[↑↓] Nav  [ENTER] Select  [BACKSPACE] Up Dir  [ESC] Back',
-				fg: theme.textMuted,
-			})
-		);
+		// Build keymap before the shell so its keybar can seed the footer
+		this.keymap = new Keymap({
+			onBack: () => resolve({ action: 'pop' }),
+			onQuit: () => resolve({ action: 'pop' }), // "q" also pops here — file-picker has no quit-to-desktop concept
+			bindings: [
+				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				{
+					keys: ['up', 'down', 'k', 'j'],
+					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+					label: 'Nav',
+					handler: () => {},
+				},
+				{
+					keys: ['enter'],
+					label: this.selectionMode === 'directory' ? 'Open/Select' : 'Select',
+					handler: () => this.select?.selectCurrent(),
+				},
+				{
+					keys: ['backspace'],
+					hint: 'BKSP',
+					label: 'Up',
+					handler: () => {
+						void this.goUpDirectory();
+					},
+				},
+			],
+		});
+
+		// Shell: header + breadcrumb, content region, footer keybar
+		const shell = appShell(this.renderer, {
+			id: CONTAINER_ID,
+			breadcrumb: this.title,
+			footer: this.keymap.toKeybar(),
+		});
+
+		// File-list panel — border title shows the current directory path
+		this.filePanel = panel(this.renderer, {
+			title: this.shortenPath(this.currentPath),
+			flexGrow: 1,
+		});
+		this.filePanel.add(this.emptyMessage);
+		this.filePanel.add(this.select);
+
+		// Body: the file-list panel (room for a preview pane alongside it later)
+		const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
+		body.add(this.filePanel.box);
+		shell.content.add(body);
 
 		// Add to renderer
-		this.renderer.root.add(container);
+		this.renderer.root.add(shell.root);
 
 		// Focus and wire events — select is always created
 		if (hasOptions) {
 			this.select.focus();
 		}
+		this.keymap.attach(this.renderer);
 
 		this.select.on(
 			SelectRenderableEvents.ITEM_SELECTED,
@@ -173,9 +180,7 @@ export class FilePicker implements Screen {
 					this.currentPath = entry.path;
 					await this.loadDirectory();
 					this.updateSelectOptions();
-					if (this.breadcrumb) {
-						this.breadcrumb.content = this.shortenPath(this.currentPath);
-					}
+					this.filePanel?.setTitle(this.shortenPath(this.currentPath));
 				} else if (this.workflowType === 'check-current') {
 					// First step of check flow: selected current file, now pick previous
 					resolve({
@@ -224,24 +229,17 @@ export class FilePicker implements Screen {
 				}
 			}
 		);
+	}
 
-		// Screen-level key handler
-		this.keyHandler = async (key: KeyEvent) => {
-			if (key.name === 'backspace') {
-				const parent = path.dirname(this.currentPath);
-				if (parent !== this.currentPath) {
-					this.currentPath = parent;
-					await this.loadDirectory();
-					this.updateSelectOptions();
-					if (this.breadcrumb) {
-						this.breadcrumb.content = this.shortenPath(this.currentPath);
-					}
-				}
-			} else if (key.name === 'escape' || key.name === 'q') {
-				resolve({ action: 'pop' });
-			}
-		};
-		this.renderer.keyInput.on('keypress', this.keyHandler);
+	/** Navigate to the parent directory (bound to Backspace via the keymap). */
+	private async goUpDirectory(): Promise<void> {
+		const parent = path.dirname(this.currentPath);
+		if (parent === this.currentPath) return;
+
+		this.currentPath = parent;
+		await this.loadDirectory();
+		this.updateSelectOptions();
+		this.filePanel?.setTitle(this.shortenPath(this.currentPath));
 	}
 
 	private updateSelectOptions(): void {

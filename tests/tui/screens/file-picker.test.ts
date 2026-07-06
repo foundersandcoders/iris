@@ -138,6 +138,44 @@ describe('FilePicker', () => {
 		expect(shortened).toBe('/tmp/data.csv');
 	});
 
+	it('renders a footer keybar containing "Nav" and "Select" driven by the keymap', async () => {
+		const screen = new FilePicker(mockContext);
+
+		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
+
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		// The shell root is the single child added to renderer.root
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const children = shellRoot.getChildren();
+		// Last child is the footer TextRenderable (header, content, footer)
+		const footer = children[children.length - 1];
+		expect(footer.constructor.name).toBe('TextRenderable');
+		const footerText: string = footer.content.chunks[0].text;
+		expect(footerText).toContain('Nav');
+		expect(footerText).toContain('Select');
+
+		screen.cleanup();
+	});
+
+	it('shows the current directory path as the file-list panel title', async () => {
+		const screen = new FilePicker(mockContext);
+
+		(fs.readdir as any).mockResolvedValue(filePickerFixtures.mixedDirectory);
+
+		screen.render(); // Don't await
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const filePanel = (screen as any).filePanel;
+		expect(filePanel).toBeDefined();
+		expect(filePanel.box.title).toBe((screen as any).shortenPath(process.cwd()));
+
+		screen.cleanup();
+	});
+
 	it('shows empty message when no CSV files found', async () => {
 		const screen = new FilePicker(mockContext);
 
