@@ -28,11 +28,10 @@ const RECENT_ACTIVITY_LIMIT = 5;
 
 /** One "Recent Activity" row: date, filename, learner count. */
 function formatActivityRow(entry: HistoryEntry): string {
-	const date = new Date(entry.timestamp).toLocaleDateString('en-GB', {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-	});
+	const parsed = new Date(entry.timestamp);
+	const date = Number.isNaN(parsed.getTime())
+		? 'Unknown date'
+		: parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 	return `${date}  ${entry.filename}  ${entry.learnerCount} learner(s)`;
 }
 

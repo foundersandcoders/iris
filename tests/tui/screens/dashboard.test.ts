@@ -133,4 +133,65 @@ describe('Dashboard', () => {
 		expect(rendered).toContain('ILR-12345678-2526-01.xml');
 		expect(rendered).toContain('42 learner(s)');
 	});
+
+	it('renders only the 5 most recent submissions, dropping older entries', async () => {
+		// loadHistory() always returns newest-first (appendHistory sorts on write);
+		// the dashboard trusts that order and only slices — it does not re-sort.
+		const submissions = Array.from({ length: 6 }, (_, i) => ({
+			filename: `ILR-1234567${i}-2526-01.xml`,
+			filePath: `/tmp/ILR-1234567${i}-2526-01.xml`,
+			// Entry 0 is newest, entry 5 is oldest.
+			timestamp: new Date(2026, 5, 20 - i).toISOString(),
+			learnerCount: i,
+			checksum: `checksum-${i}`,
+			schema: 'ILR2526',
+		}));
+		loadHistoryMock.mockResolvedValueOnce({ success: true, data: { submissions } });
+
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+
+		// Newest entry and the 5th-newest (boundary of the cap) both render.
+		expect(rendered).toContain('ILR-12345670-2526-01.xml');
+		expect(rendered).toContain('ILR-12345674-2526-01.xml');
+		// The 6th (oldest) entry is excluded by the RECENT_ACTIVITY_LIMIT cap.
+		expect(rendered).not.toContain('ILR-12345675-2526-01.xml');
+	});
+
+	it('falls back to "Unknown date" for an unparseable timestamp', async () => {
+		loadHistoryMock.mockResolvedValueOnce({
+			success: true,
+			data: {
+				submissions: [
+					{
+						filename: 'ILR-99999999-2526-01.xml',
+						filePath: '/tmp/ILR-99999999-2526-01.xml',
+						timestamp: '',
+						learnerCount: 7,
+						checksum: 'def456',
+						schema: 'ILR2526',
+					},
+				],
+			},
+		});
+
+		const dashboard = new Dashboard(mockContext);
+		dashboard.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const rendered = JSON.stringify(shellRoot, (_key, value) =>
+			value && value.chunks ? value.chunks.map((c: { text: string }) => c.text).join('') : value
+		);
+		expect(rendered).toContain('Unknown date');
+		expect(rendered).not.toContain('Invalid Date');
+	});
 });
