@@ -14,8 +14,8 @@ because the shell rollout and signature features build on them.
 | Phase | Focus                                                        | Status |
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
-| **S** |         Security & dependency maintenance (Dependabot)       | In Progress (S1 done, S2 open) |
-| **B** |               App-shell rollout across screens               | Blocked (needs S2) |
+| **S** |         Security & dependency maintenance (Dependabot)       | Complete |
+| **B** |               App-shell rollout across screens               | In Progress (B1, B2 done) |
 | **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
@@ -178,11 +178,42 @@ Not TUI redesign work, but tracked here since this is the active roadmap.
 One branch per screen cluster; each adopts the shell, bordered panels, the keymap
 registry, and a header breadcrumb.
 
-- [ ] **TR.B1** `refactor/dashboard-app-shell` — Dashboard onto shell + panels +
+- [x] **TR.B1** `refactor/dashboard-app-shell` — Dashboard onto shell + panels +
       keymap; add a **Recent Activity** panel sourced from submission history.
-      — **depends on TR.S2**
-- [ ] **TR.B2** `refactor/file-picker-app-shell` — File picker; framed list +
-      (later) preview panel; consistent nav keys. — **depends on TR.S2**
+      — **depends on TR.S2**. **Done:** rebuilt on `appShell()` + `panel()`
+      (menu panel + Recent Activity panel side by side), `Keymap` drives the
+      footer keybar (nav hint, number shortcuts, quit/back both resolve
+      `quit` at root). Recent Activity shows the 5 most recent submissions
+      from `createStorage().loadHistory()`, newest-first, with an
+      "Unknown date" fallback for unparseable timestamps. Merged via PR #76.
+- [x] **TR.B2** `refactor/file-picker-app-shell` — File picker; framed list +
+      (later) preview panel; consistent nav keys. — **depends on TR.S2**.
+      **Done:** replaced the hand-rolled root/header/footer/keypress-listener
+      with `appShell()` + `panel()` + `Keymap`, following the TR.B1 dashboard
+      as the reference adopter. Header breadcrumb shows the screen title
+      (e.g. "Select CSV File"); the file-list panel's **border title shows
+      the live current-directory path**, updating on both directory-entry
+      navigation and Backspace-up. `Keymap` bindings: nav hint (bar-only,
+      `SelectRenderable` owns arrows), Enter (`selectCurrent()`), Backspace
+      (extracted into `goUpDirectory()`); both ESC and `q` pop (file-picker
+      has no quit-to-desktop concept, unchanged from pre-refactor
+      behaviour). All caller data contracts preserved unchanged: the
+      `check-current`/`check-previous` two-step flow, `mapping-create`,
+      default single-file workflows, and the `selectionMode: 'directory'` +
+      `__select__` sentinel + `fieldKey` pop-back used by Settings. The
+      "(later) preview panel" is deferred — the body is a row `BoxRenderable`
+      wrapping the single file-list panel, so a second pane can be added
+      alongside it without restructuring. Added two tests
+      (`tests/tui/screens/file-picker.test.ts`) asserting the footer keybar
+      and the panel-title path display; all other existing tests updated to
+      match the new shell/keymap wiring where needed. Verified manually via
+      `bun run cli` in a real terminal (tmux-driven): Convert flow, Settings'
+      directory-mode picker (sentinel select + `fieldKey` round-trip),
+      directory navigation in/out with live title updates, ESC/backspace
+      behaviour. `bun run test:svelte` 53/53 files, 600/600 tests green;
+      `bun run test:core` 474/474 unaffected; no new `tsc` diagnostics (the
+      5 pre-existing `updateSelectOptions` possibly-undefined errors predate
+      this branch, confirmed via `git stash` comparison).
 - [ ] **TR.B3** `refactor/workflow-app-shell` — Processing screen into the frame
       (sets up TR.C3). — **depends on TR.S2**
 - [ ] **TR.B4** `refactor/results-screens-app-shell` — validation-explorer +
