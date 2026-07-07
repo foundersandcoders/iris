@@ -1,11 +1,13 @@
 /** ====== Workflow Screen ======
  * Generic workflow runner that handles convert, validate, and check flows
  */
-import { BoxRenderable, TextRenderable, type KeyEvent } from '@opentui/core';
+import { BoxRenderable, TextRenderable } from '@opentui/core';
 import { SpinnerRenderable } from 'opentui-spinner';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import { validateWorkflow } from '../../lib/workflows/csvValidate';
@@ -85,10 +87,10 @@ const WORKFLOW_CONFIGS: Record<WorkflowType, WorkflowConfig> = {
 export class WorkflowScreen implements Screen {
 	readonly name = 'workflow';
 	private renderer: Renderer;
-	private container?: BoxRenderable;
+	private shell?: AppShell;
+	private stepsPanel?: Panel;
 	private stepsContainer?: BoxRenderable;
-	private statusBar?: TextRenderable;
-	private keyHandler?: (key: KeyEvent) => void;
+	private keymap?: Keymap;
 
 	private workflowType: WorkflowType = 'convert';
 	private steps: StepDisplay[] = [];
@@ -154,9 +156,7 @@ export class WorkflowScreen implements Screen {
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		// Stop any running spinners
 		for (const renderables of this.stepRenderables.values()) {
 			if (renderables.spinner) {
@@ -315,24 +315,13 @@ export class WorkflowScreen implements Screen {
 	}
 
 	private buildUI(title: string): void {
-		// Root container
-		this.container = new BoxRenderable(this.renderer, {
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb: title,
+			footer: 'Processing...',
 		});
 
-		// Title
-		const titleText = new TextRenderable(this.renderer, {
-			content: title,
-			fg: theme.primary,
-		});
-		this.container.add(titleText);
-
-		// Spacer
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.stepsPanel = panel(this.renderer, { title, flexGrow: 1 });
 
 		// Steps container
 		this.stepsContainer = new BoxRenderable(this.renderer, {
@@ -376,17 +365,11 @@ export class WorkflowScreen implements Screen {
 			});
 		}
 
-		this.container.add(this.stepsContainer);
-
-		// Status bar
-		this.statusBar = new TextRenderable(this.renderer, {
-			content: 'Processing...',
-			fg: theme.textMuted,
-		});
-		this.container.add(this.statusBar);
+		this.stepsPanel.add(this.stepsContainer);
+		this.shell.content.add(this.stepsPanel.box);
 
 		// Add to renderer
-		this.renderer.root.add(this.container);
+		this.renderer.root.add(this.shell.root);
 	}
 
 	private handleEvent(event: WorkflowStepEvent): void {
@@ -519,16 +502,14 @@ export class WorkflowScreen implements Screen {
 	}
 
 	private waitForKeyThenReplace(): Promise<ScreenResult> {
-		if (this.statusBar) {
-			this.statusBar.content = '[Any key] Continue';
-		}
 		return new Promise((resolve) => {
-			this.keyHandler = () =>
-				resolve({
-					action: 'replace',
-					screen: 'dashboard',
-				});
-			this.renderer.keyInput.once('keypress', this.keyHandler);
+			const finish = () => resolve({ action: 'replace', screen: 'dashboard' });
+			this.keymap = new Keymap({
+				bindings: [{ keys: ['enter'], label: 'Continue', handler: finish }],
+				onQuit: finish,
+			});
+			this.shell?.setFooter(this.keymap.toKeybar());
+			this.keymap.attach(this.renderer);
 		});
 	}
 
