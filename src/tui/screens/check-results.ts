@@ -7,15 +7,21 @@ import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { CheckReport, CheckIssue } from '../../lib/types/workflowTypes';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'check-results-root';
 
 export class CheckResultsScreen implements Screen {
 	readonly name = 'check-results';
 	private renderer: Renderer;
-	private container?: BoxRenderable;
+	private shell?: AppShell;
+	private issuesPanel?: Panel;
+	private detailPanel?: Panel;
+	private detailContainer?: BoxRenderable;
+	private keymap?: Keymap;
 	private issueList?: SelectRenderable;
-	private detailPanel?: BoxRenderable;
+	private activePanel: 'issues' | 'detail' = 'issues';
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -30,10 +36,10 @@ export class CheckResultsScreen implements Screen {
 			return { action: 'pop' };
 		}
 
-		this.buildUI(report, hasIssues, duration);
-
 		// Wait for user interaction
 		return new Promise((resolve) => {
+			const keymap = this.buildUI(report, hasIssues, resolve, duration);
+
 			// Issue selection handler
 			if (hasIssues && this.issueList) {
 				this.issueList.on('selectionChanged', (index: number) => {
@@ -41,73 +47,94 @@ export class CheckResultsScreen implements Screen {
 				});
 
 				this.issueList.focus();
+				this.issuesPanel?.setFocused(true);
 			}
 
-			// Keyboard handler
-			const handler = (key: { name: string }) => {
-				if (key.name === 'escape' || key.name === 'q') {
-					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
-				}
-			};
-			this.renderer.keyInput.on('keypress', handler);
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
-	private buildUI(report: CheckReport, hasIssues: boolean, duration?: number): void {
-		this.container = new BoxRenderable(this.renderer, {
+	/** Flip focus between the Issues and Detail panes (bound to Tab via the keymap). */
+	private togglePanel(): void {
+		if (!this.detailPanel) return; // no detail pane to switch to (no-issues mode)
+
+		this.activePanel = this.activePanel === 'issues' ? 'detail' : 'issues';
+		this.issuesPanel?.setFocused(this.activePanel === 'issues');
+		this.detailPanel?.setFocused(this.activePanel === 'detail');
+
+		if (this.activePanel === 'issues') {
+			this.issueList?.focus();
+		}
+	}
+
+	private buildUI(
+		report: CheckReport,
+		hasIssues: boolean,
+		resolve: (result: ScreenResult) => void,
+		duration?: number
+	): Keymap {
+		const finish = () => resolve({ action: 'replace', screen: 'dashboard' });
+		const hasIssueList = hasIssues && report.issues.length > 0;
+
+		this.keymap = new Keymap({
+			bindings: hasIssueList
+				? [
+						// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+						{
+							keys: ['up', 'down', 'k', 'j'],
+							hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+							label: 'Navigate',
+							handler: () => {},
+						},
+						{ keys: ['tab'], label: 'Switch Pane', handler: () => this.togglePanel() },
+					]
+				: [],
+			onBack: finish,
+			onQuit: finish,
+		});
+		const keymap = this.keymap;
+
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb: 'Cross-Submission Check',
+			footer: keymap.toKeybar(),
 		});
-
-		// Title
-		const title = new TextRenderable(this.renderer, {
-			content: 'Cross-Submission Check',
-			fg: theme.primary,
-		});
-		this.container.add(title);
-
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Current submission
-		this.container.add(
+		this.shell.content.add(
 			new TextRenderable(this.renderer, {
 				content: `Current: ${report.currentSubmission.filename}`,
 				fg: theme.text,
 			})
 		);
-		this.container.add(
+		this.shell.content.add(
 			new TextRenderable(this.renderer, {
 				content: `  Learners: ${report.currentSubmission.learnerCount}  Schema: ${report.currentSubmission.schema}`,
 				fg: theme.textMuted,
 			})
 		);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
-
 		// Previous submission
 		if (report.previousSubmission) {
-			this.container.add(
+			this.shell.content.add(
 				new TextRenderable(this.renderer, {
 					content: `Previous: ${report.previousSubmission.filename}`,
 					fg: theme.text,
 				})
 			);
-			this.container.add(
+			this.shell.content.add(
 				new TextRenderable(this.renderer, {
 					content: `  Learners: ${report.previousSubmission.learnerCount}  Schema: ${report.previousSubmission.schema}`,
 					fg: theme.textMuted,
 				})
 			);
 		} else {
-			this.container.add(
+			this.shell.content.add(
 				new TextRenderable(this.renderer, {
 					content: 'Previous: None (first submission)',
 					fg: theme.textMuted,
@@ -115,17 +142,15 @@ export class CheckResultsScreen implements Screen {
 			);
 		}
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
-
 		// Summary
 		const summary = new TextRenderable(this.renderer, {
 			content: `${report.summary.errorCount} errors, ${report.summary.warningCount} warnings, ${report.summary.infoCount} info`,
 			fg: theme.textMuted,
 		});
-		this.container.add(summary);
+		this.shell.content.add(summary);
 
 		if (duration !== undefined) {
-			this.container.add(
+			this.shell.content.add(
 				new TextRenderable(this.renderer, {
 					content: `Duration: ${duration}ms`,
 					fg: theme.textMuted,
@@ -133,10 +158,10 @@ export class CheckResultsScreen implements Screen {
 			);
 		}
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Issues section
-		if (hasIssues && report.issues.length > 0) {
+		if (hasIssueList) {
 			// Issue list
 			const issueOptions = report.issues.map((issue, i) => {
 				const icon = this.getSeverityIcon(issue.severity);
@@ -151,16 +176,20 @@ export class CheckResultsScreen implements Screen {
 				selectedBackgroundColor: theme.highlightFocused,
 				selectedTextColor: theme.text,
 				textColor: theme.textMuted,
+				flexGrow: 1,
 			});
-			this.container.add(this.issueList);
 
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			this.issuesPanel = panel(this.renderer, { title: 'Issues', flexGrow: 1, focused: true });
+			this.issuesPanel.add(this.issueList);
 
-			// Detail panel
-			this.detailPanel = new BoxRenderable(this.renderer, {
-				flexDirection: 'column',
-			});
-			this.container.add(this.detailPanel);
+			this.detailContainer = new BoxRenderable(this.renderer, { flexDirection: 'column' });
+			this.detailPanel = panel(this.renderer, { title: 'Detail', flexGrow: 1 });
+			this.detailPanel.add(this.detailContainer);
+
+			const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
+			body.add(this.issuesPanel.box);
+			body.add(this.detailPanel.box);
+			this.shell.content.add(body);
 
 			// Initial detail display
 			this.updateDetailPanel(report.issues[0]);
@@ -170,43 +199,34 @@ export class CheckResultsScreen implements Screen {
 				content: `${symbols.info.success} No issues found`,
 				fg: theme.success,
 			});
-			this.container.add(successText);
+			this.shell.content.add(successText);
 		}
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.renderer.root.add(this.shell.root);
 
-		// Status bar
-		const statusBar = new TextRenderable(this.renderer, {
-			content: hasIssues
-				? '[↑↓] Navigate issues  [ESC/q] Back to Dashboard'
-				: '[Any key] Back to Dashboard',
-			fg: theme.textMuted,
-		});
-		this.container.add(statusBar);
-
-		this.renderer.root.add(this.container);
+		return keymap;
 	}
 
 	private updateDetailPanel(issue: CheckIssue): void {
-		if (!this.detailPanel) return;
+		if (!this.detailContainer) return;
 
 		// Clear existing children
-		for (const child of this.detailPanel.getChildren()) {
-			this.detailPanel.remove(child.id);
+		for (const child of this.detailContainer.getChildren()) {
+			this.detailContainer.remove(child.id);
 		}
 
 		// Issue title
-		this.detailPanel.add(
+		this.detailContainer.add(
 			new TextRenderable(this.renderer, {
 				content: `${this.getSeverityIcon(issue.severity)} ${this.formatCategory(issue.category)}`,
 				fg: this.getSeverityColor(issue.severity),
 			})
 		);
 
-		this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+		this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Message
-		this.detailPanel.add(
+		this.detailContainer.add(
 			new TextRenderable(this.renderer, {
 				content: issue.message,
 				fg: theme.text,
@@ -215,12 +235,12 @@ export class CheckResultsScreen implements Screen {
 
 		// Details (if present)
 		if (issue.details && Object.keys(issue.details).length > 0) {
-			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+			this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 			for (const [key, value] of Object.entries(issue.details)) {
 				const displayValue =
 					Array.isArray(value) ? value.join(', ') : String(value);
-				this.detailPanel.add(
+				this.detailContainer.add(
 					new TextRenderable(this.renderer, {
 						content: `  ${key}: ${displayValue}`,
 						fg: theme.textMuted,
