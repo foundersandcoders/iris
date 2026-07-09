@@ -139,6 +139,19 @@ describe('ValidationExplorerScreen', () => {
 			screen.cleanup();
 		});
 
+		it('aligns the tab bar selection with currentFilter (all) on mount', async () => {
+			const screen = new ValidationExplorerScreen(mockContext);
+			screen.render({ validation: validationWithIssues, sourceType: 'csv' });
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const tabs = (screen as any).tabs;
+			expect(tabs.setSelectedIndex).toHaveBeenCalledWith(2);
+			expect(tabs.selectedIndex).toBe(2);
+
+			screen.cleanup();
+		});
+
 		it('rebuilds the issue list when the filter tab changes', async () => {
 			const screen = new ValidationExplorerScreen(mockContext);
 			screen.render({ validation: validationWithIssues, sourceType: 'csv' });
@@ -179,6 +192,11 @@ describe('ValidationExplorerScreen', () => {
 			// After Tab, the colours swap: detail is now focused, issues is not.
 			expect(issuesPanel.box.borderColor).toEqual(unfocusedColor);
 			expect(detailPanel.box.borderColor).toEqual(focusedColor);
+
+			// Pressing Tab again swaps back to the original focused/unfocused state.
+			handler({ name: 'tab' });
+			expect(issuesPanel.box.borderColor).toEqual(focusedColor);
+			expect(detailPanel.box.borderColor).toEqual(unfocusedColor);
 
 			screen.cleanup();
 		});

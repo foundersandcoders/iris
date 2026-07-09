@@ -198,6 +198,8 @@ export class ValidationExplorerScreen implements Screen {
 				{ name: 'All', description: '', value: 'all' },
 			],
 		});
+		// TabSelectRenderable always highlights index 0 on mount; align it with currentFilter ('all').
+		this.tabs.setSelectedIndex(2);
 		this.filterPanel = panel(this.renderer, { title: 'Filter' });
 		this.filterPanel.add(this.tabs);
 		this.shell.content.add(this.filterPanel.box);
