@@ -42,13 +42,22 @@ export class SuccessScreen implements Screen {
 
 		// Wait for user selection
 		return new Promise((resolve) => {
-			this.buildUI(type, failed, error, duration, outputPath, learnerCount, hasIssues, resolve);
+			const keymap = this.buildUI(
+				type,
+				failed,
+				error,
+				duration,
+				outputPath,
+				learnerCount,
+				hasIssues,
+				resolve
+			);
 
 			if (failed) {
-				this.keymap!.attach(this.renderer);
+				keymap.attach(this.renderer);
 			} else if (this.menu) {
 				this.menu.focus();
-				this.keymap!.attach(this.renderer);
+				keymap.attach(this.renderer);
 				this.menu.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 					if (option.value === 'view-issues') {
 						resolve({
@@ -81,7 +90,7 @@ export class SuccessScreen implements Screen {
 		learnerCount: number | undefined,
 		hasIssues: boolean | undefined,
 		resolve: (result: ScreenResult) => void
-	): void {
+	): Keymap {
 		const breadcrumb = failed ? this.getFailureTitle(type) : this.getSuccessTitle(type);
 
 		if (failed) {
@@ -104,6 +113,7 @@ export class SuccessScreen implements Screen {
 				],
 			});
 		}
+		const keymap = this.keymap;
 
 		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
@@ -208,6 +218,8 @@ export class SuccessScreen implements Screen {
 
 		this.shell.content.add(this.resultPanel.box);
 		this.renderer.root.add(this.shell.root);
+
+		return keymap;
 	}
 
 	private getSuccessTitle(type: WorkflowType): string {
