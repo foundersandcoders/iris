@@ -2,10 +2,17 @@
  * Displays success/failure results for workflows
  * Conditionally shows "View Issues" option if validation issues exist
  */
-import { BoxRenderable, TextRenderable, SelectRenderable } from '@opentui/core';
+import {
+	TextRenderable,
+	SelectRenderable,
+	SelectRenderableEvents,
+	type SelectOption,
+} from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'success-root';
 
@@ -14,7 +21,9 @@ type WorkflowType = 'convert' | 'validate' | 'check';
 export class SuccessScreen implements Screen {
 	readonly name = 'success';
 	private renderer: Renderer;
-	private container?: BoxRenderable;
+	private shell?: AppShell;
+	private resultPanel?: Panel;
+	private keymap?: Keymap;
 	private menu?: SelectRenderable;
 
 	constructor(ctx: RenderContext) {
@@ -31,21 +40,16 @@ export class SuccessScreen implements Screen {
 		const hasIssues = data?.hasIssues as boolean;
 		const validation = data?.validation;
 
-		this.buildUI(type, failed, error, duration, outputPath, learnerCount, hasIssues);
-
 		// Wait for user selection
 		return new Promise((resolve) => {
+			this.buildUI(type, failed, error, duration, outputPath, learnerCount, hasIssues, resolve);
+
 			if (failed) {
-				// Failure mode: any key pops back
-				const handler = () => {
-					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
-				};
-				this.renderer.keyInput.once('keypress', handler);
+				this.keymap!.attach(this.renderer);
 			} else if (this.menu) {
-				// Success mode: use menu
 				this.menu.focus();
-				this.menu.once('itemSelected', (_index: number, option: { value?: string }) => {
+				this.keymap!.attach(this.renderer);
+				this.menu.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 					if (option.value === 'view-issues') {
 						resolve({
 							action: 'replace',
@@ -64,6 +68,7 @@ export class SuccessScreen implements Screen {
 	}
 
 	cleanup(): void {
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
@@ -74,15 +79,39 @@ export class SuccessScreen implements Screen {
 		duration: number | undefined,
 		outputPath: string | undefined,
 		learnerCount: number | undefined,
-		hasIssues: boolean | undefined
+		hasIssues: boolean | undefined,
+		resolve: (result: ScreenResult) => void
 	): void {
-		this.container = new BoxRenderable(this.renderer, {
+		const breadcrumb = failed ? this.getFailureTitle(type) : this.getSuccessTitle(type);
+
+		if (failed) {
+			const finish = () => resolve({ action: 'replace', screen: 'dashboard' });
+			this.keymap = new Keymap({
+				bindings: [{ keys: ['enter'], label: 'Continue', handler: finish }],
+				onQuit: finish,
+			});
+		} else {
+			this.keymap = new Keymap({
+				bindings: [
+					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+					{
+						keys: ['up', 'down', 'k', 'j'],
+						hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+						label: 'Select',
+						handler: () => {},
+					},
+					{ keys: ['enter'], label: 'Confirm', handler: () => this.menu?.selectCurrent() },
+				],
+			});
+		}
+
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb,
+			footer: this.keymap.toKeybar(),
 		});
+
+		this.resultPanel = panel(this.renderer, { title: failed ? 'Failed' : 'Result', flexGrow: 1 });
 
 		// Status icon and message
 		if (failed) {
@@ -90,43 +119,36 @@ export class SuccessScreen implements Screen {
 				content: symbols.info.error,
 				fg: theme.error,
 			});
-			this.container.add(icon);
+			this.resultPanel.add(icon);
 
 			const title = new TextRenderable(this.renderer, {
 				content: this.getFailureTitle(type),
 				fg: theme.error,
 			});
-			this.container.add(title);
+			this.resultPanel.add(title);
 
 			if (error) {
-				this.container.add(new TextRenderable(this.renderer, { content: '' }));
+				this.resultPanel.add(new TextRenderable(this.renderer, { content: '' }));
 				const errorMsg = new TextRenderable(this.renderer, {
 					content: `Error: ${error.message}`,
 					fg: theme.textMuted,
 				});
-				this.container.add(errorMsg);
+				this.resultPanel.add(errorMsg);
 			}
-
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
-			const hint = new TextRenderable(this.renderer, {
-				content: '[Any key] Return to Dashboard',
-				fg: theme.textMuted,
-			});
-			this.container.add(hint);
 		} else {
 			const icon = new TextRenderable(this.renderer, {
 				content: symbols.info.success,
 				fg: theme.success,
 			});
-			this.container.add(icon);
+			this.resultPanel.add(icon);
 
 			const title = new TextRenderable(this.renderer, {
 				content: this.getSuccessTitle(type),
 				fg: theme.success,
 			});
-			this.container.add(title);
+			this.resultPanel.add(title);
 
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			this.resultPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Context-specific details
 			if (type === 'convert') {
@@ -135,21 +157,21 @@ export class SuccessScreen implements Screen {
 						content: `Output: ${outputPath}`,
 						fg: theme.textMuted,
 					});
-					this.container.add(pathText);
+					this.resultPanel.add(pathText);
 				}
 				if (learnerCount !== undefined) {
 					const countText = new TextRenderable(this.renderer, {
 						content: `Learners: ${learnerCount}`,
 						fg: theme.textMuted,
 					});
-					this.container.add(countText);
+					this.resultPanel.add(countText);
 				}
 				if (hasIssues) {
 					const issuesText = new TextRenderable(this.renderer, {
 						content: 'Validation warnings present (see details)',
 						fg: theme.warning,
 					});
-					this.container.add(issuesText);
+					this.resultPanel.add(issuesText);
 				}
 			}
 
@@ -158,10 +180,10 @@ export class SuccessScreen implements Screen {
 					content: `Duration: ${duration}ms`,
 					fg: theme.textMuted,
 				});
-				this.container.add(durationText);
+				this.resultPanel.add(durationText);
 			}
 
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
+			this.resultPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 			// Menu
 			const menuOptions: Array<{ name: string; description: string; value: string }> = [
@@ -181,19 +203,11 @@ export class SuccessScreen implements Screen {
 				textColor: theme.textMuted,
 			});
 
-			this.container.add(this.menu);
-
-			// Hint text
-			this.container.add(new TextRenderable(this.renderer, { content: '' }));
-			this.container.add(
-				new TextRenderable(this.renderer, {
-					content: '[↑↓] Select  [Enter] Confirm',
-					fg: theme.textMuted,
-				})
-			);
+			this.resultPanel.add(this.menu);
 		}
 
-		this.renderer.root.add(this.container);
+		this.shell.content.add(this.resultPanel.box);
+		this.renderer.root.add(this.shell.root);
 	}
 
 	private getSuccessTitle(type: WorkflowType): string {
