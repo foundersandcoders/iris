@@ -3,13 +3,11 @@
  * Auto-derives kebab-case ID from name, detects duplicates.
  */
 import {
-	BoxRenderable,
 	TextRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
 	InputRenderable,
 	InputRenderableEvents,
-	type KeyEvent,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
@@ -18,6 +16,8 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import { createStorage } from '../../lib/storage';
 import { validateMappingStructure } from '../../lib/mappings/validate';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-save-root';
 
@@ -35,7 +35,9 @@ const FOCUS_ORDER: FocusTarget[] = ['name', 'version', 'active', 'buttons'];
 export class MappingSaveScreen implements Screen {
 	readonly name = 'mapping-save';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private shell?: AppShell;
+	private formPanel?: Panel;
+	private keymap?: Keymap;
 
 	// Data from mapping-editor
 	private mapping!: IlrMappingConfig;
@@ -52,7 +54,6 @@ export class MappingSaveScreen implements Screen {
 	private currentFocus: FocusTarget = 'name';
 
 	// Renderables
-	private container?: BoxRenderable;
 	private nameInput?: InputRenderable;
 	private idText?: TextRenderable;
 	private versionInput?: InputRenderable;
@@ -60,7 +61,6 @@ export class MappingSaveScreen implements Screen {
 	private warningText?: TextRenderable;
 	private validationText?: TextRenderable;
 	private buttonSelect?: SelectRenderable;
-	private statusText?: TextRenderable;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -86,9 +86,10 @@ export class MappingSaveScreen implements Screen {
 		}
 
 		this.checkDuplicate();
-		this.buildUI();
 
 		return new Promise((resolve) => {
+			const keymap = this.buildUI(resolve);
+
 			// Name input events
 			this.nameInput?.on(InputRenderableEvents.INPUT, () => {
 				this.nameValue = this.nameInput?.value ?? '';
@@ -119,58 +120,46 @@ export class MappingSaveScreen implements Screen {
 				if (option.value === 'save') {
 					this.save(resolve);
 				} else {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
 					resolve({ action: 'pop', data: { saved: false } });
 				}
 			});
 
-			// Key handler
-			this.keyHandler = (key: KeyEvent) => {
-				if (key.name === 'escape') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({ action: 'pop', data: { saved: false } });
-				} else if (key.name === 'tab') {
-					this.advanceFocus();
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
-
 			// Initial focus
 			this.setFocus('name');
+
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
 	// === UI Building ===
 
-	private buildUI(): void {
-		this.container = new BoxRenderable(this.renderer, {
+	private buildUI(resolve: (result: ScreenResult) => void): Keymap {
+		this.keymap = new Keymap({
+			bindings: [
+				{ keys: ['tab'], label: 'Next Field', handler: () => this.advanceFocus() },
+				// Confirm — Input/Select ENTER events own the action; this is bar-only.
+				{ keys: ['enter'], label: 'Confirm', handler: () => {} },
+			],
+			onBack: () => resolve({ action: 'pop', data: { saved: false } }),
+		});
+		const keymap = this.keymap;
+
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb: 'Save Mapping',
+			footer: keymap.toKeybar(),
 		});
 
-		// Title
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Save Mapping',
-			fg: theme.primary,
-		}));
-
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel = panel(this.renderer, { title: 'Details', flexGrow: 1, focused: true });
+		this.shell.content.add(this.formPanel.box);
 
 		// Name field
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Name:',
-			fg: theme.text,
-		}));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: 'Name:', fg: theme.text }));
 
 		this.nameInput = new InputRenderable(this.renderer, {
 			value: this.nameValue,
@@ -181,9 +170,9 @@ export class MappingSaveScreen implements Screen {
 			focusedTextColor: theme.text,
 			focusedBackgroundColor: theme.highlightFocused,
 		});
-		this.container.add(this.nameInput);
+		this.formPanel.add(this.nameInput);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// ID (auto-derived, read-only display)
 		const derivedId = toKebabCase(this.nameValue);
@@ -191,15 +180,12 @@ export class MappingSaveScreen implements Screen {
 			content: `ID: ${derivedId || '(enter a name)'}`,
 			fg: theme.textMuted,
 		});
-		this.container.add(this.idText);
+		this.formPanel.add(this.idText);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Version field
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Version:',
-			fg: theme.text,
-		}));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: 'Version:', fg: theme.text }));
 
 		this.versionInput = new InputRenderable(this.renderer, {
 			value: this.versionValue,
@@ -210,41 +196,39 @@ export class MappingSaveScreen implements Screen {
 			focusedTextColor: theme.text,
 			focusedBackgroundColor: theme.highlightFocused,
 		});
-		this.container.add(this.versionInput);
+		this.formPanel.add(this.versionInput);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Active mapping toggle
 		this.activeToggle = new SelectRenderable(this.renderer, {
 			options: [
-				{ name: `${this.setActive ? symbols.info.success : '○'} Set as active mapping`, description: '', value: this.setActive ? 'no' : 'yes' },
+				{
+					name: `${this.setActive ? symbols.info.success : '○'} Set as active mapping`,
+					description: '',
+					value: this.setActive ? 'no' : 'yes',
+				},
 			],
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
 			selectedBackgroundColor: theme.highlightFocused,
 			textColor: theme.text,
 		});
-		this.container.add(this.activeToggle);
+		this.formPanel.add(this.activeToggle);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Warning (duplicate detection)
-		this.warningText = new TextRenderable(this.renderer, {
-			content: '',
-			fg: theme.warning,
-		});
-		this.container.add(this.warningText);
+		this.warningText = new TextRenderable(this.renderer, { content: '', fg: theme.warning });
+		this.formPanel.add(this.warningText);
 		this.updateWarning();
 
 		// Validation summary
-		this.validationText = new TextRenderable(this.renderer, {
-			content: '',
-			fg: theme.success,
-		});
-		this.container.add(this.validationText);
+		this.validationText = new TextRenderable(this.renderer, { content: '', fg: theme.success });
+		this.formPanel.add(this.validationText);
 		this.updateValidation();
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.formPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Buttons
 		this.buttonSelect = new SelectRenderable(this.renderer, {
@@ -257,18 +241,11 @@ export class MappingSaveScreen implements Screen {
 			selectedBackgroundColor: theme.highlightFocused,
 			textColor: theme.text,
 		});
-		this.container.add(this.buttonSelect);
+		this.formPanel.add(this.buttonSelect);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.renderer.root.add(this.shell.root);
 
-		// Status bar
-		this.statusText = new TextRenderable(this.renderer, {
-			content: '[TAB] Next field  [ENTER] Confirm  [ESC] Cancel',
-			fg: theme.textMuted,
-		});
-		this.container.add(this.statusText);
-
-		this.renderer.root.add(this.container);
+		return keymap;
 	}
 
 	// === Focus Management ===
@@ -309,9 +286,8 @@ export class MappingSaveScreen implements Screen {
 	private checkDuplicate(): void {
 		const derivedId = toKebabCase(this.nameValue);
 		// It's a duplicate if the ID exists and it's not the one we're editing
-		this.isDuplicate = derivedId !== '' &&
-			this.existingMappings.includes(derivedId) &&
-			derivedId !== this.existingId;
+		this.isDuplicate =
+			derivedId !== '' && this.existingMappings.includes(derivedId) && derivedId !== this.existingId;
 	}
 
 	private updateWarning(): void {
@@ -362,7 +338,6 @@ export class MappingSaveScreen implements Screen {
 			}
 		}
 
-		this.renderer.keyInput.off('keypress', this.keyHandler!);
 		resolve({ action: 'pop', data: { saved: true } });
 	}
 
