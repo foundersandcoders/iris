@@ -60,6 +60,26 @@ vi.mock('../../../src/lib/storage', () => ({
 	}),
 }));
 
+/** Find the first descendant (recursively) whose text content matches a predicate. */
+function findText(root: any, predicate: (text: string) => boolean): any {
+	for (const child of root.getChildren?.() ?? []) {
+		const text = child.content?.chunks?.map((c: { text: string }) => c.text).join('') ?? '';
+		if (predicate(text)) return child;
+		const found = findText(child, predicate);
+		if (found) return found;
+	}
+	return null;
+}
+
+function findPanel(root: any, title: string): any {
+	for (const child of root.getChildren?.() ?? []) {
+		if (child.title === title) return child;
+		const found = findPanel(child, title);
+		if (found) return found;
+	}
+	return null;
+}
+
 describe('MappingBuilderScreen', () => {
 	let mockContext: ReturnType<typeof fixtures.createMockContext>;
 
@@ -117,5 +137,30 @@ describe('MappingBuilderScreen', () => {
 			expect.any(Function)
 		);
 		expect(mockContext.renderer.root.remove).toHaveBeenCalledWith('mapping-builder-root');
+	});
+
+	it('renders a footer keybar with the New/Delete bindings', async () => {
+		const screen = new MappingBuilderScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const footer = findText(root, (t) => t.includes('New'));
+		expect(footer).toBeDefined();
+		const footerText = footer.content.chunks.map((c: { text: string }) => c.text).join('');
+		expect(footerText).toContain('New');
+		expect(footerText).toContain('Delete');
+	});
+
+	it('wraps the mapping list in a titled panel', async () => {
+		const screen = new MappingBuilderScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const listPanel = findPanel(root, 'Mappings');
+		expect(listPanel).toBeDefined();
 	});
 });

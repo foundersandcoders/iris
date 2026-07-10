@@ -37,6 +37,26 @@ vi.mock('../../../src/lib/storage', () => ({
 	}),
 }));
 
+/** Find the first descendant (recursively) whose content/title matches a predicate. */
+function findText(root: any, predicate: (text: string) => boolean): any {
+	for (const child of root.getChildren?.() ?? []) {
+		const text = child.content?.chunks?.map((c: { text: string }) => c.text).join('') ?? '';
+		if (predicate(text)) return child;
+		const found = findText(child, predicate);
+		if (found) return found;
+	}
+	return null;
+}
+
+function findPanel(root: any, title: string): any {
+	for (const child of root.getChildren?.() ?? []) {
+		if (child.title === title) return child;
+		const found = findPanel(child, title);
+		if (found) return found;
+	}
+	return null;
+}
+
 describe('MappingSaveScreen', () => {
 	let mockContext: ReturnType<typeof fixtures.createMockContext>;
 
@@ -102,5 +122,30 @@ describe('MappingSaveScreen', () => {
 			expect.any(Function)
 		);
 		expect(mockContext.renderer.root.remove).toHaveBeenCalledWith('mapping-save-root');
+	});
+
+	it('renders a footer keybar with the Tab/Confirm/Back bindings', async () => {
+		const screen = new MappingSaveScreen(mockContext);
+		screen.render({ mapping: sampleMapping });
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const footer = findText(root, (t) => t.includes('Next Field'));
+		expect(footer).toBeDefined();
+		const footerText = footer.content.chunks.map((c: { text: string }) => c.text).join('');
+		expect(footerText).toContain('Next Field');
+		expect(footerText).toContain('Back');
+	});
+
+	it('wraps the form in a titled panel', async () => {
+		const screen = new MappingSaveScreen(mockContext);
+		screen.render({ mapping: sampleMapping });
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
+		const formPanel = findPanel(root, 'Details');
+		expect(formPanel).toBeDefined();
 	});
 });

@@ -2,19 +2,13 @@
  * List and manage CSV→XSD mapping configurations.
  * Entry point to the mapping editor workflow.
  */
-import {
-	BoxRenderable,
-	TextRenderable,
-	SelectRenderable,
-	SelectRenderableEvents,
-	type KeyEvent,
-	type SelectOption,
-} from '@opentui/core';
+import { BoxRenderable, TextRenderable, SelectRenderable, SelectRenderableEvents, type SelectOption } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
 import { createStorage } from '../../lib/storage';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-builder-root';
 
@@ -34,17 +28,17 @@ interface MappingListItem {
 export class MappingBuilderScreen implements Screen {
 	readonly name = 'mapping-builder';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private shell?: AppShell;
+	private listPanel?: Panel;
+	private keymap?: Keymap;
 
 	// State
 	private mappingItems: MappingListItem[] = [];
 	private deleteConfirmIndex = -1;
 
 	// Renderables
-	private container?: BoxRenderable;
 	private listSelect?: SelectRenderable;
 	private detailPanel?: BoxRenderable;
-	private statusText?: TextRenderable;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -57,14 +51,28 @@ export class MappingBuilderScreen implements Screen {
 		const csvInputDir = configResult.success ? configResult.data.csvInputDir : undefined;
 
 		await this.loadMappings();
-		this.buildUI();
 
 		return new Promise((resolve) => {
+			const goCreate = () =>
+				resolve({
+					action: 'push',
+					screen: 'file-picker',
+					data: {
+						fileExtension: '.csv',
+						title: 'Select CSV for New Mapping',
+						workflowType: 'mapping-create',
+						mode: 'create',
+						path: csvInputDir,
+					},
+				});
+
+			const keymap = this.buildUI(resolve);
+
 			// List selection changed — update detail panel
 			this.listSelect?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number) => {
 				this.deleteConfirmIndex = -1;
 				this.updateDetailPanel(index);
-				this.updateStatus();
+				this.updateFooter();
 			});
 
 			// Item selected — edit
@@ -77,70 +85,25 @@ export class MappingBuilderScreen implements Screen {
 				if (item?.isBroken) return;
 
 				if (value === '__create__') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({
-						action: 'push',
-						screen: 'file-picker',
-						data: {
-							fileExtension: '.csv',
-							title: 'Select CSV for New Mapping',
-							workflowType: 'mapping-create',
-							mode: 'create',
-							path: csvInputDir,
-						},
-					});
+					goCreate();
 				} else {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({
-						action: 'push',
-						screen: 'mapping-editor',
-						data: { mode: 'edit', mappingId: value },
-					});
+					resolve({ action: 'push', screen: 'mapping-editor', data: { mode: 'edit', mappingId: value } });
 				}
 			});
-
-			// Key handler
-			this.keyHandler = (key: KeyEvent) => {
-				if (key.name === 'escape') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({ action: 'pop' });
-				} else if (key.name === 'n') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({
-						action: 'push',
-						screen: 'file-picker',
-						data: {
-							fileExtension: '.csv',
-							title: 'Select CSV for New Mapping',
-							workflowType: 'mapping-create',
-							mode: 'create',
-							path: csvInputDir,
-						},
-					});
-				} else if (key.name === 'd') {
-					this.duplicateSelected(resolve);
-				} else if (key.name === 'x') {
-					this.handleDelete(resolve).catch(() => {
-						if (this.statusText) {
-							this.statusText.content = `${symbols.info.error} Delete failed — try again`;
-						}
-					});
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
 
 			// Initial focus + detail
 			this.listSelect?.focus();
 			if (this.mappingItems.length > 0) {
 				this.updateDetailPanel(0);
 			}
+
+			this.keymapGoCreate = goCreate;
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
@@ -182,27 +145,52 @@ export class MappingBuilderScreen implements Screen {
 
 	// === UI Building ===
 
-	private buildUI(): void {
-		this.container = new BoxRenderable(this.renderer, {
+	/** Bound during render() so keymap bindings (built before the resolve-closures) can reach it. */
+	private keymapGoCreate?: () => void;
+
+	private buildUI(resolve: (result: ScreenResult) => void): Keymap {
+		this.keymap = new Keymap({
+			bindings: [
+				{
+					keys: ['up', 'down', 'k', 'j'],
+					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+					label: 'Navigate',
+					handler: () => {},
+				},
+				// Edit — SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
+				{ keys: ['enter'], label: 'Edit', handler: () => {} },
+				{ keys: ['n'], label: 'New', handler: () => this.keymapGoCreate?.() },
+				{ keys: ['d'], label: 'Duplicate', handler: () => this.duplicateSelected(resolve) },
+				{
+					keys: ['x'],
+					label: 'Delete',
+					handler: () => {
+						this.handleDelete(resolve).catch(() => {
+							this.shell?.setFooter(`${symbols.info.error} Delete failed — try again`);
+						});
+					},
+				},
+			],
+			onBack: () => resolve({ action: 'pop' }),
+		});
+		const keymap = this.keymap;
+
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb: 'Mapping Builder',
+			footer: keymap.toKeybar(),
 		});
 
-		// Title
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Mapping Builder',
-			fg: theme.primary,
-		}));
+		this.shell.content.add(
+			new TextRenderable(this.renderer, {
+				content: 'Manage CSV→XSD mapping configurations',
+				fg: theme.textMuted,
+			})
+		);
 
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Manage CSV→XSD mapping configurations',
-			fg: theme.textMuted,
-		}));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
 
 		// Mapping list
 		this.listSelect = new SelectRenderable(this.renderer, {
@@ -216,26 +204,20 @@ export class MappingBuilderScreen implements Screen {
 			descriptionColor: theme.textMuted,
 			flexGrow: 1,
 		});
-		this.container.add(this.listSelect);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.listPanel = panel(this.renderer, { title: 'Mappings', flexGrow: 1, focused: true });
+		this.listPanel.add(this.listSelect);
+		body.add(this.listPanel.box);
 
-		// Detail panel
-		this.detailPanel = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-		});
-		this.container.add(this.detailPanel);
+		// Detail — non-interactive, never a focus target, so a plain box rather than a panel.
+		this.detailPanel = new BoxRenderable(this.renderer, { flexDirection: 'column', width: '40%' });
+		body.add(this.detailPanel);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(body);
 
-		// Status bar
-		this.statusText = new TextRenderable(this.renderer, {
-			content: '[ENTER] Edit  [n] New  [d] Duplicate  [x] Delete  [ESC] Back',
-			fg: theme.textMuted,
-		});
-		this.container.add(this.statusText);
+		this.renderer.root.add(this.shell.root);
 
-		this.renderer.root.add(this.container);
+		return keymap;
 	}
 
 	private buildListOptions(): SelectOption[] {
@@ -282,57 +264,71 @@ export class MappingBuilderScreen implements Screen {
 		// Offset by 1 for "Create New" option
 		const itemIndex = index - 1;
 		if (itemIndex < 0 || itemIndex >= this.mappingItems.length) {
-			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: 'Create a new mapping configuration',
-				fg: theme.textMuted,
-			}));
+			this.detailPanel.add(
+				new TextRenderable(this.renderer, {
+					content: 'Create a new mapping configuration',
+					fg: theme.textMuted,
+				})
+			);
 			return;
 		}
 
 		const item = this.mappingItems[itemIndex];
 
 		if (item.isBroken) {
-			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: `${symbols.info.error} ${item.name} — corrupt or unreadable`,
-				fg: theme.error,
-			}));
-			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: 'Press [x] to delete this entry',
-				fg: theme.textMuted,
-			}));
+			this.detailPanel.add(
+				new TextRenderable(this.renderer, {
+					content: `${symbols.info.error} ${item.name} — corrupt or unreadable`,
+					fg: theme.error,
+				})
+			);
+			this.detailPanel.add(
+				new TextRenderable(this.renderer, {
+					content: 'Press [x] to delete this entry',
+					fg: theme.textMuted,
+				})
+			);
 			return;
 		}
 
-		this.detailPanel.add(new TextRenderable(this.renderer, {
-			content: `Name: ${item.name}`,
-			fg: theme.text,
-		}));
+		this.detailPanel.add(
+			new TextRenderable(this.renderer, {
+				content: `Name: ${item.name}`,
+				fg: theme.text,
+			})
+		);
 
-		this.detailPanel.add(new TextRenderable(this.renderer, {
-			content: `Version: ${item.version} ${symbols.bullet.dot} Schema: ${item.schemaDisplay || 'Unknown'}`,
-			fg: theme.textMuted,
-		}));
+		this.detailPanel.add(
+			new TextRenderable(this.renderer, {
+				content: `Version: ${item.version} ${symbols.bullet.dot} Schema: ${item.schemaDisplay || 'Unknown'}`,
+				fg: theme.textMuted,
+			})
+		);
 
-		this.detailPanel.add(new TextRenderable(this.renderer, {
-			content: `Fields: ${item.fieldCount} column mappings`,
-			fg: theme.textMuted,
-		}));
+		this.detailPanel.add(
+			new TextRenderable(this.renderer, {
+				content: `Fields: ${item.fieldCount} column mappings`,
+				fg: theme.textMuted,
+			})
+		);
 
 		if (item.isBundled) {
-			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: `${symbols.info.warning} Bundled mapping — read-only, duplicate to customise`,
-				fg: theme.warning,
-			}));
+			this.detailPanel.add(
+				new TextRenderable(this.renderer, {
+					content: `${symbols.info.warning} Bundled mapping — read-only, duplicate to customise`,
+					fg: theme.warning,
+				})
+			);
 		}
 	}
 
-	private updateStatus(): void {
-		if (!this.statusText) return;
+	private updateFooter(): void {
+		if (!this.shell || !this.keymap) return;
 
 		if (this.deleteConfirmIndex >= 0) {
-			this.statusText.content = `${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`;
+			this.shell.setFooter(`${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`);
 		} else {
-			this.statusText.content = '[ENTER] Edit  [n] New  [d] Duplicate  [x] Delete  [ESC] Back';
+			this.shell.setFooter(this.keymap.toKeybar());
 		}
 	}
 
@@ -345,12 +341,7 @@ export class MappingBuilderScreen implements Screen {
 		if (index < 0 || index >= this.mappingItems.length) return;
 
 		const item = this.mappingItems[index];
-		this.renderer.keyInput.off('keypress', this.keyHandler!);
-		resolve({
-			action: 'push',
-			screen: 'mapping-editor',
-			data: { mode: 'duplicate', mappingId: item.id },
-		});
+		resolve({ action: 'push', screen: 'mapping-editor', data: { mode: 'duplicate', mappingId: item.id } });
 	}
 
 	private async handleDelete(resolve: (result: ScreenResult) => void): Promise<void> {
@@ -363,9 +354,7 @@ export class MappingBuilderScreen implements Screen {
 
 		// Block bundled deletion (unless broken — always allow cleaning up corrupt entries)
 		if (item.isBundled && !item.isBroken) {
-			if (this.statusText) {
-				this.statusText.content = `${symbols.info.warning} Bundled mappings cannot be deleted — duplicate to customise`;
-			}
+			this.shell?.setFooter(`${symbols.info.warning} Bundled mappings cannot be deleted — duplicate to customise`);
 			return;
 		}
 
@@ -375,9 +364,7 @@ export class MappingBuilderScreen implements Screen {
 			const storage = createStorage();
 			const result = await storage.deleteMapping(item.id);
 			if (!result.success) {
-				if (this.statusText) {
-					this.statusText.content = `${symbols.info.error} Failed to delete mapping`;
-				}
+				this.shell?.setFooter(`${symbols.info.error} Failed to delete mapping`);
 				this.deleteConfirmIndex = -1;
 				return;
 			}
@@ -388,11 +375,11 @@ export class MappingBuilderScreen implements Screen {
 			if (this.listSelect) {
 				this.listSelect.options = this.buildListOptions();
 			}
-			this.updateStatus();
+			this.updateFooter();
 		} else {
 			// First press — ask for confirmation
 			this.deleteConfirmIndex = index;
-			this.updateStatus();
+			this.updateFooter();
 		}
 	}
 }

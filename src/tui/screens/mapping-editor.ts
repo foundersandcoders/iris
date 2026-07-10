@@ -10,7 +10,6 @@ import {
 	SelectRenderableEvents,
 	InputRenderable,
 	InputRenderableEvents,
-	type KeyEvent,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
@@ -25,6 +24,8 @@ import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { validateMappingStructure } from '../../lib/mappings/validate';
 import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
 import { parseCSV } from '../../lib/utils/csv/csvParser';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-editor-root';
 
@@ -84,10 +85,17 @@ function countAimExpansions(mappings: ColumnMapping[], templateCsv: string): num
 	return groups.size || 5; // Default to 5 if no existing expansions
 }
 
+/** Which pane owns real keyboard focus. 'search' and 'right' both live inside the
+ *  Schema Fields panel, so both light its border — only the input vs list target differs. */
+type FocusTarget = 'left' | 'search' | 'right';
+
 export class MappingEditorScreen implements Screen {
 	readonly name = 'mapping-editor';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private shell?: AppShell;
+	private leftPanel?: Panel;
+	private rightPanel?: Panel;
+	private keymap?: Keymap;
 
 	// State
 	private mappings: ColumnMapping[] = [];
@@ -111,18 +119,17 @@ export class MappingEditorScreen implements Screen {
 	// CSV headers (for new mappings)
 	private csvHeaders: string[] = [];
 
-	// UI state
-	private activePanel: 'left' | 'right' = 'left';
+	// UI state — the single focus authority. Every focus change (Tab, search, CSV
+	// picker) routes through focusPanel() so border colour, real OpenTUI focus, and
+	// this field can never desync (the "weak two-panel focus model" TR.B5 fixes).
+	private focusTarget: FocusTarget = 'left';
 	private displayMappings: ColumnMapping[] = [];
 
 	// Renderables
-	private container?: BoxRenderable;
 	private leftSelect?: SelectRenderable;
 	private rightSelect?: SelectRenderable;
 	private searchInput?: InputRenderable;
 	private previewPanel?: BoxRenderable;
-	private statusText?: TextRenderable;
-	private titleText?: TextRenderable;
 	private summaryText?: TextRenderable;
 
 	// CSV column picker overlay
@@ -162,9 +169,9 @@ export class MappingEditorScreen implements Screen {
 		// Build collapsed display mappings
 		this.displayMappings = collapseAimMappings(this.mappings);
 
-		this.buildUI();
-
 		return new Promise((resolve) => {
+			const keymap = this.buildUI(resolve);
+
 			// Left panel: mapping list interactions
 			this.leftSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 				const value = option.value as string;
@@ -179,8 +186,7 @@ export class MappingEditorScreen implements Screen {
 
 				if (value === '__add__') {
 					// Switch to right panel to pick an XSD path for a new mapping
-					this.activePanel = 'right';
-					this.focusActivePanel();
+					this.focusPanel('right');
 				} else if (value === '__remove__') {
 					// Remove currently highlighted mapping
 					this.removeSelectedMapping();
@@ -209,66 +215,19 @@ export class MappingEditorScreen implements Screen {
 			});
 
 			this.searchInput?.on(InputRenderableEvents.ENTER, () => {
-				// Move focus to right panel after search
-				this.activePanel = 'right';
-				this.rightSelect?.focus();
+				// Move focus to the results list, staying in the right panel
+				this.focusPanel('right');
 			});
 
-			// Key handler
-			this.keyHandler = (key: KeyEvent) => {
-				// Dismiss CSV column picker on ESC
-				if (this.csvPickerSelect && key.name === 'escape') {
-					this.dismissCsvPicker();
-					this.focusActivePanel();
-					return;
-				}
-
-				if (key.name === 'tab') {
-					this.togglePanel();
-				} else if (key.name === 'escape') {
-					if (this.activePanel === 'right' && this.searchQuery) {
-						// Clear search first
-						this.searchQuery = '';
-						if (this.searchInput) this.searchInput.value = '';
-						this.filterPaths();
-						this.updateRightPanel();
-					} else {
-						// Pop back (with dirty check)
-						this.renderer.keyInput.off('keypress', this.keyHandler!);
-						resolve({ action: 'pop' });
-					}
-				} else if (key.name === 's' && this.activePanel === 'left') {
-					// Save — push to mapping-save screen
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({
-						action: 'push',
-						screen: 'mapping-save',
-						data: {
-							mapping: this.buildMappingConfig(),
-							existingId: this.existingId,
-						},
-					});
-				} else if (key.name === 't' && this.activePanel === 'left') {
-					this.cycleTransform();
-				} else if (key.name === 'x' && this.activePanel === 'left') {
-					this.removeSelectedMapping();
-				} else if (key.name === '/') {
-					// Focus search
-					this.activePanel = 'right';
-					this.searchInput?.focus();
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
-
 			// Initial focus
-			this.focusActivePanel();
+			this.focusPanel('left');
+
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
@@ -316,21 +275,63 @@ export class MappingEditorScreen implements Screen {
 
 	// === UI Building ===
 
-	private buildUI(): void {
-		this.container = new BoxRenderable(this.renderer, {
-			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+	private buildUI(resolve: (result: ScreenResult) => void): Keymap {
+		this.keymap = new Keymap({
+			bindings: [
+				{
+					keys: ['up', 'down', 'k', 'j'],
+					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+					label: 'Navigate',
+					handler: () => {},
+				},
+				{ keys: ['tab'], label: 'Switch Pane', handler: () => this.togglePanel() },
+				// Map — SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
+				{ keys: ['enter'], label: 'Map', handler: () => {} },
+				{
+					keys: ['/'],
+					label: 'Search',
+					when: () => this.focusTarget !== 'search',
+					handler: () => this.focusPanel('search'),
+				},
+				{ keys: ['t'], label: 'Transform', when: () => this.focusTarget === 'left', handler: () => this.cycleTransform() },
+				{ keys: ['x'], label: 'Unmap', when: () => this.focusTarget === 'left', handler: () => this.removeSelectedMapping() },
+				{
+					keys: ['s'],
+					label: 'Save',
+					when: () => this.focusTarget === 'left',
+					handler: () =>
+						resolve({
+							action: 'push',
+							screen: 'mapping-save',
+							data: { mapping: this.buildMappingConfig(), existingId: this.existingId },
+						}),
+				},
+			],
+			onBack: () => {
+				// 1. CSV picker open → dismiss it
+				if (this.csvPickerSelect && this.pendingXsdPath) {
+					this.dismissCsvPicker();
+					return;
+				}
+				// 2. Right pane with an active query → clear search first
+				if ((this.focusTarget === 'search' || this.focusTarget === 'right') && this.searchQuery) {
+					this.searchQuery = '';
+					if (this.searchInput) this.searchInput.value = '';
+					this.filterPaths();
+					this.updateRightPanel();
+					return;
+				}
+				// 3. Pop back
+				resolve({ action: 'pop' });
+			},
 		});
+		const keymap = this.keymap;
 
-		// Title
-		this.titleText = new TextRenderable(this.renderer, {
-			content: `Edit Mapping: ${this.mappingName}`,
-			fg: theme.primary,
+		this.shell = appShell(this.renderer, {
+			id: CONTAINER_ID,
+			breadcrumb: `Edit Mapping: ${this.mappingName}`,
+			footer: keymap.toKeybar(),
 		});
-		this.container.add(this.titleText);
 
 		// Summary
 		const mappingCount = this.displayMappings.length;
@@ -339,26 +340,15 @@ export class MappingEditorScreen implements Screen {
 			content: `${mappingCount} mappings ${symbols.bullet.dot} ${validation.issues.length} issues`,
 			fg: theme.textMuted,
 		});
-		this.container.add(this.summaryText);
+		this.shell.content.add(this.summaryText);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
-		// Editor area: two columns
-		const editorRow = new BoxRenderable(this.renderer, {
-			flexDirection: 'row',
-			width: '100%',
-			flexGrow: 1,
-		});
+		// Editor area: two panels
+		const editorRow = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
 
 		// Left panel: current mappings
-		const leftCol = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-			width: '50%',
-		});
-		leftCol.add(new TextRenderable(this.renderer, {
-			content: 'Mapped Fields',
-			fg: theme.text,
-		}));
+		this.leftPanel = panel(this.renderer, { title: 'Mapped Fields', flexGrow: 1, focused: true });
 
 		this.leftSelect = new SelectRenderable(this.renderer, {
 			options: this.buildLeftOptions(),
@@ -371,18 +361,11 @@ export class MappingEditorScreen implements Screen {
 			descriptionColor: theme.textMuted,
 			flexGrow: 1,
 		});
-		leftCol.add(this.leftSelect);
-		editorRow.add(leftCol);
+		this.leftPanel.add(this.leftSelect);
+		editorRow.add(this.leftPanel.box);
 
-		// Right panel: XSD paths
-		const rightCol = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-			width: '50%',
-		});
-		rightCol.add(new TextRenderable(this.renderer, {
-			content: 'Schema Fields',
-			fg: theme.text,
-		}));
+		// Right panel: search + XSD paths — one panel, one border, for both children
+		this.rightPanel = panel(this.renderer, { title: 'Schema Fields', flexGrow: 1 });
 
 		this.searchInput = new InputRenderable(this.renderer, {
 			placeholder: 'Search XSD paths...',
@@ -392,13 +375,13 @@ export class MappingEditorScreen implements Screen {
 			focusedTextColor: theme.text,
 			focusedBackgroundColor: theme.highlightFocused,
 		});
-		rightCol.add(this.searchInput);
+		this.rightPanel.add(this.searchInput);
 
 		this.rightSelect = new SelectRenderable(this.renderer, {
 			options: this.buildRightOptions(),
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
-			selectedBackgroundColor: theme.highlightUnfocused,
+			selectedBackgroundColor: theme.highlightFocused,
 			selectedTextColor: theme.text,
 			textColor: theme.text,
 			focusedTextColor: theme.text,
@@ -406,30 +389,21 @@ export class MappingEditorScreen implements Screen {
 			flexGrow: 1,
 			showScrollIndicator: true,
 		});
-		rightCol.add(this.rightSelect);
-		editorRow.add(rightCol);
+		this.rightPanel.add(this.rightSelect);
+		editorRow.add(this.rightPanel.box);
 
-		this.container.add(editorRow);
+		this.shell.content.add(editorRow);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
-		// Preview panel
-		this.previewPanel = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-		});
-		this.container.add(this.previewPanel);
+		// Preview panel — non-interactive, never a focus target
+		this.previewPanel = new BoxRenderable(this.renderer, { flexDirection: 'column' });
+		this.shell.content.add(this.previewPanel);
 		this.updatePreview();
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.renderer.root.add(this.shell.root);
 
-		// Status bar
-		this.statusText = new TextRenderable(this.renderer, {
-			content: '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Unmap  [s] Save  [ESC] Back',
-			fg: theme.textMuted,
-		});
-		this.container.add(this.statusText);
-
-		this.renderer.root.add(this.container);
+		return keymap;
 	}
 
 	private buildLeftOptions(): SelectOption[] {
@@ -463,9 +437,7 @@ export class MappingEditorScreen implements Screen {
 
 		return this.filteredPaths.map((path) => {
 			const el = this.registry?.elementsByPath.get(path);
-			const required = el && this.registry
-				? isEffectivelyRequired(el, this.registry, mappedPaths)
-				: false;
+			const required = el && this.registry ? isEffectivelyRequired(el, this.registry, mappedPaths) : false;
 			const isMapped = mappedPaths.has(path);
 			const prefix = isMapped ? `${symbols.info.success} ` : required ? `${symbols.info.required} ` : '  ';
 			const shortPath = path.split('.').slice(-2).join('.');
@@ -480,21 +452,37 @@ export class MappingEditorScreen implements Screen {
 
 	// === Interactions ===
 
-	private togglePanel(): void {
-		this.activePanel = this.activePanel === 'left' ? 'right' : 'left';
-		this.focusActivePanel();
+	/** The single focus authority. Every focus change — Tab, search, CSV picker —
+	 *  routes through here so border colour, real OpenTUI focus, and `focusTarget`
+	 *  can never disagree. 'search' and 'right' both live in the Schema Fields panel,
+	 *  so both light its border; only which child owns real input focus differs. */
+	private focusPanel(target: FocusTarget): void {
+		this.focusTarget = target;
+		const rightActive = target === 'search' || target === 'right';
+
+		this.leftPanel?.setFocused(target === 'left');
+		this.rightPanel?.setFocused(rightActive);
+
+		if (target === 'left') {
+			this.searchInput?.blur();
+			this.rightSelect?.blur();
+			this.leftSelect?.focus();
+		} else if (target === 'search') {
+			this.leftSelect?.blur();
+			this.rightSelect?.blur();
+			this.searchInput?.focus();
+		} else {
+			this.leftSelect?.blur();
+			this.searchInput?.blur();
+			this.rightSelect?.focus();
+		}
+
+		// Refresh the keybar — the when-guards hide left-only keys (t/x/s) off-left.
+		this.shell?.setFooter(this.keymap!.toKeybar());
 	}
 
-	private focusActivePanel(): void {
-		if (this.activePanel === 'left') {
-			this.leftSelect?.focus();
-			if (this.leftSelect) this.leftSelect.selectedBackgroundColor = theme.highlightFocused;
-			if (this.rightSelect) this.rightSelect.selectedBackgroundColor = theme.highlightUnfocused;
-		} else {
-			this.rightSelect?.focus();
-			if (this.rightSelect) this.rightSelect.selectedBackgroundColor = theme.highlightFocused;
-			if (this.leftSelect) this.leftSelect.selectedBackgroundColor = theme.highlightUnfocused;
-		}
+	private togglePanel(): void {
+		this.focusPanel(this.focusTarget === 'left' ? 'right' : 'left');
 	}
 
 	private addMapping(xsdPath: string): void {
@@ -535,13 +523,10 @@ export class MappingEditorScreen implements Screen {
 		// Temporarily rebind left panel selection
 		this.csvPickerSelect = this.leftSelect; // Track that we're in picker mode
 
-		if (this.statusText) {
-			this.statusText.content = 'Select CSV column  [ENTER] Confirm  [ESC] Cancel';
-		}
+		this.shell?.setFooter('Select CSV column  [ENTER] Confirm  [ESC] Cancel');
 
 		// Switch to left panel
-		this.activePanel = 'left';
-		this.focusActivePanel();
+		this.focusPanel('left');
 	}
 
 	private dismissCsvPicker(): void {
@@ -550,10 +535,7 @@ export class MappingEditorScreen implements Screen {
 
 		// Restore left panel
 		this.refreshDisplay();
-
-		if (this.statusText) {
-			this.statusText.content = '[TAB] Panel  [ENTER] Map  [/] Search  [t] Transform  [x] Unmap  [s] Save  [ESC] Back';
-		}
+		this.focusPanel('left');
 	}
 
 	private commitAddMapping(xsdPath: string, csvColumn: string): void {
@@ -566,14 +548,12 @@ export class MappingEditorScreen implements Screen {
 		this.refreshDisplay();
 
 		// Switch to left panel to show the new mapping
-		this.activePanel = 'left';
-		this.focusActivePanel();
+		this.focusPanel('left');
 	}
 
 	private removeSelectedMapping(): void {
 		if (!this.leftSelect) return;
 
-		const options = this.leftSelect.options;
 		const index = this.leftSelect.selectedIndex;
 		if (index < 0 || index >= this.displayMappings.length) return;
 
@@ -638,9 +618,7 @@ export class MappingEditorScreen implements Screen {
 			this.filteredPaths = [...this.leafPaths];
 		} else {
 			const query = this.searchQuery.toLowerCase();
-			this.filteredPaths = this.leafPaths.filter((p) =>
-				p.toLowerCase().includes(query)
-			);
+			this.filteredPaths = this.leafPaths.filter((p) => p.toLowerCase().includes(query));
 		}
 	}
 
@@ -669,7 +647,8 @@ export class MappingEditorScreen implements Screen {
 		if (!this.summaryText) return;
 		const mappingCount = this.displayMappings.length;
 		const validation = validateMappingStructure(this.buildMappingConfig());
-		this.summaryText.content = `${mappingCount} mappings ${symbols.bullet.dot} ${validation.issues.length} issues${this.dirty ? ' ${symbols.bullet.dot} unsaved' : ''}`;
+		const unsaved = this.dirty ? ` ${symbols.bullet.dot} unsaved` : '';
+		this.summaryText.content = `${mappingCount} mappings ${symbols.bullet.dot} ${validation.issues.length} issues${unsaved}`;
 	}
 
 	private updatePreview(): void {
@@ -701,17 +680,21 @@ export class MappingEditorScreen implements Screen {
 		}
 
 		// Summary line
-		this.previewPanel.add(new TextRenderable(this.renderer, {
-			content: `${symbols.info.success} ${mappedCount} mapped  ${symbols.info.error} ${unmappedRequired} unmapped required`,
-			fg: unmappedRequired > 0 ? theme.warning : theme.success,
-		}));
+		this.previewPanel.add(
+			new TextRenderable(this.renderer, {
+				content: `${symbols.info.success} ${mappedCount} mapped  ${symbols.info.error} ${unmappedRequired} unmapped required`,
+				fg: unmappedRequired > 0 ? theme.warning : theme.success,
+			})
+		);
 
 		// Show all unmapped required fields
 		if (unmappedRequiredFields.length > 0) {
-			this.previewPanel.add(new TextRenderable(this.renderer, {
-				content: `  Missing: ${unmappedRequiredFields.join(', ')}`,
-				fg: theme.textMuted,
-			}));
+			this.previewPanel.add(
+				new TextRenderable(this.renderer, {
+					content: `  Missing: ${unmappedRequiredFields.join(', ')}`,
+					fg: theme.textMuted,
+				})
+			);
 		}
 	}
 
