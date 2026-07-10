@@ -201,6 +201,31 @@ describe('ValidationExplorerScreen', () => {
 			screen.cleanup();
 		});
 
+		it('moves keyboard focus off the issue list when the Detail pane is active', async () => {
+			const screen = new ValidationExplorerScreen(mockContext);
+			screen.render({ validation: validationWithIssues, sourceType: 'csv' });
+
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			const issueList = (screen as any).issueList;
+			const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+
+			expect(issueList.focus).toHaveBeenCalledTimes(1);
+			expect(issueList.blur).not.toHaveBeenCalled();
+
+			// Tab to Detail: the list must give up keyboard focus so arrow keys stop reaching it.
+			handler({ name: 'tab' });
+			expect(issueList.blur).toHaveBeenCalledTimes(1);
+			expect(issueList.focus).toHaveBeenCalledTimes(1);
+
+			// Tab back to Issues: focus returns to the list.
+			handler({ name: 'tab' });
+			expect(issueList.focus).toHaveBeenCalledTimes(2);
+			expect(issueList.blur).toHaveBeenCalledTimes(1);
+
+			screen.cleanup();
+		});
+
 		it('resolves to the dashboard on ESC/q via the keymap', async () => {
 			const screen = new ValidationExplorerScreen(mockContext);
 			const resultPromise = screen.render({ validation: validationWithIssues, sourceType: 'csv' });

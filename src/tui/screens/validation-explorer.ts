@@ -102,6 +102,8 @@ export class ValidationExplorerScreen implements Screen {
 
 		if (this.activePanel === 'issues') {
 			this.issueList?.focus();
+		} else {
+			this.issueList?.blur();
 		}
 	}
 

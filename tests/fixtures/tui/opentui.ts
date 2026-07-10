@@ -115,6 +115,7 @@ export class SelectRenderable extends BaseRenderable {
 	on = vi.fn();
 	once = vi.fn();
 	focus = vi.fn();
+	blur = vi.fn();
 	setSelectedIndex = vi.fn();
 	selectCurrent = vi.fn();
 }
