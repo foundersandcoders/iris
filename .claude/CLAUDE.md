@@ -84,13 +84,6 @@ git push --tags
 - **Import style:** `import * as fixtures from '../fixtures/<module>'`
 - **Rationale:** Keeps tests focused on assertions, makes test data reusable, and simplifies maintenance
 
-### Code Editing
-
-**IMPORTANT:** Do not edit files directly unless explicitly asked. Instead:
-
-1. Show the proposed code
-2. Wait for the user to make the edit themselves
-
 ### Database
 
 No database. File-based storage for:
