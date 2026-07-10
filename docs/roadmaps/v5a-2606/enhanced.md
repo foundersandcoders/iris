@@ -15,7 +15,7 @@ because the shell rollout and signature features build on them.
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
 | **S** |         Security & dependency maintenance (Dependabot)       | Complete |
-| **B** |               App-shell rollout across screens               | In Progress (B1, B2 done) |
+| **B** |               App-shell rollout across screens               | In Progress (B1-B4 done) |
 | **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
@@ -214,11 +214,20 @@ registry, and a header breadcrumb.
       `bun run test:core` 474/474 unaffected; no new `tsc` diagnostics (the
       5 pre-existing `updateSelectOptions` possibly-undefined errors predate
       this branch, confirmed via `git stash` comparison).
-- [ ] **TR.B3** `refactor/workflow-app-shell` — Processing screen into the frame
-      (sets up TR.C3). — **depends on TR.S2**
-- [ ] **TR.B4** `refactor/results-screens-app-shell` — validation-explorer +
+- [x] **TR.B3** `refactor/workflow-app-shell` — Processing screen into the frame
+      (sets up TR.C3). — **depends on TR.S2**. **Done:** rebuilt the
+      processing/workflow screen on `appShell()` + `panel()` + `Keymap`,
+      following the dashboard reference adopter. Merged via PR #78.
+- [x] **TR.B4** `refactor/results-screens-app-shell` — validation-explorer +
       check-results + success; two-pane framing with a real focused-panel border.
-      — **depends on TR.S2**
+      — **depends on TR.S2**. **Done:** migrated the three results screens
+      (`validation-explorer`, `check-results`, `success`) onto `appShell()` +
+      `panel()` + `Keymap`. The two-pane screens get a **real focused-panel
+      border** via `panel.setFocused()` (accent vs muted), and `togglePanel()`
+      blurs the leaving pane so border and keyboard focus stay in sync (fix
+      commit `6ae7750`). Filter-tab selection aligned with the default
+      `currentFilter` (`377ed0a`). Merged via PRs #79 (success), #80
+      (check-results), #81 (validation-explorer).
 - [ ] **TR.B5** `refactor/mapping-screens-app-shell` — mapping-builder /
       -editor / -save; fixes the weak two-panel focus model. — **depends on TR.S2**
 - [ ] **TR.B6** `refactor/config-screens-app-shell` — settings + history + about.
