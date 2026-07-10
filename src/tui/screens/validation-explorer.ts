@@ -2,17 +2,14 @@
  * Interactive issue browser for validation results
  * Supports filtering by severity (Errors/Warnings/All)
  */
-import {
-	BoxRenderable,
-	TextRenderable,
-	SelectRenderable,
-	TabSelectRenderable,
-} from '@opentui/core';
+import { BoxRenderable, TextRenderable, SelectRenderable, TabSelectRenderable } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import type { ValidationIssue, ValidationResult } from '../../lib/utils/csv/csvValidator';
 import type { SchemaValidationIssue } from '../../lib/types/schemaTypes';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'validation-explorer-root';
 
@@ -31,10 +28,15 @@ interface DisplayIssue {
 export class ValidationExplorerScreen implements Screen {
 	readonly name = 'validation-explorer';
 	private renderer: Renderer;
-	private container?: BoxRenderable;
+	private shell?: AppShell;
+	private filterPanel?: Panel;
+	private issuesPanel?: Panel;
+	private detailPanel?: Panel;
+	private detailContainer?: BoxRenderable;
+	private keymap?: Keymap;
 	private tabs?: TabSelectRenderable;
 	private issueList?: SelectRenderable;
-	private detailPanel?: BoxRenderable;
+	private activePanel: 'issues' | 'detail' = 'issues';
 
 	private allIssues: DisplayIssue[] = [];
 	private currentFilter: TabFilter = 'all';
@@ -56,16 +58,19 @@ export class ValidationExplorerScreen implements Screen {
 		// Normalise issues
 		this.allIssues = this.normaliseIssues(validation, sourceType);
 
-		this.buildUI(validation.errorCount, validation.warningCount);
-
 		// Wait for user interaction
 		return new Promise((resolve) => {
+			const keymap = this.buildUI(validation.errorCount, validation.warningCount, resolve);
+
 			// Tab change handler
 			this.tabs?.on('selectionChanged', (_index: number, option: { value?: string }) => {
 				const tabValue = (option.value || 'all') as TabFilter;
 				this.currentFilter = tabValue;
 				this.updateIssueList();
-				// Move focus to issue list after selecting a tab
+				// Move focus back to the issues pane after selecting a filter
+				this.activePanel = 'issues';
+				this.issuesPanel?.setFocused(true);
+				this.detailPanel?.setFocused(false);
 				this.issueList?.focus();
 			});
 
@@ -74,26 +79,32 @@ export class ValidationExplorerScreen implements Screen {
 				this.updateDetailPanel(index);
 			});
 
-			// Keyboard handlers
-			const handler = (key: { name: string }) => {
-				if (key.name === 'escape' || key.name === 'q') {
-					this.renderer.keyInput.off('keypress', handler);
-					resolve({ action: 'replace', screen: 'dashboard' });
-				} else if (key.name === 'left') {
-					this.tabs?.moveLeft();
-				} else if (key.name === 'right') {
-					this.tabs?.moveRight();
-				}
-			};
-			this.renderer.keyInput.on('keypress', handler);
-
-			// Focus issue list initially (tabs can be switched with left/right while list is focused)
+			// Focus issue list initially
 			this.issueList?.focus();
+			this.issuesPanel?.setFocused(true);
+
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
+	}
+
+	/** Flip focus between the Issues and Detail panes (bound to Tab via the keymap). */
+	private togglePanel(): void {
+		if (!this.detailPanel) return;
+
+		this.activePanel = this.activePanel === 'issues' ? 'detail' : 'issues';
+		this.issuesPanel?.setFocused(this.activePanel === 'issues');
+		this.detailPanel?.setFocused(this.activePanel === 'detail');
+
+		if (this.activePanel === 'issues') {
+			this.issueList?.focus();
+		} else {
+			this.issueList?.blur();
+		}
 	}
 
 	private normaliseIssues(
@@ -135,32 +146,53 @@ export class ValidationExplorerScreen implements Screen {
 		);
 	}
 
-	private buildUI(errorCount: number, warningCount: number): void {
-		this.container = new BoxRenderable(this.renderer, {
-			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
-		});
+	private buildUI(
+		errorCount: number,
+		warningCount: number,
+		resolve: (result: ScreenResult) => void
+	): Keymap {
+		const finish = () => resolve({ action: 'replace', screen: 'dashboard' });
 
-		// Title
-		const title = new TextRenderable(this.renderer, {
-			content: 'Validation Issues',
-			fg: theme.primary,
+		this.keymap = new Keymap({
+			bindings: [
+				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				{
+					keys: ['up', 'down', 'k', 'j'],
+					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+					label: 'Navigate',
+					handler: () => {},
+				},
+				{ keys: ['tab'], label: 'Switch Pane', handler: () => this.togglePanel() },
+				{
+					keys: ['left', 'h'],
+					hint: `${symbols.arrows.left}${symbols.arrows.right}`,
+					label: 'Filter',
+					handler: () => this.tabs?.moveLeft(),
+				},
+				{ keys: ['right', 'l'], label: 'Filter', hidden: true, handler: () => this.tabs?.moveRight() },
+			],
+			onBack: finish,
+			onQuit: finish,
 		});
-		this.container.add(title);
+		const keymap = this.keymap;
+
+		this.shell = appShell(this.renderer, {
+			id: CONTAINER_ID,
+			breadcrumb: 'Validation Issues',
+			footer: keymap.toKeybar(),
+		});
 
 		// Summary
-		const summary = new TextRenderable(this.renderer, {
-			content: `${errorCount} errors, ${warningCount} warnings`,
-			fg: theme.textMuted,
-		});
-		this.container.add(summary);
+		this.shell.content.add(
+			new TextRenderable(this.renderer, {
+				content: `${errorCount} errors, ${warningCount} warnings`,
+				fg: theme.textMuted,
+			})
+		);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
-		// Tabs
+		// Filter bar
 		this.tabs = new TabSelectRenderable(this.renderer, {
 			options: [
 				{ name: 'Errors', description: '', value: 'errors' },
@@ -168,38 +200,39 @@ export class ValidationExplorerScreen implements Screen {
 				{ name: 'All', description: '', value: 'all' },
 			],
 		});
-		this.container.add(this.tabs);
+		// TabSelectRenderable always highlights index 0 on mount; align it with currentFilter ('all').
+		this.tabs.setSelectedIndex(2);
+		this.filterPanel = panel(this.renderer, { title: 'Filter' });
+		this.filterPanel.add(this.tabs);
+		this.shell.content.add(this.filterPanel.box);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Issue list (initially empty, will be populated by updateIssueList)
 		this.issueList = new SelectRenderable(this.renderer, {
 			options: [],
 			showScrollIndicator: true,
+			flexGrow: 1,
 		});
-		this.container.add(this.issueList);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.issuesPanel = panel(this.renderer, { title: 'Issues', flexGrow: 1, focused: true });
+		this.issuesPanel.add(this.issueList);
 
-		// Detail panel
-		this.detailPanel = new BoxRenderable(this.renderer, {
-			flexDirection: 'column',
-		});
-		this.container.add(this.detailPanel);
+		this.detailContainer = new BoxRenderable(this.renderer, { flexDirection: 'column' });
+		this.detailPanel = panel(this.renderer, { title: 'Detail', flexGrow: 1 });
+		this.detailPanel.add(this.detailContainer);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
+		body.add(this.issuesPanel.box);
+		body.add(this.detailPanel.box);
+		this.shell.content.add(body);
 
-		// Status bar
-		const statusBar = new TextRenderable(this.renderer, {
-			content: '[↑↓] Navigate  [←→] Switch filter  [ESC/q] Back',
-			fg: theme.textMuted,
-		});
-		this.container.add(statusBar);
-
-		this.renderer.root.add(this.container);
+		this.renderer.root.add(this.shell.root);
 
 		// Initial population
 		this.updateIssueList();
+
+		return keymap;
 	}
 
 	private updateIssueList(): void {
@@ -230,12 +263,12 @@ export class ValidationExplorerScreen implements Screen {
 	}
 
 	private updateDetailPanel(index: number): void {
-		if (!this.detailPanel) return;
+		if (!this.detailContainer) return;
 
 		// Clear existing content by removing all children
-		const children = this.detailPanel.getChildren();
+		const children = this.detailContainer.getChildren();
 		for (const child of children) {
-			this.detailPanel.remove(child.id);
+			this.detailContainer.remove(child.id);
 		}
 
 		// Filter issues based on current filter
@@ -249,16 +282,16 @@ export class ValidationExplorerScreen implements Screen {
 		if (!issue) return;
 
 		// Count occurrences of this error pattern
-		const samePattern = filtered.filter(
-			(i) => i.code === issue.code && i.field === issue.field
-		);
+		const samePattern = filtered.filter((i) => i.code === issue.code && i.field === issue.field);
 		if (samePattern.length > 1) {
 			const position = samePattern.indexOf(issue) + 1;
-			this.detailPanel.add(new TextRenderable(this.renderer, {
-				content: `Occurrence ${position} of ${samePattern.length}`,
-				fg: theme.textMuted,
-			}));
-			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+			this.detailContainer.add(
+				new TextRenderable(this.renderer, {
+					content: `Occurrence ${position} of ${samePattern.length}`,
+					fg: theme.textMuted,
+				})
+			);
+			this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 		}
 
 		// Field
@@ -266,15 +299,15 @@ export class ValidationExplorerScreen implements Screen {
 			content: 'Field:',
 			fg: theme.textMuted,
 		});
-		this.detailPanel.add(fieldLabel);
+		this.detailContainer.add(fieldLabel);
 
 		const fieldValue = new TextRenderable(this.renderer, {
 			content: issue.field,
 			fg: theme.text,
 		});
-		this.detailPanel.add(fieldValue);
+		this.detailContainer.add(fieldValue);
 
-		this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+		this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Row
 		if (issue.row !== undefined) {
@@ -282,15 +315,15 @@ export class ValidationExplorerScreen implements Screen {
 				content: 'Row:',
 				fg: theme.textMuted,
 			});
-			this.detailPanel.add(rowLabel);
+			this.detailContainer.add(rowLabel);
 
 			const rowValue = new TextRenderable(this.renderer, {
 				content: String(issue.row + 1), // Display as 1-indexed for non-dev users
 				fg: theme.text,
 			});
-			this.detailPanel.add(rowValue);
+			this.detailContainer.add(rowValue);
 
-			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+			this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 		}
 
 		// Code
@@ -298,61 +331,61 @@ export class ValidationExplorerScreen implements Screen {
 			content: 'Code:',
 			fg: theme.textMuted,
 		});
-		this.detailPanel.add(codeLabel);
+		this.detailContainer.add(codeLabel);
 
 		const codeValue = new TextRenderable(this.renderer, {
 			content: issue.code,
 			fg: theme.text,
 		});
-		this.detailPanel.add(codeValue);
+		this.detailContainer.add(codeValue);
 
-		this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+		this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Message
 		const messageLabel = new TextRenderable(this.renderer, {
 			content: 'Message:',
 			fg: theme.textMuted,
 		});
-		this.detailPanel.add(messageLabel);
+		this.detailContainer.add(messageLabel);
 
 		const messageValue = new TextRenderable(this.renderer, {
 			content: issue.message,
 			fg: issue.severity === 'error' ? theme.error : theme.warning,
 		});
-		this.detailPanel.add(messageValue);
+		this.detailContainer.add(messageValue);
 
 		// Value (if present)
 		if (issue.value !== undefined) {
-			this.detailPanel.add(new TextRenderable(this.renderer, { content: '' }));
+			this.detailContainer.add(new TextRenderable(this.renderer, { content: '' }));
 
 			const valueLabel = new TextRenderable(this.renderer, {
 				content: 'Value:',
 				fg: theme.textMuted,
 			});
-			this.detailPanel.add(valueLabel);
+			this.detailContainer.add(valueLabel);
 
 			const valueStr = JSON.stringify(issue.value);
 			const valueValue = new TextRenderable(this.renderer, {
 				content: valueStr,
 				fg: theme.text,
 			});
-			this.detailPanel.add(valueValue);
+			this.detailContainer.add(valueValue);
 		}
 	}
 
 	private clearDetailPanel(): void {
-		if (!this.detailPanel) return;
+		if (!this.detailContainer) return;
 
 		// Clear existing content by removing all children
-		const children = this.detailPanel.getChildren();
+		const children = this.detailContainer.getChildren();
 		for (const child of children) {
-			this.detailPanel.remove(child.id);
+			this.detailContainer.remove(child.id);
 		}
 
 		const emptyText = new TextRenderable(this.renderer, {
 			content: 'No issues to display',
 			fg: theme.textMuted,
 		});
-		this.detailPanel.add(emptyText);
+		this.detailContainer.add(emptyText);
 	}
 }

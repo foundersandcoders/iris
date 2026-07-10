@@ -115,6 +115,7 @@ export class SelectRenderable extends BaseRenderable {
 	on = vi.fn();
 	once = vi.fn();
 	focus = vi.fn();
+	blur = vi.fn();
 	setSelectedIndex = vi.fn();
 	selectCurrent = vi.fn();
 }
@@ -125,10 +126,14 @@ export class InputRenderable extends BaseRenderable {
 }
 
 export class TabSelectRenderable extends BaseRenderable {
+	selectedIndex = 0;
 	on = vi.fn();
 	focus = vi.fn();
 	moveLeft = vi.fn();
 	moveRight = vi.fn();
+	setSelectedIndex = vi.fn(function (this: TabSelectRenderable, index: number) {
+		this.selectedIndex = index;
+	});
 }
 
 export class ASCIIFontRenderable extends BaseRenderable {}
