@@ -123,6 +123,7 @@ export class SelectRenderable extends BaseRenderable {
 export class InputRenderable extends BaseRenderable {
 	on = vi.fn();
 	focus = vi.fn();
+	blur = vi.fn();
 }
 
 export class TabSelectRenderable extends BaseRenderable {
