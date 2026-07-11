@@ -34,7 +34,6 @@ export class MappingBuilderScreen implements Screen {
 
 	// State
 	private mappingItems: MappingListItem[] = [];
-	private deleteConfirmIndex = -1;
 
 	// Renderables
 	private listSelect?: SelectRenderable;
@@ -70,9 +69,7 @@ export class MappingBuilderScreen implements Screen {
 
 			// List selection changed — update detail panel
 			this.listSelect?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number) => {
-				this.deleteConfirmIndex = -1;
 				this.updateDetailPanel(index);
-				this.updateFooter();
 			});
 
 			// Item selected — edit
@@ -324,12 +321,7 @@ export class MappingBuilderScreen implements Screen {
 
 	private updateFooter(): void {
 		if (!this.shell || !this.keymap) return;
-
-		if (this.deleteConfirmIndex >= 0) {
-			this.shell.setFooter(`${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`);
-		} else {
-			this.shell.setFooter(this.keymap.toKeybar());
-		}
+		this.shell.setFooter(this.keymap.toKeybar());
 	}
 
 	// === Actions ===
@@ -358,28 +350,21 @@ export class MappingBuilderScreen implements Screen {
 			return;
 		}
 
-		// Two-press confirm
-		if (this.deleteConfirmIndex === index) {
-			// Confirmed — delete
-			const storage = createStorage();
-			const result = await storage.deleteMapping(item.id);
-			if (!result.success) {
-				this.shell?.setFooter(`${symbols.info.error} Failed to delete mapping`);
-				this.deleteConfirmIndex = -1;
-				return;
-			}
-			this.deleteConfirmIndex = -1;
+		const ok = (await this.keymap?.confirm('Delete this mapping?')) ?? false;
+		if (!ok) return;
 
-			// Refresh
-			await this.loadMappings();
-			if (this.listSelect) {
-				this.listSelect.options = this.buildListOptions();
-			}
-			this.updateFooter();
-		} else {
-			// First press — ask for confirmation
-			this.deleteConfirmIndex = index;
-			this.updateFooter();
+		const storage = createStorage();
+		const result = await storage.deleteMapping(item.id);
+		if (!result.success) {
+			this.shell?.setFooter(`${symbols.info.error} Failed to delete mapping`);
+			return;
 		}
+
+		// Refresh
+		await this.loadMappings();
+		if (this.listSelect) {
+			this.listSelect.options = this.buildListOptions();
+		}
+		this.updateFooter();
 	}
 }

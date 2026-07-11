@@ -6,6 +6,10 @@ import * as fixtures from '../../fixtures/tui/tui';
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
+// Hoisted so tests can assert on the same spy instance createStorage() returns
+// (the factory below builds a fresh object with fresh vi.fn()s per call).
+let deleteMappingMock = vi.fn().mockResolvedValue({ success: true, data: undefined });
+
 // Mock createStorage — include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
@@ -46,7 +50,7 @@ vi.mock('../../../src/lib/storage', () => ({
 			});
 		}),
 		saveMapping: vi.fn().mockResolvedValue({ success: true, data: undefined }),
-		deleteMapping: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+		deleteMapping: deleteMappingMock,
 		listMappings: vi.fn().mockResolvedValue({
 			success: true,
 			data: ['fac-airtable-2025', 'my-custom-mapping'],
@@ -106,8 +110,9 @@ describe('MappingBuilderScreen', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(2);
+		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
+		// one for the auto-mounted confirm overlay (TR.C2).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(addedRenderable).toBeDefined();
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
@@ -163,5 +168,50 @@ describe('MappingBuilderScreen', () => {
 		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		const listPanel = findPanel(root, 'Mappings');
 		expect(listPanel).toBeDefined();
+	});
+
+	describe('handleDelete()', () => {
+		// listSelect index 0 is the synthetic "+ Create New Mapping" row, so
+		// index 1 is the first real entry: 'fac-airtable-2025' (bundled) per the
+		// listMappings() mock above.
+		async function renderAndSelect(index: number) {
+			const screen = new MappingBuilderScreen(mockContext);
+			const resultPromise = screen.render();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			(screen as any).listSelect.selectedIndex = index;
+			return { screen, resultPromise };
+		}
+
+		it('deletes via keymap.confirm() when the user confirms', async () => {
+			const { screen } = await renderAndSelect(2); // 'my-custom-mapping' — not bundled
+			const resolve = vi.fn();
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+			await (screen as any).handleDelete(resolve);
+
+			expect(deleteMappingMock).toHaveBeenCalledWith('my-custom-mapping');
+		});
+
+		it('does not delete when the user cancels via keymap.confirm()', async () => {
+			const { screen } = await renderAndSelect(2);
+			const resolve = vi.fn();
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(false);
+
+			await (screen as any).handleDelete(resolve);
+
+			expect(deleteMappingMock).not.toHaveBeenCalled();
+		});
+
+		it('blocks deletion of a bundled mapping before confirm() is ever called', async () => {
+			const { screen } = await renderAndSelect(1); // 'fac-airtable-2025' — bundled
+			const resolve = vi.fn();
+			const confirmMock = vi.fn().mockResolvedValue(true);
+			(screen as any).keymap.confirm = confirmMock;
+
+			await (screen as any).handleDelete(resolve);
+
+			expect(confirmMock).not.toHaveBeenCalled();
+			expect(deleteMappingMock).not.toHaveBeenCalled();
+		});
 	});
 });
