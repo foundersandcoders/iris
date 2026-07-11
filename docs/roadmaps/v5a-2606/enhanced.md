@@ -265,9 +265,28 @@ registry, and a header breadcrumb.
 
 ## Phase C — Signature UX features
 
-- [ ] **TR.C1** `feat/add-help-overlay` — *(roadmap 2TI.12)* Global `?` overlay
+- [x] **TR.C1** `feat/add-help-overlay` — *(roadmap 2TI.12)* Global `?` overlay
       rendered from the keymap registry, on a z-index layer over the current
-      screen.
+      screen. **Done:** the `Keymap` now owns the overlay lifecycle rather than
+      screens wiring it individually — the previously-scaffolded `onHelp` option
+      is removed from `KeymapOptions` and replaced with an always-on internal
+      `?` binding, so all 12 screens get help for free (suppressible per screen
+      via `disableGlobals: ['?']`). New `helpOverlay()` component
+      (`src/tui/components/helpOverlay.ts`) renders a centred `panel` card over
+      a full-screen backdrop, mounted on `renderer.root` (a sibling of each
+      screen's shell root) at `zIndex: 100`. `Keymap.toHelp()` exposes
+      display-ready rows from the live, `when`-passing bindings. `?`/ESC close
+      the overlay; every other key (including `q`) is swallowed while open, with
+      no fall-through to `onQuit`/`onBack`. **Bug found and fixed along the way:**
+      `renderer.keyInput` and the focused renderable's own key handler
+      (e.g. `SelectRenderable`) share the same underlying `InternalKeyHandler` —
+      a plain `dispatch()` return of `null` was not enough to stop arrow/enter
+      keys reaching the focused renderable underneath the overlay; fixed by
+      calling `key.stopPropagation()` while help is open, which the
+      `InternalKeyHandler`'s priority ordering (global listeners before
+      renderable handlers) then honours. Covered by regression tests in
+      `tests/tui/utils/keymap.test.ts` and `tests/tui/components/helpOverlay.test.ts`,
+      plus manual `tmux`-driven verification across Dashboard, About, and History.
 - [ ] **TR.C2** `feat/add-toast-and-confirm-overlays` — Transient toasts
       (success/info/error) + a real confirm modal; **replace the double-press
       deletes** in history & mapping-builder.
