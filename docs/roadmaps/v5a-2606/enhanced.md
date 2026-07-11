@@ -15,7 +15,7 @@ because the shell rollout and signature features build on them.
 |-------|--------------------------------------------------------------|--------|
 | **A** |        Foundations (theme, layout primitives, keymap)        | Complete |
 | **S** |         Security & dependency maintenance (Dependabot)       | Complete |
-| **B** |               App-shell rollout across screens               | In Progress (B1-B4 done) |
+| **B** |               App-shell rollout across screens               | In Progress (B1-B5 done) |
 | **C** | Signature UX features (help, toasts, progress, transitions)  | Ready |
 | **D** | Polish (palette, command palette, dark mode, schema display) | Blocked (needs B) |
 | **E** |       Tutorial & demo resources (Charm VHS recordings)       | Blocked (needs B/C) |
@@ -228,10 +228,28 @@ registry, and a header breadcrumb.
       commit `6ae7750`). Filter-tab selection aligned with the default
       `currentFilter` (`377ed0a`). Merged via PRs #79 (success), #80
       (check-results), #81 (validation-explorer).
-- [ ] **TR.B5** `refactor/mapping-screens-app-shell` — mapping-builder /
-      -editor / -save; fixes the weak two-panel focus model. — **depends on TR.S2**
+- [x] **TR.B5** `refactor/mapping-screens-app-shell` — mapping-builder /
+      -editor / -save; fixes the weak two-panel focus model. — **depends on TR.S2**.
+      **Done:** migrated mapping-builder, mapping-editor, and mapping-save onto
+      `appShell()` + `panel()` + `Keymap`; unified the mapping-editor focus
+      authority on the app-shell, replacing the previous weak two-panel focus
+      model. Merged via PR #82.
 - [ ] **TR.B6** `refactor/config-screens-app-shell` — settings + history + about.
-      — **depends on TR.S2**
+      — **depends on TR.S2**. **In progress:** about and history migrated onto
+      `appShell()` + `panel()` + `Keymap`. History gets a two-pane layout
+      (Submissions list + Detail) mirroring the check-results precedent, with
+      the Validate/Cross-check/Delete keybar entries driven by `Keymap`
+      `when` guards on the current selection. Along the way, found and fixed a
+      real bug the migration surfaced: `SelectRenderable.selectedIndex` is
+      write-only on the real `@opentui/core` API (setter only, no getter) —
+      reading it always returns `undefined`; the read path is the
+      `getSelectedIndex()` method instead. Fixed in history.ts and added
+      `getSelectedIndex()` to the shared test double
+      (`tests/fixtures/tui/opentui.ts`) so this class of bug fails tests going
+      forward. **Not yet fixed:** `mapping-builder.ts:340,350` and
+      `mapping-editor.ts:557,584` (merged in TR.B5) still read
+      `.selectedIndex` directly and have the same latent bug — flagged for a
+      follow-up fix, out of scope here. Settings remains for TR.B6.
 
 ## Phase C — Signature UX features
 
