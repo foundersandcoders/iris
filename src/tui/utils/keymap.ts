@@ -176,9 +176,11 @@ export class Keymap {
 
 	/** Show a confirm modal with the given message. Resolves true on y/Enter,
 	 *  false on n/Esc. Only one confirm can be pending at a time — a second
-	 *  call before the first resolves replaces the message on the same overlay. */
+	 *  call before the first resolves replaces the message on the same overlay,
+	 *  resolving the superseded promise false so it never dangles. */
 	confirm(message: string): Promise<boolean> {
 		return new Promise((resolve) => {
+			this.confirmResolver?.(false);
 			this.confirmResolver = resolve;
 			this.confirmOverlay?.setMessage(message);
 			this.confirmOverlay?.setVisible(true);
