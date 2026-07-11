@@ -112,11 +112,21 @@ export const InputRenderableEvents = {
 } as const;
 
 export class SelectRenderable extends BaseRenderable {
+	// Real opentui exposes `selectedIndex` as write-only (a setter with no getter)
+	// and reading the current selection goes through getSelectedIndex() instead —
+	// mirror both here so screen code that (correctly) calls getSelectedIndex()
+	// is exercised the same way it runs for real.
+	selectedIndex = 0;
 	on = vi.fn();
 	once = vi.fn();
 	focus = vi.fn();
 	blur = vi.fn();
-	setSelectedIndex = vi.fn();
+	setSelectedIndex = vi.fn(function (this: SelectRenderable, index: number) {
+		this.selectedIndex = index;
+	});
+	getSelectedIndex = vi.fn(function (this: SelectRenderable) {
+		return this.selectedIndex;
+	});
 	selectCurrent = vi.fn();
 }
 
