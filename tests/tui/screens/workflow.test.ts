@@ -88,6 +88,9 @@ describe('WorkflowScreen', () => {
 		const screen = new WorkflowScreen(mockContext);
 		await screen.render({ filePath: 'data.csv', workflowType: 'convert' });
 
+		// The success path runs straight through to routeToResultScreen() without
+		// ever constructing a Keymap (that only happens in waitForKeyThenReplace()
+		// on failure), so no help overlay is mounted here — just the screen shell.
 		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
 		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(shellRoot.constructor.name).toBe('BoxRenderable');
@@ -172,6 +175,7 @@ describe('WorkflowScreen', () => {
 		screen.cleanup();
 
 		expect(mockContext.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
-		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(1);
+		// One removal for the screen shell, one for the help overlay (TR.C1).
+		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(2);
 	});
 });

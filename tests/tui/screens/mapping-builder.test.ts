@@ -106,7 +106,8 @@ describe('MappingBuilderScreen', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
+		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(2);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(addedRenderable).toBeDefined();
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
