@@ -1,19 +1,12 @@
 /** ====== About Iris Screen ======
  * Read-only screen showing software metadata, version, and runtime info.
  */
-import {
-	BoxRenderable,
-	TextRenderable,
-	type KeyEvent,
-	t,
-	fg,
-	link,
-	underline,
-} from '@opentui/core';
+import { TextRenderable, t, fg, link, underline } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
 import { theme, PALETTE } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { DEFAULT_CONFIG } from '../../lib/types/configTypes';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'about-root';
 
@@ -23,59 +16,54 @@ import packageJson from '../../../package.json';
 export class AboutScreen implements Screen {
 	readonly name = 'about';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private shell?: AppShell;
+	private infoPanel?: Panel;
+	private keymap?: Keymap;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
-		this.buildUI();
-
 		return new Promise((resolve) => {
-			this.keyHandler = (key: KeyEvent) => {
-				if (key.name === 'escape' || key.name === 'q') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					resolve({ action: 'pop' });
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
+			const keymap = this.buildUI(resolve);
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
-	private buildUI(): void {
-		const container = new BoxRenderable(this.renderer, {
+	private buildUI(resolve: (result: ScreenResult) => void): Keymap {
+		const finish = () => resolve({ action: 'pop' });
+		this.keymap = new Keymap({
+			bindings: [],
+			onBack: finish,
+			onQuit: finish,
+		});
+		const keymap = this.keymap;
+
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
+			breadcrumb: 'About',
+			footer: keymap.toKeybar(),
 		});
 
-		// Title
-		container.add(new TextRenderable(this.renderer, {
-			content: 'About Iris',
-			fg: theme.primary,
-		}));
+		this.infoPanel = panel(this.renderer, { title: 'About Iris', flexGrow: 1 });
 
-		// Description (before fields)
-		container.add(new TextRenderable(this.renderer, {
-			content: '  ILR toolkit for converting learner data from CSV',
+		// Description
+		this.infoPanel.add(new TextRenderable(this.renderer, {
+			content: 'ILR toolkit for converting learner data from CSV',
 			fg: theme.textMuted,
 		}));
-		container.add(new TextRenderable(this.renderer, {
-			content: '  exports into ILR-compliant XML for ESFA submission.',
+		this.infoPanel.add(new TextRenderable(this.renderer, {
+			content: 'exports into ILR-compliant XML for ESFA submission.',
 			fg: theme.textMuted,
 		}));
 
-		container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.infoPanel.add(new TextRenderable(this.renderer, { content: '' }));
 
 		// Software info
 		const labelColour = theme.text;
@@ -92,26 +80,20 @@ export class AboutScreen implements Screen {
 		for (const field of fields) {
 			const padding = ' '.repeat(Math.max(1, 22 - field.label.length));
 			if (field.url) {
-				container.add(new TextRenderable(this.renderer, {
-					content: t`  ${fg(labelColour)(`${field.label}${padding}`)}${link(field.url)(underline(fg(linkColour)(field.value)))}`,
+				this.infoPanel.add(new TextRenderable(this.renderer, {
+					content: t`${fg(labelColour)(`${field.label}${padding}`)}${link(field.url)(underline(fg(linkColour)(field.value)))}`,
 				}));
 			} else {
-				container.add(new TextRenderable(this.renderer, {
-					content: `  ${field.label}${padding}${field.value}`,
+				this.infoPanel.add(new TextRenderable(this.renderer, {
+					content: `${field.label}${padding}${field.value}`,
 					fg: labelColour,
 				}));
 			}
 		}
 
-		// Fill remaining space (explicit background so it paints the theme colour, not the terminal default)
-		container.add(new BoxRenderable(this.renderer, { flexGrow: 1, backgroundColor: theme.background }));
+		this.shell.content.add(this.infoPanel.box);
+		this.renderer.root.add(this.shell.root);
 
-		// Status bar
-		container.add(new TextRenderable(this.renderer, {
-			content: '[ESC] Back',
-			fg: theme.textMuted,
-		}));
-
-		this.renderer.root.add(container);
+		return keymap;
 	}
 }

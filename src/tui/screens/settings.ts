@@ -3,13 +3,11 @@
  * Navigate with arrows, Enter to edit, save/reset/back.
  */
 import {
-	BoxRenderable,
 	TextRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
 	InputRenderable,
 	InputRenderableEvents,
-	type KeyEvent,
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
@@ -27,6 +25,8 @@ import {
 	getDefaultCsvInputDir,
 	getDefaultSchemaDir,
 } from '../../lib/utils/storage/paths';
+import { appShell, panel, type AppShell, type Panel } from '../components';
+import { Keymap } from '../utils/keymap';
 
 const CONTAINER_ID = 'settings-root';
 
@@ -148,7 +148,9 @@ const FIELDS: SettingsField[] = [
 export class SettingsScreen implements Screen {
 	readonly name = 'settings';
 	private renderer: Renderer;
-	private keyHandler?: (key: KeyEvent) => void;
+	private shell?: AppShell;
+	private fieldPanel?: Panel;
+	private keymap?: Keymap;
 	private resolveRender?: (result: ScreenResult) => void;
 
 	// State
@@ -168,11 +170,9 @@ export class SettingsScreen implements Screen {
 	private editFieldIndex = -1;
 
 	// Renderables
-	private container?: BoxRenderable;
 	private fieldList?: SelectRenderable;
 	private helpText?: TextRenderable;
 	private validationText?: TextRenderable;
-	private statusText?: TextRenderable;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
@@ -192,7 +192,7 @@ export class SettingsScreen implements Screen {
 
 		// Handle returned directory selection from file-picker
 		if (data?.selectedDirectory && data?.fieldKey) {
-			const field = FIELDS.find(f => f.key === data.fieldKey);
+			const field = FIELDS.find((f) => f.key === data.fieldKey);
 			if (field) {
 				this.config = field.setValue(this.config, data.selectedDirectory as string);
 				this.dirty = true;
@@ -200,10 +200,11 @@ export class SettingsScreen implements Screen {
 		}
 
 		this.validation = validateConfig(this.config);
-		this.buildUI();
 
 		return new Promise((resolve) => {
 			this.resolveRender = resolve;
+			const keymap = this.buildUI(resolve);
+
 			// Field selection → edit on Enter
 			this.fieldList?.on(SelectRenderableEvents.ITEM_SELECTED, (index: number) => {
 				if (!this.editing) {
@@ -212,92 +213,99 @@ export class SettingsScreen implements Screen {
 			});
 
 			// Skip section headers on navigation + update help text
-			this.fieldList?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number, option: SelectOption | null) => {
-				if (!option) return;
-				const value = option.value as string;
+			this.fieldList?.on(
+				SelectRenderableEvents.SELECTION_CHANGED,
+				(index: number, option: SelectOption | null) => {
+					if (!option) return;
+					const value = option.value as string;
 
-				// Clear reset confirm on any navigation
-				if (this.resetConfirm) {
-					this.resetConfirm = false;
-					this.updateStatus();
-				}
+					// Clear reset confirm on any navigation
+					if (this.resetConfirm) {
+						this.resetConfirm = false;
+						this.refreshFooter();
+					}
 
-				if (value.startsWith('__section_')) {
-					const direction = index > this.previousIndex ? 1 : -1;
-					const options = this.fieldList!.options;
-					const nextIndex = index + direction;
-					if (nextIndex >= 0 && nextIndex < options.length) {
-						this.fieldList!.setSelectedIndex(nextIndex);
+					if (value.startsWith('__section_')) {
+						const direction = index > this.previousIndex ? 1 : -1;
+						const options = this.fieldList!.options;
+						const nextIndex = index + direction;
+						if (nextIndex >= 0 && nextIndex < options.length) {
+							this.fieldList!.setSelectedIndex(nextIndex);
+						} else {
+							// At boundary — bounce back
+							this.fieldList!.setSelectedIndex(this.previousIndex);
+						}
 					} else {
-						// At boundary — bounce back
-						this.fieldList!.setSelectedIndex(this.previousIndex);
-					}
-				} else {
-					this.previousIndex = index;
-					// Update help text
-					if (this.helpText) {
-						this.helpText.content = FIELD_HELP[value] ?? '';
+						this.previousIndex = index;
+						// Update help text
+						if (this.helpText) {
+							this.helpText.content = FIELD_HELP[value] ?? '';
+						}
 					}
 				}
-			});
-
-			// Key handler
-			this.keyHandler = (key: KeyEvent) => {
-				if (this.editing) {
-					if (key.name === 'escape') {
-						this.cancelEdit();
-					}
-					return; // Don't process other keys while editing
-				}
-
-				if (key.name === 'escape') {
-					this.renderer.keyInput.off('keypress', this.keyHandler!);
-					this.resolveRender?.({ action: 'pop' });
-				} else if (key.name === 's') {
-					if (this.resetConfirm) { this.resetConfirm = false; this.updateStatus(); }
-					this.save();
-				} else if (key.name === 'r') {
-					this.resetToDefaults();
-				} else if (this.resetConfirm) {
-					// Any other key cancels reset confirm
-					this.resetConfirm = false;
-					this.updateStatus();
-				}
-			};
-			this.renderer.keyInput.on('keypress', this.keyHandler);
+			);
 
 			// Initial focus
 			this.fieldList?.focus();
+
+			keymap.attach(this.renderer);
 		});
 	}
 
 	cleanup(): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.renderer.root.remove(CONTAINER_ID);
 	}
 
 	// === UI Building ===
 
-	private buildUI(): void {
-		this.container = new BoxRenderable(this.renderer, {
-			id: CONTAINER_ID,
-			flexDirection: 'column',
-			width: '100%',
-			height: '100%',
-			backgroundColor: theme.background,
-		});
+	private buildUI(resolve: (result: ScreenResult) => void): Keymap {
+		const finish = () => {
+			if (this.editing) {
+				this.cancelEdit();
+			} else {
+				resolve({ action: 'pop' });
+			}
+		};
 
-		// Title
-		this.container.add(new TextRenderable(this.renderer, {
-			content: 'Settings',
-			fg: theme.primary,
-		}));
+		const bindings = [
+			{
+				keys: ['up', 'down', 'k', 'j'],
+				hint: `${symbols.arrows.up}${symbols.arrows.down}`,
+				label: 'Navigate',
+				hidden: true,
+				handler: () => {},
+			},
+			{
+				keys: ['enter'],
+				label: 'Edit',
+				hidden: true,
+				when: () => !this.editing,
+				handler: () => {},
+			},
+			{
+				keys: ['s'],
+				label: 'Save',
+				when: () => !this.editing,
+				handler: () => {
+					if (this.resetConfirm) {
+						this.resetConfirm = false;
+						this.refreshFooter();
+					}
+					this.save();
+				},
+			},
+			{
+				keys: ['r'],
+				label: 'Reset All',
+				when: () => !this.editing,
+				handler: () => this.resetToDefaults(),
+			},
+		];
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.keymap = new Keymap({ bindings, onBack: finish, onQuit: finish });
+		const keymap = this.keymap;
 
-		// Field list
 		this.fieldList = new SelectRenderable(this.renderer, {
 			options: this.buildFieldOptions(),
 			backgroundColor: theme.background,
@@ -309,38 +317,37 @@ export class SettingsScreen implements Screen {
 			descriptionColor: theme.textMuted,
 			flexGrow: 1,
 		});
-		this.container.add(this.fieldList);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
+		this.fieldPanel = panel(this.renderer, { title: 'Settings', flexGrow: 1, focused: true });
+		this.fieldPanel.add(this.fieldList);
 
-		// Help text (context-sensitive)
 		this.helpText = new TextRenderable(this.renderer, {
 			content: '',
 			fg: theme.textMuted,
 		});
-		this.container.add(this.helpText);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
-
-		// Validation
 		this.validationText = new TextRenderable(this.renderer, {
 			content: this.validation.valid
 				? `${symbols.info.success} Configuration valid`
 				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`,
 			fg: this.validation.valid ? theme.success : theme.error,
 		});
-		this.container.add(this.validationText);
 
-		this.container.add(new TextRenderable(this.renderer, { content: '' }));
-
-		// Status bar
-		this.statusText = new TextRenderable(this.renderer, {
-			content: '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back',
-			fg: theme.textMuted,
+		this.shell = appShell(this.renderer, {
+			id: CONTAINER_ID,
+			breadcrumb: 'Settings',
+			footer: keymap.toKeybar(),
 		});
-		this.container.add(this.statusText);
 
-		this.renderer.root.add(this.container);
+		this.shell.content.add(this.fieldPanel.box);
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(this.helpText);
+		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
+		this.shell.content.add(this.validationText);
+
+		this.renderer.root.add(this.shell.root);
+
+		return keymap;
 	}
 
 	private buildFieldOptions(): SelectOption[] {
@@ -383,6 +390,7 @@ export class SettingsScreen implements Screen {
 
 		this.editing = true;
 		this.editFieldIndex = FIELDS.indexOf(field);
+		this.refreshFooter();
 
 		if (field.type === 'directory') {
 			this.startDirectoryEdit(field);
@@ -410,18 +418,15 @@ export class SettingsScreen implements Screen {
 			focusedBackgroundColor: theme.highlightFocused,
 		});
 
-		// Replace the field list option with input (visual feedback)
-		if (this.statusText) {
-			this.statusText.content = `Editing ${field.label} — [ENTER] Commit  [ESC] Cancel`;
-		}
+		this.shell?.setFooter(`Editing ${field.label} — [ENTER] Commit  [ESC] Cancel`);
 
 		this.editInput.on(InputRenderableEvents.ENTER, () => {
 			const newValue = this.editInput?.value ?? '';
 			this.commitEdit(field, newValue);
 		});
 
-		// Add input to container and focus it
-		this.container?.add(this.editInput);
+		// Add input to panel and focus it
+		this.fieldPanel?.add(this.editInput);
 		this.editInput.focus();
 	}
 
@@ -439,22 +444,18 @@ export class SettingsScreen implements Screen {
 			textColor: theme.text,
 		});
 
-		if (this.statusText) {
-			this.statusText.content = `Select ${field.label} — [ENTER] Confirm  [ESC] Cancel`;
-		}
+		this.shell?.setFooter(`Select ${field.label} — [ENTER] Confirm  [ESC] Cancel`);
 
 		this.editDropdown.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 			this.commitEdit(field, option.value as string);
 		});
 
-		this.container?.add(this.editDropdown);
+		this.fieldPanel?.add(this.editDropdown);
 		this.editDropdown.focus();
 	}
 
 	private startDirectoryEdit(field: SettingsField): void {
-		if (this.keyHandler) {
-			this.renderer.keyInput.off('keypress', this.keyHandler);
-		}
+		this.keymap?.detach(this.renderer);
 		this.resolveRender?.({
 			action: 'push',
 			screen: 'file-picker',
@@ -480,11 +481,11 @@ export class SettingsScreen implements Screen {
 	private finishEdit(): void {
 		// Remove inline edit renderables
 		if (this.editInput) {
-			this.container?.remove(this.editInput.id);
+			this.fieldPanel?.box.remove(this.editInput.id);
 			this.editInput = undefined;
 		}
 		if (this.editDropdown) {
-			this.container?.remove(this.editDropdown.id);
+			this.fieldPanel?.box.remove(this.editDropdown.id);
 			this.editDropdown = undefined;
 		}
 
@@ -504,7 +505,7 @@ export class SettingsScreen implements Screen {
 				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
 
-		this.updateStatus();
+		this.refreshFooter();
 
 		// Refocus field list
 		this.fieldList?.focus();
@@ -525,14 +526,15 @@ export class SettingsScreen implements Screen {
 
 	// === Status ===
 
-	private updateStatus(): void {
-		if (!this.statusText) return;
-
+	private refreshFooter(): void {
 		if (this.resetConfirm) {
-			this.statusText.content = `${symbols.info.warning} Press [r] again to confirm reset to defaults, or any other key to cancel`;
-		} else {
-			this.statusText.content = '[↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back';
+			this.shell?.setFooter(
+				`${symbols.info.warning} Press [r] again to confirm reset to defaults, or any other key to cancel`
+			);
+		} else if (!this.editing) {
+			this.shell?.setFooter(this.keymap?.toKeybar() ?? '');
 		}
+		// While editing, the edit/dropdown prompt set in showTextEdit/showDropdownEdit stands.
 	}
 
 	// === Actions ===
@@ -545,9 +547,8 @@ export class SettingsScreen implements Screen {
 		if (result.success) {
 			this.originalConfig = { ...this.config };
 			this.dirty = false;
-			if (this.statusText) {
-				this.statusText.content = `${symbols.info.success} Saved!  [↑↓] Navigate  [ENTER] Edit  [s] Save  [r] Reset All  [ESC] Back`;
-			}
+			this.shell?.setFooter(`${symbols.info.success} Saved!`);
+			setTimeout(() => this.refreshFooter(), 2000);
 		}
 	}
 
@@ -555,7 +556,7 @@ export class SettingsScreen implements Screen {
 		// Two-press confirm
 		if (!this.resetConfirm) {
 			this.resetConfirm = true;
-			this.updateStatus();
+			this.refreshFooter();
 			return;
 		}
 
@@ -574,6 +575,6 @@ export class SettingsScreen implements Screen {
 				: `${symbols.info.error} ${this.validation.issues.map((i) => `${i.field}: ${i.message}`).join(', ')}`;
 		}
 
-		this.updateStatus();
+		this.refreshFooter();
 	}
 }
