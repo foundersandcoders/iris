@@ -7,6 +7,7 @@
 import type { KeyEvent } from '@opentui/core';
 import { symbols } from '../../../assets/brand/theme';
 import type { Renderer } from '../types';
+import { helpOverlay, type HelpOverlay, type HelpRow } from '../components/helpOverlay';
 
 /** A single declarative key binding. */
 export interface Binding {
@@ -66,29 +67,54 @@ export function eventToKey(key: KeyEvent): string {
 export interface KeymapOptions {
 	/** Per-screen bindings. Screen bindings take priority over globals. */
 	bindings: Binding[];
-	/** Canonical key strings to suppress from the auto-generated globals. */
+	/** Canonical key strings to suppress from the auto-generated globals.
+	 *  Include "?" to opt a screen out of the help overlay entirely. */
 	disableGlobals?: string[];
-	/** Handler for "?" — wired to the help overlay (TR.C1). No-op if omitted. */
-	onHelp?: () => void;
 	/** Handler for "q" — typically resolves quit. Omit on screens where q means back. */
 	onQuit?: () => void;
 	/** Handler for "escape" — typically resolves pop/back. */
 	onBack?: () => void;
 }
 
+const HELP_OVERLAY_ID = 'help-overlay-root';
+
 export class Keymap {
 	private readonly bindings: Binding[];
+	private readonly helpEnabled: boolean;
 	private attachedHandler?: (key: KeyEvent) => void;
+	private helpOverlay?: HelpOverlay;
+	private helpOpen = false;
 
 	constructor(opts: KeymapOptions) {
-		this.bindings = [...opts.bindings, ...buildGlobals(opts)];
+		this.helpEnabled = !(opts.disableGlobals ?? []).includes('?');
+		this.bindings = [
+			...opts.bindings,
+			...buildGlobals(opts),
+			...(this.helpEnabled
+				? [{ keys: ['?'], hint: '?', label: 'Help', handler: () => this.toggleHelp() } as Binding]
+				: []),
+		];
 	}
 
 	/** Find the first matching, when-passing binding and run its handler.
 	 *  Returns the binding that fired, or null if none matched.
-	 *  Pure and synchronous — useful for unit testing dispatch logic. */
+	 *  Pure and synchronous — useful for unit testing dispatch logic.
+	 *  While the help overlay is open, every key is swallowed except "?"/"escape"
+	 *  (which close it) — no fall-through to other bindings (e.g. "q" won't quit).
+	 *  stopPropagation() is load-bearing here: this handler runs as a "global"
+	 *  listener on the shared InternalKeyHandler, ahead of the focused
+	 *  renderable's own keypress handler (e.g. SelectRenderable's arrow-key
+	 *  navigation) — without it, arrow/enter keys would still reach the
+	 *  renderable underneath the overlay even though dispatch() ignored them. */
 	dispatch(key: KeyEvent): Binding | null {
 		const k = eventToKey(key);
+
+		if (this.helpOpen) {
+			key.stopPropagation?.();
+			if (k === '?' || k === 'escape') this.closeHelp();
+			return null;
+		}
+
 		for (const binding of this.bindings) {
 			if (
 				(binding.when?.() ?? true) &&
@@ -111,19 +137,53 @@ export class Keymap {
 			.join('  ');
 	}
 
+	/** Display-ready shortcut rows for the help overlay: visible, when-passing
+	 *  bindings, excluding the Help entry itself. */
+	toHelp(): HelpRow[] {
+		return this.bindings
+			.filter((b) => !b.hidden && (b.when?.() ?? true) && !b.keys.includes('?'))
+			.map((b) => ({ keys: b.hint ?? prettyKey(b.keys[0]), label: b.label }));
+	}
+
+	private toggleHelp(): void {
+		if (this.helpOpen) this.closeHelp();
+		else this.openHelp();
+	}
+
+	private openHelp(): void {
+		if (!this.helpOverlay) return;
+		this.helpOverlay.setRows(this.toHelp());
+		this.helpOverlay.setVisible(true);
+		this.helpOpen = true;
+	}
+
+	private closeHelp(): void {
+		this.helpOverlay?.setVisible(false);
+		this.helpOpen = false;
+	}
+
 	/** Register the keypress listener on the renderer. Call inside render().
 	 *  Idempotent — a prior listener is removed before registering the new one. */
 	attach(renderer: Renderer): void {
 		if (this.attachedHandler) this.detach(renderer);
+		if (this.helpEnabled && !this.helpOverlay) {
+			this.helpOverlay = helpOverlay(renderer, { id: HELP_OVERLAY_ID });
+			renderer.root.add(this.helpOverlay.root);
+		}
 		this.attachedHandler = (key) => this.dispatch(key);
 		renderer.keyInput.on('keypress', this.attachedHandler);
 	}
 
-	/** Remove the keypress listener. Call inside cleanup(). */
+	/** Remove the keypress listener and the help overlay. Call inside cleanup(). */
 	detach(renderer: Renderer): void {
 		if (this.attachedHandler) {
 			renderer.keyInput.off('keypress', this.attachedHandler);
 			this.attachedHandler = undefined;
+		}
+		if (this.helpOverlay) {
+			renderer.root.remove(HELP_OVERLAY_ID);
+			this.helpOverlay = undefined;
+			this.helpOpen = false;
 		}
 	}
 }
@@ -138,10 +198,8 @@ function buildGlobals(opts: KeymapOptions): Binding[] {
 	if (opts.onQuit && !suppressed.has('q')) {
 		globals.push({ keys: ['q'], hint: 'q', label: 'Quit', handler: opts.onQuit });
 	}
-	if (opts.onHelp && !suppressed.has('?')) {
-		globals.push({ keys: ['?'], hint: '?', label: 'Help', handler: opts.onHelp });
-	}
 	// Ctrl+C deliberately omitted — createCliRenderer({ exitOnCtrlC: true }) handles it.
+	// "?" Help is appended separately in the constructor (self-wired, TR.C1).
 
 	return globals;
 }

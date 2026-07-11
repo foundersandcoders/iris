@@ -143,6 +143,7 @@ describe('Keymap.toKeybar()', () => {
 				{ keys: ['up'], label: 'Select', handler: vi.fn() },
 				{ keys: ['enter'], label: 'Confirm', handler: vi.fn() },
 			],
+			disableGlobals: ['?'], // isolate the format assertion from the auto Help entry
 		});
 		expect(km.toKeybar()).toBe('[↑] Select  [ENTER] Confirm');
 	});
@@ -180,6 +181,15 @@ describe('Keymap.toKeybar()', () => {
 		const km = new Keymap({ bindings: [], onQuit: vi.fn() });
 		expect(km.toKeybar()).toContain('Quit');
 		expect(km.toKeybar()).not.toContain('Back');
+	});
+
+	it('includes Help by default — the overlay is automatic on every screen', () => {
+		const km = new Keymap({ bindings: [] });
+		expect(km.toKeybar()).toContain('[?] Help');
+	});
+
+	it('omits Help when "?" is suppressed via disableGlobals', () => {
+		const km = new Keymap({ bindings: [], disableGlobals: ['?'] });
 		expect(km.toKeybar()).not.toContain('Help');
 	});
 
@@ -187,10 +197,57 @@ describe('Keymap.toKeybar()', () => {
 		let visible = false;
 		const km = new Keymap({
 			bindings: [{ keys: ['s'], label: 'Save', when: () => visible, handler: vi.fn() }],
+			disableGlobals: ['?'], // isolate the when() assertion from the auto Help entry
 		});
 		expect(km.toKeybar()).toBe('');
 		visible = true;
 		expect(km.toKeybar()).toContain('Save');
+	});
+});
+
+// ——— Keymap — toHelp —————————————————————————————————————————————————————————
+
+describe('Keymap.toHelp()', () => {
+	it('returns display rows for visible bindings', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['up'], label: 'Select', handler: vi.fn() }],
+		});
+		expect(km.toHelp()).toContainEqual({ keys: '↑', label: 'Select' });
+	});
+
+	it('omits hidden bindings', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['1'], label: 'One', hidden: true, handler: vi.fn() }],
+		});
+		expect(km.toHelp()).toEqual([]);
+	});
+
+	it('omits bindings whose when() returns false', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['s'], label: 'Save', when: () => false, handler: vi.fn() }],
+		});
+		expect(km.toHelp()).toEqual([]);
+	});
+
+	it('excludes the auto Help entry itself', () => {
+		const km = new Keymap({ bindings: [] });
+		expect(km.toHelp().some((row) => row.label === 'Help')).toBe(false);
+	});
+
+	it('uses the hint override instead of prettyKey(keys[0])', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['up', 'down'], hint: '↑↓', label: 'Navigate', handler: vi.fn() }],
+		});
+		expect(km.toHelp()).toContainEqual({ keys: '↑↓', label: 'Navigate' });
+	});
+
+	it('renders ENTER and ESC glyphs via prettyKey', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['enter'], label: 'Confirm', handler: vi.fn() }],
+			onBack: vi.fn(),
+		});
+		expect(km.toHelp()).toContainEqual({ keys: 'ENTER', label: 'Confirm' });
+		expect(km.toHelp()).toContainEqual({ keys: 'ESC', label: 'Back' });
 	});
 });
 
@@ -227,6 +284,110 @@ describe('Keymap.attach() / detach()', () => {
 		expect(ctx.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
 		// Two on() calls — one per attach()
 		expect(ctx.renderer.keyInput.on).toHaveBeenCalledTimes(2);
+	});
+
+	it('mounts the help overlay on renderer.root on attach', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		expect(ctx.renderer.root.add).toHaveBeenCalledWith(
+			expect.objectContaining({ id: 'help-overlay-root' })
+		);
+	});
+
+	it('removes the help overlay from renderer.root on detach', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		km.detach(ctx.renderer);
+		expect(ctx.renderer.root.remove).toHaveBeenCalledWith('help-overlay-root');
+	});
+
+	it('does not mount the help overlay when "?" is suppressed', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [], disableGlobals: ['?'] });
+		km.attach(ctx.renderer);
+		expect(ctx.renderer.root.add).not.toHaveBeenCalled();
+	});
+});
+
+// ——— Keymap — help overlay toggling —————————————————————————————————————————
+
+describe('Keymap help overlay', () => {
+	it('"?" opens the overlay; an unrelated key is swallowed while open', () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: '?' }))?.label).toBe('Help');
+		expect(km.dispatch(makeKey({ name: 'enter' }))).toBeNull();
+		expect(handler).not.toHaveBeenCalled();
+	});
+
+	it('"?" again closes the overlay and dispatch resumes normally', () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: '?' })); // open
+		km.dispatch(makeKey({ name: '?' })); // close
+		km.dispatch(makeKey({ name: 'enter' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('"escape" closes the overlay', () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: '?' })); // open
+		km.dispatch(makeKey({ name: 'escape' })); // close
+		km.dispatch(makeKey({ name: 'enter' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('"q" is swallowed while open and does not fall through to onQuit', () => {
+		const ctx = fixtures.createMockContext();
+		const onQuit = vi.fn();
+		const km = new Keymap({ bindings: [], onQuit });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: '?' })); // open
+		expect(km.dispatch(makeKey({ name: 'q' }))).toBeNull();
+		expect(onQuit).not.toHaveBeenCalled();
+	});
+
+	it('stops propagation while open, so a focused renderable (e.g. SelectRenderable) never sees the key', () => {
+		// Keymap.attach() registers on the shared InternalKeyHandler as a "global"
+		// listener, which runs BEFORE the focused renderable's own keypress
+		// handler — but only stopPropagation() actually prevents that handler
+		// from firing too. Without it, arrow/enter keys would reach the
+		// renderable underneath the overlay even though dispatch() ignored them.
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: '?' })); // open
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'down', stopPropagation }));
+		expect(stopPropagation).toHaveBeenCalledOnce();
+	});
+
+	it('does not stop propagation once closed — normal dispatch is unaffected', () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: '?' })); // open
+		km.dispatch(makeKey({ name: '?' })); // close
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'enter', stopPropagation }));
+		expect(stopPropagation).not.toHaveBeenCalled();
+		expect(handler).toHaveBeenCalledOnce();
 	});
 });
 
