@@ -65,8 +65,9 @@ describe('HistoryScreen', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(2);
+		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
+		// one for the auto-mounted confirm overlay (TR.C2).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
 		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(shellRoot.constructor.name).toBe('BoxRenderable');
 	});
@@ -199,6 +200,48 @@ describe('HistoryScreen', () => {
 			const children = shellRoot.getChildren();
 			const footer = children[children.length - 1];
 			expect(footer.content.chunks[0].text).toContain('Delete');
+		});
+
+		describe('handleDelete()', () => {
+			function setUpBrokenEntry(screen: HistoryScreen) {
+				(screen as any).historyItems = [
+					{ entry: HISTORY_ENTRY, filePath: undefined, fileSize: undefined, isBroken: true },
+				];
+				const resolve = vi.fn();
+				(screen as any).buildUI(resolve);
+				(screen as any).submissionList.getSelectedIndex = () => 0;
+			}
+
+			it('deletes via keymap.confirm() when the user confirms', async () => {
+				const screen = new HistoryScreen(mockContext);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+				await (screen as any).handleDelete();
+
+				expect(deleteHistoryEntryMock).toHaveBeenCalledWith(HISTORY_ENTRY.checksum);
+			});
+
+			it('does not delete when the user cancels via keymap.confirm()', async () => {
+				const screen = new HistoryScreen(mockContext);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(false);
+
+				await (screen as any).handleDelete();
+
+				expect(deleteHistoryEntryMock).not.toHaveBeenCalled();
+			});
+
+			it('prompts with a confirm message before deleting', async () => {
+				const screen = new HistoryScreen(mockContext);
+				setUpBrokenEntry(screen);
+				const confirmMock = vi.fn().mockResolvedValue(true);
+				(screen as any).keymap.confirm = confirmMock;
+
+				await (screen as any).handleDelete();
+
+				expect(confirmMock).toHaveBeenCalledWith(expect.stringContaining('Delete'));
+			});
 		});
 	});
 });

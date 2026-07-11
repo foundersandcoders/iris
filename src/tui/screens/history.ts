@@ -34,7 +34,6 @@ export class HistoryScreen implements Screen {
 
 	// State
 	private historyItems: HistoryListItem[] = [];
-	private deleteConfirmIndex = -1;
 
 	// Renderables
 	private submissionList?: SelectRenderable;
@@ -52,9 +51,7 @@ export class HistoryScreen implements Screen {
 
 			if (this.submissionList) {
 				this.submissionList.on('selectionChanged', (index: number) => {
-					this.deleteConfirmIndex = -1;
 					this.updateDetailPanel(index);
-					this.refreshFooter();
 				});
 
 				this.submissionList.on('itemSelected', (index: number) => {
@@ -408,45 +405,37 @@ export class HistoryScreen implements Screen {
 		const item = this.historyItems[index];
 		if (!item.isBroken) return;
 
-		if (this.deleteConfirmIndex === index) {
-			const storage = createStorage();
-			const result = await storage.deleteHistoryEntry(item.entry.checksum);
+		const ok = (await this.keymap?.confirm('Delete this history entry?')) ?? false;
+		if (!ok) return;
 
-			if (!result.success) {
-				this.shell?.setFooter(`${symbols.info.error} Failed to delete history entry`);
-				this.deleteConfirmIndex = -1;
-				return;
+		const storage = createStorage();
+		const result = await storage.deleteHistoryEntry(item.entry.checksum);
+
+		if (!result.success) {
+			this.shell?.setFooter(`${symbols.info.error} Failed to delete history entry`);
+			return;
+		}
+
+		await this.loadHistory();
+
+		try {
+			this.rebuildListAndHandlers();
+
+			const newIndex = Math.min(index, this.historyItems.length - 1);
+			if (newIndex >= 0 && this.submissionList) {
+				this.submissionList.setSelectedIndex(newIndex);
+				this.updateDetailPanel(newIndex);
 			}
 
-			this.deleteConfirmIndex = -1;
-			await this.loadHistory();
-
-			try {
-				this.rebuildListAndHandlers();
-
-				const newIndex = Math.min(index, this.historyItems.length - 1);
-				if (newIndex >= 0 && this.submissionList) {
-					this.submissionList.setSelectedIndex(newIndex);
-					this.updateDetailPanel(newIndex);
-				}
-
-				this.shell?.setFooter(`${symbols.info.success} Entry deleted`);
-				setTimeout(() => this.refreshFooter(), 2000);
-			} catch (error) {
-				throw new Error(`UI rebuild failed: ${error instanceof Error ? error.message : String(error)}`);
-			}
-		} else {
-			this.deleteConfirmIndex = index;
-			this.shell?.setFooter(`${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`);
+			this.shell?.setFooter(`${symbols.info.success} Entry deleted`);
+			setTimeout(() => this.refreshFooter(), 2000);
+		} catch (error) {
+			throw new Error(`UI rebuild failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
 	private refreshFooter(): void {
-		if (this.deleteConfirmIndex >= 0) {
-			this.shell?.setFooter(`${symbols.info.warning} Press x again to confirm deletion, or any other key to cancel`);
-		} else {
-			this.shell?.setFooter(this.keymap?.toKeybar() ?? '');
-		}
+		this.shell?.setFooter(this.keymap?.toKeybar() ?? '');
 	}
 
 	private rebuildListAndHandlers(): void {
@@ -467,9 +456,7 @@ export class HistoryScreen implements Screen {
 		});
 
 		this.submissionList.on('selectionChanged', (index: number) => {
-			this.deleteConfirmIndex = -1;
 			this.updateDetailPanel(index);
-			this.refreshFooter();
 		});
 		this.submissionList.on('itemSelected', (index: number) => {
 			const item = this.historyItems[index];

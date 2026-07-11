@@ -42,8 +42,9 @@ describe('Dashboard', () => {
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
-		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(2);
+		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
+		// one for the auto-mounted confirm overlay (TR.C2).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(addedRenderable).toBeDefined();
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
@@ -73,8 +74,9 @@ describe('Dashboard', () => {
 			'keypress',
 			expect.any(Function)
 		);
-		// One removal for the screen shell, one for the help overlay (TR.C1).
-		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(2);
+		// One removal for the screen shell, one for the help overlay (TR.C1),
+		// one for the confirm overlay (TR.C2).
+		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(3);
 	});
 
 	it('renders a footer containing "Quit" driven by the keymap', async () => {

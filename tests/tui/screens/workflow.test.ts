@@ -175,7 +175,8 @@ describe('WorkflowScreen', () => {
 		screen.cleanup();
 
 		expect(mockContext.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
-		// One removal for the screen shell, one for the help overlay (TR.C1).
-		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(2);
+		// One removal for the screen shell, one for the help overlay (TR.C1),
+		// one for the confirm overlay (TR.C2).
+		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(3);
 	});
 });
