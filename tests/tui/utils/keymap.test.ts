@@ -307,7 +307,26 @@ describe('Keymap.attach() / detach()', () => {
 		const ctx = fixtures.createMockContext();
 		const km = new Keymap({ bindings: [], disableGlobals: ['?'] });
 		km.attach(ctx.renderer);
-		expect(ctx.renderer.root.add).not.toHaveBeenCalled();
+		expect(ctx.renderer.root.add).not.toHaveBeenCalledWith(
+			expect.objectContaining({ id: 'help-overlay-root' })
+		);
+	});
+
+	it('mounts the confirm overlay on renderer.root on attach, regardless of disableGlobals', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [], disableGlobals: ['?'] });
+		km.attach(ctx.renderer);
+		expect(ctx.renderer.root.add).toHaveBeenCalledWith(
+			expect.objectContaining({ id: 'confirm-overlay-root' })
+		);
+	});
+
+	it('removes the confirm overlay from renderer.root on detach', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		km.detach(ctx.renderer);
+		expect(ctx.renderer.root.remove).toHaveBeenCalledWith('confirm-overlay-root');
 	});
 });
 
@@ -388,6 +407,121 @@ describe('Keymap help overlay', () => {
 		km.dispatch(makeKey({ name: 'enter', stopPropagation }));
 		expect(stopPropagation).not.toHaveBeenCalled();
 		expect(handler).toHaveBeenCalledOnce();
+	});
+});
+
+// ——— Keymap — confirm overlay ————————————————————————————————————————————————
+
+describe('Keymap confirm overlay', () => {
+	it('confirm() shows the overlay and returns a pending promise', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		let settled = false;
+		km.confirm('Delete this?').then(() => {
+			settled = true;
+		});
+
+		expect(settled).toBe(false);
+	});
+
+	it('"y" resolves the confirm promise true', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.dispatch(makeKey({ name: 'y' }));
+		await expect(promise).resolves.toBe(true);
+	});
+
+	it('"enter" resolves the confirm promise true', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.dispatch(makeKey({ name: 'enter' }));
+		await expect(promise).resolves.toBe(true);
+	});
+
+	it('"n" resolves the confirm promise false', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.dispatch(makeKey({ name: 'n' }));
+		await expect(promise).resolves.toBe(false);
+	});
+
+	it('"escape" resolves the confirm promise false', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.dispatch(makeKey({ name: 'escape' }));
+		await expect(promise).resolves.toBe(false);
+	});
+
+	it('swallows unrelated keys while a confirm is open — no fall-through to other bindings', () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+
+		km.confirm('Delete this?');
+		expect(km.dispatch(makeKey({ name: 'x' }))).toBeNull();
+	});
+
+	it('"q" is swallowed while a confirm is open and does not fall through to onQuit', () => {
+		const ctx = fixtures.createMockContext();
+		const onQuit = vi.fn();
+		const km = new Keymap({ bindings: [], onQuit });
+		km.attach(ctx.renderer);
+
+		km.confirm('Delete this?');
+		expect(km.dispatch(makeKey({ name: 'q' }))).toBeNull();
+		expect(onQuit).not.toHaveBeenCalled();
+	});
+
+	it('stops propagation while a confirm is open, so the focused renderable never sees the key', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+		km.confirm('Delete this?');
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'down', stopPropagation }));
+		expect(stopPropagation).toHaveBeenCalledOnce();
+	});
+
+	it('does not stop propagation once resolved — normal dispatch resumes', async () => {
+		const ctx = fixtures.createMockContext();
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.dispatch(makeKey({ name: 'n' })); // resolves false, closes
+		await promise;
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'enter', stopPropagation }));
+		expect(stopPropagation).not.toHaveBeenCalled();
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('detach() resolves a pending confirm false so no promise dangles', async () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		const promise = km.confirm('Delete this?');
+		km.detach(ctx.renderer);
+		await expect(promise).resolves.toBe(false);
 	});
 });
 

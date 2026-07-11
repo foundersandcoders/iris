@@ -8,6 +8,7 @@ import type { KeyEvent } from '@opentui/core';
 import { symbols } from '../../../assets/brand/theme';
 import type { Renderer } from '../types';
 import { helpOverlay, type HelpOverlay, type HelpRow } from '../components/helpOverlay';
+import { confirmOverlay, type ConfirmOverlay } from '../components/confirmOverlay';
 
 /** A single declarative key binding. */
 export interface Binding {
@@ -77,6 +78,7 @@ export interface KeymapOptions {
 }
 
 const HELP_OVERLAY_ID = 'help-overlay-root';
+const CONFIRM_OVERLAY_ID = 'confirm-overlay-root';
 
 export class Keymap {
 	private readonly bindings: Binding[];
@@ -84,6 +86,9 @@ export class Keymap {
 	private attachedHandler?: (key: KeyEvent) => void;
 	private helpOverlay?: HelpOverlay;
 	private helpOpen = false;
+	private confirmOverlay?: ConfirmOverlay;
+	private confirmOpen = false;
+	private confirmResolver?: (ok: boolean) => void;
 
 	constructor(opts: KeymapOptions) {
 		this.helpEnabled = !(opts.disableGlobals ?? []).includes('?');
@@ -108,6 +113,13 @@ export class Keymap {
 	 *  renderable underneath the overlay even though dispatch() ignored them. */
 	dispatch(key: KeyEvent): Binding | null {
 		const k = eventToKey(key);
+
+		if (this.confirmOpen) {
+			key.stopPropagation?.();
+			if (k === 'y' || k === 'enter') this.resolveConfirm(true);
+			else if (k === 'n' || k === 'escape') this.resolveConfirm(false);
+			return null;
+		}
 
 		if (this.helpOpen) {
 			key.stopPropagation?.();
@@ -162,6 +174,26 @@ export class Keymap {
 		this.helpOpen = false;
 	}
 
+	/** Show a confirm modal with the given message. Resolves true on y/Enter,
+	 *  false on n/Esc. Only one confirm can be pending at a time — a second
+	 *  call before the first resolves replaces the message on the same overlay. */
+	confirm(message: string): Promise<boolean> {
+		return new Promise((resolve) => {
+			this.confirmResolver = resolve;
+			this.confirmOverlay?.setMessage(message);
+			this.confirmOverlay?.setVisible(true);
+			this.confirmOpen = true;
+		});
+	}
+
+	private resolveConfirm(ok: boolean): void {
+		this.confirmOverlay?.setVisible(false);
+		this.confirmOpen = false;
+		const resolver = this.confirmResolver;
+		this.confirmResolver = undefined;
+		resolver?.(ok);
+	}
+
 	/** Register the keypress listener on the renderer. Call inside render().
 	 *  Idempotent — a prior listener is removed before registering the new one. */
 	attach(renderer: Renderer): void {
@@ -170,11 +202,15 @@ export class Keymap {
 			this.helpOverlay = helpOverlay(renderer, { id: HELP_OVERLAY_ID });
 			renderer.root.add(this.helpOverlay.root);
 		}
+		if (!this.confirmOverlay) {
+			this.confirmOverlay = confirmOverlay(renderer, { id: CONFIRM_OVERLAY_ID });
+			renderer.root.add(this.confirmOverlay.root);
+		}
 		this.attachedHandler = (key) => this.dispatch(key);
 		renderer.keyInput.on('keypress', this.attachedHandler);
 	}
 
-	/** Remove the keypress listener and the help overlay. Call inside cleanup(). */
+	/** Remove the keypress listener and the overlays. Call inside cleanup(). */
 	detach(renderer: Renderer): void {
 		if (this.attachedHandler) {
 			renderer.keyInput.off('keypress', this.attachedHandler);
@@ -184,6 +220,11 @@ export class Keymap {
 			renderer.root.remove(HELP_OVERLAY_ID);
 			this.helpOverlay = undefined;
 			this.helpOpen = false;
+		}
+		if (this.confirmOverlay) {
+			if (this.confirmOpen) this.resolveConfirm(false);
+			renderer.root.remove(CONFIRM_OVERLAY_ID);
+			this.confirmOverlay = undefined;
 		}
 	}
 }
