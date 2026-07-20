@@ -51,10 +51,12 @@ Each task is a single, independently-mergeable branch (per the project's small-b
 
 - [x] **TR.C1** — `feat/add-help-overlay` — Global `?` overlay rendered from the keymap registry over a z-index layer. Keymap now owns the overlay lifecycle; new `helpOverlay()` component renders a centred panel card. Fixed a bug where `renderer.keyInput` and the focused renderable shared an `InternalKeyHandler`, letting arrow/enter keys leak through the overlay (fixed via `key.stopPropagation()`).
   - Note: Cross-referenced as `2TI.12` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
-- [ ] **TR.C2** — `feat/add-toast-and-confirm-overlays` — Transient toasts (success/info/error) + a real confirm modal; replace the double-press deletes in history & mapping-builder.
+- [ ] **TR.C2** — `feat/add-toast-overlays` — Transient toasts (success/info/error).
 - [ ] **TR.C3** — `feat/add-workflow-progress` — Progress bar (`progress.filled`/`empty`) + elapsed-time on `WorkflowScreen`. _(depends on TR.B3)_
 - [ ] **TR.C4** — `feat/add-screen-transitions` — Subtle fade/slide on push/pop via the OpenTUI Timeline; fast, with a reduce-motion config toggle.
   - Note: Cross-referenced as `2TI.18` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
+- [x] **TR.C5** — `feat/add-confirm-overlay` — Real confirm modal via `Keymap.confirm()` (y/Enter/n/Esc, promise resolution on detach); replace the double-press deletes in history & mapping-builder. Split out of the original TR.C2 (`feat/add-toast-and-confirm-overlays`) once codebase reconciliation found this half shipped but the toast half not.
+  - Note: Evidence — `src/tui/components/confirmOverlay.ts` (commit `032fe4f`); wired into `history.ts` and `mapping-builder.ts` replacing the old `deleteConfirmIndex` two-press hack (commit `41ab713`), with matching test coverage.
 
 ---
 
@@ -120,7 +122,8 @@ graph LR
 	TR.B6["TR.B6: `refactor/config-screens-app-shell` — se…"]
 	M3["M3: Phase B — App-shell rollout"]:::mile
 	TR.C1["TR.C1: `feat/add-help-overlay` — Global ? overl…"]
-	TR.C2["TR.C2: `feat/add-toast-and-confirm-overlays` —…"]
+	TR.C2["TR.C2: `feat/add-toast-overlays` — Transient to…"]
+	TR.C5["TR.C5: `feat/add-confirm-overlay` — Real confir…"]
 	TR.C3["TR.C3: `feat/add-workflow-progress` — Progress…"]
 	TR.C4["TR.C4: `feat/add-screen-transitions` — Subtle f…"]
 	M4["M4: Phase C — Signature UX features"]:::mile
@@ -156,6 +159,7 @@ graph LR
 	TR.B6 --> M3
 	TR.C1 --> M4
 	TR.C2 --> M4
+	TR.C5 --> M4
 	TR.C3 --> M4
 	TR.C4 --> M4
 	TR.D1 --> M5
@@ -166,7 +170,7 @@ graph LR
 	TR.E3 --> M6
 	class TR.C2,TR.C3,TR.C4,TR.D1,TR.D2,TR.D3,TR.E1 todo
 	class TR.E2,TR.E3 blocked
-	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.S1,TR.S2 done
+	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C5,TR.S1,TR.S2 done
 ```
 
 ## Cross-references to existing roadmap

@@ -1,6 +1,6 @@
 # Iris TUI Redesign: Roadmap Overview
 
-**24 tasks across 6 milestones.** Files: `.claude/roadmaps.json` (machine-readable), `docs/roadmaps/v5a-2606/enhanced.md` (full task list with Mermaid dependency diagram).
+**25 tasks across 6 milestones.** Files: `.claude/roadmaps.json` (machine-readable), `docs/roadmaps/v5a-2606/enhanced.md` (full task list with Mermaid dependency diagram).
 
 > Migrated from the old simple-format roadmap via `roadmap-migrate` — the narrative sections below are stubs synthesised from the original milestone goals, not yet fleshed out by the team.
 

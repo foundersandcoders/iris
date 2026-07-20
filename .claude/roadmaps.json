@@ -137,9 +137,16 @@
 					},
 					{
 						"id": "TR.C2",
-						"description": "`feat/add-toast-and-confirm-overlays` — Transient toasts (success/info/error) + a real confirm modal; replace the double-press deletes in history & mapping-builder.",
+						"description": "`feat/add-toast-overlays` — Transient toasts (success/info/error).",
 						"status": "todo",
 						"dependsOn": []
+					},
+					{
+						"id": "TR.C5",
+						"description": "`feat/add-confirm-overlay` — Real confirm modal via Keymap.confirm() (y/Enter/n/Esc, promise resolution on detach); replace the double-press deletes in history & mapping-builder. Split out of the original TR.C2 (`feat/add-toast-and-confirm-overlays`) once codebase reconciliation found this half shipped but the toast half not.",
+						"status": "done",
+						"dependsOn": [],
+						"notes": "Evidence: src/tui/components/confirmOverlay.ts (commit 032fe4f, \"add confirm modal overlay to Keymap\"); wired into history.ts and mapping-builder.ts replacing the old deleteConfirmIndex two-press hack (commit 41ab713, \"replace two-press delete confirm with modal\"), with matching test coverage in both screens' test suites."
 					},
 					{
 						"id": "TR.C3",
