@@ -1,8 +1,221 @@
-{
-  "roadmaps": [
-    {
-      "name": "MVP",
-      "path": "docs/roadmaps/mvp.md"
-    }
-  ]
-}
+[
+	{
+		"name": "TUI Redesign",
+		"path": "docs/roadmaps/v5a-2606/enhanced.md",
+		"archived": false,
+		"externalGates": [],
+		"milestones": [
+			{
+				"id": "M1",
+				"name": "Phase A — Foundations",
+				"goal": "Theme, layout primitives and keymap registry that the rest of the redesign builds on.",
+				"tasks": [
+					{
+						"id": "TR.A1",
+						"description": "`feat/extend-theme-semantic-palette` — Add the semantic colour vocabulary (Verdant / Ember / Flare + accent tones) to `PALETTE` in `assets/brand/theme.ts`; remap success/warning/error so they read as states; fix the empty `symbols.arrows.up/down/left`; make `themeDark` a genuine dark variant on `chasm`. Update `tests/tui/theme.test.ts`.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.A2",
+						"description": "`feat/add-tui-layout-primitives` — New `src/tui/components/` dir: `panel()` (bordered + titled box with focused/unfocused border colour) and `appShell()` (header band + content region + footer keybar). Add a spacing scale to `src/tui/utils/layout.ts`. Reuse theme + borders.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.A3",
+						"description": "`feat/add-keymap-registry` — `src/tui/utils/keymap.ts`: declarative per-screen bindings ({ keys, label, when?, handler }), vim+arrow aliases, consistent globals (?/q/ESC/Ctrl+C). Drives the footer keybar. Refactor dashboard as the reference adopter.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.A4",
+						"description": "`fix/isolate-tui-test-mocks` — Isolated bun's permanent module mocks (`bunfig.toml` [test] root = \"tests/lib\") so mock-based TUI tests never share a runner with non-mocked ones; fixed two stale assertions and removed stray backup test files.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.A5",
+						"description": "`feat/add-node-storage-adapter` — Added `src/lib/storage/adapters/node.ts` (Node fs/promises-based StorageAdapter) with runtime detection in `create.ts`, so vitest-run tests calling `createStorage()` work under Node, not just Bun. Merged via PR #72.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.A6",
+						"description": "`fix/vitest-tui-suite-compat` — Fixed all 12 `tests/tui/**` suites failing to load under vitest (mock hoisting error + unresolvable `.scm`/`.wasm`/`bun:ffi` imports from `@opentui/core`) via a hand-written shared test double (`tests/fixtures/tui/opentui.ts`) and a hoisting-safe async `vi.mock` factory per suite.",
+						"status": "done",
+						"dependsOn": []
+					}
+				]
+			},
+			{
+				"id": "M2",
+				"name": "Phase S — Security & dependency maintenance",
+				"goal": "Clear open Dependabot alerts; housekeeping tracked here since this is the active roadmap.",
+				"tasks": [
+					{
+						"id": "TR.S1",
+						"description": "`fix/bump-vulnerable-rust-deps` — Bumped `tauri` (2.9.5 → 2.11.5, fixes CVE-2026-42184 origin-confusion IPC bug) and ran `cargo update` for transitive crates (bytes, rand, time). `rand@0.7.3` left open (unreachable via any dependency bump — pinned transitively through kuchikiki → selectors → phf_codegen → phf_generator). Known accepted regression: the tauri bump pins `gtk ^0.18`/`glib ^0.18` on Linux, downgrading glib from the already-patched 0.20.0 (medium-severity, non-remote NULL-pointer bug) — traded off deliberately against the remote-triggerable CVE this bump fixes.",
+						"status": "done",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.S2",
+						"description": "`fix/bump-vite-vitest-majors` — Upgraded vite (^5.0.0 → ^6.4.3) and vitest (^2.0.0 → ^3.2.6), resolving 4 Dependabot alerts (1 critical, 1 high, 2 medium). Also bumped `@sveltejs/vite-plugin-svelte` for Vite 6 peer compatibility. No config changes needed.",
+						"status": "done",
+						"dependsOn": []
+					}
+				]
+			},
+			{
+				"id": "M3",
+				"name": "Phase B — App-shell rollout",
+				"goal": "Every TUI screen adopts appShell() + panel() + the keymap registry, one branch per screen cluster.",
+				"tasks": [
+					{
+						"id": "TR.B1",
+						"description": "`refactor/dashboard-app-shell` — Dashboard onto shell + panels + keymap; add a Recent Activity panel sourced from submission history. Merged via PR #76.",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						]
+					},
+					{
+						"id": "TR.B2",
+						"description": "`refactor/file-picker-app-shell` — File picker onto appShell() + panel() + Keymap, following TR.B1 as reference adopter. Border title shows the live current-directory path. All caller data contracts preserved unchanged (check-current/check-previous flow, mapping-create, selectionMode: 'directory' sentinel handling).",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						]
+					},
+					{
+						"id": "TR.B3",
+						"description": "`refactor/workflow-app-shell` — Processing screen into the frame (sets up TR.C3).",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						]
+					},
+					{
+						"id": "TR.B4",
+						"description": "`refactor/results-screens-app-shell` — validation-explorer + check-results + success onto appShell() + panel() + Keymap; two-pane screens get a real focused-panel border via panel.setFocused(). Merged via PRs #79, #80, #81.",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						]
+					},
+					{
+						"id": "TR.B5",
+						"description": "`refactor/mapping-screens-app-shell` — mapping-builder / -editor / -save onto appShell() + panel() + Keymap; unified the mapping-editor focus authority on the app-shell, replacing the previous weak two-panel focus model. Merged via PR #82.",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						],
+						"notes": "mapping-builder.ts:340,350 and mapping-editor.ts:557,584 still read SelectRenderable.selectedIndex directly (write-only on the real API, always returns undefined) — a latent bug found during TR.B6, flagged as an out-of-scope follow-up."
+					},
+					{
+						"id": "TR.B6",
+						"description": "`refactor/config-screens-app-shell` — settings + history + about onto appShell() + panel() + Keymap. History gets a two-pane layout mirroring check-results. Found and fixed SelectRenderable.selectedIndex read bug (write-only setter, use getSelectedIndex() instead). All TUI screens now on the app-shell framework — Phase B complete.",
+						"status": "done",
+						"dependsOn": [
+							"TR.S2"
+						]
+					}
+				]
+			},
+			{
+				"id": "M4",
+				"name": "Phase C — Signature UX features",
+				"goal": "Help overlay, toasts/confirm modal, workflow progress, and screen transitions.",
+				"tasks": [
+					{
+						"id": "TR.C1",
+						"description": "`feat/add-help-overlay` — Global ? overlay rendered from the keymap registry over a z-index layer. Keymap now owns the overlay lifecycle; new helpOverlay() component renders a centred panel card. Fixed a bug where renderer.keyInput and the focused renderable shared an InternalKeyHandler, letting arrow/enter keys leak through the overlay (fixed via key.stopPropagation()).",
+						"status": "done",
+						"dependsOn": [],
+						"notes": "Cross-referenced as 2TI.12 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+					},
+					{
+						"id": "TR.C2",
+						"description": "`feat/add-toast-and-confirm-overlays` — Transient toasts (success/info/error) + a real confirm modal; replace the double-press deletes in history & mapping-builder.",
+						"status": "todo",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.C3",
+						"description": "`feat/add-workflow-progress` — Progress bar (progress.filled/empty) + elapsed-time on WorkflowScreen.",
+						"status": "todo",
+						"dependsOn": [
+							"TR.B3"
+						]
+					},
+					{
+						"id": "TR.C4",
+						"description": "`feat/add-screen-transitions` — Subtle fade/slide on push/pop via the OpenTUI Timeline; fast, with a reduce-motion config toggle.",
+						"status": "todo",
+						"dependsOn": [],
+						"notes": "Cross-referenced as 2TI.18 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+					}
+				]
+			},
+			{
+				"id": "M5",
+				"name": "Phase D — Polish",
+				"goal": "Command palette, theme toggle, and refined schema field display.",
+				"tasks": [
+					{
+						"id": "TR.D1",
+						"description": "`feat/add-command-palette` — Global fuzzy jump-to-screen/action.",
+						"status": "todo",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.D2",
+						"description": "`feat/add-theme-toggle` — Light/dark switch in settings, persisted to config.",
+						"status": "todo",
+						"dependsOn": [
+							"TR.A1"
+						]
+					},
+					{
+						"id": "TR.D3",
+						"description": "`feat/refine-schema-field-display` — Two-line + ancestor-grouped schema fields in mapping-editor.",
+						"status": "todo",
+						"dependsOn": [],
+						"notes": "Cross-referenced as 2TM.5 / 2TM.6 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+					}
+				]
+			},
+			{
+				"id": "M6",
+				"name": "Phase E — Tutorial & demo resources",
+				"goal": "Charm VHS-scripted terminal recordings of the redesigned TUI for the README, docs, and onboarding, sequenced last so demos show the polished UI.",
+				"tasks": [
+					{
+						"id": "TR.E1",
+						"description": "`build/add-vhs-tooling` — Add a tapes/ directory, a `bun run demos` script that runs vhs over every .tape, and document the vhs/ttyd/ffmpeg prerequisites in the README. A reusable tapes/_common.tape sets width/height/font and a VHS Set Theme JSON mirroring the brand palette.",
+						"status": "todo",
+						"dependsOn": []
+					},
+					{
+						"id": "TR.E2",
+						"description": "`docs/add-workflow-demo-tapes` — One .tape per core workflow driving `bun run cli`: convert, validate, cross-submission check, and the mapping builder. Render GIFs into docs/assets/ and embed them in the README + a new docs/tutorials/ walkthrough.",
+						"status": "blocked",
+						"dependsOn": [
+							"TR.E1"
+						]
+					},
+					{
+						"id": "TR.E3",
+						"description": "`docs/add-quickstart-tutorial` — A getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings (first launch → convert → resolve issues → submit).",
+						"status": "blocked",
+						"dependsOn": [
+							"TR.E2"
+						],
+						"notes": "Cross-referenced as 2UD.1 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+					}
+				]
+			}
+		]
+	}
+]
