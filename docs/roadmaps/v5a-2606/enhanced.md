@@ -76,8 +76,9 @@ Each task is a single, independently-mergeable branch (per the project's small-b
 **Goal:** Charm VHS-scripted terminal recordings of the redesigned TUI for the README, docs, and onboarding, sequenced last so demos show the polished UI.
 
 - [x] **TR.E1** — `build/add-vhs-tooling` — Add a `tapes/` directory, a `bun run demos` script that runs `vhs` over every `.tape`, and document the `vhs`/`ttyd`/`ffmpeg` prerequisites in the README. A reusable `tapes/_common.tape` sets width/height/font and a VHS `Set Theme` JSON mirroring the brand palette.
-- [ ] **TR.E2** — `docs/add-workflow-demo-tapes` — One `.tape` per core workflow driving `bun run cli`: convert, validate, cross-submission check, and the mapping builder. Render GIFs into `docs/assets/` and embed them in the README + a new `docs/tutorials/` walkthrough. _(depends on TR.E1)_
-- [ ] **TR.E3** — `docs/add-quickstart-tutorial` — A getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings (first launch → convert → resolve issues → submit). _(blocked — depends on TR.E2)_
+- [x] **TR.E2** — `docs/add-workflow-demo-tapes` — One `.tape` per core workflow driving `bun run cli`: convert, validate, cross-submission check, and the mapping builder. Render GIFs into `docs/assets/` and embed them in the README + a new `docs/tutorials/` walkthrough.
+  - Note: Added `scripts/demo-env.ts` to pre-seed/restore `~/.iris/config.json` around recordings (convert gets a disposable scratch `outputDir` so it never writes into the tracked `docs/data/iris` samples). All four tapes exit via the dashboard's own `q` quit path — a raw `Ctrl+C` leaves the ttyd terminal unresponsive to further input after OpenTUI exits. Also fixed the `mapping-builder.ts` `selectedIndex` bug flagged as a follow-up in TR.B5's notes (duplicate/delete now use `getSelectedIndex()`).
+- [ ] **TR.E3** — `docs/add-quickstart-tutorial` — A getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings (first launch → convert → resolve issues → submit). _(depends on TR.E2)_
   - Note: Cross-referenced as `2UD.1` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
 
 ---
@@ -168,9 +169,8 @@ graph LR
 	TR.E1 --> TR.E2
 	TR.E2 --> TR.E3
 	TR.E3 --> M6
-	class TR.C2,TR.C3,TR.C4,TR.D1,TR.D2,TR.D3,TR.E2 todo
-	class TR.E3 blocked
-	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C5,TR.E1,TR.S1,TR.S2 done
+	class TR.C2,TR.C3,TR.C4,TR.D1,TR.D2,TR.D3,TR.E3 todo
+	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C5,TR.E1,TR.E2,TR.S1,TR.S2 done
 ```
 
 ## Cross-references to existing roadmap
