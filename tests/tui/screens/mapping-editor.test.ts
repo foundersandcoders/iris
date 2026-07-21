@@ -206,8 +206,8 @@ describe('MappingEditorScreen', () => {
 
 	describe('selection-driven actions (TR.B5 regression)', () => {
 		// leftSelect.selectedIndex is write-only on the real SelectRenderable and
-		// always reads back undefined — the mock deliberately keeps it readable
-		// (see tests/fixtures/tui/opentui.ts) so these tests only pin the fix if
+		// always reads back undefined — the mock mirrors this (see
+		// tests/fixtures/tui/opentui.ts) so these tests only pin the fix if
 		// they assert the resulting mutation, not just that the handler ran.
 		// Driving selection via setSelectedIndex() and checking the outcome is
 		// what actually fails against the old `.selectedIndex` read.

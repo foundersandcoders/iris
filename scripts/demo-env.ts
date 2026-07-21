@@ -107,6 +107,9 @@ if (command === 'setup') {
 	console.log(`Demo config written to ${CONFIG_PATH}`);
 } else if (command === 'teardown') {
 	if (existsSync(BACKUP_PATH)) {
+		if (existsSync(CONFIG_PATH)) {
+			rmSync(CONFIG_PATH);
+		}
 		renameSync(BACKUP_PATH, CONFIG_PATH);
 		console.log('Restored original config.json');
 	} else if (existsSync(CONFIG_PATH)) {
