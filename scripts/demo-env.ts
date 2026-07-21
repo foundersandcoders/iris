@@ -15,10 +15,10 @@
 
 import { existsSync, mkdirSync, writeFileSync, renameSync, rmSync } from 'fs';
 import { homedir } from 'os';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { DEFAULT_CONFIG } from '../src/lib/types/configTypes';
 
-const REPO_ROOT = join(dirname(new URL(import.meta.url).pathname), '..');
+const REPO_ROOT = join(import.meta.dirname, '..');
 const IRIS_DIR = join(homedir(), '.iris');
 const CONFIG_PATH = join(IRIS_DIR, 'config.json');
 const BACKUP_PATH = join(IRIS_DIR, 'config.json.demobak');
