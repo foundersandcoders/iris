@@ -13,31 +13,49 @@ import { homedir } from 'os';
 import { join } from 'path';
 
 const BUNDLED_FONT = join(import.meta.dirname, '..', 'assets', 'fonts', 'FiraCode-Regular.ttf');
-const FONT_NAME = 'Fira Code';
 
 /** VHS renders via headless Chrome and resolves FontFamily against whatever
  *  fonts are OS-registered — an uninstalled font silently falls back to a
  *  wide, non-monospace substitute. Install the bundled Fira Code so every
  *  machine that runs `bun run demos` renders identically, without requiring
  *  a manual `brew install --cask font-fira-code` step first. */
-function ensureFontInstalled(): void {
-	if (Bun.which('fc-list')) {
-		const proc = Bun.spawnSync(['fc-list', ':family'], { stdout: 'pipe' });
-		const installed = proc.stdout.toString();
-		if (installed.includes(FONT_NAME)) {
-			return;
-		}
+function fontDestination(): string {
+	if (process.platform === 'darwin') {
+		return join(homedir(), 'Library', 'Fonts', 'FiraCode-Regular.ttf');
 	}
+	if (process.platform === 'win32') {
+		// Copying the .ttf into the per-user Fonts folder alone doesn't register
+		// it — Windows also requires a matching HKCU\...\Fonts registry value
+		// before GDI/DirectWrite (and so headless Chrome, which VHS renders
+		// through) will enumerate it. Automating registry writes from here isn't
+		// worth the risk with no Windows machine to verify it against, so fail
+		// clearly with manual install steps rather than silently no-op.
+		throw new Error(
+			'Automatic font installation is not supported on Windows. ' +
+				'Install Fira Code manually: double-click assets/fonts/FiraCode-Regular.ttf and choose "Install", then re-run `bun run demos`.'
+		);
+	}
+	return join(homedir(), '.local', 'share', 'fonts', 'FiraCode-Regular.ttf');
+}
 
-	const destDir =
-		process.platform === 'darwin' ? join(homedir(), 'Library', 'Fonts') : join(homedir(), '.local', 'share', 'fonts');
-	const dest = join(destDir, 'FiraCode-Regular.ttf');
+/** Bytes must match the bundled font exactly — a same-named-but-different
+ *  file at the destination (or an `fc-list` hit for an unrelated font that
+ *  merely shares "Fira Code" in its family name) must not short-circuit the
+ *  install, or the recording silently stops being reproducible across
+ *  machines. */
+function isBundledFontInstalled(dest: string): boolean {
+	if (!existsSync(dest)) return false;
+	return Bun.file(dest).size === Bun.file(BUNDLED_FONT).size;
+}
 
-	if (existsSync(dest)) {
+function ensureFontInstalled(): void {
+	const dest = fontDestination();
+
+	if (isBundledFontInstalled(dest)) {
 		return;
 	}
 
-	mkdirSync(destDir, { recursive: true });
+	mkdirSync(join(dest, '..'), { recursive: true });
 	copyFileSync(BUNDLED_FONT, dest);
 	console.log(`Installed bundled font: ${dest}`);
 
