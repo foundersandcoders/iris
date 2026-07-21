@@ -20,9 +20,11 @@ Type "clear"
 Enter
 Show
 
-Type "bun run cli"
+Type "iris"
+Sleep 1s
 Enter
-Sleep 3s
+Wait+Screen /Dashboard/
+Sleep 1s
 
 # Dashboard: select "Mapping Builder" — goes straight to the list
 Type "4"

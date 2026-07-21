@@ -106,9 +106,10 @@ A walkthrough of each recording, with fuller commentary, lives in [docs/tutorial
 
 ```bash
 brew install vhs ttyd ffmpeg
+bun link
 ```
 
-See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms.
+See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms. `bun link` puts the `iris` command on `PATH` — the tapes launch the app the same way a real user would, not via `bun run cli`.
 
 **Regenerate all recordings:**
 
@@ -116,7 +117,7 @@ See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms.
 bun run demos
 ```
 
-This renders every `tapes/*.tape` file (skipping shared includes prefixed with `_`) into `docs/assets/`.
+This renders every `tapes/*.tape` file (skipping shared includes prefixed with `_`) into `docs/assets/`. The recording font (Fira Code) is bundled at `assets/fonts/` and installed automatically on first run.
 
 ---
 
