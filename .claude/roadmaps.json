@@ -201,13 +201,13 @@
 					{
 						"id": "TR.E1",
 						"description": "`build/add-vhs-tooling` — Add a tapes/ directory, a `bun run demos` script that runs vhs over every .tape, and document the vhs/ttyd/ffmpeg prerequisites in the README. A reusable tapes/_common.tape sets width/height/font and a VHS Set Theme JSON mirroring the brand palette.",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": []
 					},
 					{
 						"id": "TR.E2",
 						"description": "`docs/add-workflow-demo-tapes` — One .tape per core workflow driving `bun run cli`: convert, validate, cross-submission check, and the mapping builder. Render GIFs into docs/assets/ and embed them in the README + a new docs/tutorials/ walkthrough.",
-						"status": "blocked",
+						"status": "todo",
 						"dependsOn": [
 							"TR.E1"
 						]
