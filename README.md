@@ -76,6 +76,28 @@ iris/
 
 See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions and commands. Primary runtime/tooling and test commands are exposed in [package.json](package.json) scripts.
 
+### Demo recordings
+
+![Hello, Iris](docs/assets/hello.gif)
+
+Terminal recordings for the README and docs are scripted with [Charm VHS](https://github.com/charmbracelet/vhs). Tapes live in `tapes/` and share settings from `tapes/_common.tape` (dimensions, font, and a theme mirroring Iris' brand palette).
+
+**Prerequisites** (macOS/Homebrew):
+
+```bash
+brew install vhs ttyd ffmpeg
+```
+
+See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms.
+
+**Regenerate all recordings:**
+
+```bash
+bun run demos
+```
+
+This renders every `tapes/*.tape` file (skipping shared includes prefixed with `_`) into `docs/assets/`.
+
 ---
 
 ## Resources
