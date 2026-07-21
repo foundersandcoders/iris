@@ -182,6 +182,10 @@ export class RGBA {
 		return new RGBA(new Float32Array([r, g, b, a]));
 	}
 
+	static fromValues(r: number, g: number, b: number, a = 1): RGBA {
+		return new RGBA(new Float32Array([r, g, b, a]));
+	}
+
 	get r(): number {
 		return this.buffer[0];
 	}
@@ -198,6 +202,17 @@ export class RGBA {
 	equals(other: RGBA | undefined | null): boolean {
 		if (!other) return false;
 		return this.r === other.r && this.g === other.g && this.b === other.b && this.a === other.a;
+	}
+}
+
+/** Mirrors opentui's real StyledText: a thin wrapper around a chunks array.
+ *  TextRenderable.toStyledText duck-types on `.chunks`, so this only needs
+ *  to carry it through. */
+export class StyledText {
+	chunks: unknown[];
+
+	constructor(chunks: unknown[]) {
+		this.chunks = chunks;
 	}
 }
 

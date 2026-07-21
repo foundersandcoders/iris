@@ -3,15 +3,19 @@
  */
 import {
 	BoxRenderable,
+	RGBA,
+	StyledText,
 	TextRenderable,
 	SelectRenderable,
 	SelectRenderableEvents,
 	type SelectOption,
+	type TextChunk,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../assets/brand/theme';
+import { theme, symbols, PALETTE } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { Keymap } from '../utils/keymap';
+import { APP_VERSION } from '../utils/layout';
 import { appShell, panel } from '../components';
 import { createStorage } from '../../lib/storage';
 import type { IrisConfig } from '../../lib/types/configTypes';
@@ -25,6 +29,42 @@ interface MenuItem {
 
 const CONTAINER_ID = 'dashboard-root';
 const RECENT_ACTIVITY_LIMIT = 5;
+
+/** Linear per-character RGB interpolation across a line, left to right.
+ *  Matches gradient-string@3.0.0's default `rgb` mode (the terminal-kit-era
+ *  logo used this via `gradient([from, to])(line)` before the OpenTUI
+ *  migration removed the dependency). */
+function gradientLine(text: string, from: string, to: string): StyledText {
+	const start = RGBA.fromHex(from);
+	const end = RGBA.fromHex(to);
+	const chars = [...text];
+	const chunks: TextChunk[] = chars.map((char, i) => {
+		const t = chars.length > 1 ? i / (chars.length - 1) : 0;
+		const fg = RGBA.fromValues(
+			start.r + (end.r - start.r) * t,
+			start.g + (end.g - start.g) * t,
+			start.b + (end.b - start.b) * t
+		);
+		return { __isChunk: true, text: char, fg };
+	});
+	return new StyledText(chunks);
+}
+
+/** Box-drawing "Iris" wordmark, framed with a lattice border. Ported verbatim
+ *  from the pre-OpenTUI dashboard (commit 07c7deb) — ASCII art, not text. */
+const LOGO_LINES = [
+	'  ┏━┓   ╭┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬╮   ┏━┓  ',
+	'  ┗━╋━━━┿┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┿━━━╋━┛  ',
+	'╭─┰─╂─░██████         ░██       ╰───╂─┰─╮',
+	'│ ┃ ┃   ░██                         ┃ ┃ │',
+	'│ ┃ ┃   ░██  ░██░████ ░██ ░███████  ┃ ┃ │',
+	'│ ┃ ┃   ░██  ░███     ░██░██        ┃ ┃ │',
+	'│ ┃ ┃   ░██  ░██      ░██ ░███████  ┃ ┃ │',
+	'│ ┃ ┃   ░██  ░██      ░██       ░██ ┃ ┃ │',
+	'╰─┸─╂─░██████░██      ░██ ░███████──╂─┸─╯',
+	'  ┏━╋━━━┿┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┯┿━━━╋━┓  ',
+	'  ┗━┛   ╰┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴╯   ┗━┛  ',
+] as const;
 
 /** One "Recent Activity" row: date, filename, learner count. */
 function formatActivityRow(entry: HistoryEntry): string {
@@ -113,9 +153,11 @@ export class Dashboard implements Screen {
 				],
 			});
 
-			// Shell: header + breadcrumb, content region, footer keybar
+			// Shell: header + breadcrumb, content region, footer keybar.
+			// Title drops "Iris" — the wordmark now lives in the left column below.
 			const shell = appShell(this.renderer, {
 				id: CONTAINER_ID,
+				title: `v${APP_VERSION}`,
 				breadcrumb: 'Dashboard',
 				footer: this.keymap.toKeybar(),
 			});
@@ -123,6 +165,28 @@ export class Dashboard implements Screen {
 			// Menu panel
 			const menuPanel = panel(this.renderer, { title: 'Quick Actions', flexGrow: 1 });
 			menuPanel.add(select);
+
+			// Left column: lattice-framed logo (centred), then the menu panel
+			// filling the remaining height/width. Gradient (Tyrian → Blueglass)
+			// applied per-line, left to right.
+			const leftColumn = new BoxRenderable(this.renderer, {
+				flexDirection: 'column',
+				flexGrow: 1,
+			});
+			const logoRow = new BoxRenderable(this.renderer, {
+				flexDirection: 'column',
+				width: '100%',
+				alignItems: 'center',
+			});
+			for (const line of LOGO_LINES) {
+				logoRow.add(
+					new TextRenderable(this.renderer, {
+						content: gradientLine(line, PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi),
+					})
+				);
+			}
+			leftColumn.add(logoRow);
+			leftColumn.add(menuPanel.box);
 
 			// Recent Activity panel — display-only, newest-first
 			const activityPanel = panel(this.renderer, { title: 'Recent Activity', flexGrow: 1 });
@@ -138,9 +202,9 @@ export class Dashboard implements Screen {
 				}
 			}
 
-			// Body: menu + activity side by side
+			// Body: left column (logo + menu) + activity panel side by side
 			const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
-			body.add(menuPanel.box);
+			body.add(leftColumn);
 			body.add(activityPanel.box);
 			shell.content.add(body);
 
