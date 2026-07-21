@@ -28,7 +28,8 @@
     "cli": "bun run src/cli.ts",
     "build:tui": "bun run scripts/build-tui.ts",
     "build:tui:mac": "bun run scripts/build-tui.ts --target darwin-arm64",
-    "build:tui:win": "bun run scripts/build-tui.ts --target windows-x64"
+    "build:tui:win": "bun run scripts/build-tui.ts --target windows-x64",
+    "demos": "bun run scripts/generate-demos.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",
