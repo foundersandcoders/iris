@@ -8,6 +8,43 @@
 
 import { parseArgs } from 'util';
 import { Glob } from 'bun';
+import { existsSync, mkdirSync, copyFileSync } from 'fs';
+import { homedir } from 'os';
+import { join } from 'path';
+
+const BUNDLED_FONT = join(import.meta.dirname, '..', 'assets', 'fonts', 'FiraCode-Regular.ttf');
+const FONT_NAME = 'Fira Code';
+
+/** VHS renders via headless Chrome and resolves FontFamily against whatever
+ *  fonts are OS-registered — an uninstalled font silently falls back to a
+ *  wide, non-monospace substitute. Install the bundled Fira Code so every
+ *  machine that runs `bun run demos` renders identically, without requiring
+ *  a manual `brew install --cask font-fira-code` step first. */
+function ensureFontInstalled(): void {
+	if (Bun.which('fc-list')) {
+		const proc = Bun.spawnSync(['fc-list', ':family'], { stdout: 'pipe' });
+		const installed = proc.stdout.toString();
+		if (installed.includes(FONT_NAME)) {
+			return;
+		}
+	}
+
+	const destDir =
+		process.platform === 'darwin' ? join(homedir(), 'Library', 'Fonts') : join(homedir(), '.local', 'share', 'fonts');
+	const dest = join(destDir, 'FiraCode-Regular.ttf');
+
+	if (existsSync(dest)) {
+		return;
+	}
+
+	mkdirSync(destDir, { recursive: true });
+	copyFileSync(BUNDLED_FONT, dest);
+	console.log(`Installed bundled font: ${dest}`);
+
+	if (process.platform === 'linux' && Bun.which('fc-cache')) {
+		Bun.spawnSync(['fc-cache', '-f']);
+	}
+}
 
 const { values } = parseArgs({
 	args: process.argv.slice(2),
@@ -46,6 +83,8 @@ if (missing.length > 0) {
 	console.error('\nSee https://github.com/charmbracelet/vhs for other platforms.');
 	process.exit(1);
 }
+
+ensureFontInstalled();
 
 const glob = new Glob('tapes/*.tape');
 const tapePaths = [...glob.scanSync('.')]

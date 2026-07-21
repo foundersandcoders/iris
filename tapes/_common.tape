@@ -3,14 +3,23 @@
 # | Sets dimensions, font, and a Theme JSON mirroring the brand
 # | palette in assets/brand/theme.ts (THEMES.themeLight).
 # |
+# | FontFamily is Fira Code, bundled at assets/fonts/FiraCode-Regular.ttf
+# | and installed by generate-demos.ts before every render — VHS renders
+# | via headless Chrome and resolves FontFamily against whatever fonts
+# | are OS-registered, so an uninstalled font silently falls back to a
+# | wide, non-monospace substitute (this broke every recording before).
+# |
+# | Width is wide enough for the real two-panel dashboard layout at this
+# | FontSize — the previous 1200 wrapped both panels.
+# |
 # | This file holds settings only — no Output or commands — so it
 # | stays safely `Source`-able from any tape.
 # |==================================================================|
 
-Set Width 1200
-Set Height 700
+Set Width 1800
+Set Height 900
 Set FontSize 22
-Set FontFamily "JetBrains Mono"
+Set FontFamily "Fira Code"
 Set Padding 20
 Set TypingSpeed 60ms
 
