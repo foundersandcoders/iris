@@ -67,6 +67,14 @@ function findPanelBox(root: any, title: string): any {
 	return null;
 }
 
+/** Grab the Keymap's dispatcher registered via renderer.keyInput.on('keypress', fn). */
+function getKeypressHandler(mockContext: ReturnType<typeof fixtures.createMockContext>) {
+	const call = (mockContext.renderer.keyInput.on as any).mock.calls.find(
+		(c: unknown[]) => c[0] === 'keypress'
+	);
+	return call?.[1] as (key: { name: string }) => void;
+}
+
 describe('MappingEditorScreen', () => {
 	let mockContext: ReturnType<typeof fixtures.createMockContext>;
 
@@ -126,14 +134,6 @@ describe('MappingEditorScreen', () => {
 	});
 
 	describe('two-panel focus sync (TR.B5 regression)', () => {
-		/** Grab the Keymap's dispatcher registered via renderer.keyInput.on('keypress', fn). */
-		function getKeypressHandler(mockContext: ReturnType<typeof fixtures.createMockContext>) {
-			const call = (mockContext.renderer.keyInput.on as any).mock.calls.find(
-				(c: unknown[]) => c[0] === 'keypress'
-			);
-			return call?.[1] as (key: { name: string }) => void;
-		}
-
 		it('keeps border colour and real focus in sync across Tab', async () => {
 			const screen = new MappingEditorScreen(mockContext);
 			screen.render({ mode: 'edit', mappingId: 'test-mapping' });
@@ -201,6 +201,48 @@ describe('MappingEditorScreen', () => {
 			// panel — the border must not flicker or fall out of sync with focusTarget.
 			expect(rightBox.borderColor.equals(accentColour)).toBe(true);
 			expect((screen as any).focusTarget).toBe('right');
+		});
+	});
+
+	describe('selection-driven actions (TR.B5 regression)', () => {
+		// leftSelect.selectedIndex is write-only on the real SelectRenderable and
+		// always reads back undefined — the mock mirrors this (see
+		// tests/fixtures/tui/opentui.ts) so these tests only pin the fix if
+		// they assert the resulting mutation, not just that the handler ran.
+		// Driving selection via setSelectedIndex() and checking the outcome is
+		// what actually fails against the old `.selectedIndex` read.
+
+		it('removes the selected mapping on "x"', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'edit', mappingId: 'test-mapping' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const leftSelect = (screen as any).leftSelect;
+			leftSelect.setSelectedIndex(1); // Sex row
+
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 'x' });
+
+			const mappings = (screen as any).mappings;
+			expect(mappings).toHaveLength(1);
+			expect(mappings[0].csvColumn).toBe('ULN');
+			expect((screen as any).dirty).toBe(true);
+		});
+
+		it('cycles the selected mapping\'s transform on "t"', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'edit', mappingId: 'test-mapping' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const leftSelect = (screen as any).leftSelect;
+			leftSelect.setSelectedIndex(0); // ULN row, starts at stringToInt
+
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 't' });
+
+			const mappings = (screen as any).mappings;
+			const uln = mappings.find((m: { csvColumn: string }) => m.csvColumn === 'ULN');
+			expect(uln.transform).toBe('postcode'); // next after stringToInt in TRANSFORMS
 		});
 	});
 });

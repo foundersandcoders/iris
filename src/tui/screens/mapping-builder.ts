@@ -329,7 +329,7 @@ export class MappingBuilderScreen implements Screen {
 	private duplicateSelected(resolve: (result: ScreenResult) => void): void {
 		if (!this.listSelect) return;
 
-		const index = this.listSelect.selectedIndex - 1; // Offset for "Create New"
+		const index = this.listSelect.getSelectedIndex() - 1; // Offset for "Create New"
 		if (index < 0 || index >= this.mappingItems.length) return;
 
 		const item = this.mappingItems[index];
@@ -339,7 +339,7 @@ export class MappingBuilderScreen implements Screen {
 	private async handleDelete(resolve: (result: ScreenResult) => void): Promise<void> {
 		if (!this.listSelect) return;
 
-		const index = this.listSelect.selectedIndex - 1;
+		const index = this.listSelect.getSelectedIndex() - 1;
 		if (index < 0 || index >= this.mappingItems.length) return;
 
 		const item = this.mappingItems[index];
