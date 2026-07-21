@@ -14,7 +14,7 @@ Type "clear"
 Enter
 Type "bun run scripts/demo-env.ts setup"
 Enter
-Sleep 500ms
+Wait+Screen /Demo config written to|Recovering/
 Type "clear"
 Enter
 Show
@@ -23,7 +23,7 @@ Type "iris"
 Sleep 1s
 Enter
 Wait+Screen /Dashboard/
-Sleep 1s
+Sleep 3s
 
 # Dashboard: select "Validate XML Submission"
 Type "2"
@@ -33,11 +33,13 @@ Sleep 1s
 Down
 Sleep 500ms
 Enter
+Wait+Screen@10s /Validation (Complete|Failed)/
 Sleep 3s
 
 # Success screen — return to dashboard
 Enter
-Sleep 1s
+Wait+Screen /Dashboard/
+Sleep 3s
 
 # Quit via the dashboard's own "q" binding — a raw Ctrl+C skips OpenTUI's
 # terminal-restore teardown and breaks all typing afterward.
@@ -47,5 +49,5 @@ Sleep 1s
 Hide
 Type "bun run scripts/demo-env.ts teardown"
 Enter
-Sleep 500ms
+Wait+Screen /Restored original config|Removed demo config/
 Show

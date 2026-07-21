@@ -15,7 +15,7 @@ Type "clear"
 Enter
 Type "bun run scripts/demo-env.ts setup"
 Enter
-Sleep 500ms
+Wait+Screen /Demo config written to|Recovering/
 Type "clear"
 Enter
 Show
@@ -24,7 +24,7 @@ Type "iris"
 Sleep 1s
 Enter
 Wait+Screen /Dashboard/
-Sleep 1s
+Sleep 3s
 
 # Dashboard: select "Mapping Builder" — goes straight to the list
 Type "4"
@@ -37,15 +37,18 @@ Sleep 1s
 # Duplicate the bundled mapping — pushes to mapping-editor in duplicate
 # mode, breadcrumb becomes "Edit Mapping: ... (copy)"
 Type "d"
-Sleep 2s
+Wait+Screen@10s /Edit Mapping/
+Sleep 3s
 
 # Back out without saving — no confirm/unsaved-changes guard fires here
 Escape
-Sleep 1s
+Wait+Screen /Mapping Builder/
+Sleep 3s
 
 # Back at the list — return to dashboard
 Escape
-Sleep 1s
+Wait+Screen /Dashboard/
+Sleep 3s
 
 # Quit via the dashboard's own "q" binding — a raw Ctrl+C skips OpenTUI's
 # terminal-restore teardown and breaks all typing afterward.
@@ -55,5 +58,5 @@ Sleep 1s
 Hide
 Type "bun run scripts/demo-env.ts teardown"
 Enter
-Sleep 500ms
+Wait+Screen /Restored original config|Removed demo config/
 Show
