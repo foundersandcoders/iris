@@ -554,7 +554,7 @@ export class MappingEditorScreen implements Screen {
 	private removeSelectedMapping(): void {
 		if (!this.leftSelect) return;
 
-		const index = this.leftSelect.selectedIndex;
+		const index = this.leftSelect.getSelectedIndex();
 		if (index < 0 || index >= this.displayMappings.length) return;
 
 		const displayMapping = this.displayMappings[index];
@@ -581,7 +581,7 @@ export class MappingEditorScreen implements Screen {
 	private cycleTransform(): void {
 		if (!this.leftSelect) return;
 
-		const index = this.leftSelect.selectedIndex;
+		const index = this.leftSelect.getSelectedIndex();
 		if (index < 0 || index >= this.displayMappings.length) return;
 
 		const displayMapping = this.displayMappings[index];
