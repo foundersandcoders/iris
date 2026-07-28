@@ -82,6 +82,8 @@ See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions 
 
 Terminal recordings for the README and docs are scripted with [Charm VHS](https://github.com/charmbracelet/vhs). Tapes live in `tapes/` and share settings from `tapes/_common.tape` (dimensions, font, and a theme mirroring Iris' brand palette).
 
+New to Iris? Start with the [quickstart tutorial](docs/tutorials/quickstart.md) — a non-technical, first-launch-to-submission walkthrough.
+
 #### Workflows
 
 A walkthrough of each recording, with fuller commentary, lives in [docs/tutorials/workflows.md](docs/tutorials/workflows.md).
