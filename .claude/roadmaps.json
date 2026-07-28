@@ -216,7 +216,7 @@
 					{
 						"id": "TR.E3",
 						"description": "`docs/add-quickstart-tutorial` — A getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings (first launch → convert → resolve issues → submit).",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": [
 							"TR.E2"
 						],
