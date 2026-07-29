@@ -34,27 +34,27 @@ If everything on this screen looks right, your submission file is ready and you 
 
 ## 3. Resolve issues
 
-Sometimes a CSV has gaps or inconsistencies Iris can't safely resolve on its own, missing fields, values that don't match the expected format, that sort of thing. When that happens, you land on the interactive validation explorer instead of the completion screen.
+Sometimes a CSV has gaps or inconsistencies Iris can't safely resolve on its own — missing fields, values that don't match the expected format, and similar issues. When that happens, you land on the interactive validation explorer instead of the completion screen.
 
 ![Validate workflow](../assets/validate.gif)
 
 1. Issues are listed with a severity marker, most serious first.
 2. Filter the list by severity if you want to work through blockers before warnings.
 3. Select an issue to see exactly which row and field it affects, and why Iris flagged it.
-4. Fix the problem in your source CSV, then re-run **Convert** from the dashboard. There's no in-place editing inside Iris, the CSV is always the source of truth.
+4. Fix the problem in your source CSV, then re-run **Convert** from the dashboard. There's no in-place editing inside Iris — the CSV is always the source of truth.
 
 Repeat this until conversion completes cleanly.
 
 ## 4. Submit your file
 
-Iris doesn't submit to ESFA on your own behalf, that step happens through ESFA's own submission portal using the XML file Iris generated. Before you send it, it's worth running one more check.
+Iris doesn't submit to ESFA on your own behalf — that step happens through ESFA's own submission portal using the XML file Iris generated. Before you send it, it's worth running one more check.
 
 ![Cross-submission check workflow](../assets/check.gif)
 
 1. From the dashboard, select **Cross-Submission Check**.
 2. Pick your new submission, then the previous one you're comparing it against.
-3. Iris compares the two and flags anything that looks off, a sudden drop in learner count, a schema mismatch, and similar red flags that are easy to miss by eye.
-4. Review the results in the two-pane view (`Tab` and the arrow keys to navigate). Nothing here blocks you from submitting, it's a second pair of eyes before you do.
+3. Iris compares the two and flags anything that looks off — a sudden drop in learner count, a schema mismatch, and similar red flags that are easy to miss by eye.
+4. Review the results in the two-pane view (`Tab` and the arrow keys to navigate). Nothing here blocks you from submitting — it's a second pair of eyes before you do.
 
 Once you're satisfied, upload the generated XML file through ESFA's submission portal as usual.
 
