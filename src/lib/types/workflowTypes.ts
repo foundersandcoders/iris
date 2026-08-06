@@ -52,6 +52,13 @@ export interface ValidateInput {
 	mapping: IlrMappingConfig;
 }
 
+// XML validation checks structural/schema conformance only: it has no CSV
+// rows to skip-filter, so it never needs a mapping (see xmlValidate.ts).
+export interface XmlValidateInput {
+	filePath: string;
+	registry: SchemaRegistry;
+}
+
 // TODO: Reconcile `interface ValidateOutput` with `src/lib/schema/validationTypes`
 export interface ValidateOutput {
 	validation: ValidationResult;

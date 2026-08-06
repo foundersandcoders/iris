@@ -14,7 +14,7 @@ import { validateValue } from '../schema/schemaValidator';
 
 import type { SchemaValidationIssue } from '../types/schemaTypes';
 import type {
-	ValidateInput,
+	XmlValidateInput,
 	ValidateOutput,
 	WorkflowStep,
 	WorkflowStepEvent,
@@ -30,7 +30,7 @@ const STEPS = {
 } as const;
 
 export async function* xmlValidateWorkflow(
-	input: ValidateInput
+	input: XmlValidateInput
 ): AsyncGenerator<WorkflowStepEvent, WorkflowResult<ValidateOutput>, void> {
 	const startTime = Date.now();
 	const steps: WorkflowStep[] = [];

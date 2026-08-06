@@ -185,11 +185,9 @@ export class WorkflowScreen implements Screen {
 				// Auto-detect CSV vs XML
 				const ext = filePath.toLowerCase();
 				if (ext.endsWith('.xml')) {
-					// XML validation doesn't actually use mapping, but ValidateInput requires it
 					return xmlValidateWorkflow({
 						filePath,
 						registry,
-						mapping: facAirtableMapping, // Unused for XML validation
 					}) as AsyncGenerator<WorkflowStepEvent, WorkflowResult<WorkflowOutput>, void>;
 				} else {
 					return validateWorkflow({
