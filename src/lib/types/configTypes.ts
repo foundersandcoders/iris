@@ -35,6 +35,9 @@ export interface IrisConfig {
 	csvInputDir?: string;
 	/** Directory for user XSD schema files */
 	schemaDir?: string;
+	/** Disable screen transition animations. Read once at Router construction
+	 *  — changing this takes effect on next launch, not live. */
+	reduceMotion?: boolean;
 }
 
 /** Default configuration values */
@@ -52,6 +55,7 @@ export const DEFAULT_CONFIG: IrisConfig = {
 	activeMapping: 'fac-airtable-2025',
 	collection: 'ILR',
 	serialNo: '01',
+	reduceMotion: false,
 };
 
 /** Validation issue for config validation */
@@ -127,6 +131,11 @@ export function validateConfig(config: unknown): ConfigValidationResult {
 		if (typeof c.serialNo !== 'string' || c.serialNo.length !== 2) {
 			issues.push({ field: 'serialNo', message: 'Must be a 2-character string' });
 		}
+	}
+
+	// reduceMotion (optional)
+	if (c.reduceMotion !== undefined && typeof c.reduceMotion !== 'boolean') {
+		issues.push({ field: 'reduceMotion', message: 'Must be true or false' });
 	}
 
 	return {

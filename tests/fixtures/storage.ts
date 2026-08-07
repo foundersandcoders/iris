@@ -20,6 +20,7 @@ export const defaultConfig: IrisConfig = {
 	activeMapping: 'fac-airtable-2025',
 	collection: 'ILR',
 	serialNo: '01',
+	reduceMotion: false,
 };
 
 export const customConfig: IrisConfig = {
@@ -37,6 +38,7 @@ export const customConfig: IrisConfig = {
 	collection: 'ILR',
 	serialNo: '02',
 	outputDir: '/custom/path',
+	reduceMotion: false,
 };
 
 export const malformedConfigJson = '{ invalid json }';

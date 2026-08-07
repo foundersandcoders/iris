@@ -132,6 +132,16 @@ describe('config types', () => {
 				expect(result.data.serialNo).toBe('01');
 			}
 		});
+
+		it('defaults reduceMotion to false', async () => {
+			expect(DEFAULT_CONFIG.reduceMotion).toBe(false);
+
+			const result = await storage.loadConfig();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.reduceMotion).toBe(false);
+			}
+		});
 	});
 
 	describe('type validation', () => {
@@ -310,6 +320,21 @@ describe('config types', () => {
 
 			expect(result.valid).toBe(true);
 			expect(result.issues).toHaveLength(0);
+		});
+
+		it('rejects a non-boolean reduceMotion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, reduceMotion: 'yes' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'reduceMotion')).toBe(true);
+		});
+
+		it('accepts reduceMotion true/false, and undefined', () => {
+			expect(validateConfig({ ...DEFAULT_CONFIG, reduceMotion: true }).valid).toBe(true);
+			expect(validateConfig({ ...DEFAULT_CONFIG, reduceMotion: false }).valid).toBe(true);
+			const { reduceMotion: _omit, ...withoutReduceMotion } = DEFAULT_CONFIG;
+			expect(validateConfig(withoutReduceMotion).valid).toBe(true);
 		});
 
 		it('reports multiple validation issues', () => {
