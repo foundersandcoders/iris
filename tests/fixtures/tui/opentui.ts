@@ -55,6 +55,12 @@ class BaseRenderable {
 	getChildren(): BaseRenderable[] {
 		return this.children;
 	}
+
+	/** Real Renderable.requestRender() delegates to the render context.
+	 *  opentui-spinner's SpinnerRenderable calls this from its color/frames
+	 *  setters (including during construction, via Object.assign above), so
+	 *  it must exist even though this double never runs an actual render loop. */
+	requestRender(): void {}
 }
 
 for (const key of COLOUR_KEYS) {

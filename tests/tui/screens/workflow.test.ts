@@ -255,6 +255,136 @@ describe('WorkflowScreen', () => {
 		});
 	});
 
+	describe('progress bar and elapsed timer', () => {
+		// handleEvent() is driven directly here rather than through a live
+		// generator: opentui-spinner's SpinnerRenderable constructor
+		// unconditionally calls resolveRenderLib() (to encode unicode frames),
+		// which the test double deliberately throws on (see its comment) —
+		// no test may construct a real spinner. step:start events are
+		// therefore synthesised with a fake spinner stand-in already seeded
+		// into stepRenderables, mirroring the post-step:start state without
+		// invoking the real constructor. buildUI() must run first per the
+		// documented pattern (populates stepRenderables).
+		function stepEvent(type: string, id: string, extra: Record<string, unknown> = {}) {
+			return { type, step: { id, name: id, status: 'running', progress: 0, ...extra }, timestamp: 0 };
+		}
+
+		function buildScreen(): WorkflowScreen {
+			const screen = new WorkflowScreen(mockContext);
+			(screen as any).workflowType = 'convert';
+			(screen as any).steps = [
+				{ id: 'parse', name: 'Parse CSV', status: 'pending', progress: 0 },
+				{ id: 'validate', name: 'Validate Data', status: 'pending', progress: 0 },
+				{ id: 'generate', name: 'Generate XML', status: 'pending', progress: 0 },
+				{ id: 'save', name: 'Save Output', status: 'pending', progress: 0 },
+			];
+			(screen as any).buildUI('Converting');
+			return screen;
+		}
+
+		it('advances the bar as steps complete', () => {
+			const screen = buildScreen();
+			(screen as any).handleEvent(stepEvent('step:complete', 'parse', { status: 'complete' }));
+
+			expect((screen as any).progress.getValue()).toBe(0.25);
+			screen.cleanup();
+		});
+
+		it('a skipped step counts toward completion — the blocked-convert case', () => {
+			const screen = buildScreen();
+			(screen as any).handleEvent(stepEvent('step:complete', 'parse', { status: 'complete' }));
+			(screen as any).handleEvent(stepEvent('step:complete', 'validate', { status: 'complete' }));
+			(screen as any).handleEvent(stepEvent('step:complete', 'generate', { status: 'skipped' }));
+			(screen as any).handleEvent(stepEvent('step:complete', 'save', { status: 'skipped' }));
+
+			expect((screen as any).progress.getValue()).toBe(1);
+			screen.cleanup();
+		});
+
+		it('step:error advances the bar and recolours it to the error accent', async () => {
+			const { theme } = await import('../../../assets/brand/theme');
+			const { RGBA } = await import('../../fixtures/tui/opentui');
+
+			const screen = buildScreen();
+			(screen as any).handleEvent(
+				stepEvent('step:error', 'parse', { status: 'failed', error: new Error('boom') })
+			);
+
+			const progress = (screen as any).progress;
+			expect(progress.getValue()).toBe(0.25);
+			const barContainer = progress.root.getChildren()[0];
+			const filledText = barContainer.getChildren()[0];
+			expect(filledText.fg.equals(RGBA.fromHex(theme.errorAccent))).toBe(true);
+
+			screen.cleanup();
+		});
+
+		it('step:progress refines a running step without stopping its spinner', () => {
+			const screen = buildScreen();
+			// Seed the post-step:start state directly, bypassing the real
+			// SpinnerRenderable constructor (see the describe-level comment).
+			const fakeSpinner = { stop: vi.fn() };
+			(screen as any).stepRenderables.get('parse').spinner = fakeSpinner;
+			(screen as any).steps[0].status = 'running';
+
+			(screen as any).handleEvent(
+				stepEvent('step:progress', 'parse', { status: 'running', progress: 50 })
+			);
+
+			// Half of one quarter = 0.125.
+			expect((screen as any).progress.getValue()).toBe(0.125);
+			const renderables = (screen as any).stepRenderables.get('parse');
+			expect(renderables.spinner).toBe(fakeSpinner);
+			expect(fakeSpinner.stop).not.toHaveBeenCalled();
+
+			screen.cleanup();
+		});
+
+		it('starts the elapsed timer during a run and clears it in the finally block', async () => {
+			vi.useFakeTimers();
+			const screen = new WorkflowScreen(mockContext);
+			const resultPromise = screen.render({ filePath: 'data.csv', workflowType: 'convert' });
+			await resultPromise;
+
+			expect((screen as any).elapsedTimer).toBeUndefined();
+			vi.useRealTimers();
+			screen.cleanup();
+		});
+
+		it('cleanup() clears a still-running elapsed timer', () => {
+			vi.useFakeTimers();
+			const screen = buildScreen();
+			(screen as any).startTime = Date.now();
+			(screen as any).startElapsedTimer();
+			vi.advanceTimersByTime(10);
+
+			expect((screen as any).elapsedTimer).toBeDefined();
+			screen.cleanup();
+			expect((screen as any).elapsedTimer).toBeUndefined();
+
+			// No further ticks should fire against the torn-down screen.
+			const setStatusSpy = vi.spyOn((screen as any).progress, 'setStatus');
+			vi.advanceTimersByTime(5000);
+			expect(setStatusSpy).not.toHaveBeenCalled();
+
+			vi.useRealTimers();
+		});
+
+		it('the status readout ticks every second while running', () => {
+			vi.useFakeTimers();
+			const screen = buildScreen();
+			(screen as any).startTime = Date.now();
+			(screen as any).startElapsedTimer();
+			vi.advanceTimersByTime(2000);
+
+			const statusText = (screen as any).progress.root.getChildren()[1];
+			expect(statusText.content.chunks[0].text).toBe('elapsed 0:02');
+
+			screen.cleanup();
+			vi.useRealTimers();
+		});
+	});
+
 	describe('formatElapsed()', () => {
 		it('formats whole seconds as m:ss', () => {
 			expect(formatElapsed(0)).toBe('elapsed 0:00');

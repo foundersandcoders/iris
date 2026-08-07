@@ -6,7 +6,7 @@ import { SpinnerRenderable } from 'opentui-spinner';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { appShell, panel, type AppShell, type Panel } from '../components';
+import { appShell, panel, progressBar, type AppShell, type Panel, type ProgressBar } from '../components';
 import { Keymap } from '../utils/keymap';
 import type { ToastManager } from '../utils/toastManager';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
@@ -133,6 +133,9 @@ export class WorkflowScreen implements Screen {
 	private shell?: AppShell;
 	private stepsPanel?: Panel;
 	private stepsContainer?: BoxRenderable;
+	private progress?: ProgressBar;
+	private elapsedTimer?: ReturnType<typeof setInterval>;
+	private startTime = 0;
 	private keymap?: Keymap;
 
 	private workflowType: WorkflowType = 'convert';
@@ -181,6 +184,8 @@ export class WorkflowScreen implements Screen {
 		this.buildUI(config.title);
 
 		// Execute workflow
+		this.startTime = Date.now();
+		this.startElapsedTimer();
 		try {
 			const gen = this.createWorkflowGenerator(workflowType, filePath, registry, data);
 
@@ -194,13 +199,42 @@ export class WorkflowScreen implements Screen {
 			}
 		} catch (err) {
 			this.error = err instanceof Error ? err : new Error(String(err));
+		} finally {
+			// Covers success, error, and early return alike — one place, before
+			// routeToResultScreen() navigates away.
+			this.stopElapsedTimer();
 		}
 
 		// Route to appropriate result screen
 		return this.routeToResultScreen();
 	}
 
+	private startElapsedTimer(): void {
+		this.elapsedTimer ??= setInterval(() => {
+			this.progress?.setStatus(formatElapsed(Date.now() - this.startTime));
+		}, 1000);
+	}
+
+	private stopElapsedTimer(): void {
+		if (this.elapsedTimer) {
+			clearInterval(this.elapsedTimer);
+			this.elapsedTimer = undefined;
+		}
+	}
+
+	private updateProgress(): void {
+		this.progress?.setValue(computeAggregateProgress(this.steps));
+	}
+
 	cleanup(): void {
+		// The single most important line in this feature: a surviving interval
+		// holds a reference to this screen and keeps calling setStatus on
+		// renderables that cleanup() is about to remove, forever. The finally
+		// in render() covers the normal (success/error) exit; this covers
+		// teardown while the workflow is still running (e.g. the router
+		// replacing the screen mid-flight). stopElapsedTimer() is idempotent,
+		// so the two calls never conflict.
+		this.stopElapsedTimer();
 		this.keymap?.detach(this.renderer);
 		// Stop any running spinners
 		for (const renderables of this.stepRenderables.values()) {
@@ -417,6 +451,18 @@ export class WorkflowScreen implements Screen {
 		}
 
 		this.stepsPanel.add(this.stepsContainer);
+
+		// Sibling of stepsContainer, not nested inside it: stepsContainer has
+		// flexGrow:1 and absorbs the slack, which pins this to the panel's
+		// bottom edge and keeps it there as messages/error samples get
+		// appended above.
+		this.progress = progressBar(this.renderer, {
+			value: 0,
+			status: formatElapsed(0),
+			fillColor: theme.successAccent,
+		});
+		this.stepsPanel.add(this.progress.root);
+
 		this.shell.content.add(this.stepsPanel.box);
 
 		// Add to renderer
@@ -432,6 +478,7 @@ export class WorkflowScreen implements Screen {
 
 		if (event.type === 'step:start') {
 			step.status = 'running';
+			step.progress = 0;
 			step.message = undefined;
 			step.errorSamples = undefined;
 
@@ -447,10 +494,20 @@ export class WorkflowScreen implements Screen {
 
 			// Update name colour
 			renderables.nameText.fg = theme.primary;
+			this.updateProgress();
+		} else if (event.type === 'step:progress') {
+			// Dead code today by construction — no workflow yields this event —
+			// present so the bar's wiring is correct the day one does. Must NOT
+			// touch the spinner or icon: the step is still running.
+			step.progress = event.step.progress ?? 0;
+			if (event.step.message) step.message = event.step.message;
+			this.updateProgress();
 		} else if (event.type === 'step:complete') {
 			// Check if step was skipped (e.g. blocked by validation)
 			const isSkipped = event.step.status === 'skipped';
 			step.status = isSkipped ? 'skipped' : 'complete';
+			step.progress = 100;
+			this.updateProgress();
 
 			// Stop spinner, replace with appropriate icon
 			if (renderables.spinner) {
@@ -524,7 +581,10 @@ export class WorkflowScreen implements Screen {
 			}
 		} else if (event.type === 'step:error') {
 			step.status = 'failed';
+			step.progress = 100;
 			step.message = event.step.error?.message;
+			this.updateProgress();
+			this.progress?.setFillColor(theme.errorAccent);
 
 			// Stop spinner, replace with error icon
 			if (renderables.spinner) {
