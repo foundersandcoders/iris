@@ -138,8 +138,9 @@
 					{
 						"id": "TR.C2",
 						"description": "`feat/add-toast-overlays` — Transient toasts (success/info/error).",
-						"status": "todo",
-						"dependsOn": []
+						"status": "done",
+						"dependsOn": [],
+						"notes": "Evidence: src/tui/components/toast.ts and src/tui/utils/toastManager.ts (new); wired into settings.ts, history.ts, and workflow.ts on branch feat/tr/c2-c4/add-toasts-bars-transitions."
 					},
 					{
 						"id": "TR.C5",
@@ -151,17 +152,18 @@
 					{
 						"id": "TR.C3",
 						"description": "`feat/add-workflow-progress` — Progress bar (progress.filled/empty) + elapsed-time on WorkflowScreen.",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": [
 							"TR.B3"
-						]
+						],
+						"notes": "Evidence: src/tui/components/progressBar.ts (new, uses symbols.progress.filled/empty); wired into src/tui/screens/workflow.ts (formatElapsed, elapsed timer) on branch feat/tr/c2-c4/add-toasts-bars-transitions."
 					},
 					{
 						"id": "TR.C4",
 						"description": "`feat/add-screen-transitions` — Subtle fade/slide on push/pop via the OpenTUI Timeline; fast, with a reduce-motion config toggle.",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": [],
-						"notes": "Cross-referenced as 2TI.18 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+						"notes": "Cross-referenced as 2TI.18 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here). Evidence: src/tui/utils/transitions.ts (new, uses OpenTUI's Timeline); wired into src/tui/utils/router.ts; reduceMotion added to src/lib/types/configTypes.ts and exposed in src/tui/screens/settings.ts on branch feat/tr/c2-c4/add-toasts-bars-transitions. Shipped as fade-in only (no slide) — a deliberate scope cut, not a partial build."
 					}
 				]
 			},
