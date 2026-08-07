@@ -183,6 +183,80 @@ describe('SettingsScreen', () => {
 		});
 	});
 
+	it('lists Reduce Motion under an Interface section', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const rowText = fieldList.options.map((o: any) => o.name).join('\n');
+		expect(rowText).toContain('Interface');
+		expect(rowText).toContain('Reduce Motion');
+	});
+
+	it('toggles Reduce Motion in place on Enter, without an editor renderable', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'reduceMotion');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+
+		expect((screen as any).config.reduceMotion).toBeFalsy();
+		itemSelectedHandler(listIndex);
+
+		expect((screen as any).config.reduceMotion).toBe(true);
+		expect((screen as any).editInput).toBeUndefined();
+		expect((screen as any).editDropdown).toBeUndefined();
+		expect((screen as any).editing).toBe(false); // toggled and finished immediately
+	});
+
+	it('toggling Reduce Motion updates the displayed value', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'reduceMotion');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+
+		itemSelectedHandler(listIndex);
+
+		const rowText = fieldList.options.map((o: any) => o.name).join('\n');
+		expect(rowText).toContain('On');
+	});
+
+	it('persists reduceMotion through saveConfig', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'reduceMotion');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+		itemSelectedHandler(listIndex);
+
+		const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(saveConfigMock).toHaveBeenCalledWith(expect.objectContaining({ reduceMotion: true }));
+
+		screen.cleanup();
+	});
+
 	it('saves the config via storage when the Save binding fires on a valid config', async () => {
 		const screen = new SettingsScreen(mockContext);
 		screen.render();

@@ -38,7 +38,7 @@ interface SettingsField {
 	section: string;
 	getValue: (config: IrisConfig) => string;
 	setValue: (config: IrisConfig, value: string) => IrisConfig;
-	type: 'text' | 'dropdown' | 'directory';
+	type: 'text' | 'dropdown' | 'directory' | 'boolean';
 	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
 }
@@ -54,6 +54,7 @@ const FIELD_HELP: Record<string, string> = {
 	'outputDir': 'Directory for generated ILR XML submissions',
 	'csvInputDir': 'Starting directory when browsing for CSV files',
 	'schemaDir': 'Directory for downloaded government XSD schema files',
+	'reduceMotion': 'Disable screen transition animations — takes effect on next launch',
 };
 
 /** Field definitions — declarative description of every editable setting */
@@ -143,6 +144,15 @@ const FIELDS: SettingsField[] = [
 		getValue: (c) => c.schemaDir ?? getDefaultSchemaDir(),
 		setValue: (c, v) => ({ ...c, schemaDir: v }),
 		type: 'directory',
+	},
+	// Interface
+	{
+		key: 'reduceMotion',
+		label: 'Reduce Motion',
+		section: 'Interface',
+		getValue: (c) => (c.reduceMotion ? 'On' : 'Off'),
+		setValue: (c, v) => ({ ...c, reduceMotion: v === 'On' }),
+		type: 'boolean',
 	},
 ];
 
@@ -402,6 +412,17 @@ export class SettingsScreen implements Screen {
 		this.editing = true;
 		this.editFieldIndex = FIELDS.indexOf(field);
 		this.refreshFooter();
+
+		if (field.type === 'boolean') {
+			// Toggle in place — Enter flips the value directly, no editor
+			// renderable and no focus dance, which is the least code and the
+			// best UX for a binary. commitEdit() sets editing=false via
+			// finishEdit(), which rebuilds the field list, so the display
+			// updates for free.
+			const isOn = field.getValue(this.config) === 'On';
+			this.commitEdit(field, isOn ? 'Off' : 'On');
+			return;
+		}
 
 		if (field.type === 'directory') {
 			this.startDirectoryEdit(field);
