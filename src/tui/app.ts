@@ -3,6 +3,7 @@
  */
 import { createCliRenderer } from '@opentui/core';
 import { Router } from './utils/router';
+import { ToastManager } from './utils/toastManager';
 import { Dashboard } from './screens/dashboard';
 import { FilePicker } from './screens/file-picker';
 import { WorkflowScreen } from './screens/workflow';
@@ -26,6 +27,7 @@ interface TUIOptions {
 export class TUI {
 	private renderer!: Renderer;
 	private router!: Router;
+	private toasts!: ToastManager;
 
 	constructor(private options: TUIOptions = {}) {}
 
@@ -35,12 +37,16 @@ export class TUI {
 			backgroundColor: theme.background,
 		});
 
-		this.router = new Router(this.renderer);
+		this.toasts = new ToastManager(this.renderer);
+		this.toasts.attach();
+
+		this.router = new Router(this.renderer, this.toasts);
 		this.registerScreens();
 
 		await this.router.push('dashboard');
 
 		// Router returns when quit action received
+		this.toasts.detach();
 		this.renderer.destroy();
 	}
 

@@ -134,6 +134,37 @@ describe('Router', () => {
     });
   });
 
+  describe('toasts', () => {
+    it('threads no toast manager into ctx by default', async () => {
+      let capturedCtx: unknown;
+      const factory = vi.fn((ctx) => {
+        capturedCtx = ctx;
+        return fixtures.createMockScreen('test', { action: 'quit' });
+      });
+      router.register('test', factory);
+
+      await router.push('test');
+
+      expect((capturedCtx as { toasts?: unknown }).toasts).toBeUndefined();
+    });
+
+    it('threads a given toast manager into the ctx handed to screen factories', async () => {
+      const toasts = fixtures.createMockToasts();
+      const toastRouter = new Router(mockRenderer, toasts);
+
+      let capturedCtx: unknown;
+      const factory = vi.fn((ctx) => {
+        capturedCtx = ctx;
+        return fixtures.createMockScreen('test', { action: 'quit' });
+      });
+      toastRouter.register('test', factory);
+
+      await toastRouter.push('test');
+
+      expect((capturedCtx as { toasts?: unknown }).toasts).toBe(toasts);
+    });
+  });
+
   describe('canGoBack', () => {
     it('should return false when at root', async () => {
       const screen = fixtures.createMockScreen('root', { action: 'quit' });

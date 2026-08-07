@@ -2,6 +2,7 @@
  * Manages navigation between TUI screens with stack-based history
  */
 import type { RenderContext, Renderer } from '../types';
+import type { ToastManager } from './toastManager';
 
 export type ScreenData = Record<string, unknown>;
 
@@ -30,8 +31,8 @@ export class Router {
 	private currentScreen: Screen | null = null;
 	private ctx: RenderContext;
 
-	constructor(renderer: Renderer) {
-		this.ctx = { renderer };
+	constructor(renderer: Renderer, toasts?: ToastManager) {
+		this.ctx = { renderer, toasts };
 	}
 
 	register(name: string, factory: ScreenFactory): void {
