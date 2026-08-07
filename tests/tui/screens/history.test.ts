@@ -242,6 +242,34 @@ describe('HistoryScreen', () => {
 
 				expect(confirmMock).toHaveBeenCalledWith(expect.stringContaining('Delete'));
 			});
+
+			it('fires a success toast, without scheduling a footer timeout, on successful delete', async () => {
+				vi.useFakeTimers();
+				const toasts = fixtures.createMockToasts();
+				const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+				const screen = new HistoryScreen(ctx);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+				await (screen as any).handleDelete();
+
+				expect(toasts.success).toHaveBeenCalledWith('Entry deleted');
+				expect(vi.getTimerCount()).toBe(0);
+				vi.useRealTimers();
+			});
+
+			it('fires an error toast when the delete itself fails', async () => {
+				deleteHistoryEntryMock.mockResolvedValue({ success: false, error: { message: 'boom' } });
+				const toasts = fixtures.createMockToasts();
+				const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+				const screen = new HistoryScreen(ctx);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+				await (screen as any).handleDelete();
+
+				expect(toasts.error).toHaveBeenCalledWith('Failed to delete history entry');
+			});
 		});
 	});
 });

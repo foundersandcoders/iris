@@ -27,6 +27,7 @@ import {
 } from '../../lib/utils/storage/paths';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'settings-root';
 
@@ -148,6 +149,7 @@ const FIELDS: SettingsField[] = [
 export class SettingsScreen implements Screen {
 	readonly name = 'settings';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
 	private shell?: AppShell;
 	private fieldPanel?: Panel;
 	private keymap?: Keymap;
@@ -176,6 +178,7 @@ export class SettingsScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -547,8 +550,7 @@ export class SettingsScreen implements Screen {
 		if (result.success) {
 			this.originalConfig = { ...this.config };
 			this.dirty = false;
-			this.shell?.setFooter(`${symbols.info.success} Saved!`);
-			setTimeout(() => this.refreshFooter(), 2000);
+			this.toasts?.success('Settings saved');
 		}
 	}
 

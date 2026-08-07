@@ -199,6 +199,27 @@ describe('SettingsScreen', () => {
 		screen.cleanup();
 	});
 
+	it('fires a success toast on save, without scheduling a footer timeout', async () => {
+		vi.useFakeTimers({ shouldAdvanceTime: true });
+		const toasts = fixtures.createMockToasts();
+		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+		const screen = new SettingsScreen(ctx);
+		screen.render();
+
+		await vi.advanceTimersByTimeAsync(50);
+
+		const handler = (ctx.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await vi.advanceTimersByTimeAsync(10);
+
+		expect(toasts.success).toHaveBeenCalledWith('Settings saved');
+		expect(vi.getTimerCount()).toBe(0);
+
+		screen.cleanup();
+		vi.useRealTimers();
+	});
+
 	it('cleanup detaches the keymap and removes the shell from the renderer root', async () => {
 		const screen = new SettingsScreen(mockContext);
 		screen.render();

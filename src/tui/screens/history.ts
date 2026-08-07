@@ -11,6 +11,7 @@ import { createStorage } from '../../lib/storage';
 import type { HistoryEntry, SubmissionMetadata } from '../../lib/types/storageTypes';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'history-root';
 
@@ -25,6 +26,7 @@ interface HistoryListItem {
 export class HistoryScreen implements Screen {
 	readonly name = 'history';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private detailPanel?: Panel;
@@ -40,6 +42,7 @@ export class HistoryScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
@@ -195,7 +198,7 @@ export class HistoryScreen implements Screen {
 							handler: () => {
 								this.handleDelete().catch((error) => {
 									const msg = error instanceof Error ? error.message : 'Unknown error';
-									this.shell?.setFooter(`${symbols.info.error} Delete failed: ${msg}`);
+									this.toasts?.error(`Delete failed: ${msg}`);
 								});
 							},
 						},
@@ -412,7 +415,7 @@ export class HistoryScreen implements Screen {
 		const result = await storage.deleteHistoryEntry(item.entry.checksum);
 
 		if (!result.success) {
-			this.shell?.setFooter(`${symbols.info.error} Failed to delete history entry`);
+			this.toasts?.error('Failed to delete history entry');
 			return;
 		}
 
@@ -427,15 +430,10 @@ export class HistoryScreen implements Screen {
 				this.updateDetailPanel(newIndex);
 			}
 
-			this.shell?.setFooter(`${symbols.info.success} Entry deleted`);
-			setTimeout(() => this.refreshFooter(), 2000);
+			this.toasts?.success('Entry deleted');
 		} catch (error) {
 			throw new Error(`UI rebuild failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-	}
-
-	private refreshFooter(): void {
-		this.shell?.setFooter(this.keymap?.toKeybar() ?? '');
 	}
 
 	private rebuildListAndHandlers(): void {
