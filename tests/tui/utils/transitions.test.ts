@@ -63,17 +63,31 @@ describe('createTransitions()', () => {
 
 		it('push/pop/replace use different duration and ease', () => {
 			const transitions = createTransitions(renderer, true);
-			const timeline = () => (createTimeline as ReturnType<typeof vi.fn>).mock.results[0].value;
 
 			transitions.fadeIn('push', { root: { opacity: 0 } });
 			transitions.fadeIn('pop', { root: { opacity: 0 } });
 			transitions.fadeIn('replace', { root: { opacity: 0 } });
 
-			const calls = timeline().add.mock.calls.map((call: any[]) => call[1]);
-			const [pushProps, popProps, replaceProps] = calls;
+			// Each fadeIn() creates its OWN Timeline instance — reusing one
+			// shared timeline was the actual bug being fixed here (adding at
+			// startTime 0 on an already-advanced shared clock resolved
+			// instantly instead of animating).
+			const results = (createTimeline as ReturnType<typeof vi.fn>).mock.results;
+			const pushProps = results[0].value.add.mock.calls[0][1];
+			const popProps = results[1].value.add.mock.calls[0][1];
+			const replaceProps = results[2].value.add.mock.calls[0][1];
 			expect(pushProps.duration).not.toBe(popProps.duration);
 			expect(popProps.duration).not.toBe(replaceProps.duration);
 			expect(pushProps.ease).not.toBe(popProps.ease);
+		});
+
+		it('each fadeIn creates a fresh Timeline rather than reusing one', () => {
+			const transitions = createTransitions(renderer, true);
+			transitions.fadeIn('push', { root: { opacity: 0 } });
+			transitions.fadeIn('push', { root: { opacity: 0 } });
+			transitions.fadeIn('push', { root: { opacity: 0 } });
+
+			expect(createTimeline).toHaveBeenCalledTimes(3);
 		});
 
 		it('polls via a frame callback when the root is not yet mounted, then animates once it appears', () => {

@@ -21,7 +21,7 @@
  * opacity===1. Timeline.add() only animates numeric properties, so opacity
  * qualifies directly.
  */
-import { createTimeline, engine, type Timeline } from '@opentui/core';
+import { createTimeline, engine } from '@opentui/core';
 import type { Renderer } from '../types';
 
 export type TransitionKind = 'push' | 'pop' | 'replace';
@@ -46,13 +46,16 @@ export interface Transitions {
 
 /** Per-kind timing: push arrives with intent (outQuad, the longest), pop
  *  snaps back faster (outExpo — going back is cheaper than going forward),
- *  replace is a neutral swap (linear, the shortest). ~8-12 frames at 60fps —
- *  enough to read as continuous, short enough that a slow terminal degrades
- *  to a couple of visible steps rather than a stall. */
+ *  replace is a neutral swap (linear, the shortest). The original 90-140ms
+ *  values were too short to read as motion at all — they resolved in ~5-8
+ *  frames at 60fps, which came across as a flash rather than a fade. These
+ *  are roughly 3x longer, closer to typical UI transition timing, while
+ *  still short enough that a slow terminal degrades to a few visible steps
+ *  rather than a stall. */
 const TIMING: Record<TransitionKind, { duration: number; ease: string }> = {
-	push: { duration: 140, ease: 'outQuad' },
-	pop: { duration: 100, ease: 'outExpo' },
-	replace: { duration: 90, ease: 'linear' },
+	push: { duration: 420, ease: 'outQuad' },
+	pop: { duration: 300, ease: 'outExpo' },
+	replace: { duration: 260, ease: 'linear' },
 };
 
 /** How long fadeIn will keep polling for a not-yet-mounted root before
@@ -81,28 +84,51 @@ export function createTransitions(renderer: Renderer, enabled: boolean): Transit
 	if (!enabled) return NOOP_TRANSITIONS;
 
 	let attached = false;
-	let timeline: Timeline | undefined;
 
-	function ensureAttached(): Timeline {
+	function ensureAttached(): void {
 		if (!attached) {
 			engine.attach(renderer);
 			attached = true;
 		}
-		// One reusable timeline for the module's lifetime — engine.attach()
-		// is meant to be called once per app run, not per transition.
-		timeline ??= createTimeline();
-		return timeline;
+	}
+
+	function play(kind: TransitionKind, root: { opacity: number }): void {
+		const { duration, ease } = TIMING[kind];
+		root.opacity = 0;
+
+		// A fresh, one-shot Timeline per transition — NOT a shared/reused one.
+		// Timeline.add()'s startTime defaults to 0 on THAT TIMELINE'S OWN
+		// clock, not "now" in wall-clock terms. Reusing a single long-lived
+		// Timeline across many transitions meant every fade after the first
+		// was added at absolute time 0 while currentTime had already advanced
+		// past the animation's own duration — evaluateItem() resolves an
+		// already-elapsed window straight to its end value, so the opacity
+		// jumped to 1 with no visible interpolation. This was the actual
+		// cause of transitions being imperceptible.
+		//
+		// autoplay:false because createTimeline() would otherwise play()
+		// immediately with zero items added yet, completing on its very next
+		// update() and dropping live before add() ever runs.
+		//
+		// onComplete unregisters from the engine — register()/unregister()
+		// drive requestLive()/dropLive() via updateLiveState() — so the
+		// renderer drops back to idle once nothing is animating, rather than
+		// leaking a live timeline (and its render-loop cost) forever.
+		const timeline = createTimeline({
+			duration,
+			autoplay: false,
+			onComplete: () => engine.unregister(timeline),
+		});
+		timeline.add(root, { opacity: 1, duration, ease: ease as never });
+		timeline.play();
 	}
 
 	return {
 		fadeIn(kind, screen) {
-			const tl = ensureAttached();
-			const { duration, ease } = TIMING[kind];
+			ensureAttached();
 
 			if (screen.root) {
-				screen.root.opacity = 0;
-				tl.add(screen.root, { opacity: 1, duration, ease: ease as never });
-				tl.play();
+				play(kind, screen.root);
 				return;
 			}
 
@@ -115,9 +141,7 @@ export function createTransitions(renderer: Renderer, enabled: boolean): Transit
 			const poll = async (): Promise<void> => {
 				if (screen.root) {
 					renderer.removeFrameCallback(poll);
-					screen.root.opacity = 0;
-					tl.add(screen.root, { opacity: 1, duration, ease: ease as never });
-					tl.play();
+					play(kind, screen.root);
 					return;
 				}
 				if (Date.now() >= deadline) {
