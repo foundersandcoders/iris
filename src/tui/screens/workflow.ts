@@ -32,8 +32,49 @@ interface StepDisplay {
 	id: string;
 	name: string;
 	status: 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
+	/** 0-100, mirroring WorkflowStep.progress. Only meaningful while running —
+	 *  terminal states (complete/failed/skipped) count as a whole step
+	 *  regardless of this value; see computeAggregateProgress(). */
+	progress: number;
 	message?: string;
 	errorSamples?: string[];
+}
+
+/** Format milliseconds as m:ss. Floor, not round, so the readout never runs
+ *  ahead of reality (e.g. 1999ms reads "0:01", not "0:02"). */
+export function formatElapsed(ms: number): string {
+	const total = Math.max(0, Math.floor(ms / 1000));
+	const minutes = Math.floor(total / 60);
+	const seconds = total % 60;
+	return `elapsed ${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/** Aggregate completion across steps, 0-1. Each step contributes 1/n; a
+ *  running step contributes its own fractional progress, so a workflow that
+ *  later starts emitting step:progress refines the estimate automatically —
+ *  today no workflow does, so running steps sit at 0 and this degenerates
+ *  exactly to completedSteps/totalSteps.
+ *
+ *  Skipped and failed both count as a WHOLE step, not zero: csvConvert.ts
+ *  marks the generate/save steps 'skipped' when validation blocks the run,
+ *  leaving their progress at 0. If skipped didn't count, a blocked
+ *  conversion would freeze the bar at 50% while the workflow visibly
+ *  finishes and navigates away — a bar that lies. Failed steps stop the
+ *  workflow the same way, so the bar should settle rather than hang. */
+export function computeAggregateProgress(steps: StepDisplay[]): number {
+	if (steps.length === 0) return 0;
+	const done = steps.reduce((sum, step) => {
+		if (step.status === 'complete' || step.status === 'skipped' || step.status === 'failed') {
+			return sum + 1;
+		}
+		if (step.status === 'running') {
+			return sum + Math.min(100, Math.max(0, step.progress)) / 100;
+		}
+		return sum;
+	}, 0);
+	// Guards a malformed progress value (or floating-point drift) pushing the
+	// total fractionally over 1.
+	return Math.min(1, done / steps.length);
 }
 
 interface StepRenderables {
@@ -119,6 +160,7 @@ export class WorkflowScreen implements Screen {
 			id: s.id,
 			name: s.name,
 			status: 'pending' as const,
+			progress: 0,
 		}));
 
 		// Load schema for convert/validate workflows only

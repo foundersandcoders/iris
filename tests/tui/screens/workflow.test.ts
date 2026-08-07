@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WorkflowScreen } from '../../../src/tui/screens/workflow';
+import {
+	WorkflowScreen,
+	formatElapsed,
+	computeAggregateProgress,
+} from '../../../src/tui/screens/workflow';
 import * as tuiFixtures from '../../fixtures/tui/tui';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
@@ -248,6 +252,57 @@ describe('WorkflowScreen', () => {
 			checkScreen.cleanup();
 
 			expect(toasts.success).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('formatElapsed()', () => {
+		it('formats whole seconds as m:ss', () => {
+			expect(formatElapsed(0)).toBe('elapsed 0:00');
+			expect(formatElapsed(62_000)).toBe('elapsed 1:02');
+			expect(formatElapsed(600_000)).toBe('elapsed 10:00');
+		});
+
+		it('floors rather than rounds, so it never runs ahead of reality', () => {
+			expect(formatElapsed(1_999)).toBe('elapsed 0:01');
+		});
+
+		it('clamps negative durations to zero', () => {
+			expect(formatElapsed(-500)).toBe('elapsed 0:00');
+		});
+	});
+
+	describe('computeAggregateProgress()', () => {
+		function step(status: 'pending' | 'running' | 'complete' | 'failed' | 'skipped', progress = 0) {
+			return { id: 'x', name: 'X', status, progress };
+		}
+
+		it('returns 0 for an empty step list, never NaN', () => {
+			expect(computeAggregateProgress([])).toBe(0);
+		});
+
+		it('one of four complete is 0.25', () => {
+			const steps = [step('complete'), step('pending'), step('pending'), step('pending')];
+			expect(computeAggregateProgress(steps)).toBe(0.25);
+		});
+
+		it('all complete is 1', () => {
+			const steps = [step('complete'), step('complete'), step('complete'), step('complete')];
+			expect(computeAggregateProgress(steps)).toBe(1);
+		});
+
+		it('a skipped step counts as done — the blocked-conversion case', () => {
+			const steps = [step('complete'), step('complete'), step('skipped'), step('skipped')];
+			expect(computeAggregateProgress(steps)).toBe(1);
+		});
+
+		it('a failed step counts as done — the workflow has stopped', () => {
+			const steps = [step('complete'), step('failed'), step('pending'), step('pending')];
+			expect(computeAggregateProgress(steps)).toBe(0.5);
+		});
+
+		it('a running step contributes its own fractional progress', () => {
+			const steps = [step('complete'), step('running', 50), step('pending'), step('pending')];
+			expect(computeAggregateProgress(steps)).toBe(0.375); // 1 + 0.5 of 4
 		});
 	});
 });
