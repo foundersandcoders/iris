@@ -51,6 +51,8 @@ export function createMockRenderer(): Renderer {
 		capabilities: null,
 		requestLive: vi.fn(),
 		dropLive: vi.fn(),
+		setFrameCallback: vi.fn(),
+		removeFrameCallback: vi.fn(),
 		hasSelection: false,
 		getSelection: vi.fn().mockReturnValue(null),
 		requestSelectionUpdate: vi.fn(),

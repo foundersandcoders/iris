@@ -267,3 +267,49 @@ export function underline(text: string): string {
 export async function createCliRenderer(_options?: unknown) {
 	return createMockRenderer();
 }
+
+/**
+ * Timeline/engine doubles for transitions.ts (TR.C4). `add()` records the
+ * target/properties rather than actually animating — tests drive completion
+ * deterministically by asserting on the recorded call, not by pumping
+ * deltaTime through a fake clock.
+ */
+export class Timeline {
+	items: { target: unknown; properties: Record<string, unknown> }[] = [];
+	isPlaying = false;
+	isComplete = false;
+
+	add = vi.fn(function (this: Timeline, target: unknown, properties: Record<string, unknown>) {
+		this.items.push({ target, properties });
+		return this;
+	});
+	once = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	call = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	play = vi.fn(function (this: Timeline) {
+		this.isPlaying = true;
+		return this;
+	});
+	pause = vi.fn(function (this: Timeline) {
+		this.isPlaying = false;
+		return this;
+	});
+	restart = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	update = vi.fn();
+}
+
+export const engine = {
+	attach: vi.fn(),
+	detach: vi.fn(),
+	register: vi.fn(),
+	unregister: vi.fn(),
+	clear: vi.fn(),
+	update: vi.fn(),
+};
+
+export const createTimeline = vi.fn((_options?: unknown) => new Timeline());
