@@ -10,3 +10,5 @@ export { toast } from './toast';
 export type { Toast, ToastOptions, ToastVariant } from './toast';
 export { progressBar } from './progressBar';
 export type { ProgressBar, ProgressBarOptions } from './progressBar';
+export { commandPalette } from './commandPalette';
+export type { CommandPalette, CommandPaletteOptions, PaletteEntry } from './commandPalette';

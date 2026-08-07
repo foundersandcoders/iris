@@ -525,6 +525,178 @@ describe('Keymap confirm overlay', () => {
 	});
 });
 
+// ——— command palette (TR.D1) —————————————————————————————————————————————————
+
+const PALETTE_ENTRIES = [
+	{ screen: 'dashboard', label: 'Dashboard' },
+	{ screen: 'settings', label: 'Settings' },
+	{ screen: 'history', label: 'History' },
+];
+
+describe('Keymap command palette', () => {
+	it('ctrl+p is absent from the keybar without paletteEntries/onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+	});
+
+	it('ctrl+p is absent when paletteEntries is supplied without onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('ctrl+p opens the palette when both paletteEntries and onCommand are supplied', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).toContain('Jump');
+		const binding = km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(binding).not.toBeNull();
+	});
+
+	it('printable characters build up the query', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 's', sequence: 's' }));
+		km.dispatch(makeKey({ name: 'e', sequence: 'e' }));
+		km.dispatch(makeKey({ name: 't', sequence: 't' }));
+
+		const overlay = (km as any).paletteOverlay;
+		expect(overlay.getSelected()?.screen).toBe('settings');
+	});
+
+	it('backspace trims the query', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'x', sequence: 'x' }));
+		km.dispatch(makeKey({ name: 'backspace' }));
+
+		expect((km as any).paletteQuery).toBe('');
+	});
+
+	it('up/down move the selection', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'down' }));
+
+		const overlay = (km as any).paletteOverlay;
+		expect(overlay.getSelected()?.screen).toBe('settings');
+	});
+
+	it('enter fires onCommand with the selected screen and closes', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'enter' }));
+
+		expect(onCommand).toHaveBeenCalledWith('dashboard');
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('enter on an empty result list does not fire onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'enter' }));
+
+		expect(onCommand).not.toHaveBeenCalled();
+	});
+
+	it('escape closes the palette without firing onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'escape' }));
+
+		expect(onCommand).not.toHaveBeenCalled();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('swallows unrelated keys while the palette is open — "q" does not quit', () => {
+		const ctx = fixtures.createMockContext();
+		const onQuit = vi.fn();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand, onQuit });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(km.dispatch(makeKey({ name: 'q', sequence: 'q' }))).toBeNull();
+		expect(onQuit).not.toHaveBeenCalled();
+	});
+
+	it('stops propagation on every key while the palette is open', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'x', sequence: 'x', stopPropagation }));
+		expect(stopPropagation).toHaveBeenCalledOnce();
+	});
+
+	it('detach() removes the overlay and resets palette state', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+
+		km.detach(ctx.renderer);
+
+		expect(ctx.renderer.root.remove).toHaveBeenCalledWith('command-palette-root');
+		expect((km as any).paletteOpen).toBe(false);
+		expect((km as any).paletteQuery).toBe('');
+	});
+
+	it('disableGlobals can suppress ctrl+p even with paletteEntries/onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			disableGlobals: ['ctrl+p'],
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+});
+
 // ——— globals ——————————————————————————————————————————————————————————————————
 
 describe('global bindings', () => {

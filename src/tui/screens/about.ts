@@ -3,10 +3,10 @@
  */
 import { TextRenderable, t, fg, link, underline } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../../../assets/brand/theme';
+import { theme } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
 
 const CONTAINER_ID = 'about-root';
 
@@ -49,6 +49,11 @@ export class AboutScreen implements Screen {
 			bindings: [],
 			onBack: finish,
 			onQuit: finish,
+			paletteEntries: PALETTE_SCREENS,
+			onCommand: (screen) => {
+				if (screen === this.name) return;
+				resolve({ action: 'push', screen });
+			},
 		});
 		const keymap = this.keymap;
 
@@ -75,7 +80,7 @@ export class AboutScreen implements Screen {
 
 		// Software info
 		const labelColour = theme.text;
-		const linkColour = PALETTE.foreground.alt.midi;
+		const linkColour = theme.secondary;
 
 		const fields: { label: string; value: string; url?: string }[] = [
 			{ label: 'Software Package', value: 'Iris', url: 'https://github.com/fac/iris' },

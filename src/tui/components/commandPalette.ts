@@ -1,0 +1,153 @@
+/** ====== Command Palette Component ======
+ * Full-screen z-index layer for fuzzy jump-to-screen (TR.D1). Owned and
+ * driven by Keymap — mounted on renderer.root (a sibling of each screen's
+ * shell.root) so its zIndex stacks it above the whole screen, matching
+ * helpOverlay.ts / confirmOverlay.ts.
+ *
+ * Unlike those two, this overlay needs a live text query. Rather than an
+ * InputRenderable (which would need real focus, inverting the swallow-
+ * everything-via-stopPropagation pattern the other overlays rely on), the
+ * query is rendered as plain TextRenderable content — Keymap already
+ * receives every keypress while the palette is open, so it accumulates
+ * the query string itself and pushes it here via setQuery().
+ */
+import { BoxRenderable, TextRenderable, t, fg } from '@opentui/core';
+import type { Renderer } from '../types';
+import { theme } from '../../../assets/brand/theme';
+import { panel, type Panel } from './panel';
+
+/** One selectable entry in the palette's result list. */
+export interface PaletteEntry {
+	/** Screen route name, resolved via onCommand. */
+	screen: string;
+	/** Display label, e.g. "Mapping Builder". */
+	label: string;
+}
+
+export interface CommandPaletteOptions {
+	/** Overlay id, used for renderer.root.remove(). Default 'command-palette-root'. */
+	id?: string;
+	/** Paint order among renderer.root siblings — must exceed screen roots. Default 100. */
+	zIndex?: number;
+	/** Card title. Default 'Command Palette'. */
+	title?: string;
+}
+
+export interface CommandPalette {
+	/** Full-screen backdrop box — add to renderer.root (sibling of the screen shell). */
+	readonly root: BoxRenderable;
+	/** Replace the displayed query line. */
+	setQuery(query: string): void;
+	/** Replace the result list in place, resetting selection to the first entry. */
+	setEntries(entries: PaletteEntry[]): void;
+	/** Move the selection by delta (e.g. -1/+1), clamped to the list bounds. */
+	moveSelection(delta: number): void;
+	/** The currently selected entry, or null if the list is empty. */
+	getSelected(): PaletteEntry | null;
+	/** Show/hide without remounting. Does not reset query/selection —
+	 *  callers (Keymap) own that on open/close. */
+	setVisible(visible: boolean): void;
+	/** Current visibility. */
+	isVisible(): boolean;
+}
+
+const FOOTER_HINT = '↑↓ select  ↵ jump  ESC close';
+const EMPTY_HINT = 'No matching screens';
+
+export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions = {}): CommandPalette {
+	const root = new BoxRenderable(renderer, {
+		id: opts.id ?? 'command-palette-root',
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		width: '100%',
+		height: '100%',
+		zIndex: opts.zIndex ?? 100,
+		backgroundColor: theme.background,
+		flexDirection: 'column',
+		justifyContent: 'center',
+		alignItems: 'center',
+		visible: false,
+	});
+
+	// Explicit width — the panel would otherwise size to its (initially empty)
+	// content and clip a title/row longer than the placeholder width. Matches
+	// the 42-column convention set by helpOverlay/confirmOverlay.
+	const card: Panel = panel(renderer, { title: opts.title ?? 'Command Palette', width: 42 });
+
+	const queryLine = new TextRenderable(renderer, {
+		content: t`${fg(theme.accent)('> ')}`,
+		fg: theme.text,
+	});
+	card.add(queryLine);
+
+	card.add(new TextRenderable(renderer, { content: '' }));
+
+	const resultsBox = new BoxRenderable(renderer, { flexDirection: 'column' });
+	card.add(resultsBox);
+
+	const footer = new TextRenderable(renderer, { content: FOOTER_HINT, fg: theme.textMuted });
+	card.add(footer);
+
+	root.add(card.box);
+
+	const SELECTED_MARKER = '›';
+
+	let entries: PaletteEntry[] = [];
+	let selectedIndex = 0;
+	let rowIds: string[] = [];
+
+	function renderRows(): void {
+		for (const id of rowIds) resultsBox.remove(id);
+		rowIds = [];
+
+		if (entries.length === 0) {
+			const emptyRow = new TextRenderable(renderer, {
+				id: 'command-palette-empty',
+				content: EMPTY_HINT,
+				fg: theme.textMuted,
+			});
+			rowIds.push(emptyRow.id);
+			resultsBox.add(emptyRow);
+			return;
+		}
+
+		entries.forEach((entry, index) => {
+			const isSelected = index === selectedIndex;
+			const row = new TextRenderable(renderer, {
+				id: `command-palette-row-${index}`,
+				content: isSelected
+					? t`${fg(theme.highlightFocused)(`${SELECTED_MARKER} ${entry.label}`)}`
+					: t`${fg(theme.text)(`  ${entry.label}`)}`,
+			});
+			rowIds.push(row.id);
+			resultsBox.add(row);
+		});
+	}
+
+	return {
+		root,
+		setQuery(query) {
+			queryLine.content = t`${fg(theme.accent)('> ')}${fg(theme.text)(query)}`;
+		},
+		setEntries(newEntries) {
+			entries = newEntries;
+			selectedIndex = 0;
+			renderRows();
+		},
+		moveSelection(delta) {
+			if (entries.length === 0) return;
+			selectedIndex = Math.max(0, Math.min(entries.length - 1, selectedIndex + delta));
+			renderRows();
+		},
+		getSelected() {
+			return entries[selectedIndex] ?? null;
+		},
+		setVisible(visible) {
+			root.visible = visible;
+		},
+		isVisible() {
+			return root.visible ?? false;
+		},
+	};
+}
