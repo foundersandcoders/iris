@@ -28,6 +28,7 @@ Each task is a single, independently-mergeable branch (per the project's small-b
 
 - [x] **TR.S1** — `fix/bump-vulnerable-rust-deps` — Bumped `tauri` (2.9.5 → 2.11.5, fixes CVE-2026-42184 origin-confusion IPC bug) and ran `cargo update` for transitive crates (bytes, rand, time). `rand@0.7.3` left open (unreachable via any dependency bump). Known accepted regression: the tauri bump pins `gtk ^0.18`/`glib ^0.18` on Linux, downgrading glib from the already-patched 0.20.0 (medium-severity, non-remote NULL-pointer bug) — traded off deliberately against the remote-triggerable CVE this bump fixes.
 - [x] **TR.S2** — `fix/bump-vite-vitest-majors` — Upgraded vite (`^5.0.0` → `^6.4.3`) and vitest (`^2.0.0` → `^3.2.6`), resolving 4 Dependabot alerts (1 critical, 1 high, 2 medium). Also bumped `@sveltejs/vite-plugin-svelte` for Vite 6 peer compatibility. No config changes needed.
+- [x] **TR.S3** — `fix(deps): bump serde_with to 3.21.0, raising MSRV to 1.88` — Bumped `serde_with` (3.16.1 → 3.21.0, fixes GHSA-7gcf-g7xr-8hxj `KeyValueMap` panic on empty sequence/map entries). The fix required raising `src-tauri/Cargo.toml`'s `rust-version` from 1.85.0 to 1.88.0 first — `cargo update` under the old pin stalled at 3.17.0. Two alerts left open, both unreachable via any dependency bump (mirrors TR.S1's `rand` precedent): `rand@0.7.3` and `glib@0.18.5`, pinned transitively by `tauri-utils@2.9.3`/`tauri@2.11.5` — already the latest published Tauri release — with no fix available until Tauri itself moves.
 
 ---
 
@@ -117,6 +118,7 @@ graph LR
 	M1["M1: Phase A — Foundations"]:::mile
 	TR.S1["TR.S1: `fix/bump-vulnerable-rust-deps` — Bumped…"]
 	TR.S2["TR.S2: `fix/bump-vite-vitest-majors` — Upgraded…"]
+	TR.S3["TR.S3: `fix(deps): bump serde_with` — Bumped se…"]
 	M2["M2: Phase S — Security & dependency maintenance"]:::mile
 	TR.B1["TR.B1: `refactor/dashboard-app-shell` — Dashboa…"]
 	TR.B2["TR.B2: `refactor/file-picker-app-shell` — File…"]
@@ -148,6 +150,7 @@ graph LR
 	TR.A6 --> M1
 	TR.S1 --> M2
 	TR.S2 --> M2
+	TR.S3 --> M2
 	TR.S2 --> TR.B1
 	TR.S2 --> TR.B2
 	TR.S2 --> TR.B3
@@ -173,7 +176,7 @@ graph LR
 	TR.E2 --> TR.E3
 	TR.E3 --> M6
 	class TR.D1,TR.D2,TR.D3 todo
-	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2 done
+	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2,TR.S3 done
 ```
 
 ## Cross-references to existing roadmap

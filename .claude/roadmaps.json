@@ -64,6 +64,12 @@
 						"description": "`fix/bump-vite-vitest-majors` — Upgraded vite (^5.0.0 → ^6.4.3) and vitest (^2.0.0 → ^3.2.6), resolving 4 Dependabot alerts (1 critical, 1 high, 2 medium). Also bumped `@sveltejs/vite-plugin-svelte` for Vite 6 peer compatibility. No config changes needed.",
 						"status": "done",
 						"dependsOn": []
+					},
+					{
+						"id": "TR.S3",
+						"description": "`fix(deps): bump serde_with to 3.21.0, raising MSRV to 1.88` — Bumped `serde_with` (3.16.1 → 3.21.0, fixes GHSA-7gcf-g7xr-8hxj `KeyValueMap` panic on empty sequence/map entries). The fix required raising `src-tauri/Cargo.toml`'s `rust-version` from 1.85.0 to 1.88.0 first — `cargo update` under the old pin stalled at 3.17.0. Two alerts left open, both unreachable via any dependency bump (mirrors TR.S1's `rand` precedent): `rand@0.7.3` and `glib@0.18.5`, pinned transitively by `tauri-utils@2.9.3`/`tauri@2.11.5` — already the latest published Tauri release — with no fix available until Tauri itself moves.",
+						"status": "done",
+						"dependsOn": []
 					}
 				]
 			},
