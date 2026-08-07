@@ -12,9 +12,9 @@ import {
 	type TextChunk,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols, PALETTE } from '../../../assets/brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { Keymap } from '../utils/keymap';
+import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
 import { APP_VERSION } from '../utils/layout';
 import { appShell, panel, type AppShell } from '../components';
 import { createStorage } from '../../lib/storage';
@@ -137,6 +137,11 @@ export class Dashboard implements Screen {
 			this.keymap = new Keymap({
 				onQuit: () => resolve({ action: 'quit' }),
 				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
+				paletteEntries: PALETTE_SCREENS,
+				onCommand: (screen) => {
+					if (screen === this.name) return; // already here
+					resolve({ action: 'push', screen });
+				},
 				bindings: [
 					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
 					{
@@ -190,7 +195,7 @@ export class Dashboard implements Screen {
 			for (const line of LOGO_LINES) {
 				logoRow.add(
 					new TextRenderable(this.renderer, {
-						content: gradientLine(line, PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi),
+						content: gradientLine(line, theme.primary, theme.secondary),
 					})
 				);
 			}

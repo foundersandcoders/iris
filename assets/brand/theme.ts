@@ -145,8 +145,10 @@ export const spinners = {
 import { RGBA } from '@opentui/core';
 
 /** Pre-computed RGBA objects for OpenTUI renderables
- * Use hex strings from THEMES.themeLight directly for simple fg/bg.
+ * Use hex strings from `theme` directly for simple fg/bg.
  * Use these RGBA objects when colour manipulation is needed.
+ * Kept in sync with `theme` by applyTheme() — not `as const`, since its
+ * values are reassigned in place on a theme switch.
  */
 export const rgba = {
 	success: RGBA.fromHex(THEMES.themeLight.success),
@@ -167,7 +169,36 @@ export const rgba = {
 	textMuted: RGBA.fromHex(THEMES.themeLight.textMuted),
 	border: RGBA.fromHex(THEMES.themeLight.border),
 	background: RGBA.fromHex(THEMES.themeLight.background),
-} as const;
+};
 
-/** Active theme as hex strings (OpenTUI accepts these directly) */
-export const theme = THEMES.themeLight;
+/** Active theme as hex strings (OpenTUI accepts these directly).
+ * A plain mutable object, not a `const` binding to THEMES.themeLight —
+ * every consumer imports this same object identity, so applyTheme() can
+ * swap the active palette in place without touching any of their ~209
+ * call sites. Colours are read at renderable-construction time and baked
+ * into constructor options, so switching this after screens have already
+ * mounted does not repaint them — callers must rebuild affected screens
+ * (see Router.replace() in src/tui/utils/router.ts). */
+export const theme: Record<keyof typeof THEMES.themeLight, string> = { ...THEMES.themeLight };
+
+export type ThemeName = 'light' | 'dark';
+
+let activeThemeName: ThemeName = 'light';
+
+/** Swap the active theme in place. Mutates `theme` and `rgba` by key so
+ * every existing import keeps the same object identity — the only way to
+ * make a swap visible without threading a theme object through ~20 files.
+ * Does not repaint anything already on screen; see the `theme` doc comment. */
+export function applyTheme(name: ThemeName): void {
+	const source = name === 'dark' ? THEMES.themeDark : THEMES.themeLight;
+	for (const key of Object.keys(source) as (keyof typeof source)[]) {
+		theme[key] = source[key];
+		rgba[key] = RGBA.fromHex(source[key]);
+	}
+	activeThemeName = name;
+}
+
+/** The currently active theme name, as last set by applyTheme(). */
+export function activeTheme(): ThemeName {
+	return activeThemeName;
+}

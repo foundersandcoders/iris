@@ -64,6 +64,7 @@ export function createMockRenderer(): Renderer {
 		clearSelection: vi.fn(),
 		startSelection: vi.fn(),
 		updateSelection: vi.fn(),
+		setBackgroundColor: vi.fn(),
 		// EventEmitter methods
 		on: vi.fn(),
 		off: vi.fn(),

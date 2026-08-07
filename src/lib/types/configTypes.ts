@@ -38,6 +38,11 @@ export interface IrisConfig {
 	/** Disable screen transition animations. Read once at Router construction
 	 *  — changing this takes effect on next launch, not live. */
 	reduceMotion?: boolean;
+	/** Colour theme for the interface. Applied live — Settings rebuilds the
+	 *  current screen on save so the switch is visible immediately, and it's
+	 *  also applied before the renderer is created so the correct theme
+	 *  paints from first launch. */
+	theme?: 'light' | 'dark';
 }
 
 /** Default configuration values */
@@ -56,6 +61,7 @@ export const DEFAULT_CONFIG: IrisConfig = {
 	collection: 'ILR',
 	serialNo: '01',
 	reduceMotion: false,
+	theme: 'light',
 };
 
 /** Validation issue for config validation */
@@ -136,6 +142,11 @@ export function validateConfig(config: unknown): ConfigValidationResult {
 	// reduceMotion (optional)
 	if (c.reduceMotion !== undefined && typeof c.reduceMotion !== 'boolean') {
 		issues.push({ field: 'reduceMotion', message: 'Must be true or false' });
+	}
+
+	// theme (optional)
+	if (c.theme !== undefined && c.theme !== 'light' && c.theme !== 'dark') {
+		issues.push({ field: 'theme', message: "Must be 'light' or 'dark'" });
 	}
 
 	return {

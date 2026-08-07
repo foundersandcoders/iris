@@ -21,6 +21,7 @@ export const defaultConfig: IrisConfig = {
 	collection: 'ILR',
 	serialNo: '01',
 	reduceMotion: false,
+	theme: 'light',
 };
 
 export const customConfig: IrisConfig = {
@@ -39,6 +40,7 @@ export const customConfig: IrisConfig = {
 	serialNo: '02',
 	outputDir: '/custom/path',
 	reduceMotion: false,
+	theme: 'dark',
 };
 
 export const malformedConfigJson = '{ invalid json }';

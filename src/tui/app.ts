@@ -17,7 +17,7 @@ import { SettingsScreen } from './screens/settings';
 import { AboutScreen } from './screens/about';
 import { HistoryScreen } from './screens/history';
 import type { Renderer } from './types';
-import { theme } from '../../assets/brand/theme';
+import { theme, applyTheme } from '../../assets/brand/theme';
 import { isRemoteSession } from './utils/transitions';
 import { getConfig, DEFAULT_CONFIG } from '../lib/types/configTypes';
 
@@ -34,6 +34,14 @@ export class TUI {
 	constructor(private options: TUIOptions = {}) {}
 
 	async start(): Promise<void> {
+		// A broken config file must not stop the TUI booting — getConfig()
+		// throws on genuine read/parse errors (not on a missing file, which
+		// resolves to defaults), so fall back rather than propagate. Loaded
+		// before createCliRenderer so applyTheme() below picks the correct
+		// theme.background for first paint — no light-then-dark flash.
+		const config = await getConfig().catch(() => DEFAULT_CONFIG);
+		applyTheme(config.theme ?? 'light');
+
 		this.renderer = await createCliRenderer({
 			exitOnCtrlC: true,
 			backgroundColor: theme.background,
@@ -42,10 +50,6 @@ export class TUI {
 		this.toasts = new ToastManager(this.renderer);
 		this.toasts.attach();
 
-		// A broken config file must not stop the TUI booting — getConfig()
-		// throws on genuine read/parse errors (not on a missing file, which
-		// resolves to defaults), so fall back rather than propagate.
-		const config = await getConfig().catch(() => DEFAULT_CONFIG);
 		const motion = !(config.reduceMotion ?? false) && !isRemoteSession();
 
 		this.router = new Router(this.renderer, this.toasts, { motion });

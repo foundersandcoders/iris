@@ -1,7 +1,8 @@
 /** ====== Settings Screen Tests ====== */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SettingsScreen } from '../../../src/tui/screens/settings';
 import * as fixtures from '../../fixtures/tui/tui';
+import { applyTheme, activeTheme } from '../../../assets/brand/theme';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
 // so it's replaced with a shared test double.
@@ -53,6 +54,12 @@ describe('SettingsScreen', () => {
 		listMappingsMock = vi.fn().mockResolvedValue({ success: true, data: ['fac-airtable-2025'] });
 	});
 
+	afterEach(() => {
+		// applyTheme mutates shared module state — reset so a switch in one
+		// test can't leak into the next.
+		applyTheme('light');
+	});
+
 	it('can be instantiated with a render context', () => {
 		const screen = new SettingsScreen(mockContext);
 		expect(screen).toBeInstanceOf(SettingsScreen);
@@ -72,8 +79,9 @@ describe('SettingsScreen', () => {
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
-		// one for the auto-mounted confirm overlay (TR.C2).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
+		// one for the auto-mounted confirm overlay (TR.C2), one for the
+		// auto-mounted command palette overlay (TR.D1).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(4);
 		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(shellRoot.constructor.name).toBe('BoxRenderable');
 	});
@@ -253,6 +261,118 @@ describe('SettingsScreen', () => {
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		expect(saveConfigMock).toHaveBeenCalledWith(expect.objectContaining({ reduceMotion: true }));
+
+		screen.cleanup();
+	});
+
+	it('lists Theme under the Interface section', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const rowText = fieldList.options.map((o: any) => o.name).join('\n');
+		expect(rowText).toContain('Theme');
+	});
+
+	it('toggles Theme in place on Enter, without an editor renderable', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'theme');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+
+		expect((screen as any).config.theme).not.toBe('dark');
+		itemSelectedHandler(listIndex);
+
+		expect((screen as any).config.theme).toBe('dark');
+		expect((screen as any).editInput).toBeUndefined();
+		expect((screen as any).editDropdown).toBeUndefined();
+		expect((screen as any).editing).toBe(false);
+	});
+
+	it('toggling Theme updates the displayed value', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'theme');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+
+		itemSelectedHandler(listIndex);
+
+		const rowText = fieldList.options.map((o: any) => o.name).join('\n');
+		expect(rowText).toContain('Dark');
+	});
+
+	it('persists theme through saveConfig', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'theme');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+		itemSelectedHandler(listIndex);
+
+		const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(saveConfigMock).toHaveBeenCalledWith(expect.objectContaining({ theme: 'dark' }));
+
+		screen.cleanup();
+	});
+
+	it('applies the new theme and rebuilds the screen when the theme changed on save', async () => {
+		const screen = new SettingsScreen(mockContext);
+		const resultPromise = screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'theme');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+		itemSelectedHandler(listIndex);
+
+		const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		const result = await resultPromise;
+
+		expect(activeTheme()).toBe('dark');
+		expect(mockContext.renderer.setBackgroundColor).toHaveBeenCalled();
+		expect(result).toEqual({ action: 'replace', screen: 'settings' });
+	});
+
+	it('does not rebuild the screen when the theme was not changed on save', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(mockContext.renderer.setBackgroundColor).not.toHaveBeenCalled();
 
 		screen.cleanup();
 	});

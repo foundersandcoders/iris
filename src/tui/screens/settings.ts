@@ -11,7 +11,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../assets/brand/theme';
+import { theme, symbols, applyTheme, type ThemeName } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import {
 	DEFAULT_CONFIG,
@@ -26,7 +26,7 @@ import {
 	getDefaultSchemaDir,
 } from '../../lib/utils/storage/paths';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
 import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'settings-root';
@@ -41,6 +41,9 @@ interface SettingsField {
 	type: 'text' | 'dropdown' | 'directory' | 'boolean';
 	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
+	/** Display strings for a 'boolean' field's two states, [off, on] — Enter
+	 *  flips between them. Defaults to ['Off', 'On']. */
+	toggleValues?: [string, string];
 }
 
 /** Contextual help text per field */
@@ -55,6 +58,7 @@ const FIELD_HELP: Record<string, string> = {
 	'csvInputDir': 'Starting directory when browsing for CSV files',
 	'schemaDir': 'Directory for downloaded government XSD schema files',
 	'reduceMotion': 'Disable screen transition animations — takes effect on next launch',
+	'theme': 'Colour theme for the interface — applies immediately on save',
 };
 
 /** Field definitions — declarative description of every editable setting */
@@ -153,6 +157,15 @@ const FIELDS: SettingsField[] = [
 		getValue: (c) => (c.reduceMotion ? 'On' : 'Off'),
 		setValue: (c, v) => ({ ...c, reduceMotion: v === 'On' }),
 		type: 'boolean',
+	},
+	{
+		key: 'theme',
+		label: 'Theme',
+		section: 'Interface',
+		getValue: (c) => (c.theme === 'dark' ? 'Dark' : 'Light'),
+		setValue: (c, v) => ({ ...c, theme: v === 'Dark' ? 'dark' : 'light' }),
+		type: 'boolean',
+		toggleValues: ['Light', 'Dark'],
 	},
 ];
 
@@ -323,7 +336,16 @@ export class SettingsScreen implements Screen {
 			},
 		];
 
-		this.keymap = new Keymap({ bindings, onBack: finish, onQuit: finish });
+		this.keymap = new Keymap({
+			bindings,
+			onBack: finish,
+			onQuit: finish,
+			paletteEntries: PALETTE_SCREENS,
+			onCommand: (screen) => {
+				if (screen === this.name) return;
+				resolve({ action: 'push', screen });
+			},
+		});
 		const keymap = this.keymap;
 
 		this.fieldList = new SelectRenderable(this.renderer, {
@@ -419,8 +441,9 @@ export class SettingsScreen implements Screen {
 			// best UX for a binary. commitEdit() sets editing=false via
 			// finishEdit(), which rebuilds the field list, so the display
 			// updates for free.
-			const isOn = field.getValue(this.config) === 'On';
-			this.commitEdit(field, isOn ? 'Off' : 'On');
+			const [off, on] = field.toggleValues ?? ['Off', 'On'];
+			const isOn = field.getValue(this.config) === on;
+			this.commitEdit(field, isOn ? off : on);
 			return;
 		}
 
@@ -577,9 +600,24 @@ export class SettingsScreen implements Screen {
 		const storage = createStorage();
 		const result = await storage.saveConfig(this.config);
 		if (result.success) {
+			const newTheme: ThemeName = this.config.theme === 'dark' ? 'dark' : 'light';
+			const themeChanged = newTheme !== (this.originalConfig.theme === 'dark' ? 'dark' : 'light');
+
 			this.originalConfig = { ...this.config };
 			this.dirty = false;
 			this.toasts?.success('Settings saved');
+
+			if (themeChanged) {
+				// Repaint live by rebuilding this screen through the Router's
+				// existing replace() path (cleanup() -> factory(ctx) -> render()).
+				// Colours are baked into renderables at construction time — a
+				// generic walk-and-recolour isn't viable (see applyTheme's doc
+				// comment), so a rebuild is the only way to show the change
+				// immediately without a restart.
+				applyTheme(newTheme);
+				this.renderer.setBackgroundColor(theme.background);
+				this.resolveRender?.({ action: 'replace', screen: 'settings' });
+			}
 		}
 	}
 
