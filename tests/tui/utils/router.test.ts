@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Router, type ScreenResult } from '../../../src/tui/utils/router';
+import { ToastManager } from '../../../src/tui/utils/toastManager';
 import * as fixtures from '../../fixtures/tui/tui';
+
+// @opentui/core can only load under Bun — needed here for the real
+// ToastManager used in the cross-screen-survival test below.
+vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
 describe('Router', () => {
 	let router: Router;
@@ -162,6 +167,35 @@ describe('Router', () => {
       await toastRouter.push('test');
 
       expect((capturedCtx as { toasts?: unknown }).toasts).toBe(toasts);
+    });
+
+    it('survives a screen replace() — the manager outlives the screen that fired it', async () => {
+      const toasts = new ToastManager(mockRenderer);
+      toasts.attach();
+      const toastRouter = new Router(mockRenderer, toasts);
+
+      // Mirrors WorkflowScreen: fires a toast, then replace()s to the next
+      // screen. cleanup() (a no-op here) runs before the next screen exists,
+      // but the toast manager is renderer-scoped, not screen-owned, so the
+      // toast must still be tracked afterwards.
+      let firedId = '';
+      const outgoing = fixtures.createMockScreen('workflow', {
+        action: 'replace',
+        screen: 'success',
+      });
+      outgoing.render = vi.fn(async (): Promise<ScreenResult> => {
+        firedId = toasts.success('Converted 3 learners');
+        return { action: 'replace', screen: 'success' };
+      });
+      const incoming = fixtures.createMockScreen('success', { action: 'quit' });
+
+      toastRouter.register('workflow', () => outgoing);
+      toastRouter.register('success', () => incoming);
+
+      await toastRouter.push('workflow');
+
+      expect(firedId).toBeTruthy();
+      expect(toasts.activeIds()).toContain(firedId);
     });
   });
 

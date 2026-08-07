@@ -8,6 +8,7 @@ import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import { validateWorkflow } from '../../lib/workflows/csvValidate';
@@ -87,6 +88,7 @@ const WORKFLOW_CONFIGS: Record<WorkflowType, WorkflowConfig> = {
 export class WorkflowScreen implements Screen {
 	readonly name = 'workflow';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
 	private shell?: AppShell;
 	private stepsPanel?: Panel;
 	private stepsContainer?: BoxRenderable;
@@ -100,6 +102,7 @@ export class WorkflowScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -247,6 +250,14 @@ export class WorkflowScreen implements Screen {
 				}
 
 				const hasIssues = !convertData.validation.valid;
+				const learnerCount = convertData.csvData.rows.length;
+
+				// Fired here, not on the success screen: this toast must survive
+				// this screen's teardown, which is exactly what proves the toast
+				// manager is renderer-scoped rather than screen-owned (TR.C2).
+				this.toasts?.success(
+					`Converted ${learnerCount} learner${learnerCount === 1 ? '' : 's'}`
+				);
 
 				return {
 					action: 'replace',
@@ -255,7 +266,7 @@ export class WorkflowScreen implements Screen {
 						type: 'convert',
 						duration,
 						outputPath: convertData.outputPath,
-						learnerCount: convertData.csvData.rows.length,
+						learnerCount,
 						hasIssues,
 						validation: convertData.validation,
 					},

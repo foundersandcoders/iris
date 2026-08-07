@@ -179,4 +179,75 @@ describe('WorkflowScreen', () => {
 		// one for the confirm overlay (TR.C2).
 		expect(mockContext.renderer.root.remove).toHaveBeenCalledTimes(3);
 	});
+
+	describe('completion toast', () => {
+		it('fires a success toast on a successful convert, before replace() tears the screen down', async () => {
+			const toasts = tuiFixtures.createMockToasts();
+			const ctx = tuiFixtures.createMockContext(mockContext.renderer, toasts);
+			const screen = new WorkflowScreen(ctx);
+
+			const result = await screen.render({ filePath: 'data.csv', workflowType: 'convert' });
+
+			// The toast call must happen inside render()/routeToResultScreen() —
+			// i.e. before the screen is torn down — proving it doesn't depend on
+			// the screen surviving. The manager itself (tested in
+			// toastManager.test.ts) is what actually outlives cleanup().
+			expect(toasts.success).toHaveBeenCalledWith('Converted 0 learners');
+			expect(result).toMatchObject({ action: 'replace', screen: 'success' });
+
+			screen.cleanup();
+		});
+
+		it('pluralises the learner count correctly', async () => {
+			const { convertWorkflow } = await import('../../../src/lib/workflows/csvConvert');
+			(convertWorkflow as any).mockReturnValueOnce(
+				(async function* () {
+					return {
+						success: true,
+						steps: [],
+						duration: 1,
+						data: {
+							xml: '',
+							outputPath: 'out.xml',
+							csvData: { rows: [{}] },
+							validation: validResult,
+						},
+					};
+				})()
+			);
+
+			const toasts = tuiFixtures.createMockToasts();
+			const ctx = tuiFixtures.createMockContext(mockContext.renderer, toasts);
+			const screen = new WorkflowScreen(ctx);
+
+			await screen.render({ filePath: 'data.csv', workflowType: 'convert' });
+
+			expect(toasts.success).toHaveBeenCalledWith('Converted 1 learner');
+
+			screen.cleanup();
+		});
+
+		it('does not fire a toast when ctx has no toast manager', async () => {
+			const screen = new WorkflowScreen(mockContext);
+			await expect(
+				screen.render({ filePath: 'data.csv', workflowType: 'convert' })
+			).resolves.toMatchObject({ action: 'replace', screen: 'success' });
+			screen.cleanup();
+		});
+
+		it('does not fire a toast on validate or check workflows', async () => {
+			const toasts = tuiFixtures.createMockToasts();
+			const ctx = tuiFixtures.createMockContext(mockContext.renderer, toasts);
+
+			const validateScreen = new WorkflowScreen(ctx);
+			await validateScreen.render({ filePath: 'data.csv', workflowType: 'validate' });
+			validateScreen.cleanup();
+
+			const checkScreen = new WorkflowScreen(ctx);
+			await checkScreen.render({ filePath: 'data.xml', workflowType: 'check' });
+			checkScreen.cleanup();
+
+			expect(toasts.success).not.toHaveBeenCalled();
+		});
+	});
 });
