@@ -8,3 +8,5 @@ export { confirmOverlay } from './confirmOverlay';
 export type { ConfirmOverlay, ConfirmOverlayOptions } from './confirmOverlay';
 export { toast } from './toast';
 export type { Toast, ToastOptions, ToastVariant } from './toast';
+export { progressBar } from './progressBar';
+export type { ProgressBar, ProgressBarOptions } from './progressBar';
