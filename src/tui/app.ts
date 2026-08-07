@@ -18,6 +18,8 @@ import { AboutScreen } from './screens/about';
 import { HistoryScreen } from './screens/history';
 import type { Renderer } from './types';
 import { theme } from '../../assets/brand/theme';
+import { isRemoteSession } from './utils/transitions';
+import { getConfig, DEFAULT_CONFIG } from '../lib/types/configTypes';
 
 interface TUIOptions {
 	startCommand?: string;
@@ -40,12 +42,22 @@ export class TUI {
 		this.toasts = new ToastManager(this.renderer);
 		this.toasts.attach();
 
-		this.router = new Router(this.renderer, this.toasts);
+		// A broken config file must not stop the TUI booting — getConfig()
+		// throws on genuine read/parse errors (not on a missing file, which
+		// resolves to defaults), so fall back rather than propagate.
+		const config = await getConfig().catch(() => DEFAULT_CONFIG);
+		const motion = !(config.reduceMotion ?? false) && !isRemoteSession();
+
+		this.router = new Router(this.renderer, this.toasts, { motion });
 		this.registerScreens();
 
 		await this.router.push('dashboard');
 
-		// Router returns when quit action received
+		// Router returns when quit action received. dispose() (which detaches
+		// the transitions engine's frame callback) must precede
+		// renderer.destroy() — detaching after destruction would touch a
+		// renderer that's already torn down.
+		this.router.dispose();
 		this.toasts.detach();
 		this.renderer.destroy();
 	}

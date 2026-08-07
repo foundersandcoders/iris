@@ -15,4 +15,9 @@ export interface RenderContext {
 	 *  must outlive the screen that fired them (e.g. WorkflowScreen
 	 *  replace()s on completion, tearing its Keymap down immediately). */
 	toasts?: ToastManager;
+	/** Whether screen transitions are enabled — false when reduceMotion is on
+	 *  or the session is over SSH. Read once at Router construction; a
+	 *  screen reads this once at buildUI() time to decide its initial
+	 *  appShell opacity (0 to fade in, 1 to mount instantly). */
+	motion?: boolean;
 }

@@ -16,6 +16,11 @@ export interface AppShellOptions {
 	breadcrumb?: string;
 	/** Initial footer hint string in "[KEY] Label  " format. */
 	footer?: string;
+	/** Initial root opacity. The Router sets 0 so a fade-in transition
+	 *  (TR.C4) has somewhere to start; defaults to 1 (fully visible) for
+	 *  anything constructing a shell outside the Router (tests, and
+	 *  reduce-motion where Router never lowers it). */
+	opacity?: number;
 }
 
 export interface AppShell {
@@ -40,6 +45,7 @@ export function appShell(renderer: Renderer, opts: AppShellOptions = {}): AppShe
 		width: '100%',
 		height: '100%',
 		backgroundColor: theme.background,
+		opacity: opts.opacity ?? 1,
 	});
 
 	const headerText = new TextRenderable(renderer, {

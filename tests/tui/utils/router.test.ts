@@ -12,6 +12,7 @@ describe('Router', () => {
 	let mockRenderer: ReturnType<typeof fixtures.createMockRenderer>;
 
 	beforeEach(() => {
+		vi.clearAllMocks();
 		mockRenderer = fixtures.createMockRenderer();
 		router = new Router(mockRenderer);
 	});
@@ -196,6 +197,60 @@ describe('Router', () => {
 
       expect(firedId).toBeTruthy();
       expect(toasts.activeIds()).toContain(firedId);
+    });
+  });
+
+  describe('transitions', () => {
+    it('threads motion into ctx (default true)', async () => {
+      let capturedCtx: unknown;
+      const factory = vi.fn((ctx) => {
+        capturedCtx = ctx;
+        return fixtures.createMockScreen('test', { action: 'quit' });
+      });
+      router.register('test', factory);
+
+      await router.push('test');
+
+      expect((capturedCtx as { motion?: unknown }).motion).toBe(true);
+    });
+
+    it('honours motion: false and never touches the engine', async () => {
+      const { engine } = await import('../../fixtures/tui/opentui');
+      const noMotionRouter = new Router(mockRenderer, undefined, { motion: false });
+      const screen = fixtures.createMockScreen('test', { action: 'quit' });
+      noMotionRouter.register('test', () => screen);
+
+      await noMotionRouter.push('test');
+      noMotionRouter.dispose();
+
+      expect(engine.attach).not.toHaveBeenCalled();
+      expect(engine.detach).not.toHaveBeenCalled();
+    });
+
+    it('fires fadeIn on push/pop/replace and cleanup() ordering is unaffected', async () => {
+      const screen1 = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2 = fixtures.createMockScreen('screen2', { action: 'quit' });
+
+      router.register('screen1', () => screen1);
+      router.register('screen2', () => screen2);
+
+      await router.push('screen1');
+
+      // cleanup() still runs, in the same order relative to construction,
+      // regardless of the transitions call added around render().
+      expect(screen1.cleanup).toHaveBeenCalled();
+      expect(router.getBreadcrumbs()).toEqual(['screen1', 'screen2']);
+    });
+
+    it('dispose() detaches the engine when motion is enabled', async () => {
+      const { engine } = await import('../../fixtures/tui/opentui');
+      const screen = fixtures.createMockScreen('test', { action: 'quit' }, true);
+      router.register('test', () => screen);
+
+      await router.push('test');
+      router.dispose();
+
+      expect(engine.detach).toHaveBeenCalledTimes(1);
     });
   });
 

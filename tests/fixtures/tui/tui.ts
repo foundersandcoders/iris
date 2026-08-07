@@ -100,12 +100,16 @@ export function createMockToasts(): ToastManager {
 }
 
 /**
- * Mock screen for router testing
+ * Mock screen for router testing. `withRoot` opts into a transition target
+ * (TR.C4) for tests exercising fadeIn(); omitted by default so the ~13
+ * pre-existing router tests without it exercise the graceful-degradation
+ * path (a screen with no root simply doesn't animate).
  */
-export function createMockScreen(name: string, result: ScreenResult): Screen {
+export function createMockScreen(name: string, result: ScreenResult, withRoot = false): Screen {
 	return {
 		name,
 		render: vi.fn().mockResolvedValue(result),
 		cleanup: vi.fn(),
+		...(withRoot ? { root: { opacity: 1 } } : {}),
 	};
 }
