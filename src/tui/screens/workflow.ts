@@ -130,6 +130,7 @@ export class WorkflowScreen implements Screen {
 	readonly name = 'workflow';
 	private renderer: Renderer;
 	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private stepsPanel?: Panel;
 	private stepsContainer?: BoxRenderable;
@@ -147,6 +148,12 @@ export class WorkflowScreen implements Screen {
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -404,6 +411,7 @@ export class WorkflowScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: title,
 			footer: 'Processing...',
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.stepsPanel = panel(this.renderer, { title, flexGrow: 1 });

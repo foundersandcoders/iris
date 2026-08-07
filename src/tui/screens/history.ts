@@ -27,6 +27,7 @@ export class HistoryScreen implements Screen {
 	readonly name = 'history';
 	private renderer: Renderer;
 	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private detailPanel?: Panel;
@@ -43,6 +44,12 @@ export class HistoryScreen implements Screen {
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
@@ -212,6 +219,7 @@ export class HistoryScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Submission History',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		const brokenCount = this.historyItems.filter((i) => i.isBroken).length;

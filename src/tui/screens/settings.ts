@@ -150,6 +150,7 @@ export class SettingsScreen implements Screen {
 	readonly name = 'settings';
 	private renderer: Renderer;
 	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private fieldPanel?: Panel;
 	private keymap?: Keymap;
@@ -179,6 +180,12 @@ export class SettingsScreen implements Screen {
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -340,6 +347,7 @@ export class SettingsScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Settings',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.shell.content.add(this.fieldPanel.box);

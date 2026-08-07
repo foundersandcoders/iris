@@ -28,6 +28,7 @@ interface MappingListItem {
 export class MappingBuilderScreen implements Screen {
 	readonly name = 'mapping-builder';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private keymap?: Keymap;
@@ -41,6 +42,12 @@ export class MappingBuilderScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -176,6 +183,7 @@ export class MappingBuilderScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Mapping Builder',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.shell.content.add(

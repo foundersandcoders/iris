@@ -92,6 +92,7 @@ type FocusTarget = 'left' | 'search' | 'right';
 export class MappingEditorScreen implements Screen {
 	readonly name = 'mapping-editor';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private leftPanel?: Panel;
 	private rightPanel?: Panel;
@@ -138,6 +139,12 @@ export class MappingEditorScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -331,6 +338,7 @@ export class MappingEditorScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: `Edit Mapping: ${this.mappingName}`,
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		// Summary

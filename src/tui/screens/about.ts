@@ -16,12 +16,19 @@ import packageJson from '../../../package.json';
 export class AboutScreen implements Screen {
 	readonly name = 'about';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private infoPanel?: Panel;
 	private keymap?: Keymap;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
@@ -49,6 +56,7 @@ export class AboutScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'About',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.infoPanel = panel(this.renderer, { title: 'About Iris', flexGrow: 1 });

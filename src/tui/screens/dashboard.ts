@@ -16,7 +16,7 @@ import { theme, symbols, PALETTE } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { Keymap } from '../utils/keymap';
 import { APP_VERSION } from '../utils/layout';
-import { appShell, panel } from '../components';
+import { appShell, panel, type AppShell } from '../components';
 import { createStorage } from '../../lib/storage';
 import type { IrisConfig } from '../../lib/types/configTypes';
 import type { HistoryEntry } from '../../lib/types/storageTypes';
@@ -78,6 +78,8 @@ function formatActivityRow(entry: HistoryEntry): string {
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
 	private renderer: Renderer;
+	private motion?: boolean;
+	private shell?: AppShell;
 	private keymap?: Keymap;
 
 	private menuItems: MenuItem[] = [
@@ -93,6 +95,12 @@ export class Dashboard implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -155,11 +163,12 @@ export class Dashboard implements Screen {
 
 			// Shell: header + breadcrumb, content region, footer keybar.
 			// Title drops "Iris" — the wordmark now lives in the left column below.
-			const shell = appShell(this.renderer, {
+			this.shell = appShell(this.renderer, {
 				id: CONTAINER_ID,
 				title: `v${APP_VERSION}`,
 				breadcrumb: 'Dashboard',
 				footer: this.keymap.toKeybar(),
+				opacity: this.motion ? 0 : 1,
 			});
 
 			// Menu panel
@@ -206,10 +215,10 @@ export class Dashboard implements Screen {
 			const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
 			body.add(leftColumn);
 			body.add(activityPanel.box);
-			shell.content.add(body);
+			this.shell.content.add(body);
 
 			// Add to renderer
-			this.renderer.root.add(shell.root);
+			this.renderer.root.add(this.shell.root);
 			select.focus();
 			this.keymap.attach(this.renderer);
 
