@@ -17,13 +17,14 @@
 import { BoxRenderable } from '@opentui/core';
 import type { Renderer } from '../types';
 import { toast, type Toast, type ToastVariant } from '../components/toast';
+import { Z_INDEX } from '../components/overlay';
 
 export interface ToastManagerOptions {
 	/** Layer id, used for renderer.root.remove(). Default 'toast-layer-root'. */
 	id?: string;
-	/** Paint order among renderer.root siblings. Default 200 — must exceed
-	 *  the modal overlays' 100 so a toast stays readable while help/confirm
-	 *  is open. */
+	/** Paint order among renderer.root siblings. Defaults to Z_INDEX.toast,
+	 *  which must exceed Z_INDEX.modal so a toast stays readable while
+	 *  help/confirm/the palette is open. */
 	zIndex?: number;
 	/** Auto-dismiss delay in ms. Default 3000. */
 	duration?: number;
@@ -32,7 +33,6 @@ export interface ToastManagerOptions {
 }
 
 const DEFAULT_ID = 'toast-layer-root';
-const DEFAULT_Z_INDEX = 200;
 const DEFAULT_DURATION = 3000;
 const DEFAULT_MAX_VISIBLE = 3;
 
@@ -54,7 +54,7 @@ export class ToastManager {
 	constructor(renderer: Renderer, opts: ToastManagerOptions = {}) {
 		this.renderer = renderer;
 		this.layerId = opts.id ?? DEFAULT_ID;
-		this.zIndex = opts.zIndex ?? DEFAULT_Z_INDEX;
+		this.zIndex = opts.zIndex ?? Z_INDEX.toast;
 		this.duration = opts.duration ?? DEFAULT_DURATION;
 		this.maxVisible = opts.maxVisible ?? DEFAULT_MAX_VISIBLE;
 	}

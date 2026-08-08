@@ -1,5 +1,7 @@
 export { panel } from './panel';
 export type { Panel, PanelOptions } from './panel';
+export { overlayScaffold, Z_INDEX } from './overlay';
+export type { OverlayScaffold } from './overlay';
 export { appShell } from './appShell';
 export type { AppShell, AppShellOptions } from './appShell';
 export { helpOverlay } from './helpOverlay';

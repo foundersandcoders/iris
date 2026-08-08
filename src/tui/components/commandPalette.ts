@@ -14,7 +14,7 @@
 import { BoxRenderable, TextRenderable, t, fg } from '@opentui/core';
 import type { Renderer } from '../types';
 import { theme } from '../../../assets/brand/theme';
-import { panel, type Panel } from './panel';
+import { overlayScaffold } from './overlay';
 
 /** One selectable entry in the palette's result list. */
 export interface PaletteEntry {
@@ -55,25 +55,11 @@ const FOOTER_HINT = '↑↓ select  ↵ jump  ESC close';
 const EMPTY_HINT = 'No matching screens';
 
 export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions = {}): CommandPalette {
-	const root = new BoxRenderable(renderer, {
+	const { root, card } = overlayScaffold(renderer, {
 		id: opts.id ?? 'command-palette-root',
-		position: 'absolute',
-		top: 0,
-		left: 0,
-		width: '100%',
-		height: '100%',
-		zIndex: opts.zIndex ?? 100,
-		backgroundColor: theme.background,
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
-		visible: false,
+		title: opts.title ?? 'Command Palette',
+		zIndex: opts.zIndex,
 	});
-
-	// Explicit width — the panel would otherwise size to its (initially empty)
-	// content and clip a title/row longer than the placeholder width. Matches
-	// the 42-column convention set by helpOverlay/confirmOverlay.
-	const card: Panel = panel(renderer, { title: opts.title ?? 'Command Palette', width: 42 });
 
 	const queryLine = new TextRenderable(renderer, {
 		content: t`${fg(theme.accent)('> ')}`,
@@ -88,8 +74,6 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 
 	const footer = new TextRenderable(renderer, { content: FOOTER_HINT, fg: theme.textMuted });
 	card.add(footer);
-
-	root.add(card.box);
 
 	const SELECTED_MARKER = '›';
 
