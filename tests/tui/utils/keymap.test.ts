@@ -627,6 +627,21 @@ describe('Keymap command palette', () => {
 		expect(overlay.getSelected()?.screen).toBe('settings');
 	});
 
+	it('accepts a multi-byte BMP character into the query', () => {
+		// OpenTUI sets stdin to utf8, so an accented/CJK character already
+		// arrives as a length-1 JS string (unlike an escape sequence, which
+		// is multiple ASCII characters) and should pass isPrintable().
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'e', sequence: 'é' }));
+
+		expect((km as any).paletteQuery).toBe('é');
+	});
+
 	it('backspace trims the query', () => {
 		const ctx = fixtures.createMockContext();
 		const onCommand = vi.fn();

@@ -378,8 +378,19 @@ export class Keymap {
 /** A single, non-modifier, non-control printable character — the palette
  *  query accepts these and nothing else. Rejects multi-character sequences
  *  (e.g. arrow-key escape codes that slip through as `sequence`) and
- *  control characters below 0x20 (Tab, Enter's own \r, etc — Enter/Escape/
- *  Backspace are handled explicitly before this check ever runs). */
+ *  control characters below 0x20 (Tab, Enter's own \r, etc, Enter/Escape/
+ *  Backspace are handled explicitly before this check ever runs).
+ *
+ *  The length check is deliberately not relaxed for multi-byte input:
+ *  OpenTUI sets stdin to utf8, so BMP characters (e.g. e-acute, u-umlaut,
+ *  CJK) already arrive as length-1 strings and pass. Pasted text never
+ *  reaches here at all, bracketed paste is diverted by OpenTUI's stdin
+ *  buffer to a separate `paste` event (PasteEvent), which the palette
+ *  doesn't listen for. The only input this drops is astral-plane
+ *  characters (emoji), which that same buffer splits into two lone
+ *  surrogates before either half reaches a keypress handler, so relaxing
+ *  this check wouldn't recover them and would let escape sequences
+ *  through instead. */
 function isPrintable(key: KeyEvent): boolean {
 	if (key.ctrl || key.meta || key.option) return false;
 	const seq = key.sequence;
