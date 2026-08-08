@@ -25,7 +25,7 @@ import { validateMappingStructure } from '../../lib/mappings/validate';
 import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
 import { parseCSV } from '../../lib/utils/csv/csvParser';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-editor-root';
 
@@ -331,11 +331,7 @@ export class MappingEditorScreen implements Screen {
 				// 3. Pop back
 				resolve({ action: 'pop' });
 			},
-			paletteEntries: PALETTE_SCREENS,
-			onCommand: (screen) => {
-				if (screen === this.name) return;
-				resolve({ action: 'push', screen });
-			},
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 

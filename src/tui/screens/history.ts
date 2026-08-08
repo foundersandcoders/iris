@@ -10,7 +10,7 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import type { HistoryEntry, SubmissionMetadata } from '../../lib/types/storageTypes';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'history-root';
@@ -216,11 +216,7 @@ export class HistoryScreen implements Screen {
 			bindings,
 			onBack: finish,
 			onQuit: finish,
-			paletteEntries: PALETTE_SCREENS,
-			onCommand: (screen) => {
-				if (screen === this.name) return;
-				resolve({ action: 'push', screen });
-			},
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 

@@ -11,6 +11,7 @@ import { helpOverlay, type HelpOverlay, type HelpRow } from '../components/helpO
 import { confirmOverlay, type ConfirmOverlay } from '../components/confirmOverlay';
 import { commandPalette, type CommandPalette, type PaletteEntry } from '../components/commandPalette';
 import { fuzzyFilter } from './fuzzy';
+import type { ScreenResult } from './router';
 
 /** Screens safe to jump to from the command palette (TR.D1) with no data
  *  payload. Deliberately excludes file-picker, workflow, success,
@@ -27,6 +28,25 @@ export const PALETTE_SCREENS: PaletteEntry[] = [
 	{ screen: 'about', label: 'About' },
 	{ screen: 'history', label: 'History' },
 ];
+
+/** The palette wiring every no-payload screen shares: the standard jump
+ *  list plus a handler that resolves a push, short-circuiting the no-op
+ *  self-jump (the Router would otherwise stack a second copy of the
+ *  current screen). Spread into a Keymap's options:
+ *  `...paletteNav(this.name, resolve)`. Screens needing a guard add
+ *  paletteWhen alongside it (see settings.ts). */
+export function paletteNav(
+	currentScreen: string,
+	resolve: (result: ScreenResult) => void
+): Pick<KeymapOptions, 'paletteEntries' | 'onCommand'> {
+	return {
+		paletteEntries: PALETTE_SCREENS,
+		onCommand: (screen) => {
+			if (screen === currentScreen) return;
+			resolve({ action: 'push', screen });
+		},
+	};
+}
 
 /** A single declarative key binding. */
 export interface Binding {

@@ -14,7 +14,7 @@ import {
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 import { APP_VERSION } from '../utils/layout';
 import { appShell, panel, type AppShell } from '../components';
 import { createStorage } from '../../lib/storage';
@@ -137,11 +137,7 @@ export class Dashboard implements Screen {
 			this.keymap = new Keymap({
 				onQuit: () => resolve({ action: 'quit' }),
 				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
-				paletteEntries: PALETTE_SCREENS,
-				onCommand: (screen) => {
-					if (screen === this.name) return; // already here
-					resolve({ action: 'push', screen });
-				},
+				...paletteNav(this.name, resolve),
 				bindings: [
 					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
 					{

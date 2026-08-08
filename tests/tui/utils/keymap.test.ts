@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 // can't load under vitest.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-import { normaliseKey, eventToKey, Keymap, type Binding } from '../../../src/tui/utils/keymap';
+import { normaliseKey, eventToKey, Keymap, paletteNav, PALETTE_SCREENS, type Binding } from '../../../src/tui/utils/keymap';
 import type { KeyEvent } from '@opentui/core';
 import * as fixtures from '../../fixtures/tui/tui';
 
@@ -789,6 +789,29 @@ describe('Keymap command palette', () => {
 
 		expect((km as any).paletteOpen).toBe(false);
 		expect(onCommand).not.toHaveBeenCalled();
+	});
+});
+
+describe('paletteNav()', () => {
+	it('returns the shared PALETTE_SCREENS list', () => {
+		const resolve = vi.fn();
+		expect(paletteNav('dashboard', resolve).paletteEntries).toBe(PALETTE_SCREENS);
+	});
+
+	it('resolves a push for a different screen', () => {
+		const resolve = vi.fn();
+		const { onCommand } = paletteNav('dashboard', resolve);
+		onCommand?.('settings');
+
+		expect(resolve).toHaveBeenCalledWith({ action: 'push', screen: 'settings' });
+	});
+
+	it('is a no-op for a self-jump', () => {
+		const resolve = vi.fn();
+		const { onCommand } = paletteNav('dashboard', resolve);
+		onCommand?.('dashboard');
+
+		expect(resolve).not.toHaveBeenCalled();
 	});
 });
 

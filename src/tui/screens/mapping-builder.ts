@@ -8,7 +8,7 @@ import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-builder-root';
 
@@ -176,11 +176,7 @@ export class MappingBuilderScreen implements Screen {
 				},
 			],
 			onBack: () => resolve({ action: 'pop' }),
-			paletteEntries: PALETTE_SCREENS,
-			onCommand: (screen) => {
-				if (screen === this.name) return;
-				resolve({ action: 'push', screen });
-			},
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 

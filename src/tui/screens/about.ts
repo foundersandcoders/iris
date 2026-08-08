@@ -6,7 +6,7 @@ import type { RenderContext, Renderer } from '../types';
 import { theme } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'about-root';
 
@@ -49,11 +49,7 @@ export class AboutScreen implements Screen {
 			bindings: [],
 			onBack: finish,
 			onQuit: finish,
-			paletteEntries: PALETTE_SCREENS,
-			onCommand: (screen) => {
-				if (screen === this.name) return;
-				resolve({ action: 'push', screen });
-			},
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 

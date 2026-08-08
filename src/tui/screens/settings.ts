@@ -26,7 +26,7 @@ import {
 	getDefaultSchemaDir,
 } from '../../lib/utils/storage/paths';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap, PALETTE_SCREENS } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'settings-root';
@@ -346,11 +346,7 @@ export class SettingsScreen implements Screen {
 			bindings,
 			onBack: finish,
 			onQuit: finish,
-			paletteEntries: PALETTE_SCREENS,
-			onCommand: (screen) => {
-				if (screen === this.name) return;
-				resolve({ action: 'push', screen });
-			},
+			...paletteNav(this.name, resolve),
 			// Block ctrl+p while inline-editing a field: the palette's
 			// swallow-everything-via-stopPropagation model would otherwise
 			// open over a live InputRenderable and silently discard the edit.
