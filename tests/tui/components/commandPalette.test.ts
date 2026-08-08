@@ -203,4 +203,58 @@ describe('commandPalette()', () => {
 		expect(() => palette.moveSelection(1)).not.toThrow();
 		expect(palette.getSelected()).toBeNull();
 	});
+
+	it('moveSelection() marks the newly selected row and unmarks the previous one', () => {
+		const palette = commandPalette(ctx.renderer);
+		palette.setEntries([
+			{ screen: 'a', label: 'A' },
+			{ screen: 'b', label: 'B' },
+		]);
+
+		const card = palette.root.getChildren()[0] as any;
+		const resultsBox = card.getChildren()[2];
+		const rows = resultsBox.getChildren();
+
+		expect(textOf(rows[0])).toContain('›');
+		expect(textOf(rows[1])).not.toContain('›');
+
+		palette.moveSelection(1);
+
+		expect(textOf(rows[0])).not.toContain('›');
+		expect(textOf(rows[1])).toContain('›');
+	});
+
+	it('moveSelection() reuses the row renderables rather than recreating them', () => {
+		const palette = commandPalette(ctx.renderer);
+		palette.setEntries([
+			{ screen: 'a', label: 'A' },
+			{ screen: 'b', label: 'B' },
+		]);
+
+		const card = palette.root.getChildren()[0] as any;
+		const resultsBox = card.getChildren()[2];
+		const rowBefore = resultsBox.getChildren()[0];
+
+		palette.moveSelection(1);
+
+		const rowAfter = resultsBox.getChildren()[0];
+		expect(rowAfter).toBe(rowBefore);
+	});
+
+	it('moveSelection() clamped at a bound leaves the marker unchanged', () => {
+		const palette = commandPalette(ctx.renderer);
+		palette.setEntries([
+			{ screen: 'a', label: 'A' },
+			{ screen: 'b', label: 'B' },
+		]);
+
+		const card = palette.root.getChildren()[0] as any;
+		const resultsBox = card.getChildren()[2];
+		const rows = resultsBox.getChildren();
+
+		palette.moveSelection(-5); // already clamped to index 0
+
+		expect(textOf(rows[0])).toContain('›');
+		expect(textOf(rows[1])).not.toContain('›');
+	});
 });

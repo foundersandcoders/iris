@@ -95,11 +95,20 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 
 	let entries: PaletteEntry[] = [];
 	let selectedIndex = 0;
-	let rowIds: string[] = [];
+	let rows: TextRenderable[] = [];
+
+	/** The styled content for one row — the only thing that differs between
+	 *  a selected and unselected row, so moveSelection() can restyle a row
+	 *  in place instead of rebuilding it. */
+	function contentFor(entry: PaletteEntry, isSelected: boolean) {
+		return isSelected
+			? t`${fg(theme.highlightFocused)(`${SELECTED_MARKER} ${entry.label}`)}`
+			: t`${fg(theme.text)(`  ${entry.label}`)}`;
+	}
 
 	function renderRows(): void {
-		for (const id of rowIds) resultsBox.remove(id);
-		rowIds = [];
+		for (const row of rows) resultsBox.remove(row.id);
+		rows = [];
 
 		if (entries.length === 0) {
 			const emptyRow = new TextRenderable(renderer, {
@@ -107,20 +116,17 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 				content: EMPTY_HINT,
 				fg: theme.textMuted,
 			});
-			rowIds.push(emptyRow.id);
+			rows.push(emptyRow);
 			resultsBox.add(emptyRow);
 			return;
 		}
 
 		entries.forEach((entry, index) => {
-			const isSelected = index === selectedIndex;
 			const row = new TextRenderable(renderer, {
 				id: `command-palette-row-${index}`,
-				content: isSelected
-					? t`${fg(theme.highlightFocused)(`${SELECTED_MARKER} ${entry.label}`)}`
-					: t`${fg(theme.text)(`  ${entry.label}`)}`,
+				content: contentFor(entry, index === selectedIndex),
 			});
-			rowIds.push(row.id);
+			rows.push(row);
 			resultsBox.add(row);
 		});
 	}
@@ -137,8 +143,18 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 		},
 		moveSelection(delta) {
 			if (entries.length === 0) return;
-			selectedIndex = Math.max(0, Math.min(entries.length - 1, selectedIndex + delta));
-			renderRows();
+			const next = Math.max(0, Math.min(entries.length - 1, selectedIndex + delta));
+			// Early-return on a clamped no-op: at either end of the list,
+			// repeated arrow presses would otherwise restyle the same row
+			// over and over for no visible change.
+			if (next === selectedIndex) return;
+			const previous = selectedIndex;
+			selectedIndex = next;
+			// Only the two changed rows need repainting, not the whole list —
+			// renderRows() tore down and recreated every TextRenderable on
+			// every arrow press.
+			rows[previous].content = contentFor(entries[previous], false);
+			rows[next].content = contentFor(entries[next], true);
 		},
 		getSelected() {
 			return entries[selectedIndex] ?? null;
