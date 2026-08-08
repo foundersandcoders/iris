@@ -36,8 +36,10 @@ export interface TransitionTarget {
 export interface Transitions {
 	/** Animate the given screen's root from its current opacity to 1. If the
 	 *  root isn't mounted yet (screens that await I/O before buildUI()), polls
-	 *  once per frame until it appears or a deadline elapses, then gives up
-	 *  cleanly — never fires against nothing and never leaks the poll. */
+	 *  once per frame until it appears. Before a deadline it animates the
+	 *  full fade; past the deadline it snaps straight to opacity 1 instead —
+	 *  the root must always end up visible, so the poll never simply gives up
+	 *  while the root is still pending. */
 	fadeIn(kind: TransitionKind, screen: TransitionTarget): void;
 	/** Detach from the render engine. Call once at TUI teardown, before
 	 *  renderer.destroy(). Idempotent. */
@@ -58,10 +60,16 @@ const TIMING: Record<TransitionKind, { duration: number; ease: string }> = {
 	replace: { duration: 260, ease: 'linear' },
 };
 
-/** How long fadeIn will keep polling for a not-yet-mounted root before
- *  giving up. Generous relative to real I/O (config load, history load) but
- *  bounded so a screen that never builds UI can't leak a frame callback
- *  forever. */
+/** How long fadeIn will animate a late-mounting root before switching to a
+ *  direct opacity snap instead. Generous relative to real I/O (config load,
+ *  history load) — past this point the wait itself has already cost more
+ *  than the fade would add, so there's nothing left to animate towards.
+ *  Does NOT bound how long the poll itself runs: a root can still appear
+ *  (and get snapped visible) arbitrarily later than this. A screen that
+ *  never builds UI at all was never bounded by this deadline either — only
+ *  the root actually appearing removes the frame callback — which matches
+ *  the pre-existing behaviour of Router/TUI teardown never tracking pending
+ *  polls, so this doesn't introduce a new leak. */
 const MOUNT_POLL_DEADLINE_MS = 500;
 
 /** Auto-enable reduce-motion over SSH: remote terminals round-trip every
@@ -135,17 +143,32 @@ export function createTransitions(renderer: Renderer, enabled: boolean): Transit
 			// Root not mounted yet (screen awaits I/O before buildUI()). Poll
 			// once per frame via the renderer's own frame callback — appending,
 			// not replacing, so this never clobbers the workflow spinner or any
-			// other registered callback — until the root appears or the
-			// deadline elapses, whichever comes first.
+			// other registered callback — until the root appears.
+			//
+			// Every screen mounts at opacity:0 when motion is enabled (see
+			// appShell's `opacity` option), specifically so this fade-in has
+			// somewhere to animate from. Before the deadline, a late-arriving
+			// root gets the full animated play(). Past the deadline, animating
+			// is no longer worth the wait, but the root still MUST end up
+			// visible — bailing out here entirely (as the code used to) left
+			// slow-mounting screens (Dashboard/Settings/History, which await
+			// storage I/O before buildUI()) stuck at opacity 0 forever, since
+			// nothing else ever sets it back to 1. So the callback keeps
+			// polling past the deadline; it just switches from animating to a
+			// direct opacity snap the moment the root shows up. A screen that
+			// never builds UI at all still eventually stops polling only when
+			// its root appears — same as before this fix, that case was never
+			// bounded by the deadline either (dispose() doesn't track pending
+			// polls), so this doesn't introduce a new leak, only closes the
+			// "mounts slightly late" gap.
 			const deadline = Date.now() + MOUNT_POLL_DEADLINE_MS;
 			const poll = async (): Promise<void> => {
-				if (screen.root) {
-					renderer.removeFrameCallback(poll);
-					play(kind, screen.root);
-					return;
-				}
+				if (!screen.root) return;
+				renderer.removeFrameCallback(poll);
 				if (Date.now() >= deadline) {
-					renderer.removeFrameCallback(poll);
+					screen.root.opacity = 1;
+				} else {
+					play(kind, screen.root);
 				}
 			};
 			renderer.setFrameCallback(poll);

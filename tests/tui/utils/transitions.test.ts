@@ -110,7 +110,7 @@ describe('createTransitions()', () => {
 			expect(timeline.add).toHaveBeenCalledWith(screen.root, expect.objectContaining({ opacity: 1 }));
 		});
 
-		it('gives up cleanly at the deadline if the root never appears — no leaked callback', () => {
+		it('keeps polling past the deadline if the root still has not appeared', () => {
 			vi.useFakeTimers();
 			const transitions = createTransitions(renderer, true);
 			const screen: { root?: { opacity: number } } = {};
@@ -121,7 +121,32 @@ describe('createTransitions()', () => {
 			vi.advanceTimersByTime(600); // past the 500ms deadline
 			poll();
 
+			// Root still hasn't appeared — the poll must NOT be torn down while
+			// it's still pending, or a root that mounts even later would never
+			// get its opacity restored and would stay invisible forever.
+			expect(renderer.removeFrameCallback).not.toHaveBeenCalled();
+			vi.useRealTimers();
+		});
+
+		it('snaps a root that mounts past the deadline straight to opacity 1, without animating', () => {
+			vi.useFakeTimers();
+			const transitions = createTransitions(renderer, true);
+			const screen: { root?: { opacity: number } } = {};
+
+			transitions.fadeIn('push', screen);
+			const poll = (renderer.setFrameCallback as ReturnType<typeof vi.fn>).mock.calls[0][0];
+
+			vi.advanceTimersByTime(600); // past the 500ms deadline, root still unmounted
+			poll();
+			expect(renderer.removeFrameCallback).not.toHaveBeenCalled();
+
+			// Root finally mounts, well after the deadline.
+			screen.root = { opacity: 0 };
+			poll();
+
 			expect(renderer.removeFrameCallback).toHaveBeenCalledWith(poll);
+			expect(screen.root.opacity).toBe(1); // snapped, not left at 0
+			expect(createTimeline).not.toHaveBeenCalled(); // no animation was played
 			vi.useRealTimers();
 		});
 
