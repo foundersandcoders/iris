@@ -644,6 +644,19 @@ describe('Keymap command palette', () => {
 		expect((km as any).paletteOpen).toBe(false);
 	});
 
+	it('ctrl+p again closes the palette (toggle), mirroring "?" for the help overlay', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // open
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // close
+
+		expect(onCommand).not.toHaveBeenCalled();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
 	it('swallows unrelated keys while the palette is open — "q" does not quit', () => {
 		const ctx = fixtures.createMockContext();
 		const onQuit = vi.fn();
@@ -694,6 +707,38 @@ describe('Keymap command palette', () => {
 		km.attach(ctx.renderer);
 
 		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('disableGlobals suppressing ctrl+p also skips constructing the overlay entirely', () => {
+		// attach() previously recomputed a weaker enablement check that omitted
+		// the disableGlobals test — the binding was correctly suppressed, but
+		// the overlay was still built and mounted, an unreachable renderable.
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			disableGlobals: ['ctrl+p'],
+		});
+		km.attach(ctx.renderer);
+
+		expect(ctx.renderer.root.add).not.toHaveBeenCalledWith(
+			expect.objectContaining({ id: 'command-palette-root' })
+		);
+	});
+
+	it('cannot be opened while the help overlay is open — help takes precedence', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: '?' })); // open help
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // attempt to open palette
+
+		expect((km as any).paletteOpen).toBe(false);
+		expect(onCommand).not.toHaveBeenCalled();
 	});
 });
 

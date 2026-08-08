@@ -120,6 +120,11 @@ export class Keymap {
 	private confirmResolver?: (ok: boolean) => void;
 	private readonly paletteEntries: PaletteEntry[];
 	private readonly onCommand?: (screen: string) => void;
+	/** Computed once here and reused by attach() — recomputing a weaker,
+	 *  inline version there previously omitted the disableGlobals check,
+	 *  so the overlay could be constructed and mounted even when ctrl+p
+	 *  itself was suppressed. */
+	private readonly paletteEnabled: boolean;
 	private paletteOverlay?: CommandPalette;
 	private paletteOpen = false;
 	private paletteQuery = '';
@@ -128,7 +133,7 @@ export class Keymap {
 		this.helpEnabled = !(opts.disableGlobals ?? []).includes('?');
 		this.paletteEntries = opts.paletteEntries ?? [];
 		this.onCommand = opts.onCommand;
-		const paletteEnabled =
+		this.paletteEnabled =
 			this.paletteEntries.length > 0 && !!this.onCommand && !(opts.disableGlobals ?? []).includes('ctrl+p');
 		this.bindings = [
 			...opts.bindings,
@@ -136,7 +141,7 @@ export class Keymap {
 			...(this.helpEnabled
 				? [{ keys: ['?'], hint: '?', label: 'Help', handler: () => this.toggleHelp() } as Binding]
 				: []),
-			...(paletteEnabled
+			...(this.paletteEnabled
 				? [
 						{
 							keys: ['ctrl+p'],
@@ -167,7 +172,10 @@ export class Keymap {
 		// binding, never while confirm/help are open).
 		if (this.paletteOpen) {
 			key.stopPropagation?.();
-			if (k === 'escape') {
+			if (k === 'escape' || k === 'ctrl+p') {
+				// ctrl+p toggles closed, mirroring "?"'s toggleHelp() — otherwise
+				// pressing it again while open was silently swallowed by
+				// isPrintable() rejecting the ctrl modifier, with no effect.
 				this.closePalette();
 			} else if (k === 'enter') {
 				this.commitPalette();
@@ -307,7 +315,7 @@ export class Keymap {
 			this.confirmOverlay = confirmOverlay(renderer, { id: CONFIRM_OVERLAY_ID });
 			renderer.root.add(this.confirmOverlay.root);
 		}
-		if (this.paletteEntries.length > 0 && this.onCommand && !this.paletteOverlay) {
+		if (this.paletteEnabled && !this.paletteOverlay) {
 			this.paletteOverlay = commandPalette(renderer, { id: PALETTE_OVERLAY_ID });
 			renderer.root.add(this.paletteOverlay.root);
 		}
