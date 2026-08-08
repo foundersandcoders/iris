@@ -393,6 +393,56 @@ describe('SettingsScreen', () => {
 		screen.cleanup();
 	});
 
+	it('applies the new theme before firing the success toast, so the toast paints in the new theme', async () => {
+		const toasts = fixtures.createMockToasts();
+		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+		let themeAtToastTime: string | undefined;
+		(toasts.success as any).mockImplementation(() => {
+			themeAtToastTime = activeTheme();
+		});
+
+		const screen = new SettingsScreen(ctx);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'theme');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+		itemSelectedHandler(listIndex);
+
+		const handler = (ctx.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(themeAtToastTime).toBe('dark');
+
+		screen.cleanup();
+	});
+
+	it('fires an error toast and leaves the config unsaved when storage.saveConfig fails', async () => {
+		saveConfigMock = vi.fn().mockResolvedValue({ success: false, error: { message: 'disk full' } });
+		const toasts = fixtures.createMockToasts();
+		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+		const screen = new SettingsScreen(ctx);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const handler = (ctx.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(toasts.error).toHaveBeenCalledWith('Failed to save settings');
+		expect(toasts.success).not.toHaveBeenCalled();
+
+		screen.cleanup();
+	});
+
 	it('fires a success toast on save, without scheduling a footer timeout', async () => {
 		vi.useFakeTimers({ shouldAdvanceTime: true });
 		const toasts = fixtures.createMockToasts();

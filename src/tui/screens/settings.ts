@@ -599,25 +599,36 @@ export class SettingsScreen implements Screen {
 
 		const storage = createStorage();
 		const result = await storage.saveConfig(this.config);
-		if (result.success) {
-			const newTheme: ThemeName = this.config.theme === 'dark' ? 'dark' : 'light';
-			const themeChanged = newTheme !== (this.originalConfig.theme === 'dark' ? 'dark' : 'light');
+		if (!result.success) {
+			this.toasts?.error('Failed to save settings');
+			return;
+		}
 
-			this.originalConfig = { ...this.config };
-			this.dirty = false;
-			this.toasts?.success('Settings saved');
+		const newTheme: ThemeName = this.config.theme === 'dark' ? 'dark' : 'light';
+		const themeChanged = newTheme !== (this.originalConfig.theme === 'dark' ? 'dark' : 'light');
 
-			if (themeChanged) {
-				// Repaint live by rebuilding this screen through the Router's
-				// existing replace() path (cleanup() -> factory(ctx) -> render()).
-				// Colours are baked into renderables at construction time — a
-				// generic walk-and-recolour isn't viable (see applyTheme's doc
-				// comment), so a rebuild is the only way to show the change
-				// immediately without a restart.
-				applyTheme(newTheme);
-				this.renderer.setBackgroundColor(theme.background);
-				this.resolveRender?.({ action: 'replace', screen: 'settings' });
-			}
+		this.originalConfig = { ...this.config };
+		this.dirty = false;
+
+		// Apply the theme mutation before the success toast fires: toast
+		// colours resolve synchronously at construction time (accentFor in
+		// components/toast.ts), so a toast built first would paint in the
+		// outgoing theme's accent for its whole lifetime.
+		if (themeChanged) {
+			applyTheme(newTheme);
+			this.renderer.setBackgroundColor(theme.background);
+		}
+
+		this.toasts?.success('Settings saved');
+
+		if (themeChanged) {
+			// Repaint live by rebuilding this screen through the Router's
+			// existing replace() path (cleanup() -> factory(ctx) -> render()).
+			// Colours are baked into renderables at construction time, a
+			// generic walk-and-recolour isn't viable (see applyTheme's doc
+			// comment), so a rebuild is the only way to show the change
+			// immediately without a restart.
+			this.resolveRender?.({ action: 'replace', screen: 'settings' });
 		}
 	}
 
