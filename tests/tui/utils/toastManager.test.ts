@@ -199,8 +199,17 @@ describe('ToastManager', () => {
 			const b = manager.show('Second');
 			manager.show('Third'); // triggers eviction of `a`
 			expect(manager.activeIds()).not.toContain(a);
-			// `a`'s original 3000ms deadline should be inert now.
-			vi.advanceTimersByTime(3000);
+
+			// Advancing to just before `b`'s OWN 3000ms deadline (from `b`'s own
+			// show() call) is the assertion that actually proves eviction left
+			// `b`'s timer bookkeeping alone — advancing past `a`'s old deadline
+			// instead wouldn't catch eviction corrupting `b`'s entry (e.g. the
+			// wrong key deleted from the timers map), since dismiss() is a
+			// silent no-op on an already-removed id either way.
+			vi.advanceTimersByTime(2999);
+			expect(manager.activeIds()).toContain(b);
+
+			vi.advanceTimersByTime(1);
 			expect(manager.activeIds()).not.toContain(b);
 		});
 	});
