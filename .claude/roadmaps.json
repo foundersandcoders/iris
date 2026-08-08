@@ -181,16 +181,18 @@
 					{
 						"id": "TR.D1",
 						"description": "`feat/add-command-palette` — Global fuzzy jump-to-screen/action.",
-						"status": "todo",
-						"dependsOn": []
+						"status": "done",
+						"dependsOn": [],
+						"notes": "Evidence: src/tui/components/commandPalette.ts and src/tui/utils/fuzzy.ts (new, subsequence match + rank); ctrl+p binding, PALETTE_SCREENS jump list and overlay lifecycle added to src/tui/utils/keymap.ts; wired into the six no-payload screens (dashboard, mapping-builder, mapping-editor, settings, about, history) (commit a3bba1c, \"add ctrl+p command palette for fuzzy screen jump\") on branch feat/tr/c2-c4_d1-d2/improve-ui. Scoped to screen jumps only, actions are not in the palette, a deliberate cut."
 					},
 					{
 						"id": "TR.D2",
 						"description": "`feat/add-theme-toggle` — Light/dark switch in settings, persisted to config.",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": [
 							"TR.A1"
-						]
+						],
+						"notes": "Evidence: applyTheme()/activeTheme() and the dark palette added to assets/brand/theme.ts (mutating the shared theme object in place so every importer sees the switch); theme added to src/lib/types/configTypes.ts and exposed as a toggle field in src/tui/screens/settings.ts, which repaints live by resolving a replace() back through the Router (commit 9a69b66, \"add live light/dark theme toggle to Settings\") on branch feat/tr/c2-c4_d1-d2/improve-ui."
 					},
 					{
 						"id": "TR.D3",
