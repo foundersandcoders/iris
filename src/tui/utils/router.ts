@@ -64,6 +64,18 @@ export class Router {
 		// Cleanup current screen
 		this.currentScreen?.cleanup?.();
 
+		// Unwind rather than append when the target is already on the stack.
+		// Palette cycling (A -> B -> A -> B) would otherwise grow the stack
+		// without bound and turn getBreadcrumbs() into a repeating trail.
+		// Truncating to the existing entry keeps the breadcrumbs a real path
+		// and keeps ESC/back walking sensibly outwards. The new data wins
+		// over the stale entry's payload, since truncate-then-push discards
+		// the old entry entirely rather than reusing it in place.
+		const existing = this.stack.findIndex((entry) => entry.screenName === screenName);
+		if (existing !== -1) {
+			this.stack.length = existing;
+		}
+
 		// Push to stack
 		this.stack.push({ screenName, data });
 

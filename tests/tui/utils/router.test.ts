@@ -62,6 +62,79 @@ describe('Router', () => {
 
       expect(screen.render).toHaveBeenCalledWith(data);
     });
+
+    it('unwinds to an existing entry rather than appending a duplicate', async () => {
+      // screen1 -> screen2 -> screen1 (cycle back), then quit.
+      const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2 = fixtures.createMockScreen('screen2', { action: 'push', screen: 'screen1' });
+      const screen1Second = fixtures.createMockScreen('screen1', { action: 'quit' });
+
+      router.register('screen1', vi.fn()
+        .mockReturnValueOnce(screen1First)
+        .mockReturnValueOnce(screen1Second));
+      router.register('screen2', () => screen2);
+
+      await router.push('screen1');
+
+      expect(router.getBreadcrumbs()).toEqual(['screen1']);
+    });
+
+    it('repeated A/B cycling does not grow the stack', async () => {
+      // screen1 -> screen2 -> screen1 -> screen2 -> screen1 -> quit.
+      const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2First = fixtures.createMockScreen('screen2', { action: 'push', screen: 'screen1' });
+      const screen1Second = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2Second = fixtures.createMockScreen('screen2', { action: 'push', screen: 'screen1' });
+      const screen1Third = fixtures.createMockScreen('screen1', { action: 'quit' });
+
+      router.register('screen1', vi.fn()
+        .mockReturnValueOnce(screen1First)
+        .mockReturnValueOnce(screen1Second)
+        .mockReturnValueOnce(screen1Third));
+      router.register('screen2', vi.fn()
+        .mockReturnValueOnce(screen2First)
+        .mockReturnValueOnce(screen2Second));
+
+      await router.push('screen1');
+
+      expect(router.getBreadcrumbs().length).toBe(1);
+      expect(router.getBreadcrumbs()).toEqual(['screen1']);
+    });
+
+    it('the re-pushed entry carries the new data, not the stale payload', async () => {
+      // screen1 (data: {v: 1}) -> screen2 -> screen1 (data: {v: 2}) -> quit.
+      const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2 = fixtures.createMockScreen('screen2', {
+        action: 'push',
+        screen: 'screen1',
+        data: { v: 2 },
+      });
+      const screen1Second = fixtures.createMockScreen('screen1', { action: 'quit' });
+
+      router.register('screen1', vi.fn()
+        .mockReturnValueOnce(screen1First)
+        .mockReturnValueOnce(screen1Second));
+      router.register('screen2', () => screen2);
+
+      await router.push('screen1', { v: 1 });
+
+      expect(screen1Second.render).toHaveBeenCalledWith({ v: 2 });
+    });
+
+    it('unwinding to the root still leaves canGoBack() false', async () => {
+      const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2 = fixtures.createMockScreen('screen2', { action: 'push', screen: 'screen1' });
+      const screen1Second = fixtures.createMockScreen('screen1', { action: 'quit' });
+
+      router.register('screen1', vi.fn()
+        .mockReturnValueOnce(screen1First)
+        .mockReturnValueOnce(screen1Second));
+      router.register('screen2', () => screen2);
+
+      await router.push('screen1');
+
+      expect(router.canGoBack()).toBe(false);
+    });
   });
 
   describe('pop', () => {
