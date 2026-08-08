@@ -55,15 +55,20 @@ export class TUI {
 		this.router = new Router(this.renderer, this.toasts, { motion });
 		this.registerScreens();
 
-		await this.router.push('dashboard');
-
-		// Router returns when quit action received. dispose() (which detaches
-		// the transitions engine's frame callback) must precede
-		// renderer.destroy() — detaching after destruction would touch a
-		// renderer that's already torn down.
-		this.router.dispose();
-		this.toasts.detach();
-		this.renderer.destroy();
+		try {
+			// Router returns when quit action received.
+			await this.router.push('dashboard');
+		} finally {
+			// Runs on the normal quit path AND if push()/a screen's render()
+			// throws — otherwise an uncaught error mid-navigation would skip
+			// teardown entirely and leave the terminal in a broken state.
+			// dispose() (which detaches the transitions engine's frame
+			// callback) must precede renderer.destroy() — detaching after
+			// destruction would touch a renderer that's already torn down.
+			this.router.dispose();
+			this.toasts.detach();
+			this.renderer.destroy();
+		}
 	}
 
 	private registerScreens(): void {
