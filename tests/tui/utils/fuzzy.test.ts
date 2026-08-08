@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fuzzyMatch, fuzzyFilter } from '../../../src/tui/utils/fuzzy';
+import { paletteScreenNames } from '../../fixtures/tui/palette';
 
 describe('fuzzyMatch', () => {
 	it('matches an exact string', () => {
@@ -55,7 +56,10 @@ describe('fuzzyMatch', () => {
 });
 
 describe('fuzzyFilter', () => {
-	const items = ['dashboard', 'settings', 'history', 'about', 'mapping-builder', 'mapping-editor'];
+	// Mirrors the real palette's jump-target list (see fixtures/tui/palette.ts)
+	// rather than an arbitrary sample, so these tests exercise fuzzyFilter
+	// against the same data the command palette actually filters.
+	const items = [...paletteScreenNames];
 
 	it('returns all items in original order for an empty query', () => {
 		expect(fuzzyFilter('', items, (s) => s)).toEqual(items);

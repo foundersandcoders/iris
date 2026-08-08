@@ -5,9 +5,10 @@ import { describe, it, expect, vi } from 'vitest';
 // can't load under vitest.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-import { normaliseKey, eventToKey, Keymap, paletteNav, PALETTE_SCREENS, type Binding } from '../../../src/tui/utils/keymap';
+import { normaliseKey, eventToKey, Keymap, paletteNav, PALETTE_SCREENS } from '../../../src/tui/utils/keymap';
 import type { KeyEvent } from '@opentui/core';
 import * as fixtures from '../../fixtures/tui/tui';
+import * as paletteFixtures from '../../fixtures/tui/palette';
 
 // ——— normaliseKey ————————————————————————————————————————————————————————————
 
@@ -527,11 +528,7 @@ describe('Keymap confirm overlay', () => {
 
 // ——— command palette (TR.D1) —————————————————————————————————————————————————
 
-const PALETTE_ENTRIES = [
-	{ screen: 'dashboard', label: 'Dashboard' },
-	{ screen: 'settings', label: 'Settings' },
-	{ screen: 'history', label: 'History' },
-];
+const PALETTE_ENTRIES = paletteFixtures.paletteEntries;
 
 describe('Keymap command palette', () => {
 	it('ctrl+p is absent from the keybar without paletteEntries/onCommand', () => {
@@ -811,6 +808,14 @@ describe('paletteNav()', () => {
 	it('returns the shared PALETTE_SCREENS list', () => {
 		const resolve = vi.fn();
 		expect(paletteNav('dashboard', resolve).paletteEntries).toBe(PALETTE_SCREENS);
+	});
+
+	it('PALETTE_SCREENS matches the data-only test fixture', () => {
+		// fuzzy.test.ts can't import PALETTE_SCREENS directly without pulling
+		// in @opentui/core transitively (see fixtures/tui/palette.ts), so it
+		// keeps a hand-mirrored copy. This guard is what makes that mirror
+		// trustworthy rather than a second, driftable source of truth.
+		expect(PALETTE_SCREENS.map((e) => e.screen)).toEqual(paletteFixtures.paletteScreenNames);
 	});
 
 	it('resolves a push for a different screen', () => {
