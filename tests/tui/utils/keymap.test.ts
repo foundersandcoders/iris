@@ -562,6 +562,56 @@ describe('Keymap command palette', () => {
 		expect(binding).not.toBeNull();
 	});
 
+	it('a false paletteWhen blocks ctrl+p from opening the palette', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => false,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('a false paletteWhen also hides Jump from the keybar', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => false,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('paletteWhen re-evaluates live, so ctrl+p opens once the guard flips true', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		let editing = true;
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => !editing,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+		expect((km as any).paletteOpen).toBe(false);
+
+		editing = false;
+		const binding = km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(binding).not.toBeNull();
+		expect((km as any).paletteOpen).toBe(true);
+	});
+
 	it('printable characters build up the query', () => {
 		const ctx = fixtures.createMockContext();
 		const onCommand = vi.fn();

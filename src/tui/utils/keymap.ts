@@ -103,6 +103,12 @@ export interface KeymapOptions {
 	 *  resolves the screen's render() promise with a push action. Ignored
 	 *  if paletteEntries is omitted. */
 	onCommand?: (screen: string) => void;
+	/** Guard for the ctrl+p palette binding, mirroring Binding.when. Screens
+	 *  with a modal sub-state (e.g. settings.ts's inline field edit, which
+	 *  holds real focus on an InputRenderable) pass `() => !this.editing` so
+	 *  the palette can't open over it and silently discard the edit.
+	 *  Defaults to always-available when omitted. */
+	paletteWhen?: () => boolean;
 }
 
 const HELP_OVERLAY_ID = 'help-overlay-root';
@@ -147,6 +153,7 @@ export class Keymap {
 							keys: ['ctrl+p'],
 							hint: 'ctrl+p',
 							label: 'Jump',
+							...(opts.paletteWhen ? { when: opts.paletteWhen } : {}),
 							handler: () => this.openPalette(),
 						} as Binding,
 					]

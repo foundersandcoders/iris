@@ -393,6 +393,29 @@ describe('SettingsScreen', () => {
 		screen.cleanup();
 	});
 
+	it('does not open the palette while inline-editing a field', async () => {
+		const screen = new SettingsScreen(mockContext);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const fieldList = (screen as any).fieldList;
+		const listIndex = fieldList.options.findIndex((o: any) => o.value === 'provider.ukprn');
+		const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+			(call: any[]) => call[0] === 'itemSelected'
+		)[1];
+		itemSelectedHandler(listIndex);
+
+		expect((screen as any).editing).toBe(true);
+
+		const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 'p', ctrl: true });
+
+		expect((screen as any).keymap.paletteOpen).toBe(false);
+
+		screen.cleanup();
+	});
+
 	it('applies the new theme before firing the success toast, so the toast paints in the new theme', async () => {
 		const toasts = fixtures.createMockToasts();
 		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);

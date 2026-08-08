@@ -351,6 +351,10 @@ export class SettingsScreen implements Screen {
 				if (screen === this.name) return;
 				resolve({ action: 'push', screen });
 			},
+			// Block ctrl+p while inline-editing a field: the palette's
+			// swallow-everything-via-stopPropagation model would otherwise
+			// open over a live InputRenderable and silently discard the edit.
+			paletteWhen: () => !this.editing,
 		});
 		const keymap = this.keymap;
 
