@@ -134,4 +134,36 @@ describe('progressBar()', () => {
 		const { filledText } = barSegments(bar);
 		expect(textOf(filledText).length).toBe(26); // DEFAULT_BAR_WIDTH
 	});
+
+	describe('auto-sized width stability', () => {
+		it('bar width is stable across a status-length change', () => {
+			// No explicit `width` option, so resolveBarWidth() takes the
+			// numeric-root.width branch — simulate post-layout by assigning a
+			// measured width directly, matching how the test double exposes
+			// constructor-assigned properties.
+			const bar = progressBar(ctx.renderer, { value: 1 });
+			(bar.root as any).width = 60;
+
+			bar.setStatus('0:09');
+			const before = textOf(barSegments(bar).filledText).length;
+
+			bar.setStatus('0:10');
+			const after = textOf(barSegments(bar).filledText).length;
+
+			expect(after).toBe(before);
+		});
+
+		it('auto-sized bar width does not shrink as status text grows', () => {
+			const bar = progressBar(ctx.renderer, { value: 1 });
+			(bar.root as any).width = 60;
+
+			bar.setStatus('');
+			const short = textOf(barSegments(bar).filledText).length;
+
+			bar.setStatus('a much longer status string than before');
+			const long = textOf(barSegments(bar).filledText).length;
+
+			expect(long).toBe(short);
+		});
+	});
 });

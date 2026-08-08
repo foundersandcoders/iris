@@ -88,10 +88,18 @@ export function progressBar(renderer: Renderer, opts: ProgressBarOptions = {}): 
 		if (typeof opts.width === 'number') return opts.width;
 		// root.width is only a measured number after Yoga has laid out the
 		// tree; before that (including under the test double, which has no
-		// layout engine) it's whatever was passed in options — here '100%'.
+		// layout engine) it's whatever was passed in options, here '100%'.
 		const measured = (root as unknown as { width?: unknown }).width;
 		if (typeof measured !== 'number') return DEFAULT_BAR_WIDTH;
-		return clamp(measured - PERCENT_RESERVE - status.length, minWidth, maxWidth);
+		// Deliberately not subtracting status.length: root is a row with
+		// justifyContent 'space-between' and status is its own flex child,
+		// so Yoga already reserves that width. Subtracting it again both
+		// double-counted it and, because status is mutable (setStatus fires
+		// every second from the elapsed-time clock), shrank the bar by a
+		// cell whenever the status string crossed a length boundary (e.g.
+		// "0:09" -> "0:10"), so the fill visibly jumped with no progress
+		// change.
+		return clamp(measured - PERCENT_RESERVE, minWidth, maxWidth);
 	}
 
 	function render(): void {
