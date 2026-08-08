@@ -127,7 +127,7 @@ describe('progressBar()', () => {
 	});
 
 	it('falls back to the default width when root.width is non-numeric (pre-layout)', () => {
-		// No explicit `width` option — under the test double root.width is
+		// No explicit `width` option; under the test double root.width is
 		// whatever was passed to the BoxRenderable constructor ('100%', a
 		// string), mirroring the real pre-layout-pass state.
 		const bar = progressBar(ctx.renderer, { value: 1 });
@@ -138,7 +138,7 @@ describe('progressBar()', () => {
 	describe('auto-sized width stability', () => {
 		it('bar width is stable across a status-length change', () => {
 			// No explicit `width` option, so resolveBarWidth() takes the
-			// numeric-root.width branch — simulate post-layout by assigning a
+			// numeric-root.width branch; simulate post-layout by assigning a
 			// measured width directly, matching how the test double exposes
 			// constructor-assigned properties.
 			const bar = progressBar(ctx.renderer, { value: 1 });

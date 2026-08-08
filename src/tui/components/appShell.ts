@@ -1,6 +1,6 @@
 /** ====== App Shell Component ======
  * Three-band layout: header band, content region (flexGrow 1), footer keybar.
- * Keymap-agnostic — accepts a plain footer string and exposes setFooter() so
+ * Keymap-agnostic: accepts a plain footer string and exposes setFooter() so
  * the keymap registry (TR.A3) can thread its toKeybar() output through in Phase B.
  */
 import { BoxRenderable, TextRenderable } from '@opentui/core';
@@ -24,9 +24,9 @@ export interface AppShellOptions {
 }
 
 export interface AppShell {
-	/** Root box — pass to renderer.root.add(). */
+	/** Root box, pass to renderer.root.add(). */
 	readonly root: BoxRenderable;
-	/** Content region (flexGrow 1) — screens mount their own renderables here. */
+	/** Content region (flexGrow 1), screens mount their own renderables here. */
 	readonly content: BoxRenderable;
 	/** Replace the footer hint string (supports stateful screens). */
 	setFooter(hint: string): void;

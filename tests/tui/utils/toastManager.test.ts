@@ -154,7 +154,7 @@ describe('ToastManager', () => {
 			expect(manager.activeIds()).toHaveLength(0);
 		});
 
-		it('dismiss(id) cancels the timer — no double removal on later expiry', () => {
+		it('dismiss(id) cancels the timer, no double removal on later expiry', () => {
 			const manager = new ToastManager(renderer);
 			manager.attach();
 			const removeSpy = vi.spyOn(layerOf(manager), 'remove');
@@ -202,7 +202,7 @@ describe('ToastManager', () => {
 
 			// Advancing to just before `b`'s OWN 3000ms deadline (from `b`'s own
 			// show() call) is the assertion that actually proves eviction left
-			// `b`'s timer bookkeeping alone — advancing past `a`'s old deadline
+			// `b`'s timer bookkeeping alone; advancing past `a`'s old deadline
 			// instead wouldn't catch eviction corrupting `b`'s entry (e.g. the
 			// wrong key deleted from the timers map), since dismiss() is a
 			// silent no-op on an already-removed id either way.

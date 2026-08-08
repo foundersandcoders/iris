@@ -23,7 +23,7 @@ vi.mock('../../../src/lib/schema/registryBuilder', () => ({
 	buildSchemaRegistry: vi.fn().mockReturnValue({}),
 }));
 
-// Stub generators — each yields nothing and resolves immediately with a
+// Stub generators: each yields nothing and resolves immediately with a
 // minimal but shape-correct result, so tests exercise shell/panel/keymap
 // wiring without touching the real CSV/XML pipeline or throwing inside
 // routeToResultScreen()'s per-type data access.
@@ -94,7 +94,7 @@ describe('WorkflowScreen', () => {
 
 		// The success path runs straight through to routeToResultScreen() without
 		// ever constructing a Keymap (that only happens in waitForKeyThenReplace()
-		// on failure), so no help overlay is mounted here — just the screen shell.
+		// on failure), so no help overlay is mounted here; just the screen shell.
 		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(1);
 		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(shellRoot.constructor.name).toBe('BoxRenderable');
@@ -173,7 +173,7 @@ describe('WorkflowScreen', () => {
 		});
 
 		const screen = new WorkflowScreen(mockContext);
-		screen.render({ filePath: 'data.csv', workflowType: 'convert' }); // don't await — never resolves without a keypress
+		screen.render({ filePath: 'data.csv', workflowType: 'convert' }); // don't await, never resolves without a keypress
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		screen.cleanup();
@@ -192,8 +192,8 @@ describe('WorkflowScreen', () => {
 
 			const result = await screen.render({ filePath: 'data.csv', workflowType: 'convert' });
 
-			// The toast call must happen inside render()/routeToResultScreen() —
-			// i.e. before the screen is torn down — proving it doesn't depend on
+			// The toast call must happen inside render()/routeToResultScreen(),
+			// i.e. before the screen is torn down, proving it doesn't depend on
 			// the screen surviving. The manager itself (tested in
 			// toastManager.test.ts) is what actually outlives cleanup().
 			expect(toasts.success).toHaveBeenCalledWith('Converted 0 learners');
@@ -259,7 +259,7 @@ describe('WorkflowScreen', () => {
 		// handleEvent() is driven directly here rather than through a live
 		// generator: opentui-spinner's SpinnerRenderable constructor
 		// unconditionally calls resolveRenderLib() (to encode unicode frames),
-		// which the test double deliberately throws on (see its comment) —
+		// which the test double deliberately throws on (see its comment),
 		// no test may construct a real spinner. step:start events are
 		// therefore synthesised with a fake spinner stand-in already seeded
 		// into stepRenderables, mirroring the post-step:start state without
@@ -290,7 +290,7 @@ describe('WorkflowScreen', () => {
 			screen.cleanup();
 		});
 
-		it('a skipped step counts toward completion — the blocked-convert case', () => {
+		it('a skipped step counts toward completion, the blocked-convert case', () => {
 			const screen = buildScreen();
 			(screen as any).handleEvent(stepEvent('step:complete', 'parse', { status: 'complete' }));
 			(screen as any).handleEvent(stepEvent('step:complete', 'validate', { status: 'complete' }));
@@ -420,12 +420,12 @@ describe('WorkflowScreen', () => {
 			expect(computeAggregateProgress(steps)).toBe(1);
 		});
 
-		it('a skipped step counts as done — the blocked-conversion case', () => {
+		it('a skipped step counts as done, the blocked-conversion case', () => {
 			const steps = [step('complete'), step('complete'), step('skipped'), step('skipped')];
 			expect(computeAggregateProgress(steps)).toBe(1);
 		});
 
-		it('a failed step counts as done — the workflow has stopped', () => {
+		it('a failed step counts as done, the workflow has stopped', () => {
 			const steps = [step('complete'), step('failed'), step('pending'), step('pending')];
 			expect(computeAggregateProgress(steps)).toBe(0.5);
 		});

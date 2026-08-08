@@ -2,7 +2,7 @@
 
 ## Extraction Guide
 
-Step-by-step guide to extracting schema-forge from Iris into a standalone package. Every step is designed so that Iris continues working unchanged throughout — schema-forge is built *beside* Iris, then Iris switches to consuming it as a dependency at the very end.
+Step-by-step guide to extracting schema-forge from Iris into a standalone package. Every step is designed so that Iris continues working unchanged throughout: schema-forge is built *beside* Iris, then Iris switches to consuming it as a dependency at the very end.
 
 ### Step 1: Scaffold the package
 
@@ -73,13 +73,13 @@ These files have zero ILR-specific logic. Copy them into schema-forge, adjusting
 | `src/lib/schema/schemaValidator.ts` | `src/validate/index.ts` | Deps: interpreter types, schema validation types |
 | `src/lib/utils/xml/xmlGenerator.ts` | `src/generate/index.ts` | Deps: interpreter types only |
 
-After copying, fix all import paths. Every file should import from within schema-forge — no `../../` reaching into Iris.
+After copying, fix all import paths. Every file should import from within schema-forge, not `../../` reaching into Iris.
 
 Run tests after this step to confirm the core works standalone.
 
 ### Step 3: Extract validation and mapping types
 
-`src/lib/types/schemaTypes.ts` is mixed — it contains both generic types and ILR-specific builder templates.
+`src/lib/types/schemaTypes.ts` is mixed: it contains both generic types and ILR-specific builder templates.
 
 **Copy to schema-forge** (`src/types/schema.ts`), keeping only:
 
@@ -117,7 +117,7 @@ The generic mapper (`src/map/index.ts`) handles:
 - Builder injection at specified paths
 - Repeatable element array creation
 
-The ILR-specific `mapCsvToSchemaWithAims()` stays in Iris — it orchestrates the generic mapper with ILR builders, aim detection, and FAM/AppFin logic.
+The ILR-specific `mapCsvToSchemaWithAims()` stays in Iris: it orchestrates the generic mapper with ILR builders, aim detection, and FAM/AppFin logic.
 
 ### Step 5: Genericise schema compatibility
 
@@ -181,7 +181,7 @@ New tests needed for genericised modules:
 - Schema compatibility with custom builder paths
 - Generic XML parser with custom extractors
 
-### Step 8: Switchover — Iris consumes schema-forge
+### Step 8: Switchover: Iris consumes schema-forge
 
 Only after schema-forge is working standalone with passing tests:
 
@@ -205,14 +205,14 @@ import type { SchemaRegistry } from "schema-forge/types";
 Run Iris tests after each module switch. Once all imports point to schema-forge, delete the copied source files from Iris.
 
 **Order of switchover** (least to most coupled):
-1. `types` — pure types, no runtime behaviour
-2. `parse` — no Iris consumers depend on raw parsing directly
-3. `registry` — used everywhere, but a clean swap
-4. `validate` — standalone value validation
-5. `generate` — XML generation
-6. `compatibility` — update to pass builder paths via options
-7. `map` — most coupled; update `mapCsvToSchemaWithAims` to call generic mapper with ILR config
-8. `xml` — rewrite `parseILR` to use generic parser with ILR extractors
+1. `types`: pure types, no runtime behaviour
+2. `parse`: no Iris consumers depend on raw parsing directly
+3. `registry`: used everywhere, but a clean swap
+4. `validate`: standalone value validation
+5. `generate`: XML generation
+6. `compatibility`: update to pass builder paths via options
+7. `map`: most coupled; update `mapCsvToSchemaWithAims` to call generic mapper with ILR config
+8. `xml`: rewrite `parseILR` to use generic parser with ILR extractors
 
 ### Step 9: Clean up Iris
 
@@ -248,7 +248,7 @@ A modular TypeScript toolkit for working with XSD schemas at runtime. Parse XSD 
 
 ## Why schema-forge?
 
-Most XML tooling falls into two camps: heavyweight code-generation pipelines that produce rigid, schema-specific classes, or low-level DOM manipulation with no schema awareness. schema-forge occupies the middle ground — it interprets XSD schemas at runtime to drive validation, generation, and data mapping without any build step or code generation.
+Most XML tooling falls into two camps: heavyweight code-generation pipelines that produce rigid, schema-specific classes, or low-level DOM manipulation with no schema awareness. schema-forge occupies the middle ground: it interprets XSD schemas at runtime to drive validation, generation, and data mapping without any build step or code generation.
 
 This makes it ideal for applications that need to:
 
@@ -278,7 +278,7 @@ const registry = buildSchemaRegistry(xsd);
 const element = registry.elementsByPath.get("Message.Learner.ULN");
 // → SchemaElement { name: 'ULN', baseType: 'string', constraints: { pattern: ['\\d{10}'], ... } }
 
-// Query elements by name (returns array — names may not be unique)
+// Query elements by name (returns array, names may not be unique)
 const matches = registry.elementsByName.get("ULN");
 ```
 
@@ -286,14 +286,14 @@ const matches = registry.elementsByName.get("ULN");
 
 Each node in the registry tree. Captures everything schema-forge needs to validate and generate:
 
-- `name` — Element name
-- `path` — Dot-notation path from root (e.g. `Message.Learner.ULN`)
-- `baseType` — Resolved XSD base type (`string`, `int`, `decimal`, `date`, `boolean`, etc.)
-- `constraints` — Restriction facets (pattern, minLength, maxLength, minInclusive, maxInclusive, enumeration, etc.)
-- `cardinality` — `{ min, max }` occurrence bounds
-- `children` — Child elements (for complex types)
-- `isComplex` — Whether this element has children
-- `documentation` — Optional, extracted from `xs:annotation`
+- `name`: Element name
+- `path`: Dot-notation path from root (e.g. `Message.Learner.ULN`)
+- `baseType`: Resolved XSD base type (`string`, `int`, `decimal`, `date`, `boolean`, etc.)
+- `constraints`: Restriction facets (pattern, minLength, maxLength, minInclusive, maxInclusive, enumeration, etc.)
+- `cardinality`: `{ min, max }` occurrence bounds
+- `children`: Child elements (for complex types)
+- `isComplex`: Whether this element has children
+- `documentation`: Optional, extracted from `xs:annotation`
 
 ## Modules
 
@@ -311,7 +311,7 @@ const namespace = extractNamespace(parsed);
 const elements = extractElements(parsed);
 ```
 
-Most consumers won't use this directly — `schema-forge/registry` wraps it into a higher-level API.
+Most consumers won't use this directly: `schema-forge/registry` wraps it into a higher-level API.
 
 ### `schema-forge/registry`
 
@@ -350,7 +350,7 @@ Key behaviours:
 - Omits optional elements when data is absent
 - Escapes XML special characters
 - Includes `xmlns` and `xsi` namespace declarations on root
-- Returns warnings (not errors) for missing required elements or type mismatches — generation always produces output
+- Returns warnings (not errors) for missing required elements or type mismatches; generation always produces output
 
 ### `schema-forge/validate`
 
@@ -370,12 +370,12 @@ const issues = validateValue("123", element, {
 
 Validates:
 
-- **Presence** — Required elements must have values
-- **Type** — Value must be coercible to the schema's base type (int, decimal, date, boolean, etc.)
-- **Pattern** — Regex patterns from `xs:pattern`
-- **Length** — `minLength`, `maxLength`
-- **Range** — `minInclusive`, `maxInclusive`, `minExclusive`, `maxExclusive`
-- **Enumeration** — Value must be in allowed set
+- **Presence**: Required elements must have values
+- **Type**: Value must be coercible to the schema's base type (int, decimal, date, boolean, etc.)
+- **Pattern**: Regex patterns from `xs:pattern`
+- **Length**: `minLength`, `maxLength`
+- **Range**: `minInclusive`, `maxInclusive`, `minExclusive`, `maxExclusive`
+- **Enumeration**: Value must be in allowed set
 
 Each issue includes severity (`error` | `warning` | `info`), violation type, human-readable message, the constraint that failed, and the actual value.
 
@@ -453,7 +453,7 @@ The parser handles XML validation, structural parsing (via `fast-xml-parser`), a
 
 Some schema structures can't be expressed as flat column→path mappings. For example, a single CSV row might contain columns for multiple related sub-records (e.g. `FAM Type 1`, `FAM Code 1`, `FAM Type 2`, `FAM Code 2`), each of which maps to a repeating child element.
 
-schema-forge's mapping module supports this through builder functions — functions you write that receive raw row data and return arrays of nested objects matching the schema structure.
+schema-forge's mapping module supports this through builder functions: functions you write that receive raw row data and return arrays of nested objects matching the schema structure.
 
 ### Pattern
 
@@ -502,7 +502,7 @@ function buildOptionalDetail(row: Record<string, string>): Record<string, unknow
 }
 ```
 
-Builders compose naturally with `mapCsvToSchema` — the mapping module injects builder output into the correct position in the nested structure based on the target XSD path.
+Builders compose naturally with `mapCsvToSchema`: the mapping module injects builder output into the correct position in the nested structure based on the target XSD path.
 
 ## Type Exports
 
@@ -585,7 +585,7 @@ schema-forge/
 
 ## Dependencies
 
-- **`fast-xml-parser`** — XML/XSD parsing (the only runtime dependency)
+- **`fast-xml-parser`**: XML/XSD parsing (the only runtime dependency)
 
 ## License
 

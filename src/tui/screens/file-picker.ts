@@ -113,9 +113,9 @@ export class FilePicker implements Screen {
 		// Build keymap before the shell so its keybar can seed the footer
 		this.keymap = new Keymap({
 			onBack: () => resolve({ action: 'pop' }),
-			onQuit: () => resolve({ action: 'pop' }), // "q" also pops here — file-picker has no quit-to-desktop concept
+			onQuit: () => resolve({ action: 'pop' }), // "q" also pops here, file-picker has no quit-to-desktop concept
 			bindings: [
-				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 				{
 					keys: ['up', 'down', 'k', 'j'],
 					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
@@ -146,7 +146,7 @@ export class FilePicker implements Screen {
 			opacity: this.motion ? 0 : 1,
 		});
 
-		// File-list panel — border title shows the current directory path
+		// File-list panel: border title shows the current directory path
 		this.filePanel = panel(this.renderer, {
 			title: this.shortenPath(this.currentPath),
 			flexGrow: 1,
@@ -162,7 +162,7 @@ export class FilePicker implements Screen {
 		// Add to renderer
 		this.renderer.root.add(this.shell.root);
 
-		// Focus and wire events — select is always created
+		// Focus and wire events, select is always created
 		if (hasOptions) {
 			this.select.focus();
 		}
@@ -215,7 +215,7 @@ export class FilePicker implements Screen {
 						},
 					});
 				} else if (this.workflowType === 'mapping-create') {
-					// CSV selected for new mapping — push to mapping editor
+					// CSV selected for new mapping, push to mapping editor
 					resolve({
 						action: 'push',
 						screen: 'mapping-editor',

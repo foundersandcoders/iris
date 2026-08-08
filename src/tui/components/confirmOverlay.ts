@@ -1,6 +1,6 @@
 /** ====== Confirm Overlay Component ======
  * Full-screen z-index layer presenting a yes/no confirmation modal.
- * Owned and driven by Keymap (TR.C2) — mounted on renderer.root (a sibling of
+ * Owned and driven by Keymap (TR.C2): mounted on renderer.root (a sibling of
  * each screen's shell.root) so its zIndex stacks it above the whole screen.
  */
 import type { BoxRenderable } from '@opentui/core';
@@ -12,14 +12,14 @@ import { overlayScaffold } from './overlay';
 export interface ConfirmOverlayOptions {
 	/** Overlay id, used for renderer.root.remove(). Default 'confirm-overlay-root'. */
 	id?: string;
-	/** Paint order among renderer.root siblings — must exceed screen roots. Default 100. */
+	/** Paint order among renderer.root siblings, must exceed screen roots. Default 100. */
 	zIndex?: number;
 	/** Card title. Default 'Confirm'. */
 	title?: string;
 }
 
 export interface ConfirmOverlay {
-	/** Full-screen backdrop box — add to renderer.root (sibling of the screen shell). */
+	/** Full-screen backdrop box, add to renderer.root (sibling of the screen shell). */
 	readonly root: BoxRenderable;
 	/** Replace the confirmation message in place. */
 	setMessage(message: string): void;

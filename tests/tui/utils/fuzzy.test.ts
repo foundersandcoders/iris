@@ -83,7 +83,7 @@ describe('fuzzyFilter', () => {
 
 	it('ranks the full result order, not just the top match', () => {
 		// Both entries match 'map' as a consecutive run at the start, so the
-		// comparator has to resolve the tie past index 0 — asserting only
+		// comparator has to resolve the tie past index 0; asserting only
 		// result[0] wouldn't catch a regression that scrambled the rest of
 		// the order (e.g. a broken sort comparator returning 0 for everything).
 		const result = fuzzyFilter('map', items, (s) => s);

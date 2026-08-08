@@ -118,7 +118,7 @@ export class HistoryScreen implements Screen {
 					const content = await Bun.file(metadataPath).text();
 					metadata = JSON.parse(content);
 				} catch {
-					// Metadata is optional — ignore read errors
+					// Metadata is optional, ignore read errors
 				}
 			} catch {
 				// File doesn't exist or is unreadable at stored path

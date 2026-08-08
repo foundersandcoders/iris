@@ -82,7 +82,7 @@ export function createMockContext(renderer?: Renderer, toasts?: ToastManager): R
 }
 
 /**
- * Mock ToastManager — a spy object for screens that fire toasts, without
+ * Mock ToastManager: a spy object for screens that fire toasts, without
  * pulling in the real manager's layer/timer machinery.
  */
 export function createMockToasts(): ToastManager {

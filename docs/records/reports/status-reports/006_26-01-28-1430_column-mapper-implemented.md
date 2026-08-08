@@ -1,7 +1,7 @@
 # Iris Status Update
 
 ## 1. TL;DR
-Column mapper module completed with full test coverage (types, utilities, and fixtures), enabling header-based CSV→XSD mapping configuration without code changes—advancing Phase 4 of dynamic schema system to 50%.
+Column mapper module completed with full test coverage (types, utilities, and fixtures), enabling header-based CSV→XSD mapping configuration without code changes; advancing Phase 4 of dynamic schema system to 50%.
 
 ---
 

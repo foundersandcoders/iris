@@ -17,7 +17,7 @@ export interface Screen {
 	readonly name: string;
 	render(data?: ScreenData): Promise<ScreenResult>;
 	cleanup?(): void;
-	/** Optional transition target for the fade-in (TR.C4) — the screen's
+	/** Optional transition target for the fade-in (TR.C4): the screen's
 	 *  top-level renderable. Screens that omit this simply don't animate,
 	 *  so this is purely additive: existing Screen implementations and
 	 *  test doubles remain valid without change. */
@@ -32,7 +32,7 @@ interface StackEntry {
 }
 
 export interface RouterOptions {
-	/** Whether screen transitions are enabled. Default true — pass false for
+	/** Whether screen transitions are enabled. Default true; pass false for
 	 *  reduceMotion or an SSH session. */
 	motion?: boolean;
 }
@@ -146,8 +146,8 @@ export class Router {
 
 		// Fired before awaiting render() (which resolves on user input, not on
 		// mount) so the fade-in starts as soon as possible. transitions.fadeIn
-		// tolerates currentScreen.root being undefined at this point — several
-		// screens await storage I/O before buildUI() populates it — by polling
+		// tolerates currentScreen.root being undefined at this point; several
+		// screens await storage I/O before buildUI() populates it, by polling
 		// for it via a frame callback, bounded by its own deadline.
 		this.transitions.fadeIn(kind, this.currentScreen);
 

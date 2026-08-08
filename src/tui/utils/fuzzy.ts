@@ -1,10 +1,10 @@
 /** ====== Fuzzy Matching ======
  * Subsequence-based fuzzy match + rank, for the command palette (TR.D1).
- * Pure and renderer-free — no dependency on OpenTUI, directly unit-testable.
+ * Pure and renderer-free: no dependency on OpenTUI, directly unit-testable.
  */
 
 /** Score a query against a target string as a case-insensitive subsequence
- *  match — every query character must appear in target, in order, but not
+ *  match: every query character must appear in target, in order, but not
  *  necessarily contiguously. Returns null when the query doesn't match at
  *  all. Higher scores rank first; the formula rewards (in priority order):
  *  consecutive runs, matches at a word boundary (start of target or after
@@ -42,7 +42,7 @@ export function fuzzyMatch(query: string, target: string): number | null {
 
 /** Filter and rank items by fuzzy-matching `query` against `key(item)`.
  *  An empty query returns every item, in its original order (no ranking
- *  applied — there's nothing to rank against). Non-matching items are
+ *  applied, there's nothing to rank against). Non-matching items are
  *  dropped; matches are sorted by descending score. */
 export function fuzzyFilter<T>(query: string, items: T[], key: (item: T) => string): T[] {
 	if (query === '') return [...items];

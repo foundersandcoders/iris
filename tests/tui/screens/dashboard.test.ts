@@ -141,7 +141,7 @@ describe('Dashboard', () => {
 
 	it('renders only the 5 most recent submissions, dropping older entries', async () => {
 		// loadHistory() always returns newest-first (appendHistory sorts on write);
-		// the dashboard trusts that order and only slices — it does not re-sort.
+		// the dashboard trusts that order and only slices; it does not re-sort.
 		const submissions = Array.from({ length: 6 }, (_, i) => ({
 			filename: `ILR-1234567${i}-2526-01.xml`,
 			filePath: `/tmp/ILR-1234567${i}-2526-01.xml`,

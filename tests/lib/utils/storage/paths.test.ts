@@ -34,7 +34,7 @@ describe('Storage Paths', () => {
 			const paths = getStoragePaths({ outputDir: customOutput });
 
 			// An explicit outputDir is used as-is for both `output` and `submissions`
-			// (treated as the final destination — see paths.ts:84-87)
+			// (treated as the final destination, see paths.ts:84-87)
 			expect(paths.output).toBe(customOutput);
 			expect(paths.submissions).toBe(customOutput);
 		});

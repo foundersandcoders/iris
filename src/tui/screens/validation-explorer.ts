@@ -162,7 +162,7 @@ export class ValidationExplorerScreen implements Screen {
 
 		this.keymap = new Keymap({
 			bindings: [
-				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 				{
 					keys: ['up', 'down', 'k', 'j'],
 					hint: `${symbols.arrows.up}${symbols.arrows.down}`,

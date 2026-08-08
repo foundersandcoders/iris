@@ -12,7 +12,7 @@ export const PALETTE = {
 		main: { name: 'vein', colour: '#7A2A57' },
 		alt: { name: 'scar', colour: '#3E1026' },
 	},
-	// Semantic state hues — analogous/harmonious with the Tyrian × Blueglass duo,
+	// Semantic state hues, analogous/harmonious with the Tyrian × Blueglass duo,
 	// each with a `fg` tone (text/icons on light bg) and a brighter `accent` tone
 	// (borders/fills/progress, and promoted to FG on the dark theme).
 	// See docs/technical/tui-design-review.md §6.
@@ -25,13 +25,13 @@ export const PALETTE = {
 
 export const THEMES = {
 	themeLight: {
-		// Status — fg tones read as states on the light ground
+		// Status: fg tones read as states on the light ground
 		success: PALETTE.semantic.verdant.fg, // Verdant
 		warning: PALETTE.semantic.ember.fg, // Ember
 		error: PALETTE.semantic.flare.fg, // Flare
 		info: PALETTE.foreground.alt.midi, // Blueglass Midi
 
-		// Status accents — brighter register for borders/fills/progress
+		// Status accents: brighter register for borders/fills/progress
 		successAccent: PALETTE.semantic.verdant.accent,
 		warningAccent: PALETTE.semantic.ember.accent,
 		errorAccent: PALETTE.semantic.flare.accent,
@@ -42,8 +42,8 @@ export const THEMES = {
 		secondary: PALETTE.foreground.alt.midi, // Blueglass Midi
 		accent: PALETTE.line.main.colour, // Vein
 		highlight: PALETTE.background.main.nav, // Rosewash Nav (Selection backgrounds)
-		highlightFocused: PALETTE.foreground.alt.lite, // Rosewash Nav — active/focused panel selection
-		highlightUnfocused: PALETTE.background.main.nav, // Blueglass Lite — inactive panel selection
+		highlightFocused: PALETTE.foreground.alt.lite, // Rosewash Nav: active/focused panel selection
+		highlightUnfocused: PALETTE.background.main.nav, // Blueglass Lite: inactive panel selection
 
 		// Neutral
 		text: PALETTE.foreground.main.dark, // Tyrian Dark (Main text)
@@ -52,7 +52,7 @@ export const THEMES = {
 		background: PALETTE.background.main.main, // Rosewash Main
 	},
 	themeDark: {
-		// Status — accent tones promoted to FG (brighter reads better on dark)
+		// Status: accent tones promoted to FG (brighter reads better on dark)
 		success: PALETTE.semantic.verdant.accent,
 		warning: PALETTE.semantic.ember.accent,
 		error: PALETTE.semantic.flare.accent,
@@ -63,18 +63,18 @@ export const THEMES = {
 		errorAccent: PALETTE.semantic.flare.accent,
 		infoAccent: PALETTE.foreground.alt.lite,
 
-		// UI — lifted so brand hues read on the chasm ground
+		// UI: lifted so brand hues read on the chasm ground
 		primary: PALETTE.foreground.main.lite, // Tyrian Lite
 		secondary: PALETTE.foreground.alt.lite, // Blueglass Lite
-		accent: PALETTE.line.main.colour, // Vein — focused-panel border
-		highlight: PALETTE.foreground.main.dark, // Tyrian Dark — selection backgrounds
-		highlightFocused: PALETTE.line.main.colour, // Vein — active/focused panel selection
-		highlightUnfocused: PALETTE.foreground.main.dark, // Tyrian Dark — inactive panel selection
+		accent: PALETTE.line.main.colour, // Vein: focused-panel border
+		highlight: PALETTE.foreground.main.dark, // Tyrian Dark: selection backgrounds
+		highlightFocused: PALETTE.line.main.colour, // Vein: active/focused panel selection
+		highlightUnfocused: PALETTE.foreground.main.dark, // Tyrian Dark: inactive panel selection
 
-		// Neutral — light foregrounds on a genuinely dark ground
+		// Neutral: light foregrounds on a genuinely dark ground
 		text: PALETTE.background.main.main, // Rosewash (light text)
 		textMuted: PALETTE.background.main.nav, // Rosewash Nav (dimmed text)
-		border: PALETTE.foreground.main.lite, // Tyrian Lite — muted border
+		border: PALETTE.foreground.main.lite, // Tyrian Lite: muted border
 		background: PALETTE.dark.colour, // Chasm (dark ground)
 	},
 };
@@ -147,7 +147,7 @@ import { RGBA } from '@opentui/core';
 /** Pre-computed RGBA objects for OpenTUI renderables
  * Use hex strings from `theme` directly for simple fg/bg.
  * Use these RGBA objects when colour manipulation is needed.
- * Kept in sync with `theme` by applyTheme() — not `as const`, since its
+ * Kept in sync with `theme` by applyTheme(), not `as const`, since its
  * values are reassigned in place on a theme switch.
  */
 export const rgba = {
@@ -172,12 +172,12 @@ export const rgba = {
 };
 
 /** Active theme as hex strings (OpenTUI accepts these directly).
- * A plain mutable object, not a `const` binding to THEMES.themeLight —
+ * A plain mutable object, not a `const` binding to THEMES.themeLight;
  * every consumer imports this same object identity, so applyTheme() can
  * swap the active palette in place without touching any of their ~209
  * call sites. Colours are read at renderable-construction time and baked
  * into constructor options, so switching this after screens have already
- * mounted does not repaint them — callers must rebuild affected screens
+ * mounted does not repaint them; callers must rebuild affected screens
  * (see Router.replace() in src/tui/utils/router.ts). */
 export const theme: Record<keyof typeof THEMES.themeLight, string> = { ...THEMES.themeLight };
 
@@ -186,7 +186,7 @@ export type ThemeName = 'light' | 'dark';
 let activeThemeName: ThemeName = 'light';
 
 /** Swap the active theme in place. Mutates `theme` and `rgba` by key so
- * every existing import keeps the same object identity — the only way to
+ * every existing import keeps the same object identity, the only way to
  * make a swap visible without threading a theme object through ~20 files.
  * Does not repaint anything already on screen; see the `theme` doc comment. */
 export function applyTheme(name: ThemeName): void {

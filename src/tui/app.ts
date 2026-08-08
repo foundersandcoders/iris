@@ -34,11 +34,11 @@ export class TUI {
 	constructor(private options: TUIOptions = {}) {}
 
 	async start(): Promise<void> {
-		// A broken config file must not stop the TUI booting — getConfig()
+		// A broken config file must not stop the TUI booting: getConfig()
 		// throws on genuine read/parse errors (not on a missing file, which
 		// resolves to defaults), so fall back rather than propagate. Loaded
 		// before createCliRenderer so applyTheme() below picks the correct
-		// theme.background for first paint — no light-then-dark flash.
+		// theme.background for first paint, no light-then-dark flash.
 		const config = await getConfig().catch(() => DEFAULT_CONFIG);
 		applyTheme(config.theme ?? 'light');
 
@@ -60,10 +60,10 @@ export class TUI {
 			await this.router.push('dashboard');
 		} finally {
 			// Runs on the normal quit path AND if push()/a screen's render()
-			// throws — otherwise an uncaught error mid-navigation would skip
+			// throws, otherwise an uncaught error mid-navigation would skip
 			// teardown entirely and leave the terminal in a broken state.
 			// dispose() (which detaches the transitions engine's frame
-			// callback) must precede renderer.destroy() — detaching after
+			// callback) must precede renderer.destroy(): detaching after
 			// destruction would touch a renderer that's already torn down.
 			this.router.dispose();
 			this.toasts.detach();

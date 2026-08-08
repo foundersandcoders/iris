@@ -26,8 +26,8 @@
 
 The TUI is Iris's primary interface (ADR 002), and the stated ambition is a
 *"beautiful full-screen terminal application"* in the class of **lazygit**,
-**taproom**, and **wyrd-tui**. It is functionally complete — 12 screens, a clean
-stack router, spinner-driven workflows — but visually and ergonomically it has
+**taproom**, and **wyrd-tui**. It is functionally complete: 12 screens, a clean
+stack router, spinner-driven workflows, but visually and ergonomically it has
 drifted from the vision documented in `tui-ux-design.md`. Today it renders as a
 flat vertical stack of text lines: no panel borders, no persistent chrome, no
 help overlay, ad-hoc per-screen keymaps, and status colours that don't read as
@@ -38,7 +38,7 @@ concrete design direction. The sequenced, branch-by-branch execution plan lives
 in [`tui-redesign.md`](../roadmaps/tui-redesign.md).
 
 Scope priorities (confirmed): **UX & navigation, aesthetic polish,
-understandability, quality of life** — all four.
+understandability, quality of life**, all four.
 
 ---
 
@@ -49,7 +49,7 @@ visible weakness traces back to one of them:
 
 1. **No framed panels.** The biggest single gap. lazygit's entire identity is
    bordered, titled panels with an accent border on the focused one. Iris draws
-   none — `borders` in `assets/brand/theme.ts` is defined but never used.
+   none: `borders` in `assets/brand/theme.ts` is defined but never used.
 2. **No persistent app chrome.** No global header, footer keybar, or breadcrumb.
    Each screen reinvents its own title and status line.
 3. **No shared interaction grammar.** Every screen hand-rolls keypress handling;
@@ -69,7 +69,7 @@ Evidence is cited as `file:line`.
 
 - **No panel framing anywhere.** `borders.heavy` / `borders.light`
   (`assets/brand/theme.ts:82`) are dead code. A grep for `border`, `borderStyle`,
-  `title` across `src/tui/` returns **zero** structural usages — screens are
+  `title` across `src/tui/` returns **zero** structural usages: screens are
   flat `BoxRenderable` columns of `TextRenderable` lines (e.g. the dashboard is
   logo → spacer → "Quick Actions" → spacer → list → status line,
   `dashboard.ts:55-109`). Nothing visually separates regions.
@@ -80,10 +80,10 @@ Evidence is cited as `file:line`.
   (`router.ts:108`) but is **never rendered**, so users have no "where am I"
   signal.
 - **Status colours don't read semantically** (`assets/brand/theme.ts:18-38`):
-  - `success` = `#1E3A44` (blueglass dark) — reads as near-black teal, not "good".
-  - `warning` = `#A45A84` (tyrian lite) — *identical to* `textMuted`
+  - `success` = `#1E3A44` (blueglass dark), reads as near-black teal, not "good".
+  - `warning` = `#A45A84` (tyrian lite), *identical to* `textMuted`
     (`assets/brand/theme.ts:35`), so warnings are indistinguishable from dimmed text.
-  - `error` = `#3E1026` (scar) — near-black maroon; on the `#FFF1F7` pink
+  - `error` = `#3E1026` (scar), near-black maroon; on the `#FFF1F7` pink
     background it barely separates from normal `text` `#3A0F28`.
   - Net effect: the information hierarchy promised by the design doc
     (red/blocking > yellow/review > green/confirm) collapses into "everything is
@@ -92,8 +92,8 @@ Evidence is cited as `file:line`.
   (`assets/brand/theme.ts:59-61`); only `right` is set. Any UI that renders these draws
   nothing.
 - **Dark theme defined but unused.** `THEMES.themeDark` (`assets/brand/theme.ts:39`) is
-  a near-copy of light — its `background` stays the pink `#FFF1F7`, so it isn't
-  actually dark — and nothing imports it; `theme` is hard-bound to
+  a near-copy of light: its `background` stays the pink `#FFF1F7`, so it isn't
+  actually dark, and nothing imports it; `theme` is hard-bound to
   `themeLight` (`assets/brand/theme.ts:144`).
 - **Spacing is magic strings.** Vertical rhythm comes from empty
   `TextRenderable`s used as spacers (`dashboard.ts:72,83`); indentation is
@@ -102,20 +102,20 @@ Evidence is cited as `file:line`.
 
 ### 3.2 UX / Navigation
 
-- **No `?` help overlay.** A stated core principle — *"`?` for contextual help
-  (always visible)"* (`tui-ux-design.md:51`) — and roadmap item **2TI.12**, but
+- **No `?` help overlay.** A stated core principle, *"`?` for contextual help
+  (always visible)"* (`tui-ux-design.md:51`), and roadmap item **2TI.12**, but
   not implemented. Discoverability rests entirely on the per-screen footer
   string.
 - **Inconsistent keymaps, no central registry.** Each screen re-implements
   `keyInput.on('keypress', …)` (`dashboard.ts:170`). Bindings diverge and
   collide: `q` quits the dashboard (`dashboard.ts:171`) but saves & exits
   settings; `x` deletes in history/mapping-builder but is unbound elsewhere. The
-  design doc advertises vim nav (`j/k/g/G`, `tui-ux-design.md`) — **not
+  design doc advertises vim nav (`j/k/g/G`, `tui-ux-design.md`), **not
   implemented**.
 - **No command palette / global jump.** Every screen is reachable only by
   walking the menu tree.
 - **Awkward double-press confirms** for destructive deletes
-  (`history.ts:436`, `mapping-builder.ts:373`) — press `x` twice — instead of an
+  (`history.ts:436`, `mapping-builder.ts:373`), press `x` twice, instead of an
   explicit confirm affordance. Easy to mis-fire, easy to miss.
 - **No transitions.** Screens snap on push/pop (roadmap **2TI.18**). The only
   motion in the whole app is the workflow spinner (`workflow.ts:408`).
@@ -129,11 +129,11 @@ Evidence is cited as `file:line`.
 - **Weak multi-panel focus model.** Two-panel screens (mapping-editor) signal
   focus only by swapping `highlightFocused` (`#5FA3BA` blueglass lite) vs
   `highlightUnfocused` (`#D6A3BF` rosewash nav) backgrounds
-  (`assets/brand/theme.ts:30-31`) — two low-contrast tints that are hard to tell apart
+  (`assets/brand/theme.ts:30-31`), two low-contrast tints that are hard to tell apart
   on the pink canvas. No focused-panel border.
 - **Workflow lacks a progress bar and timing.** `progress.filled` / `.empty`
   symbols (`assets/brand/theme.ts:73-76`) are defined but unused; the processing screen
-  shows step icons only — no overall progress bar and no elapsed time, both
+  shows step icons only, no overall progress bar and no elapsed time, both
   promised in `tui-ux-design.md`.
 
 ---
@@ -163,11 +163,11 @@ A lazygit-class look, built on the three primitives Iris lacks today.
 
 ### 5.1 Framed app shell
 A persistent outer layout shared by every screen:
-- **Header band** — wordmark + working context (provider / UKPRN / active
+- **Header band**: wordmark + working context (provider / UKPRN / active
   schema / active mapping) pulled from config, plus a breadcrumb.
-- **Content region** — one or more **bordered, titled panels**. The **focused**
+- **Content region**: one or more **bordered, titled panels**. The **focused**
   panel gets an accent border (vein); unfocused panels get the muted border.
-- **Footer keybar** — the current screen's bindings, generated from the keymap
+- **Footer keybar**: the current screen's bindings, generated from the keymap
   registry (never a hand-typed string again).
 
 ### 5.2 Semantic colour vocabulary
@@ -185,7 +185,7 @@ retiring double-press deletes.
 OpenTUI `0.1.77` provides the building blocks: `BoxRenderable` border /
 `borderStyle` / `borderColor` / `title`, `ScrollBoxRenderable`, and z-indexed
 overlays. (Exact API to be confirmed against the installed version when Phase A
-begins — dependencies are not installed in the review container.)
+begins; dependencies are not installed in the review container.)
 
 ---
 
@@ -199,16 +199,16 @@ are *analogous or harmonious* with the existing wheel positions, each with a
 
 | Role | Name | FG tone (on light) | Accent tone | Colour-theory rationale |
 |---|---|---|---|---|
-| Valid / success | **Verdant** | `#2E6F4E` | `#4FAE7C` | Green nudged toward blueglass teal — analogous to the existing secondary, so it harmonises rather than clashing. Reads clearly as "good". |
-| Caution / warning | **Ember** | `#B25A2A` | `#E0934A` | Warm terracotta — analogous to rosewash's warmth but far enough in chroma/value to be distinct from the pink `textMuted`. Reads as "review". |
+| Valid / success | **Verdant** | `#2E6F4E` | `#4FAE7C` | Green nudged toward blueglass teal, analogous to the existing secondary, so it harmonises rather than clashing. Reads clearly as "good". |
+| Caution / warning | **Ember** | `#B25A2A` | `#E0934A` | Warm terracotta, analogous to rosewash's warmth but far enough in chroma/value to be distinct from the pink `textMuted`. Reads as "review". |
 | Blocking / error | **Flare** | `#B11A46` | `#D94E74` | Raises the chroma of `scar`/`vein` into a saturated crimson so it actually separates from body text. Reads as "stop". |
-| Info | **Blueglass** (existing) | `#3E7F96` | `#5FA3BA` | Keep — already works as info. |
-| Focus / accent | **Vein** (existing) | `#7A2A57` | — | Focused-panel border + selection accent. |
+| Info | **Blueglass** (existing) | `#3E7F96` | `#5FA3BA` | Keep, already works as info. |
+| Focus / accent | **Vein** (existing) | `#7A2A57` | n/a | Focused-panel border + selection accent. |
 
 **Approximate contrast on `#FFF1F7` (target ≥ 4.5:1 for text):**
 `Verdant #2E6F4E` ≈ 5.4:1 ✓ · `Ember #B25A2A` ≈ 4.7:1 ✓ · `Flare #B11A46` ≈
 6.0:1 ✓ · `Blueglass #3E7F96` ≈ 4.3:1 (use bold / large) · `Vein #7A2A57` ≈
-6.8:1 ✓. *(Estimates — verify with a WCAG tool during Phase A.)*
+6.8:1 ✓. *(Estimates: verify with a WCAG tool during Phase A.)*
 
 **Fixes this delivers:**
 - `success` stops being dark teal; `warning` stops colliding with `textMuted`;
@@ -267,7 +267,7 @@ Quick Actions
 [↑↓/1-8] Select  [ENTER] Confirm  [q] Quit
 ```
 
-**After:** the §7 shell — framed Quick Actions panel beside a Recent Activity
+**After:** the §7 shell, framed Quick Actions panel beside a Recent Activity
 panel, context in the header, keybar in the footer.
 
 ### 8.2 Workflow / processing
@@ -327,7 +327,7 @@ Focused panel carries the vein border; severity icons use Verdant/Ember/Flare.
 
 **Keymap registry** (`src/tui/utils/keymap.ts`, Phase A): each screen declares
 `{ keys, label, when?, handler }` entries. The registry is the **single source**
-for the footer keybar, the `?` overlay, and dispatch — eliminating the
+for the footer keybar, the `?` overlay, and dispatch, eliminating the
 hand-typed footer strings and the per-screen `keypress` switch blocks.
 
 **Overlays** (Phase C): a z-indexed layer above the current screen for the help
@@ -339,13 +339,13 @@ double-press delete.
 
 ## 10. What we keep
 
-The architecture is sound — the redesign is additive, not a rewrite:
+The architecture is sound: the redesign is additive, not a rewrite:
 - **Stack `Router`** (push/pop/replace + data threading + `cleanup()` lifecycle,
   `router.ts`). The shell and overlays layer on top of it.
-- **Centralised theme** (`assets/brand/theme.ts`) — we extend the palette, not replace
+- **Centralised theme** (`assets/brand/theme.ts`): we extend the palette, not replace
   the system.
-- **OpenTUI flexbox layout** — panels and shell are just composed `BoxRenderable`s.
-- **Generic `WorkflowScreen`** (`workflow.ts`) — one component already drives
+- **OpenTUI flexbox layout**: panels and shell are just composed `BoxRenderable`s.
+- **Generic `WorkflowScreen`** (`workflow.ts`): one component already drives
   convert/validate/check; we enrich it (frame, progress, timer) in place.
 
 Execution sequence: see [`tui-redesign.md`](../roadmaps/tui-redesign.md).

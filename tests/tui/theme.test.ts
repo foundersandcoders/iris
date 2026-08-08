@@ -48,7 +48,7 @@ describe('THEMES.themeLight', () => {
 		const { success, warning, error, info } = themeLight;
 		const states = new Set([success, warning, error, info]);
 		expect(states.size).toBe(4);
-		// warning previously collided with textMuted — guard against regression.
+		// warning previously collided with textMuted; guard against regression.
 		expect(themeLight.warning).not.toBe(themeLight.textMuted);
 	});
 
@@ -98,8 +98,8 @@ describe('symbols', () => {
 	it('exports info symbols', () => {
 		expect(symbols.info.success).toBe('✓');
 		expect(symbols.info.error).toBe('✗');
-		expect(symbols.info.warning).toBe('(!)'); // swapped from ⚠ — degrades to 'Ar ' in some terminals
-		expect(symbols.info.required).toBe('*');  // swapped from ⚡︎ — multi-codepoint, width-ambiguous
+		expect(symbols.info.warning).toBe('(!)'); // swapped from ⚠, degrades to 'Ar ' in some terminals
+		expect(symbols.info.required).toBe('*');  // swapped from ⚡︎, multi-codepoint, width-ambiguous
 	});
 
 	it('exports bullet, loading and progress symbols', () => {
@@ -169,7 +169,7 @@ describe('rgba (OpenTUI adapter)', () => {
 
 describe('theme convenience export', () => {
 	afterEach(() => {
-		// applyTheme mutates the shared `theme`/`rgba` objects in place —
+		// applyTheme mutates the shared `theme`/`rgba` objects in place;
 		// reset so a switch in one test can't leak into the next.
 		applyTheme('light');
 	});

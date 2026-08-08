@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 // keymap.ts imports assets/brand/theme, which has a concrete @opentui/core
-// import (RGBA) — see tests/fixtures/tui/opentui.ts for why the real package
+// import (RGBA), see tests/fixtures/tui/opentui.ts for why the real package
 // can't load under vitest.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
@@ -10,7 +10,7 @@ import type { KeyEvent } from '@opentui/core';
 import * as fixtures from '../../fixtures/tui/tui';
 import * as paletteFixtures from '../../fixtures/tui/palette';
 
-// ——— normaliseKey ————————————————————————————————————————————————————————————
+// ─── normaliseKey ────────────────────────────────────────────────────────────
 
 describe('normaliseKey()', () => {
 	it('lowercases plain keys', () => {
@@ -45,7 +45,7 @@ describe('normaliseKey()', () => {
 	});
 });
 
-// ——— eventToKey ——————————————————————————————————————————————————————————————
+// ─── eventToKey ──────────────────────────────────────────────────────────────
 
 function makeKey(overrides: Partial<KeyEvent> = {}): KeyEvent {
 	return {
@@ -84,7 +84,7 @@ describe('eventToKey()', () => {
 	});
 });
 
-// ——— Keymap — dispatch ————————————————————————————————————————————————————————
+// ─── Keymap: dispatch ─────────────────────────────────────────────────────────
 
 describe('Keymap.dispatch()', () => {
 	it('runs the handler and returns the matching binding', () => {
@@ -121,7 +121,7 @@ describe('Keymap.dispatch()', () => {
 		expect(globalHandler).not.toHaveBeenCalled();
 	});
 
-	it('matches vim aliases — "j" triggers a "down" binding', () => {
+	it('matches vim aliases: "j" triggers a "down" binding', () => {
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['down', 'j'], label: 'Nav', handler }] });
 		km.dispatch(makeKey({ name: 'j' }));
@@ -135,7 +135,7 @@ describe('Keymap.dispatch()', () => {
 	});
 });
 
-// ——— Keymap — toKeybar ———————————————————————————————————————————————————————
+// ─── Keymap: toKeybar ─────────────────────────────────────────────────────────
 
 describe('Keymap.toKeybar()', () => {
 	it('produces "[KEY] Label  [KEY] Label" format with double-space separator', () => {
@@ -184,7 +184,7 @@ describe('Keymap.toKeybar()', () => {
 		expect(km.toKeybar()).not.toContain('Back');
 	});
 
-	it('includes Help by default — the overlay is automatic on every screen', () => {
+	it('includes Help by default, the overlay is automatic on every screen', () => {
 		const km = new Keymap({ bindings: [] });
 		expect(km.toKeybar()).toContain('[?] Help');
 	});
@@ -206,7 +206,7 @@ describe('Keymap.toKeybar()', () => {
 	});
 });
 
-// ——— Keymap — toHelp —————————————————————————————————————————————————————————
+// ─── Keymap: toHelp ───────────────────────────────────────────────────────────
 
 describe('Keymap.toHelp()', () => {
 	it('returns display rows for visible bindings', () => {
@@ -252,7 +252,7 @@ describe('Keymap.toHelp()', () => {
 	});
 });
 
-// ——— Keymap — attach / detach ————————————————————————————————————————————————
+// ─── Keymap: attach / detach ──────────────────────────────────────────────────
 
 describe('Keymap.attach() / detach()', () => {
 	it('registers a keypress listener on attach', () => {
@@ -276,14 +276,14 @@ describe('Keymap.attach() / detach()', () => {
 		expect(() => km.detach(ctx.renderer)).not.toThrow();
 	});
 
-	it('attach is idempotent — re-attaching removes the previous listener first', () => {
+	it('attach is idempotent: re-attaching removes the previous listener first', () => {
 		const ctx = fixtures.createMockContext();
 		const km = new Keymap({ bindings: [] });
 		km.attach(ctx.renderer);
 		km.attach(ctx.renderer);
 		// The second attach() must have called off() to remove the stale handler
 		expect(ctx.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
-		// Two on() calls — one per attach()
+		// Two on() calls, one per attach()
 		expect(ctx.renderer.keyInput.on).toHaveBeenCalledTimes(2);
 	});
 
@@ -331,7 +331,7 @@ describe('Keymap.attach() / detach()', () => {
 	});
 });
 
-// ——— Keymap — help overlay toggling —————————————————————————————————————————
+// ─── Keymap: help overlay toggling ───────────────────────────────────────────
 
 describe('Keymap help overlay', () => {
 	it('"?" opens the overlay; an unrelated key is swallowed while open', () => {
@@ -383,7 +383,7 @@ describe('Keymap help overlay', () => {
 	it('stops propagation while open, so a focused renderable (e.g. SelectRenderable) never sees the key', () => {
 		// Keymap.attach() registers on the shared InternalKeyHandler as a "global"
 		// listener, which runs BEFORE the focused renderable's own keypress
-		// handler — but only stopPropagation() actually prevents that handler
+		// handler, but only stopPropagation() actually prevents that handler
 		// from firing too. Without it, arrow/enter keys would reach the
 		// renderable underneath the overlay even though dispatch() ignored them.
 		const ctx = fixtures.createMockContext();
@@ -396,7 +396,7 @@ describe('Keymap help overlay', () => {
 		expect(stopPropagation).toHaveBeenCalledOnce();
 	});
 
-	it('does not stop propagation once closed — normal dispatch is unaffected', () => {
+	it('does not stop propagation once closed: normal dispatch is unaffected', () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -411,7 +411,7 @@ describe('Keymap help overlay', () => {
 	});
 });
 
-// ——— Keymap — confirm overlay ————————————————————————————————————————————————
+// ─── Keymap: confirm overlay ──────────────────────────────────────────────────
 
 describe('Keymap confirm overlay', () => {
 	it('confirm() shows the overlay and returns a pending promise', async () => {
@@ -467,7 +467,7 @@ describe('Keymap confirm overlay', () => {
 		await expect(promise).resolves.toBe(false);
 	});
 
-	it('swallows unrelated keys while a confirm is open — no fall-through to other bindings', () => {
+	it('swallows unrelated keys while a confirm is open: no fall-through to other bindings', () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -499,7 +499,7 @@ describe('Keymap confirm overlay', () => {
 		expect(stopPropagation).toHaveBeenCalledOnce();
 	});
 
-	it('does not stop propagation once resolved — normal dispatch resumes', async () => {
+	it('does not stop propagation once resolved: normal dispatch resumes', async () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -526,7 +526,7 @@ describe('Keymap confirm overlay', () => {
 	});
 });
 
-// ——— command palette (TR.D1) —————————————————————————————————————————————————
+// ─── command palette (TR.D1) ─────────────────────────────────────────────────
 
 const PALETTE_ENTRIES = paletteFixtures.paletteEntries;
 
@@ -719,7 +719,7 @@ describe('Keymap command palette', () => {
 		expect((km as any).paletteOpen).toBe(false);
 	});
 
-	it('swallows unrelated keys while the palette is open — "q" does not quit', () => {
+	it('swallows unrelated keys while the palette is open: "q" does not quit', () => {
 		const ctx = fixtures.createMockContext();
 		const onQuit = vi.fn();
 		const onCommand = vi.fn();
@@ -773,7 +773,7 @@ describe('Keymap command palette', () => {
 
 	it('disableGlobals suppressing ctrl+p also skips constructing the overlay entirely', () => {
 		// attach() previously recomputed a weaker enablement check that omitted
-		// the disableGlobals test — the binding was correctly suppressed, but
+		// the disableGlobals test: the binding was correctly suppressed, but
 		// the overlay was still built and mounted, an unreachable renderable.
 		const ctx = fixtures.createMockContext();
 		const onCommand = vi.fn();
@@ -790,7 +790,7 @@ describe('Keymap command palette', () => {
 		);
 	});
 
-	it('cannot be opened while the help overlay is open — help takes precedence', () => {
+	it('cannot be opened while the help overlay is open: help takes precedence', () => {
 		const ctx = fixtures.createMockContext();
 		const onCommand = vi.fn();
 		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
@@ -835,7 +835,7 @@ describe('paletteNav()', () => {
 	});
 });
 
-// ——— globals ——————————————————————————————————————————————————————————————————
+// ─── globals ──────────────────────────────────────────────────────────────────
 
 describe('global bindings', () => {
 	it('onBack wires ESC to the back handler', () => {

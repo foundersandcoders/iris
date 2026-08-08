@@ -82,25 +82,25 @@ See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions 
 
 Terminal recordings for the README and docs are scripted with [Charm VHS](https://github.com/charmbracelet/vhs). Tapes live in `tapes/` and share settings from `tapes/_common.tape` (dimensions, font, and a theme mirroring Iris' brand palette).
 
-New to Iris? Start with the [quickstart tutorial](docs/tutorials/quickstart.md) — a non-technical, first-launch-to-submission walkthrough.
+New to Iris? Start with the [quickstart tutorial](docs/tutorials/quickstart.md): a non-technical, first-launch-to-submission walkthrough.
 
 #### Workflows
 
 A walkthrough of each recording, with fuller commentary, lives in [docs/tutorials/workflows.md](docs/tutorials/workflows.md).
 
-**Convert** — CSV to ILR XML
+**Convert**: CSV to ILR XML
 
 ![Convert workflow](docs/assets/convert.gif)
 
-**Validate** — check a submitted XML file
+**Validate**: check a submitted XML file
 
 ![Validate workflow](docs/assets/validate.gif)
 
-**Cross-Submission Check** — compare current against previous
+**Cross-Submission Check**: compare current against previous
 
 ![Cross-submission check workflow](docs/assets/check.gif)
 
-**Mapping Builder** — browse and duplicate CSV→XSD mappings
+**Mapping Builder**: browse and duplicate CSV→XSD mappings
 
 ![Mapping builder workflow](docs/assets/mapping-builder.gif)
 
@@ -111,7 +111,7 @@ brew install vhs ttyd ffmpeg
 bun link
 ```
 
-See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms. `bun link` puts the `iris` command on `PATH` — the tapes launch the app the same way a real user would, not via `bun run cli`.
+See the [VHS repo](https://github.com/charmbracelet/vhs) for other platforms. `bun link` puts the `iris` command on `PATH`; the tapes launch the app the same way a real user would, not via `bun run cli`.
 
 **Regenerate all recordings:**
 

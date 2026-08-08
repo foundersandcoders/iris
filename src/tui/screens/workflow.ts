@@ -32,7 +32,7 @@ interface StepDisplay {
 	id: string;
 	name: string;
 	status: 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
-	/** 0-100, mirroring WorkflowStep.progress. Only meaningful while running —
+	/** 0-100, mirroring WorkflowStep.progress. Only meaningful while running,
 	 *  terminal states (complete/failed/skipped) count as a whole step
 	 *  regardless of this value; see computeAggregateProgress(). */
 	progress: number;
@@ -51,7 +51,7 @@ export function formatElapsed(ms: number): string {
 
 /** Aggregate completion across steps, 0-1. Each step contributes 1/n; a
  *  running step contributes its own fractional progress, so a workflow that
- *  later starts emitting step:progress refines the estimate automatically —
+ *  later starts emitting step:progress refines the estimate automatically;
  *  today no workflow does, so running steps sit at 0 and this degenerates
  *  exactly to completedSteps/totalSteps.
  *
@@ -59,7 +59,7 @@ export function formatElapsed(ms: number): string {
  *  marks the generate/save steps 'skipped' when validation blocks the run,
  *  leaving their progress at 0. If skipped didn't count, a blocked
  *  conversion would freeze the bar at 50% while the workflow visibly
- *  finishes and navigates away — a bar that lies. Failed steps stop the
+ *  finishes and navigates away: a bar that lies. Failed steps stop the
  *  workflow the same way, so the bar should settle rather than hang. */
 export function computeAggregateProgress(steps: StepDisplay[]): number {
 	if (steps.length === 0) return 0;
@@ -207,7 +207,7 @@ export class WorkflowScreen implements Screen {
 		} catch (err) {
 			this.error = err instanceof Error ? err : new Error(String(err));
 		} finally {
-			// Covers success, error, and early return alike — one place, before
+			// Covers success, error, and early return alike: one place, before
 			// routeToResultScreen() navigates away.
 			this.stopElapsedTimer();
 		}
@@ -504,7 +504,7 @@ export class WorkflowScreen implements Screen {
 			renderables.nameText.fg = theme.primary;
 			this.updateProgress();
 		} else if (event.type === 'step:progress') {
-			// Dead code today by construction — no workflow yields this event —
+			// Dead code today by construction: no workflow yields this event,
 			// present so the bar's wiring is correct the day one does. Must NOT
 			// touch the spinner or icon: the step is still running.
 			step.progress = event.step.progress ?? 0;

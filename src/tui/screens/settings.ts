@@ -41,27 +41,27 @@ interface SettingsField {
 	type: 'text' | 'dropdown' | 'directory' | 'boolean';
 	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
-	/** Display strings for a 'boolean' field's two states, [off, on] — Enter
+	/** Display strings for a 'boolean' field's two states, [off, on]. Enter
 	 *  flips between them. Defaults to ['Off', 'On']. */
 	toggleValues?: [string, string];
 }
 
 /** Contextual help text per field */
 const FIELD_HELP: Record<string, string> = {
-	'provider.ukprn': 'UK Provider Reference Number — 8-digit identifier assigned by UKRLP',
+	'provider.ukprn': 'UK Provider Reference Number: 8-digit identifier assigned by UKRLP',
 	'provider.name': 'Organisation name as registered with the ESFA',
 	'activeSchema': 'XSD schema used for XML generation and validation',
 	'activeMapping': 'CSV→XSD mapping configuration for field translation',
 	'collection': 'ILR collection period (e.g. "R14" for final return)',
-	'serialNo': 'Auto-incremented per submission — leave blank for now',
+	'serialNo': 'Auto-incremented per submission, leave blank for now',
 	'outputDir': 'Directory for generated ILR XML submissions',
 	'csvInputDir': 'Starting directory when browsing for CSV files',
 	'schemaDir': 'Directory for downloaded government XSD schema files',
-	'reduceMotion': 'Disable screen transition animations — takes effect on next launch',
-	'theme': 'Colour theme for the interface — applies immediately on save',
+	'reduceMotion': 'Disable screen transition animations, takes effect on next launch',
+	'theme': 'Colour theme for the interface, applies immediately on save',
 };
 
-/** Field definitions — declarative description of every editable setting */
+/** Field definitions: declarative description of every editable setting */
 const FIELDS: SettingsField[] = [
 	// Provider
 	{
@@ -265,7 +265,7 @@ export class SettingsScreen implements Screen {
 						if (nextIndex >= 0 && nextIndex < options.length) {
 							this.fieldList!.setSelectedIndex(nextIndex);
 						} else {
-							// At boundary — bounce back
+							// At boundary, bounce back
 							this.fieldList!.setSelectedIndex(this.previousIndex);
 						}
 					} else {
@@ -442,7 +442,7 @@ export class SettingsScreen implements Screen {
 		this.refreshFooter();
 
 		if (field.type === 'boolean') {
-			// Toggle in place — Enter flips the value directly, no editor
+			// Toggle in place: Enter flips the value directly, no editor
 			// renderable and no focus dance, which is the least code and the
 			// best UX for a binary. commitEdit() sets editing=false via
 			// finishEdit(), which rebuilds the field list, so the display
@@ -479,7 +479,7 @@ export class SettingsScreen implements Screen {
 			focusedBackgroundColor: theme.highlightFocused,
 		});
 
-		this.shell?.setFooter(`Editing ${field.label} — [ENTER] Commit  [ESC] Cancel`);
+		this.shell?.setFooter(`Editing ${field.label}: [ENTER] Commit  [ESC] Cancel`);
 
 		this.editInput.on(InputRenderableEvents.ENTER, () => {
 			const newValue = this.editInput?.value ?? '';
@@ -505,7 +505,7 @@ export class SettingsScreen implements Screen {
 			textColor: theme.text,
 		});
 
-		this.shell?.setFooter(`Select ${field.label} — [ENTER] Confirm  [ESC] Cancel`);
+		this.shell?.setFooter(`Select ${field.label}: [ENTER] Confirm  [ESC] Cancel`);
 
 		this.editDropdown.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 			this.commitEdit(field, option.value as string);

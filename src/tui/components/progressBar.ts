@@ -27,7 +27,7 @@ export interface ProgressBarOptions {
 }
 
 export interface ProgressBar {
-	/** Row box — add to a panel or container. */
+	/** Row box, add to a panel or container. */
 	readonly root: BoxRenderable;
 	/** Set completion, 0-1 (clamped; NaN treated as 0). Repaints. */
 	setValue(value: number): void;
@@ -39,13 +39,13 @@ export interface ProgressBar {
 	getValue(): number;
 }
 
-/** Design-mock bar width — used whenever the root's measured width isn't a
+/** Design-mock bar width, used whenever the root's measured width isn't a
  *  number yet (before the first Yoga layout pass, and under the test double,
  *  which never runs a layout engine). */
 const DEFAULT_BAR_WIDTH = 26;
 const DEFAULT_MIN_WIDTH = 10;
 const DEFAULT_MAX_WIDTH = 40;
-// Reserved cells for "  100%" — two-space gutter + up to 4 percent chars.
+// Reserved cells for "  100%": two-space gutter + up to 4 percent chars.
 const PERCENT_RESERVE = 6;
 
 function clamp(value: number, min: number, max: number): number {

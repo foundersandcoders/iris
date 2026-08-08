@@ -187,7 +187,7 @@ describe('HistoryScreen', () => {
 	describe('with a broken entry', () => {
 		it('offers Delete in the footer keybar for a broken entry', async () => {
 			// loadHistory() drives isBroken via a real fs.stat() call, which is awkward
-			// to fake through the module mock here — set the post-load state directly
+			// to fake through the module mock here; set the post-load state directly
 			// and rebuild the UI, mirroring how rebuildListAndHandlers() re-renders
 			// after loadHistory() runs in the real delete flow.
 			const screen = new HistoryScreen(mockContext);

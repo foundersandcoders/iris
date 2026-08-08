@@ -6,7 +6,7 @@ import * as fixtures from '../../fixtures/tui/tui';
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-// Mock createStorage — include ALL methods to avoid leaking incomplete mocks
+// Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		init: vi.fn().mockResolvedValue({ success: true, data: undefined }),

@@ -1,13 +1,13 @@
 /** ====== Toast Manager ======
  * Renderer-scoped, non-modal stacking layer for transient feedback toasts.
- * Constructed once in TUI.start() and threaded to screens via RenderContext
- * — deliberately NOT owned by a screen or its Keymap. Router.push/pop/replace
+ * Constructed once in TUI.start() and threaded to screens via RenderContext,
+ * deliberately NOT owned by a screen or its Keymap. Router.push/pop/replace
  * all call the outgoing screen's cleanup() before the next screen exists, and
  * WorkflowScreen always replace()s to a result screen on completion, so a
  * toast owned by the firing screen would die before the user ever sees it.
  * Being renderer-scoped, this layer outlives every screen transition.
  *
- * Layout: the stack layer is absolutely positioned but NOT full-screen —
+ * Layout: the stack layer is absolutely positioned but NOT full-screen;
  * unlike helpOverlay/confirmOverlay (which are modal, opaque, and cover the
  * whole terminal), this layer anchors to the bottom-right corner with
  * shouldFill:false and no width/height, so Yoga shrink-wraps it to the
@@ -48,7 +48,7 @@ export class ToastManager {
 	private seq = 0;
 	private readonly entries = new Map<string, Toast>();
 	private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
-	// Insertion order — the front is the oldest, and the eviction target.
+	// Insertion order: the front is the oldest, and the eviction target.
 	private readonly order: string[] = [];
 
 	constructor(renderer: Renderer, opts: ToastManagerOptions = {}) {
@@ -66,7 +66,7 @@ export class ToastManager {
 			id: this.layerId,
 			position: 'absolute',
 			// Anchor bottom-right and omit width/height so Yoga shrink-wraps to
-			// content — do NOT copy the modal overlays' top:0/left:0/100%x100%,
+			// content, do NOT copy the modal overlays' top:0/left:0/100%x100%,
 			// which combined with a backgroundColor is exactly what blanks the
 			// screen behind them.
 			bottom: 1, // clear of the appShell footer keybar
@@ -133,7 +133,7 @@ export class ToastManager {
 		return this.show(message, 'error', duration);
 	}
 
-	/** Dismiss a specific toast early. Idempotent — an unknown id is a no-op,
+	/** Dismiss a specific toast early. Idempotent: an unknown id is a no-op,
 	 *  so a manual dismiss racing its own timer is safe. */
 	dismiss(id: string): void {
 		const timer = this.timers.get(id);
@@ -156,7 +156,7 @@ export class ToastManager {
 		for (const id of [...this.order]) this.dismiss(id);
 	}
 
-	/** Test/introspection hook — ids of currently mounted toasts, oldest first. */
+	/** Test/introspection hook: ids of currently mounted toasts, oldest first. */
 	activeIds(): string[] {
 		return [...this.order];
 	}

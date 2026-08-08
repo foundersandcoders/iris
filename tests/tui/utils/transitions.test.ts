@@ -27,7 +27,7 @@ describe('createTransitions()', () => {
 			expect(engine.detach).not.toHaveBeenCalled();
 		});
 
-		it('fadeIn is a synchronous no-op — no opacity mutation', () => {
+		it('fadeIn is a synchronous no-op, no opacity mutation', () => {
 			const transitions = createTransitions(renderer, false);
 			const screen = { root: { opacity: 0 } };
 			transitions.fadeIn('push', screen);
@@ -68,7 +68,7 @@ describe('createTransitions()', () => {
 			transitions.fadeIn('pop', { root: { opacity: 0 } });
 			transitions.fadeIn('replace', { root: { opacity: 0 } });
 
-			// Each fadeIn() creates its OWN Timeline instance — reusing one
+			// Each fadeIn() creates its OWN Timeline instance; reusing one
 			// shared timeline was the actual bug being fixed here (adding at
 			// startTime 0 on an already-advanced shared clock resolved
 			// instantly instead of animating).
@@ -96,11 +96,11 @@ describe('createTransitions()', () => {
 
 			transitions.fadeIn('push', screen);
 
-			// No root yet — a frame callback was registered, nothing animated.
+			// No root yet, a frame callback was registered, nothing animated.
 			expect(renderer.setFrameCallback).toHaveBeenCalledTimes(1);
 			const poll = (renderer.setFrameCallback as ReturnType<typeof vi.fn>).mock.calls[0][0];
 
-			// Root appears — the next frame tick should pick it up and animate.
+			// Root appears; the next frame tick should pick it up and animate.
 			screen.root = { opacity: 1 };
 			poll();
 
@@ -121,7 +121,7 @@ describe('createTransitions()', () => {
 			vi.advanceTimersByTime(600); // past the 500ms deadline
 			poll();
 
-			// Root still hasn't appeared — the poll must NOT be torn down while
+			// Root still hasn't appeared; the poll must NOT be torn down while
 			// it's still pending, or a root that mounts even later would never
 			// get its opacity restored and would stay invisible forever.
 			expect(renderer.removeFrameCallback).not.toHaveBeenCalled();
@@ -152,7 +152,7 @@ describe('createTransitions()', () => {
 
 		it('appends the frame callback via setFrameCallback, never replacing existing callbacks', () => {
 			// setFrameCallback on the real renderer appends to an array rather
-			// than replacing — this double doesn't model that array itself, but
+			// than replacing, this double doesn't model that array itself, but
 			// asserting the transitions module always goes through
 			// setFrameCallback (never touches renderer state directly) is the
 			// contract that keeps it compatible with that append semantics.

@@ -2,8 +2,8 @@
  * A single transient feedback card (success/info/warning/error).
  * Owned by ToastManager (TR.C2), which stacks these in a non-modal corner
  * layer. Unlike the modal overlays (helpOverlay, confirmOverlay), a toast's
- * CARD is opaque by design — it must stay readable over whatever screen
- * content sits behind it — but the manager's LAYER around it is transparent,
+ * CARD is opaque by design: it must stay readable over whatever screen
+ * content sits behind it, but the manager's LAYER around it is transparent,
  * so screen content beyond the card stays visible. See toastManager.ts.
  */
 import { BoxRenderable, TextRenderable, t, fg } from '@opentui/core';
@@ -23,7 +23,7 @@ export interface ToastOptions {
 }
 
 export interface Toast {
-	/** The card box — added to the ToastManager's stack layer. */
+	/** The card box, added to the ToastManager's stack layer. */
 	readonly root: BoxRenderable;
 	readonly variant: ToastVariant;
 	/** Replace the body text in place. */
@@ -37,7 +37,7 @@ const GLYPH: Record<ToastVariant, string> = {
 	info: symbols.bullet.dot,
 };
 
-/** Resolve a variant's accent colour from the live theme — NOT a module-level
+/** Resolve a variant's accent colour from the live theme, NOT a module-level
  *  map, since applyTheme() (TR.D2) mutates `theme`'s properties in place. A
  *  frozen-at-import-time map would keep showing the pre-switch colour after
  *  a theme toggle, same class of bug TR.D2 fixed for the `rgba` export. */

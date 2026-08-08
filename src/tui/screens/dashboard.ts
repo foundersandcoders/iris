@@ -51,7 +51,7 @@ function gradientLine(text: string, from: string, to: string): StyledText {
 }
 
 /** Box-drawing "Iris" wordmark, framed with a lattice border. Ported verbatim
- *  from the pre-OpenTUI dashboard (commit 07c7deb) — ASCII art, not text. */
+ *  from the pre-OpenTUI dashboard (commit 07c7deb): ASCII art, not text. */
 const LOGO_LINES = [
 	'  ┏━┓   ╭┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬╮   ┏━┓  ',
 	'  ┗━╋━━━┿┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┿━━━╋━┛  ',
@@ -139,16 +139,16 @@ export class Dashboard implements Screen {
 				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
 				...paletteNav(this.name, resolve),
 				bindings: [
-					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+					// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 					{
 						keys: ['up', 'down', 'k', 'j'],
 						hint: `${symbols.arrows.up}${symbols.arrows.down}/1-8`,
 						label: 'Select',
 						handler: () => {},
 					},
-					// Enter hint — Select owns enter nav; handler is a safe passthrough
+					// Enter hint: Select owns enter nav, handler is a safe passthrough
 					{ keys: ['enter'], label: 'Confirm', handler: () => select.selectCurrent() },
-					// Number shortcuts 1–8 — dispatch but hidden from the keybar
+					// Number shortcuts 1–8, dispatch but hidden from the keybar
 					...this.menuItems.map((_, i) => ({
 						keys: [String(i + 1)],
 						label: `Item ${i + 1}`,
@@ -163,7 +163,7 @@ export class Dashboard implements Screen {
 			});
 
 			// Shell: header + breadcrumb, content region, footer keybar.
-			// Title drops "Iris" — the wordmark now lives in the left column below.
+			// Title drops "Iris", the wordmark now lives in the left column below.
 			this.shell = appShell(this.renderer, {
 				id: CONTAINER_ID,
 				title: `v${APP_VERSION}`,
@@ -198,7 +198,7 @@ export class Dashboard implements Screen {
 			leftColumn.add(logoRow);
 			leftColumn.add(menuPanel.box);
 
-			// Recent Activity panel — display-only, newest-first
+			// Recent Activity panel: display-only, newest-first
 			const activityPanel = panel(this.renderer, { title: 'Recent Activity', flexGrow: 1 });
 			if (recent.length === 0) {
 				activityPanel.add(

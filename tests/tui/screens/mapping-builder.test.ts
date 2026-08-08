@@ -10,7 +10,7 @@ vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 // (the factory below builds a fresh object with fresh vi.fn()s per call).
 let deleteMappingMock = vi.fn().mockResolvedValue({ success: true, data: undefined });
 
-// Mock createStorage — include ALL methods to avoid leaking incomplete mocks
+// Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		init: vi.fn().mockResolvedValue({ success: true, data: undefined }),
@@ -184,7 +184,7 @@ describe('MappingBuilderScreen', () => {
 		}
 
 		it('deletes via keymap.confirm() when the user confirms', async () => {
-			const { screen } = await renderAndSelect(2); // 'my-custom-mapping' — not bundled
+			const { screen } = await renderAndSelect(2); // 'my-custom-mapping', not bundled
 			const resolve = vi.fn();
 			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
 
@@ -204,7 +204,7 @@ describe('MappingBuilderScreen', () => {
 		});
 
 		it('blocks deletion of a bundled mapping before confirm() is ever called', async () => {
-			const { screen } = await renderAndSelect(1); // 'fac-airtable-2025' — bundled
+			const { screen } = await renderAndSelect(1); // 'fac-airtable-2025', bundled
 			const resolve = vi.fn();
 			const confirmMock = vi.fn().mockResolvedValue(true);
 			(screen as any).keymap.confirm = confirmMock;

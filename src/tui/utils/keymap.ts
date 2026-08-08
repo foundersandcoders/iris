@@ -15,7 +15,7 @@ import type { ScreenResult } from './router';
 
 /** Screens safe to jump to from the command palette (TR.D1) with no data
  *  payload. Deliberately excludes file-picker, workflow, success,
- *  validation-explorer, check-results and mapping-save — those are
+ *  validation-explorer, check-results and mapping-save; those are
  *  mid-workflow screens that require a payload to render meaningfully (e.g.
  *  `workflow` self-pops without a file path). An explicit list rather than
  *  filtering the router's screen registry, since the registry has no
@@ -58,7 +58,7 @@ export interface Binding {
 	/** Keybar display token; defaults to prettyKey(keys[0]).
 	 *  Use to override a combined hint, e.g. "↑↓" for a navigation entry. */
 	hint?: string;
-	/** Guard — binding only matches and shows in the keybar when this returns true.
+	/** Guard: binding only matches and shows in the keybar when this returns true.
 	 *  Defaults to always-active when omitted. */
 	when?: () => boolean;
 	/** Dispatches normally but is omitted from the footer keybar (e.g. number shortcuts). */
@@ -67,7 +67,7 @@ export interface Binding {
 	handler: () => void;
 }
 
-/** Vim + arrow alias map — any member normalises to the representative key. */
+/** Vim + arrow alias map: any member normalises to the representative key. */
 const ALIASES: Record<string, string> = {
 	j: 'down',
 	down: 'down',
@@ -109,9 +109,9 @@ export interface KeymapOptions {
 	/** Canonical key strings to suppress from the auto-generated globals.
 	 *  Include "?" to opt a screen out of the help overlay entirely. */
 	disableGlobals?: string[];
-	/** Handler for "q" — typically resolves quit. Omit on screens where q means back. */
+	/** Handler for "q", typically resolves quit. Omit on screens where q means back. */
 	onQuit?: () => void;
-	/** Handler for "escape" — typically resolves pop/back. */
+	/** Handler for "escape", typically resolves pop/back. */
 	onBack?: () => void;
 	/** Jump-target screens for the command palette (TR.D1), keyed by route
 	 *  name. Supplying this opts the screen into the ctrl+p binding; the
@@ -146,7 +146,7 @@ export class Keymap {
 	private confirmResolver?: (ok: boolean) => void;
 	private readonly paletteEntries: PaletteEntry[];
 	private readonly onCommand?: (screen: string) => void;
-	/** Computed once here and reused by attach() — recomputing a weaker,
+	/** Computed once here and reused by attach(): recomputing a weaker,
 	 *  inline version there previously omitted the disableGlobals check,
 	 *  so the overlay could be constructed and mounted even when ctrl+p
 	 *  itself was suppressed. */
@@ -183,24 +183,24 @@ export class Keymap {
 
 	/** Find the first matching, when-passing binding and run its handler.
 	 *  Returns the binding that fired, or null if none matched.
-	 *  Pure and synchronous — useful for unit testing dispatch logic.
+	 *  Pure and synchronous: useful for unit testing dispatch logic.
 	 *  While the help overlay is open, every key is swallowed except "?"/"escape"
-	 *  (which close it) — no fall-through to other bindings (e.g. "q" won't quit).
+	 *  (which close it), no fall-through to other bindings (e.g. "q" won't quit).
 	 *  stopPropagation() is load-bearing here: this handler runs as a "global"
 	 *  listener on the shared InternalKeyHandler, ahead of the focused
 	 *  renderable's own keypress handler (e.g. SelectRenderable's arrow-key
-	 *  navigation) — without it, arrow/enter keys would still reach the
+	 *  navigation), without it, arrow/enter keys would still reach the
 	 *  renderable underneath the overlay even though dispatch() ignored them. */
 	dispatch(key: KeyEvent): Binding | null {
 		const k = eventToKey(key);
 
-		// Palette first — it's the newest/topmost modal; none of the others
+		// Palette first: it's the newest/topmost modal, none of the others
 		// can be open beneath it (openPalette() only fires from a normal
 		// binding, never while confirm/help are open).
 		if (this.paletteOpen) {
 			key.stopPropagation?.();
 			if (k === 'escape' || k === 'ctrl+p') {
-				// ctrl+p toggles closed, mirroring "?"'s toggleHelp() — otherwise
+				// ctrl+p toggles closed, mirroring "?"'s toggleHelp(), otherwise
 				// pressing it again while open was silently swallowed by
 				// isPrintable() rejecting the ctrl modifier, with no effect.
 				this.closePalette();
@@ -245,7 +245,7 @@ export class Keymap {
 
 	/** Build the footer hint string from visible, when-passing bindings.
 	 *  Format: "[KEY] Label  [KEY] Label" (double-space separator).
-	 *  Re-evaluates when() each call — call after state changes for a live bar. */
+	 *  Re-evaluates when() each call, call after state changes for a live bar. */
 	toKeybar(): string {
 		return this.bindings
 			.filter((b) => !b.hidden && (b.when?.() ?? true))
@@ -300,7 +300,7 @@ export class Keymap {
 	}
 
 	/** Fire onCommand with the selected entry's screen and close. A no-op if
-	 *  the filtered list is empty (nothing selected) — Enter on an empty
+	 *  the filtered list is empty (nothing selected), Enter on an empty
 	 *  result list does nothing, matching an empty dropdown/select. */
 	private commitPalette(): void {
 		const selected = this.paletteOverlay?.getSelected();
@@ -309,7 +309,7 @@ export class Keymap {
 	}
 
 	/** Show a confirm modal with the given message. Resolves true on y/Enter,
-	 *  false on n/Esc. Only one confirm can be pending at a time — a second
+	 *  false on n/Esc. Only one confirm can be pending at a time; a second
 	 *  call before the first resolves replaces the message on the same overlay,
 	 *  resolving the superseded promise false so it never dangles. */
 	confirm(message: string): Promise<boolean> {
@@ -331,7 +331,7 @@ export class Keymap {
 	}
 
 	/** Register the keypress listener on the renderer. Call inside render().
-	 *  Idempotent — a prior listener is removed before registering the new one. */
+	 *  Idempotent: a prior listener is removed before registering the new one. */
 	attach(renderer: Renderer): void {
 		if (this.attachedHandler) this.detach(renderer);
 		if (this.helpEnabled && !this.helpOverlay) {
@@ -375,7 +375,7 @@ export class Keymap {
 	}
 }
 
-/** A single, non-modifier, non-control printable character — the palette
+/** A single, non-modifier, non-control printable character: the palette
  *  query accepts these and nothing else. Rejects multi-character sequences
  *  (e.g. arrow-key escape codes that slip through as `sequence`) and
  *  control characters below 0x20 (Tab, Enter's own \r, etc, Enter/Escape/
@@ -408,7 +408,7 @@ function buildGlobals(opts: KeymapOptions): Binding[] {
 	if (opts.onQuit && !suppressed.has('q')) {
 		globals.push({ keys: ['q'], hint: 'q', label: 'Quit', handler: opts.onQuit });
 	}
-	// Ctrl+C deliberately omitted — createCliRenderer({ exitOnCtrlC: true }) handles it.
+	// Ctrl+C deliberately omitted, createCliRenderer({ exitOnCtrlC: true }) handles it.
 	// "?" Help is appended separately in the constructor (self-wired, TR.C1).
 
 	return globals;

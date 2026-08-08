@@ -149,7 +149,7 @@ export class MappingSaveScreen implements Screen {
 		this.keymap = new Keymap({
 			bindings: [
 				{ keys: ['tab'], label: 'Next Field', handler: () => this.advanceFocus() },
-				// Confirm — Input/Select ENTER events own the action; this is bar-only.
+				// Confirm: Input/Select ENTER events own the action, this is bar-only.
 				{ keys: ['enter'], label: 'Confirm', handler: () => {} },
 			],
 			onBack: () => resolve({ action: 'pop', data: { saved: false } }),

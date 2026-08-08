@@ -12,7 +12,7 @@ import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-builder-root';
 
-/** Bundled mapping ID — cannot be deleted */
+/** Bundled mapping ID, cannot be deleted */
 const BUNDLED_ID = 'fac-airtable-2025';
 
 interface MappingListItem {
@@ -74,12 +74,12 @@ export class MappingBuilderScreen implements Screen {
 
 			const keymap = this.buildUI(resolve);
 
-			// List selection changed — update detail panel
+			// List selection changed, update detail panel
 			this.listSelect?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number) => {
 				this.updateDetailPanel(index);
 			});
 
-			// Item selected — edit
+			// Item selected, edit
 			this.listSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
 				const value = option.value as string;
 
@@ -134,7 +134,7 @@ export class MappingBuilderScreen implements Screen {
 					schemaDisplay: mapping.targetSchema.displayName,
 				});
 			} else {
-				// Mapping exists but failed to load — show as broken
+				// Mapping exists but failed to load, show as broken
 				this.mappingItems.push({
 					id,
 					name: id,
@@ -161,7 +161,7 @@ export class MappingBuilderScreen implements Screen {
 					label: 'Navigate',
 					handler: () => {},
 				},
-				// Edit — SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
+				// Edit: SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
 				{ keys: ['enter'], label: 'Edit', handler: () => {} },
 				{ keys: ['n'], label: 'New', handler: () => this.keymapGoCreate?.() },
 				{ keys: ['d'], label: 'Duplicate', handler: () => this.duplicateSelected(resolve) },
@@ -170,7 +170,7 @@ export class MappingBuilderScreen implements Screen {
 					label: 'Delete',
 					handler: () => {
 						this.handleDelete(resolve).catch(() => {
-							this.shell?.setFooter(`${symbols.info.error} Delete failed — try again`);
+							this.shell?.setFooter(`${symbols.info.error} Delete failed, try again`);
 						});
 					},
 				},
@@ -215,7 +215,7 @@ export class MappingBuilderScreen implements Screen {
 		this.listPanel.add(this.listSelect);
 		body.add(this.listPanel.box);
 
-		// Detail — non-interactive, never a focus target, so a plain box rather than a panel.
+		// Detail: non-interactive, never a focus target, so a plain box rather than a panel.
 		this.detailPanel = new BoxRenderable(this.renderer, { flexDirection: 'column', width: '40%' });
 		body.add(this.detailPanel);
 
@@ -241,7 +241,7 @@ export class MappingBuilderScreen implements Screen {
 			if (item.isBroken) {
 				options.push({
 					name: `${symbols.info.error} ${item.name} (corrupt)`,
-					description: 'Failed to load — press [x] to delete',
+					description: 'Failed to load, press [x] to delete',
 					value: item.id,
 				});
 			} else {
@@ -284,7 +284,7 @@ export class MappingBuilderScreen implements Screen {
 		if (item.isBroken) {
 			this.detailPanel.add(
 				new TextRenderable(this.renderer, {
-					content: `${symbols.info.error} ${item.name} — corrupt or unreadable`,
+					content: `${symbols.info.error} ${item.name}: corrupt or unreadable`,
 					fg: theme.error,
 				})
 			);
@@ -321,7 +321,7 @@ export class MappingBuilderScreen implements Screen {
 		if (item.isBundled) {
 			this.detailPanel.add(
 				new TextRenderable(this.renderer, {
-					content: `${symbols.info.warning} Bundled mapping — read-only, duplicate to customise`,
+					content: `${symbols.info.warning} Bundled mapping: read-only, duplicate to customise`,
 					fg: theme.warning,
 				})
 			);
@@ -353,9 +353,9 @@ export class MappingBuilderScreen implements Screen {
 
 		const item = this.mappingItems[index];
 
-		// Block bundled deletion (unless broken — always allow cleaning up corrupt entries)
+		// Block bundled deletion (unless broken, always allow cleaning up corrupt entries)
 		if (item.isBundled && !item.isBroken) {
-			this.shell?.setFooter(`${symbols.info.warning} Bundled mappings cannot be deleted — duplicate to customise`);
+			this.shell?.setFooter(`${symbols.info.warning} Bundled mappings cannot be deleted, duplicate to customise`);
 			return;
 		}
 

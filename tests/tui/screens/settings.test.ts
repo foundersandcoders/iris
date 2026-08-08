@@ -23,7 +23,7 @@ let saveConfigMock = vi.fn();
 let listSchemasMock = vi.fn();
 let listMappingsMock = vi.fn();
 
-// Mock createStorage — include ALL methods to avoid leaking incomplete mocks
+// Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		init: vi.fn().mockResolvedValue({ success: true, data: undefined }),
@@ -55,7 +55,7 @@ describe('SettingsScreen', () => {
 	});
 
 	afterEach(() => {
-		// applyTheme mutates shared module state — reset so a switch in one
+		// applyTheme mutates shared module state; reset so a switch in one
 		// test can't leak into the next.
 		applyTheme('light');
 	});

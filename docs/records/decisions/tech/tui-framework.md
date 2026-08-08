@@ -12,7 +12,7 @@
 
 OpenTUI is a modern, Zig-powered, TypeScript-first TUI framework with Yoga flexbox layout, rich built-in components, and sub-millisecond rendering. It is pre-1.0 (v0.1.77) but battle-tested in real products (OpenCode, terminal.shop), actively maintained (627 commits, 65+ contributors, last release 3 days ago), and aligns perfectly with Iris's stack (Bun, TypeScript).
 
-The current TUI is only 971 lines across 3 screens with 5 empty component stubs — this is the ideal moment to migrate before investing further in terminal-kit's manual positioning model. OpenTUI eliminates every current pain point and provides out-of-the-box everything Iris was planning to build by hand.
+The current TUI is only 971 lines across 3 screens with 5 empty component stubs: this is the ideal moment to migrate before investing further in terminal-kit's manual positioning model. OpenTUI eliminates every current pain point and provides out-of-the-box everything Iris was planning to build by hand.
 
 ---
 
@@ -22,9 +22,9 @@ The current TUI is only 971 lines across 3 screens with 5 empty component stubs 
 - Created by the team behind **SST** (Serverless Stack)
 - Powers **OpenCode** (AI coding assistant) and **terminaldotshop**
 - Monorepo with three core packages:
-  - `@opentui/core` — standalone imperative API with all primitives
-  - `@opentui/react` — React reconciler
-  - `@opentui/solid` — SolidJS reconciler
+  - `@opentui/core`: standalone imperative API with all primitives
+  - `@opentui/react`: React reconciler
+  - `@opentui/solid`: SolidJS reconciler
 
 ### Key Stats
 
@@ -40,8 +40,8 @@ The current TUI is only 971 lines across 3 screens with 5 empty component stubs 
 
 ### Who's Using It
 
-- **OpenCode** — full AI coding assistant TUI (migrated from Go/Bubble Tea specifically because of performance issues with the old stack)
-- **terminal.shop** — e-commerce terminal interface
+- **OpenCode**: full AI coding assistant TUI (migrated from Go/Bubble Tea specifically because of performance issues with the old stack)
+- **terminal.shop**: e-commerce terminal interface
 - 31k weekly npm downloads indicates meaningful adoption beyond these flagship apps
 
 ---
@@ -58,7 +58,7 @@ The critical differentiator. OpenTUI uses **Zig** for performance-critical nativ
 
 Result: **sub-millisecond frame times, 60+ FPS** for complex UIs.
 
-Pre-compiled platform binaries ship for darwin-x64, darwin-arm64, linux-x64, linux-arm64, win32-x64, win32-arm64. Loaded at runtime via `Bun.dlopen()` — no Zig needed to consume the library.
+Pre-compiled platform binaries ship for darwin-x64, darwin-arm64, linux-x64, linux-arm64, win32-x64, win32-arm64. Loaded at runtime via `Bun.dlopen()`; no Zig needed to consume the library.
 
 ### Layout System (Yoga/Flexbox)
 
@@ -138,11 +138,11 @@ Built-in console overlay captures `console.log/warn/error` and displays as a tog
 | Current Problem | OpenTUI Solution |
 |----------------|------------------|
 | Manual `term.moveTo(x, y)` positioning | Yoga flexbox layout |
-| Resize handling TODO (unfixed) | Automatic — Yoga recalculates on resize |
+| Resize handling TODO (unfixed) | Automatic, Yoga recalculates on resize |
 | 5 empty component stubs to build | Built-in Select, Input, Box, ScrollBox, etc. |
 | Manual scroll offset tracking | ScrollBox handles scrolling |
 | Manual key listener attach/detach per screen | Focus system routes input automatically |
-| Full-screen redraw on every state change | Retained mode — only changed cells update |
+| Full-screen redraw on every state change | Retained mode, only changed cells update |
 | Double async generator workaround | Property-update triggers automatic re-render |
 | No animation system (stub) | Timeline API + opentui-spinner |
 | No keyboard utilities (stub) | Built-in KeyEvent system with modifiers |
@@ -175,7 +175,7 @@ Migrating drops **5 dependencies** from the TUI stack:
 
 ### Scope
 
-The current TUI is small — ideal migration target:
+The current TUI is small: ideal migration target:
 - 971 lines across 16 files
 - 3 implemented screens (Dashboard, FilePicker, Processing)
 - 2 utilities (Router, Layout)
@@ -236,11 +236,11 @@ The 2 stub screens that were never implemented become easier to build:
 
 ### Why the Alpha Risk Is Acceptable
 
-1. **Real products depend on it** — OpenCode and terminal.shop run on OpenTUI in production
-2. **Active development** — 627 commits, release 3 days ago, 65+ contributors
-3. **Iris's TUI is not the critical path** — the core logic (parser, validator, generator) is independent; TUI is a presentation layer that can be swapped
-4. **Small surface area** — 3 screens, ~1000 lines; worst case, a breaking change means a bounded rewrite
-5. **The alternative is worse** — continuing to build on terminal-kit means hand-building components that OpenTUI provides for free, with manual positioning that Yoga eliminates
+1. **Real products depend on it**: OpenCode and terminal.shop run on OpenTUI in production
+2. **Active development**: 627 commits, release 3 days ago, 65+ contributors
+3. **Iris's TUI is not the critical path**: the core logic (parser, validator, generator) is independent; TUI is a presentation layer that can be swapped
+4. **Small surface area**: 3 screens, ~1000 lines; worst case, a breaking change means a bounded rewrite
+5. **The alternative is worse**: continuing to build on terminal-kit means hand-building components that OpenTUI provides for free, with manual positioning that Yoga eliminates
 
 ---
 
@@ -249,7 +249,7 @@ The 2 stub screens that were never implemented become easier to build:
 ### Version Pinning
 
 ```jsonc
-// package.json — pin exact version to control when you upgrade
+// package.json: pin exact version to control when you upgrade
 "@opentui/core": "0.1.77",
 "opentui-spinner": "0.0.8"  // or current version
 ```
@@ -263,7 +263,7 @@ The 2 stub screens that were never implemented become easier to build:
 
 ### Development Tooling
 
-- Install the AI skill: `npx skills add msmps/opentui-skill` — provides Claude Code with component decision trees and troubleshooting guides
+- Install the AI skill: `npx skills add msmps/opentui-skill`, provides Claude Code with component decision trees and troubleshooting guides
 - Use `bun create tui` to scaffold a throwaway prototype for learning
 - OpenTUI's built-in console overlay replaces `console.log` debugging
 
@@ -279,10 +279,10 @@ Use **`@opentui/core` directly** (imperative API), not the React or Solid reconc
 
 ## Sources
 
-- [OpenTUI GitHub Repository](https://github.com/anomalyco/opentui) — 8.3k stars, MIT license
-- [OpenTUI npm Package](https://www.npmjs.com/package/@opentui/core) — 31k weekly downloads
-- [OpenTUI Skill](https://github.com/msmps/opentui-skill) — AI coding assistant reference docs
-- [OpenTUI UI Components](https://github.com/msmps/opentui-ui) — Dialog, Toast components
-- [OpenTUI Spinner](https://github.com/msmps/opentui-spinner) — 80+ spinner animations
-- [OpenTUI Multi-frontend Analysis](https://refft.com/en/sst_opentui.html) — Framework comparison
-- [OpenCode TUI Migration Context](https://grokipedia.com/page/OpenTUI) — Bubble Tea → OpenTUI migration
+- [OpenTUI GitHub Repository](https://github.com/anomalyco/opentui): 8.3k stars, MIT license
+- [OpenTUI npm Package](https://www.npmjs.com/package/@opentui/core): 31k weekly downloads
+- [OpenTUI Skill](https://github.com/msmps/opentui-skill): AI coding assistant reference docs
+- [OpenTUI UI Components](https://github.com/msmps/opentui-ui): Dialog, Toast components
+- [OpenTUI Spinner](https://github.com/msmps/opentui-spinner): 80+ spinner animations
+- [OpenTUI Multi-frontend Analysis](https://refft.com/en/sst_opentui.html): Framework comparison
+- [OpenCode TUI Migration Context](https://grokipedia.com/page/OpenTUI): Bubble Tea → OpenTUI migration

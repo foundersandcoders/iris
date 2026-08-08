@@ -3,7 +3,7 @@ import { Router, type ScreenResult } from '../../../src/tui/utils/router';
 import { ToastManager } from '../../../src/tui/utils/toastManager';
 import * as fixtures from '../../fixtures/tui/tui';
 
-// @opentui/core can only load under Bun — needed here for the real
+// @opentui/core can only load under Bun; needed here for the real
 // ToastManager used in the cross-screen-survival test below.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
@@ -243,7 +243,7 @@ describe('Router', () => {
       expect((capturedCtx as { toasts?: unknown }).toasts).toBe(toasts);
     });
 
-    it('survives a screen replace() — the manager outlives the screen that fired it', async () => {
+    it('survives a screen replace(), the manager outlives the screen that fired it', async () => {
       const toasts = new ToastManager(mockRenderer);
       toasts.attach();
       const toastRouter = new Router(mockRenderer, toasts);

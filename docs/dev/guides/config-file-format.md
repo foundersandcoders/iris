@@ -8,8 +8,8 @@ This document describes the structure and validation of Iris configuration and m
 
 Iris uses two main configuration file types:
 
-1. **`IrisConfig`** — User preferences stored in `~/.iris/config.json`
-2. **`MappingConfig`** — CSV-to-XSD column mapping definitions stored in `~/.iris/mappings/{id}.json`
+1. **`IrisConfig`**: User preferences stored in `~/.iris/config.json`
+2. **`MappingConfig`**: CSV-to-XSD column mapping definitions stored in `~/.iris/mappings/{id}.json`
 
 Both are JSON files with runtime validation.
 
@@ -233,8 +233,8 @@ Iris validates mapping configurations at two levels:
 **What:** Validates mapping is compatible with loaded XSD schema
 
 **Checks:**
-- Namespace match (critical — must match exactly)
-- Version match (warning only — mismatches allowed)
+- Namespace match (critical, must match exactly)
+- Version match (warning only, mismatches allowed)
 - All `xsdPath` values in `mappings[]` exist in schema registry
 - All builder-generated paths exist in schema (FAM, AppFin, LLDD, Employment)
 
