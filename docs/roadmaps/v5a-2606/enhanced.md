@@ -68,8 +68,10 @@ Each task is a single, independently-mergeable branch (per the project's small-b
 
 **Goal:** Command palette, theme toggle, and refined schema field display.
 
-- [ ] **TR.D1**: `feat/add-command-palette`: Global fuzzy jump-to-screen/action.
-- [ ] **TR.D2**: `feat/add-theme-toggle`: Light/dark switch in settings, persisted to config. _(depends on TR.A1)_
+- [x] **TR.D1**: `feat/add-command-palette`: Global fuzzy jump-to-screen/action.
+  - Note: Evidence: `src/tui/components/commandPalette.ts` and `src/tui/utils/fuzzy.ts` (new, subsequence match + rank); `ctrl+p` binding, `PALETTE_SCREENS` jump list and overlay lifecycle added to `src/tui/utils/keymap.ts`; wired into the six no-payload screens (dashboard, mapping-builder, mapping-editor, settings, about, history) (commit `a3bba1c`, "add ctrl+p command palette for fuzzy screen jump") on branch `feat/improve-ui`. Scoped to screen jumps only, actions are not in the palette, a deliberate cut.
+- [x] **TR.D2**: `feat/add-theme-toggle`: Light/dark switch in settings, persisted to config. _(depends on TR.A1)_
+  - Note: Evidence: `applyTheme()`/`activeTheme()` and the dark palette added to `assets/brand/theme.ts` (mutating the shared theme object in place so every importer sees the switch); `theme` added to `src/lib/types/configTypes.ts` and exposed as a toggle field in `src/tui/screens/settings.ts`, which repaints live by resolving a `replace()` back through the Router (commit `9a69b66`, "add live light/dark theme toggle to Settings") on branch `feat/improve-ui`.
 - [ ] **TR.D3**: `feat/refine-schema-field-display`: Two-line + ancestor-grouped schema fields in mapping-editor.
   - Note: Cross-referenced as `2TM.5` / `2TM.6` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
 
@@ -175,8 +177,8 @@ graph LR
 	TR.E1 --> TR.E2
 	TR.E2 --> TR.E3
 	TR.E3 --> M6
-	class TR.D1,TR.D2,TR.D3 todo
-	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2,TR.S3 done
+	class TR.D3 todo
+	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.D1,TR.D2,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2,TR.S3 done
 ```
 
 ## Cross-references to existing roadmap

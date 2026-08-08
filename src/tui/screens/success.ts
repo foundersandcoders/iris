@@ -72,7 +72,11 @@ export class SuccessScreen implements Screen {
 							screen: 'validation-explorer',
 							data: {
 								validation,
-								sourceType: 'csv', // TODO: pass through from workflow
+								// Hardcoded: SuccessScreen isn't told which workflow
+								// (convert/check) produced this result, unlike
+								// WorkflowScreen's own route to validation-explorer,
+								// which derives sourceType from the real input.
+								sourceType: 'csv',
 							},
 						});
 					} else {
