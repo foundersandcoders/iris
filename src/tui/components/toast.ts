@@ -37,16 +37,26 @@ const GLYPH: Record<ToastVariant, string> = {
 	info: symbols.bullet.dot,
 };
 
-const ACCENT: Record<ToastVariant, string> = {
-	success: theme.successAccent,
-	error: theme.errorAccent,
-	warning: theme.warningAccent,
-	info: theme.infoAccent,
-};
+/** Resolve a variant's accent colour from the live theme — NOT a module-level
+ *  map, since applyTheme() (TR.D2) mutates `theme`'s properties in place. A
+ *  frozen-at-import-time map would keep showing the pre-switch colour after
+ *  a theme toggle, same class of bug TR.D2 fixed for the `rgba` export. */
+function accentFor(variant: ToastVariant): string {
+	switch (variant) {
+		case 'success':
+			return theme.successAccent;
+		case 'error':
+			return theme.errorAccent;
+		case 'warning':
+			return theme.warningAccent;
+		case 'info':
+			return theme.infoAccent;
+	}
+}
 
 export function toast(renderer: Renderer, opts: ToastOptions): Toast {
 	const variant = opts.variant ?? 'info';
-	const accent = ACCENT[variant];
+	const accent = accentFor(variant);
 
 	const root = new BoxRenderable(renderer, {
 		...(opts.id ? { id: opts.id } : {}),
