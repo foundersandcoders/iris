@@ -443,6 +443,25 @@ describe('SettingsScreen', () => {
 		screen.cleanup();
 	});
 
+	it('catches a rejected save and reports it as an error toast', async () => {
+		saveConfigMock = vi.fn().mockRejectedValue(new Error('permission denied'));
+		const toasts = fixtures.createMockToasts();
+		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+		const screen = new SettingsScreen(ctx);
+		screen.render();
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		const handler = (ctx.renderer.keyInput.on as any).mock.calls[0][1];
+		handler({ name: 's' });
+
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(toasts.error).toHaveBeenCalledWith('Save failed: permission denied');
+
+		screen.cleanup();
+	});
+
 	it('fires a success toast on save, without scheduling a footer timeout', async () => {
 		vi.useFakeTimers({ shouldAdvanceTime: true });
 		const toasts = fixtures.createMockToasts();

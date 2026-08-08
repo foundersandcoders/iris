@@ -325,7 +325,13 @@ export class SettingsScreen implements Screen {
 						this.resetConfirm = false;
 						this.refreshFooter();
 					}
-					this.save();
+					// Binding.handler is () => void and can't be async, so a
+					// rejection has to be caught here or it becomes an
+					// unhandled rejection. Mirrors history.ts's handleDelete().
+					this.save().catch((error) => {
+						const msg = error instanceof Error ? error.message : 'Unknown error';
+						this.toasts?.error(`Save failed: ${msg}`);
+					});
 				},
 			},
 			{
