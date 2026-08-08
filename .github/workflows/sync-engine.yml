@@ -14,6 +14,11 @@ on:
 
 jobs:
   sync:
+    # Disabled: schema-forge is now the canonical home of the engine.
+    # This job force-pushes over schema-forge's src/, which would revert
+    # work happening there. Removed entirely once Iris consumes the
+    # published package as a dependency.
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Iris
