@@ -175,6 +175,33 @@ describe('createTransitions()', () => {
 			transitions.dispose();
 			expect(engine.detach).not.toHaveBeenCalled();
 		});
+
+		it('dispose() cancels a mount poll that never resolved, so it does not run forever', () => {
+			const transitions = createTransitions(renderer, true);
+			const screen: { root?: { opacity: number } } = {}; // never mounts
+
+			transitions.fadeIn('push', screen);
+			const poll = (renderer.setFrameCallback as ReturnType<typeof vi.fn>).mock.calls[0][0];
+
+			transitions.dispose();
+
+			expect(renderer.removeFrameCallback).toHaveBeenCalledWith(poll);
+		});
+
+		it('dispose() does not try to cancel a poll that already resolved', () => {
+			const transitions = createTransitions(renderer, true);
+			const screen: { root?: { opacity: number } } = {};
+
+			transitions.fadeIn('push', screen);
+			const poll = (renderer.setFrameCallback as ReturnType<typeof vi.fn>).mock.calls[0][0];
+			screen.root = { opacity: 1 };
+			poll(); // resolves and removes itself
+
+			(renderer.removeFrameCallback as ReturnType<typeof vi.fn>).mockClear();
+			transitions.dispose();
+
+			expect(renderer.removeFrameCallback).not.toHaveBeenCalled();
+		});
 	});
 });
 

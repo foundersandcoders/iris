@@ -66,10 +66,9 @@ const TIMING: Record<TransitionKind, { duration: number; ease: string }> = {
  *  than the fade would add, so there's nothing left to animate towards.
  *  Does NOT bound how long the poll itself runs: a root can still appear
  *  (and get snapped visible) arbitrarily later than this. A screen that
- *  never builds UI at all was never bounded by this deadline either; only
- *  the root actually appearing removes the frame callback, which matches
- *  the pre-existing behaviour of Router/TUI teardown never tracking pending
- *  polls, so this doesn't introduce a new leak. */
+ *  never builds UI at all is only stopped by dispose() cancelling the
+ *  pending poll (see the `pendingPolls` set in createTransitions), not by
+ *  this deadline. */
 const MOUNT_POLL_DEADLINE_MS = 500;
 
 /** Auto-enable reduce-motion over SSH: remote terminals round-trip every
@@ -92,6 +91,13 @@ export function createTransitions(renderer: Renderer, enabled: boolean): Transit
 	if (!enabled) return NOOP_TRANSITIONS;
 
 	let attached = false;
+
+	// Mount-poll frame callbacks not yet resolved. A screen that throws
+	// before buildUI(), or that the router tears down mid-poll, would
+	// otherwise leave its poll registered on the renderer forever, awaited
+	// every frame for the rest of the process. Tracked by reference since
+	// removeFrameCallback() matches on function identity.
+	const pendingPolls = new Set<(deltaTime: number) => Promise<void>>();
 
 	function ensureAttached(): void {
 		if (!attached) {
@@ -156,24 +162,25 @@ export function createTransitions(renderer: Renderer, enabled: boolean): Transit
 			// nothing else ever sets it back to 1. So the callback keeps
 			// polling past the deadline; it just switches from animating to a
 			// direct opacity snap the moment the root shows up. A screen that
-			// never builds UI at all still eventually stops polling only when
-			// its root appears, same as before this fix, that case was never
-			// bounded by the deadline either (dispose() doesn't track pending
-			// polls), so this doesn't introduce a new leak, only closes the
-			// "mounts slightly late" gap.
+			// never builds UI at all is caught by dispose() below, which
+			// cancels any poll still pending at teardown.
 			const deadline = Date.now() + MOUNT_POLL_DEADLINE_MS;
 			const poll = async (): Promise<void> => {
 				if (!screen.root) return;
 				renderer.removeFrameCallback(poll);
+				pendingPolls.delete(poll);
 				if (Date.now() >= deadline) {
 					screen.root.opacity = 1;
 				} else {
 					play(kind, screen.root);
 				}
 			};
+			pendingPolls.add(poll);
 			renderer.setFrameCallback(poll);
 		},
 		dispose() {
+			pendingPolls.forEach((poll) => renderer.removeFrameCallback(poll));
+			pendingPolls.clear();
 			if (attached) {
 				engine.detach();
 				attached = false;
