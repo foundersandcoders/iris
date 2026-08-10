@@ -15,15 +15,15 @@ import {
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { ColumnMapping, SchemaReference } from '../../lib/types/schemaTypes';
+import type { ColumnMapping, SchemaReference } from '@jasonwarrenuk/schema-forge';
 import type { IlrMappingConfig } from '../../lib/types/ilrMappingTypes';
-import type { SchemaElement, SchemaRegistry } from '../../lib/types/interpreterTypes';
-import { isRequired, isEffectivelyRequired } from '../../lib/types/interpreterTypes';
+import type { SchemaElement, SchemaRegistry } from '@jasonwarrenuk/schema-forge';
+import { isRequired, isEffectivelyRequired } from '@jasonwarrenuk/schema-forge';
 import { createStorage } from '../../lib/storage';
-import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
+import { buildSchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import { validateMappingStructure } from '../../lib/mappings/validate';
 import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
-import { parseCSV } from '../../lib/utils/csv/csvParser';
+import { parseCSV } from '@jasonwarrenuk/schema-forge';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap } from '../utils/keymap';
 

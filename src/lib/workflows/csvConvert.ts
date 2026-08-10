@@ -4,10 +4,10 @@
  *  |===========================================================|
  */
 import { createHash } from 'crypto';
-import { parseCSV, type CSVData } from '../utils/csv/csvParser';
-import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
+import { parseCSV, type CSVData } from '@jasonwarrenuk/schema-forge';
+import { validateRows, type ValidationResult } from '@jasonwarrenuk/schema-forge';
 import { createAimSkipFilter } from '../mappings/ilrValidation';
-import { generateFromSchema } from '../utils/xml/xmlGenerator';
+import { generateFromSchema } from '@jasonwarrenuk/schema-forge';
 import { getConfig } from '../types/configTypes';
 import { mapCsvToSchemaWithAims } from '../mappings/ilrColumnMapper';
 import { deriveCollectionYear } from '../mappings/namespace';
@@ -21,7 +21,7 @@ import type {
 } from '../types/workflowTypes';
 import type { HistoryEntry } from '../types/storageTypes';
 import { createStorage } from '../storage';
-import type { SchemaRegistry } from '../schema';
+import type { SchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import packageJson from '../../../package.json';
 

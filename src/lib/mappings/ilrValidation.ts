@@ -1,4 +1,4 @@
-import type { ColumnMapping } from '../types/schemaTypes';
+import type { ColumnMapping } from '@jasonwarrenuk/schema-forge';
 import { hasAimData } from './aimUtils';
 
 /**

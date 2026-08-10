@@ -8,8 +8,8 @@
 
 import { stat } from 'fs/promises';
 import { createStep, stepEvent, failedResult } from './utils';
-import { parseCSV, type CSVData } from '../utils/csv/csvParser';
-import { validateRows, type ValidationResult } from '../utils/csv/csvValidator';
+import { parseCSV, type CSVData } from '@jasonwarrenuk/schema-forge';
+import { validateRows, type ValidationResult } from '@jasonwarrenuk/schema-forge';
 import { createAimSkipFilter } from '../mappings/ilrValidation';
 import type {
 	ValidateInput,

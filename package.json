@@ -48,6 +48,7 @@
     "vitest": "^3.2.6"
   },
   "dependencies": {
+    "@jasonwarrenuk/schema-forge": "^0.1.0",
     "@opentui/core": "0.1.77",
     "fast-xml-parser": "^5.3.3",
     "opentui-spinner": "0.0.6",

@@ -10,7 +10,7 @@ import type {
 	EmploymentStatusConfig,
 	EsmField,
 } from '../types/ilrMappingTypes';
-import { getTransform } from '../transforms/registry';
+import { getTransform } from '@jasonwarrenuk/schema-forge';
 
 /**
  * Find CSV column value using case-insensitive, trim-based lookup

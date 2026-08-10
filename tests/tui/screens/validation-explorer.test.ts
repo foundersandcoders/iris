@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ValidationExplorerScreen } from '../../../src/tui/screens/validation-explorer';
 import * as tuiFixtures from '../../fixtures/tui/tui';
-import type { ValidationResult } from '../../../src/lib/utils/csv/csvValidator';
+import type { ValidationResult } from '@jasonwarrenuk/schema-forge';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
 // so it's replaced with a shared test double.

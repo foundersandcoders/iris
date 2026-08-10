@@ -1,8 +1,8 @@
-import type { ColumnMapping } from '../types/schemaTypes';
+import type { ColumnMapping } from '@jasonwarrenuk/schema-forge';
 import type { IlrMappingConfig } from '../types/ilrMappingTypes';
-import type { SchemaRegistry } from '../types/interpreterTypes';
-import { mapCsvToSchema } from '../schema/columnMapper';
-import { getTransform } from '../transforms/registry';
+import type { SchemaRegistry } from '@jasonwarrenuk/schema-forge';
+import { mapCsvToSchema } from '@jasonwarrenuk/schema-forge';
+import { getTransform } from '@jasonwarrenuk/schema-forge';
 import { hasAimData } from './aimUtils';
 import {
 	buildFamEntries,

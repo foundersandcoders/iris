@@ -52,8 +52,11 @@ vi.mock('../../../src/lib/storage', () => ({
 	}),
 }));
 
-// Mock buildSchemaRegistry (won't be called since loadSchema fails)
-vi.mock('../../../src/lib/schema/registryBuilder', () => ({
+// Mock buildSchemaRegistry (won't be called since loadSchema fails). Spreads
+// the real module so the screen's other imports from the package, isRequired,
+// isEffectivelyRequired and parseCSV, keep their real implementations.
+vi.mock('@jasonwarrenuk/schema-forge', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@jasonwarrenuk/schema-forge')>()),
 	buildSchemaRegistry: vi.fn(),
 }));
 

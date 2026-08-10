@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mapCsvToSchemaWithAims } from '../../../src/lib/mappings/ilrColumnMapper';
-import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
+import { buildSchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { IlrMappingConfig } from '../../../src/lib/types/ilrMappingTypes';

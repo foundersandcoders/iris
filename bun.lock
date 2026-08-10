@@ -5,6 +5,7 @@
     "": {
       "name": "iris",
       "dependencies": {
+        "@jasonwarrenuk/schema-forge": "^0.1.0",
         "@opentui/core": "0.1.77",
         "fast-xml-parser": "^5.3.3",
         "opentui-spinner": "0.0.6",
@@ -82,6 +83,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
+
+    "@jasonwarrenuk/schema-forge": ["@jasonwarrenuk/schema-forge@0.1.0", "", { "dependencies": { "fast-xml-parser": "^5.3.3", "papaparse": "^5.5.3" } }, "sha512-qv9D5WoXrkqWv5jIIVvPBtaSHO9ulTd1c6MOncMmRaz/QqzKLwbxIrs6hCVEQUaIPjjUVxSh36f3BjHqgK6kNg=="],
 
     "@jimp/core": ["@jimp/core@1.6.0", "", { "dependencies": { "@jimp/file-ops": "1.6.0", "@jimp/types": "1.6.0", "@jimp/utils": "1.6.0", "await-to-js": "^3.0.0", "exif-parser": "^0.1.12", "file-type": "^16.0.0", "mime": "3" } }, "sha512-EQQlKU3s9QfdJqiSrZWNTxBs3rKXgO2W+GxNXDtwchF3a4IqxDheFX1ti+Env9hdJXDiYLp2jTRjlxhPthsk8w=="],
 

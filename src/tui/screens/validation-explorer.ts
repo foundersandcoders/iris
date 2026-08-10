@@ -6,8 +6,8 @@ import { BoxRenderable, TextRenderable, SelectRenderable, TabSelectRenderable } 
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import type { ValidationIssue, ValidationResult } from '../../lib/utils/csv/csvValidator';
-import type { SchemaValidationIssue } from '../../lib/types/schemaTypes';
+import type { ValidationIssue, ValidationResult } from '@jasonwarrenuk/schema-forge';
+import type { SchemaValidationIssue } from '@jasonwarrenuk/schema-forge';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap } from '../utils/keymap';
 

@@ -5,8 +5,8 @@
 
 import type { IlrMappingConfig } from '../types/ilrMappingTypes';
 import type { IrisStorage } from '../storage';
-import { buildSchemaRegistry } from '../schema/registryBuilder';
-import { validateSchemaCompatibility, type CompatibilityResult } from '../schema/schemaCompatibility';
+import { buildSchemaRegistry } from '@jasonwarrenuk/schema-forge';
+import { validateSchemaCompatibility, type CompatibilityResult } from '@jasonwarrenuk/schema-forge';
 import { FAM_PATHS, APP_FIN_PATHS, LLDD_PATHS, EMPLOYMENT_PATHS } from './builderPaths';
 
 export interface MappingCompatibilityResult {

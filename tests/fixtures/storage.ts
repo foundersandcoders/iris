@@ -3,7 +3,7 @@
  *  |=================================================================|
  */
 import type { IrisConfig } from '$lib/types/configTypes';
-import type { MappingConfig } from '$lib/types/schemaTypes';
+import type { MappingConfig } from '@jasonwarrenuk/schema-forge';
 import type { SubmissionMetadata, HistoryEntry } from '$lib/types/storageTypes';
 
 export const defaultConfig: IrisConfig = {
