@@ -9,6 +9,7 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap, paletteNav } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'mapping-builder-root';
 
@@ -32,6 +33,7 @@ export class MappingBuilderScreen implements Screen {
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private keymap?: Keymap;
+	private toasts?: ToastManager;
 
 	// State
 	private mappingItems: MappingListItem[] = [];
@@ -43,6 +45,7 @@ export class MappingBuilderScreen implements Screen {
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
 		this.motion = ctx.motion;
+		this.toasts = ctx.toasts;
 	}
 
 	/** Transition target for the Router's fade-in (TR.C4). */
@@ -169,8 +172,9 @@ export class MappingBuilderScreen implements Screen {
 					keys: ['x'],
 					label: 'Delete',
 					handler: () => {
-						this.handleDelete(resolve).catch(() => {
-							this.shell?.setFooter(`${symbols.info.error} Delete failed, try again`);
+						this.handleDelete(resolve).catch((error) => {
+							const msg = error instanceof Error ? error.message : 'Unknown error';
+							this.toasts?.error(`Delete failed: ${msg}`);
 						});
 					},
 				},
@@ -355,7 +359,7 @@ export class MappingBuilderScreen implements Screen {
 
 		// Block bundled deletion (unless broken, always allow cleaning up corrupt entries)
 		if (item.isBundled && !item.isBroken) {
-			this.shell?.setFooter(`${symbols.info.warning} Bundled mappings cannot be deleted, duplicate to customise`);
+			this.toasts?.warning('Bundled mappings cannot be deleted, duplicate to customise');
 			return;
 		}
 
@@ -365,7 +369,7 @@ export class MappingBuilderScreen implements Screen {
 		const storage = createStorage();
 		const result = await storage.deleteMapping(item.id);
 		if (!result.success) {
-			this.shell?.setFooter(`${symbols.info.error} Failed to delete mapping`);
+			this.toasts?.error('Failed to delete mapping');
 			return;
 		}
 
@@ -375,5 +379,6 @@ export class MappingBuilderScreen implements Screen {
 			this.listSelect.options = this.buildListOptions();
 		}
 		this.updateFooter();
+		this.toasts?.success('Mapping deleted');
 	}
 }

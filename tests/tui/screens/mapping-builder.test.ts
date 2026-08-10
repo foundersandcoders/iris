@@ -215,4 +215,46 @@ describe('MappingBuilderScreen', () => {
 			expect(deleteMappingMock).not.toHaveBeenCalled();
 		});
 	});
+
+	describe('toast feedback', () => {
+		async function renderWithToasts(index: number) {
+			const toasts = fixtures.createMockToasts();
+			const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+			const screen = new MappingBuilderScreen(ctx);
+			screen.render();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			(screen as any).listSelect.selectedIndex = index;
+			return { screen, toasts };
+		}
+
+		it('warns via toast, not the footer, when blocking a bundled deletion', async () => {
+			const { screen, toasts } = await renderWithToasts(1); // bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.warning).toHaveBeenCalledWith(
+				'Bundled mappings cannot be deleted, duplicate to customise'
+			);
+		});
+
+		it('errors via toast when storage.deleteMapping() fails', async () => {
+			const { screen, toasts } = await renderWithToasts(2); // not bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+			deleteMappingMock.mockResolvedValueOnce({ success: false, error: { message: 'disk full' } });
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.error).toHaveBeenCalledWith('Failed to delete mapping');
+		});
+
+		it('confirms success via toast after a successful delete', async () => {
+			const { screen, toasts } = await renderWithToasts(2); // not bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.success).toHaveBeenCalledWith('Mapping deleted');
+		});
+	});
 });
