@@ -252,7 +252,7 @@ describe('Router', () => {
       // screen. cleanup() (a no-op here) runs before the next screen exists,
       // but the toast manager is renderer-scoped, not screen-owned, so the
       // toast must still be tracked afterwards.
-      let firedId = '';
+      let firedId: string | null = null;
       const outgoing = fixtures.createMockScreen('workflow', {
         action: 'replace',
         screen: 'success',

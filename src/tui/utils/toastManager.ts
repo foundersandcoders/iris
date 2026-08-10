@@ -95,9 +95,11 @@ export class ToastManager {
 		}
 	}
 
-	/** Queue a toast. Returns a handle id so callers can dismiss it early. */
-	show(message: string, variant?: ToastVariant, duration?: number): string {
-		if (!this.layer) return '';
+	/** Queue a toast. Returns a handle id so callers can dismiss it early, or
+	 *  null if the layer isn't attached yet, distinct from any real id so a
+	 *  caller can tell a failed show() apart from a genuine handle. */
+	show(message: string, variant?: ToastVariant, duration?: number): string | null {
+		if (!this.layer) return null;
 
 		if (this.order.length >= this.maxVisible) {
 			const oldest = this.order[0];
@@ -117,19 +119,19 @@ export class ToastManager {
 		return id;
 	}
 
-	success(message: string, duration?: number): string {
+	success(message: string, duration?: number): string | null {
 		return this.show(message, 'success', duration);
 	}
 
-	info(message: string, duration?: number): string {
+	info(message: string, duration?: number): string | null {
 		return this.show(message, 'info', duration);
 	}
 
-	warning(message: string, duration?: number): string {
+	warning(message: string, duration?: number): string | null {
 		return this.show(message, 'warning', duration);
 	}
 
-	error(message: string, duration?: number): string {
+	error(message: string, duration?: number): string | null {
 		return this.show(message, 'error', duration);
 	}
 

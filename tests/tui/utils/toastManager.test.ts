@@ -92,6 +92,12 @@ describe('ToastManager', () => {
 	});
 
 	describe('stacking and queueing', () => {
+		it('show() returns null when the layer is not attached, distinct from a real handle', () => {
+			const manager = new ToastManager(renderer);
+			// No attach() call: this.layer is undefined.
+			expect(manager.show('Saved')).toBeNull();
+		});
+
 		it('show() returns a non-empty id and tracks it', () => {
 			const manager = new ToastManager(renderer);
 			manager.attach();
@@ -159,7 +165,7 @@ describe('ToastManager', () => {
 			manager.attach();
 			const removeSpy = vi.spyOn(layerOf(manager), 'remove');
 			const id = manager.show('Saved');
-			manager.dismiss(id);
+			manager.dismiss(id!);
 			const removeCalls = removeSpy.mock.calls.length;
 			vi.advanceTimersByTime(10_000);
 			expect(removeSpy.mock.calls.length).toBe(removeCalls);
