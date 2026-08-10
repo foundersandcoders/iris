@@ -19,15 +19,34 @@ Both are JSON files with runtime validation.
 
 **Location:** `~/.iris/config.json`
 
-**Purpose:** Stores user preferences for active schema and mapping selection.
+**Purpose:** Stores provider identity, submission metadata, active schema/mapping selection, and TUI preferences.
 
 ### Schema
 
 ```typescript
+interface ProviderConfig {
+	ukprn: number;
+	name?: string;
+}
+
+interface SubmissionConfig {
+	softwareSupplier?: string;
+	softwarePackage?: string;
+}
+
 interface IrisConfig {
-	configVersion: number;    // Config file format version (for migration)
-	activeSchema: string;     // Schema filename (e.g., "schemafile25.xsd")
-	activeMapping: string;    // Mapping ID (e.g., "fac-airtable-2025")
+	configVersion: number;         // Config file format version (for migration)
+	provider: ProviderConfig;
+	submission: SubmissionConfig;
+	activeSchema: string;          // Schema filename (e.g., "schemafile25.xsd")
+	activeMapping: string;         // Mapping ID (e.g., "fac-airtable-2025")
+	collection?: string;           // Collection type (e.g., "ILR")
+	serialNo?: string;             // Serial number for amalgamation (2-char)
+	outputDir?: string;            // Custom output directory for submissions
+	csvInputDir?: string;          // Starting directory when browsing for CSV files
+	schemaDir?: string;            // Directory for user XSD schema files
+	reduceMotion?: boolean;        // Disable TUI screen transition animations
+	theme?: 'light' | 'dark';      // TUI colour theme
 }
 ```
 
@@ -36,16 +55,51 @@ interface IrisConfig {
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `configVersion` | `number` | Yes | Config file schema version. Currently `1`. Used for future migration logic when config structure changes. |
+| `provider` | `ProviderConfig` | Yes | Provider identity, see [ProviderConfig Fields](#providerconfig-fields) below. |
+| `submission` | `SubmissionConfig` | Yes | Submission software metadata, see [SubmissionConfig Fields](#submissionconfig-fields) below. |
 | `activeSchema` | `string` | Yes | Filename of the active XSD schema. Must exist in `docs/schemas/` (bundled) or `~/.iris/schemas/` (user). |
 | `activeMapping` | `string` | Yes | ID of the active mapping. Must match a bundled mapping (e.g., `'fac-airtable-2025'`) or user mapping in `~/.iris/mappings/`. |
+| `collection` | `string` | No | Collection type (e.g., `'ILR'`). Exactly 3 characters when present. |
+| `serialNo` | `string` | No | Serial number for amalgamation. Exactly 2 characters when present. Defaults to `'01'`. |
+| `outputDir` | `string` | No | Custom output directory for saved submissions. Not validated on load; an invalid path surfaces only when a save is attempted. |
+| `csvInputDir` | `string` | No | Starting directory when browsing for CSV files. Not validated on load. |
+| `schemaDir` | `string` | No | Directory for user-supplied XSD schema files. Not validated on load. |
+| `reduceMotion` | `boolean` | No | Disables TUI screen transition animations. **TUI-only**, read once at Router construction: a change takes effect on the *next launch*, not live. The desktop GUI and direct commands ignore it. |
+| `theme` | `'light' \| 'dark'` | No | TUI colour theme. **TUI-only**, applied **live**: Settings rebuilds the current screen on save so the switch is visible immediately, and it's also applied before the renderer is created so the correct theme paints from first launch. The desktop GUI has its own styling and ignores it. |
+
+### ProviderConfig Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `ukprn` | `number` | Yes | UK Provider Reference Number. Must be an 8-digit integer. |
+| `name` | `string` | No | Provider display name. |
+
+### SubmissionConfig Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `softwareSupplier` | `string` | No | Software supplier name recorded in the ILR submission header. |
+| `softwarePackage` | `string` | No | Software package name recorded in the ILR submission header. |
 
 ### Default Values
 
 ```json
 {
 	"configVersion": 1,
+	"provider": {
+		"ukprn": 10000000,
+		"name": "Founders and Coders"
+	},
+	"submission": {
+		"softwareSupplier": "Founders and Coders",
+		"softwarePackage": "Iris"
+	},
 	"activeSchema": "schemafile25.xsd",
-	"activeMapping": "fac-airtable-2025"
+	"activeMapping": "fac-airtable-2025",
+	"collection": "ILR",
+	"serialNo": "01",
+	"reduceMotion": false,
+	"theme": "light"
 }
 ```
 
@@ -55,8 +109,15 @@ Config is validated on load (`storage.loadConfig()`). Invalid configs return a `
 
 **Validation rules:**
 - `configVersion` must be a positive integer
+- `provider` must be an object; `provider.ukprn` must be an 8-digit integer
 - `activeSchema` must be a non-empty string
 - `activeMapping` must be a non-empty string
+- `collection`, if present, must be a 3-character string
+- `serialNo`, if present, must be a 2-character string
+- `reduceMotion`, if present, must be a boolean
+- `theme`, if present, must be `'light'` or `'dark'`
+
+`outputDir`, `csvInputDir` and `schemaDir` are not validated on load: an invalid path is only caught when actually used.
 
 ---
 
@@ -417,10 +478,18 @@ if (result.success && result.compatibility?.compatible) {
 
 ### Step 5: Activate
 
-Update `~/.iris/config.json`:
+Update `~/.iris/config.json`. `provider` is required, keep your existing values and change only `activeMapping`:
 ```json
 {
 	"configVersion": 1,
+	"provider": {
+		"ukprn": 10000000,
+		"name": "Founders and Coders"
+	},
+	"submission": {
+		"softwareSupplier": "Founders and Coders",
+		"softwarePackage": "Iris"
+	},
 	"activeSchema": "schemafile25.xsd",
 	"activeMapping": "my-custom-mapping"
 }
