@@ -85,7 +85,13 @@ export function toast(renderer: Renderer, opts: ToastOptions): Toast {
 		root,
 		variant,
 		setMessage(message) {
-			text.content = t`${fg(accent)(`${GLYPH[variant]} `)}${fg(theme.text)(message)}`;
+			// Re-resolve rather than reuse the closed-over `accent`: a toast
+			// can outlive a theme toggle, and accentFor() must be called
+			// again here for the same reason it's called live at
+			// construction, see the comment above accentFor().
+			const live = accentFor(variant);
+			root.borderColor = live;
+			text.content = t`${fg(live)(`${GLYPH[variant]} `)}${fg(theme.text)(message)}`;
 		},
 	};
 }

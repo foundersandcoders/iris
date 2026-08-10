@@ -616,10 +616,11 @@ export class SettingsScreen implements Screen {
 		this.originalConfig = { ...this.config };
 		this.dirty = false;
 
-		// Apply the theme mutation before the success toast fires: toast
-		// colours resolve synchronously at construction time (accentFor in
-		// components/toast.ts), so a toast built first would paint in the
-		// outgoing theme's accent for its whole lifetime.
+		// Apply the theme mutation before the success toast fires: the toast's
+		// initial paint (construction) still resolves accentFor() once, so
+		// building it first would show the outgoing theme's accent for its
+		// first frame even though setMessage() now re-resolves live on any
+		// later update.
 		if (themeChanged) {
 			applyTheme(newTheme);
 			this.renderer.setBackgroundColor(theme.background);

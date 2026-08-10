@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
 import { toast } from '../../../src/tui/components/toast';
-import { theme, symbols } from '../../../assets/brand/theme';
+import { theme, symbols, applyTheme } from '../../../assets/brand/theme';
 import { RGBA } from '../../fixtures/tui/opentui';
 import * as fixtures from '../../fixtures/tui/tui';
 
@@ -76,5 +76,31 @@ describe('toast()', () => {
 		const text = textOf(t.root.getChildren()[0] as any);
 		expect(text).toContain('Second');
 		expect(text).not.toContain('First');
+	});
+
+	describe('live theme', () => {
+		afterEach(() => {
+			// applyTheme mutates the shared `theme`/`rgba` objects in place;
+			// reset so a switch here can't leak into another suite.
+			applyTheme('light');
+		});
+
+		it('setMessage() re-resolves the accent after a theme toggle, not the construction-time colour', () => {
+			const t = toast(ctx.renderer, { message: 'First', variant: 'success' });
+			const constructionAccent = theme.successAccent;
+
+			// successAccent is identical across the two built-in themes (only the
+			// base success/warning/error/info fields differ), so applyTheme('dark')
+			// alone can't distinguish a live read from a cached one. Mutate the
+			// field directly, the same way applyTheme() itself does (`theme[key] =
+			// ...`), to force a genuinely different value to resolve against.
+			theme.successAccent = '#123456';
+
+			t.setMessage('Second');
+
+			expect((t.root as any).borderColor.equals(RGBA.fromHex('#123456'))).toBe(true);
+			expect((t.root as any).borderColor.equals(RGBA.fromHex(constructionAccent))).toBe(false);
+			expect(textOf(t.root.getChildren()[0] as any)).toContain('Second');
+		});
 	});
 });
