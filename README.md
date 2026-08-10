@@ -76,6 +76,16 @@ iris/
 
 See [.claude/CLAUDE.md](.claude/CLAUDE.md) for detailed development conventions and commands. Primary runtime/tooling and test commands are exposed in [package.json](package.json) scripts.
 
+### Building the desktop app
+
+The Tauri desktop app (`bun tauri dev` / `bun tauri build`) compiles a Rust backend, so it needs a Rust toolchain on top of Bun:
+
+```bash
+rustup update
+```
+
+`src-tauri/Cargo.toml` pins `rust-version = "1.88.0"`; `bun tauri build` fails with an opaque cargo error on an older toolchain.
+
 ### Demo recordings
 
 ![Hello, Iris](docs/assets/hello.gif)
