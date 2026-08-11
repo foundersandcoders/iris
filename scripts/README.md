@@ -2,6 +2,16 @@
 
 Automation scripts for development and release management.
 
+## Testing: two runners, not one
+
+`bun test` and `vitest` split the suite by directory, not by convention alone:
+
+- `bunfig.toml` scopes `bun test` to `root = "tests/lib"`. Everything under `tests/tui/**` is vitest-authored (`vi.mock`, `importOriginal`), which Bun's runner has no equivalent for.
+- **Never run `bun test tests/tui/...` with an explicit path.** An explicit path argument overrides `bunfig.toml`'s `root`, so Bun loads a vitest file anyway, and hangs rather than erroring (the vitest package loads bare, without the orchestrator handshake its worker expects).
+- For a single TUI/component file: `bunx vitest run tests/tui/screens/mapping-editor.test.ts`.
+- For all TUI/component tests: `bun run test:tui` (`vitest run tests/tui`).
+- For the true full suite: `bun run test:all` (`test:core` + `test:svelte`, i.e. both runners, each scoped to what it owns).
+
 ## Version Management
 
 ### `update-version.ts`

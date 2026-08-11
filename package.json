@@ -13,6 +13,7 @@
     "test:core": "bun test",
     "test:svelte": "vitest",
     "test:svelte:watch": "vitest --watch",
+    "test:tui": "vitest run tests/tui",
     "test:all": "bun run test:core && bun run test:svelte",
     "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:svelte:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

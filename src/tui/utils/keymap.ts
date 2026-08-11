@@ -129,6 +129,29 @@ export interface KeymapOptions {
 	 *  the palette can't open over it and silently discard the edit.
 	 *  Defaults to always-available when omitted. */
 	paletteWhen?: () => boolean;
+	/** Returns true while a real text input owns focus (e.g. mapping-editor's
+	 *  search box, settings' inline field editor). When true, dispatch()
+	 *  suppresses every binding a printable keystroke could match, so typing
+	 *  "?" into a search box inserts a question mark instead of opening the
+	 *  help overlay, and "j"/"k" insert letters instead of firing the
+	 *  aliased navigation binding.
+	 *
+	 *  Non-printable keys (escape, tab, arrows, enter) and any modified key
+	 *  (ctrl+p) still dispatch: none of them can be typed into the field, and
+	 *  screens rely on them to get back out of it. Backspace is the exception:
+	 *  it passes isPrintable()'s printable-range test (DEL is 0x7f), so it is
+	 *  suppressed here too and reaches the focused input as a delete instead
+	 *  of firing a binding.
+	 *
+	 *  Deliberately does NOT stopPropagation(): the whole point is to let the
+	 *  character continue on to the focused InputRenderable, which sits behind
+	 *  this handler on OpenTUI's InternalKeyHandler.
+	 *
+	 *  Complements rather than replaces paletteWhen: this guard is about
+	 *  "is this keystroke text?", paletteWhen is about "may this command run
+	 *  at all?" (ctrl+p is non-printable but still must not open over a
+	 *  modal inline edit that would be silently discarded). */
+	textInputActive?: () => boolean;
 }
 
 const HELP_OVERLAY_ID = 'help-overlay-root';
@@ -154,9 +177,11 @@ export class Keymap {
 	private paletteOverlay?: CommandPalette;
 	private paletteOpen = false;
 	private paletteQuery = '';
+	private readonly textInputActive?: () => boolean;
 
 	constructor(opts: KeymapOptions) {
 		this.helpEnabled = !(opts.disableGlobals ?? []).includes('?');
+		this.textInputActive = opts.textInputActive;
 		this.paletteEntries = opts.paletteEntries ?? [];
 		this.onCommand = opts.onCommand;
 		this.paletteEnabled =
@@ -190,7 +215,10 @@ export class Keymap {
 	 *  listener on the shared InternalKeyHandler, ahead of the focused
 	 *  renderable's own keypress handler (e.g. SelectRenderable's arrow-key
 	 *  navigation), without it, arrow/enter keys would still reach the
-	 *  renderable underneath the overlay even though dispatch() ignored them. */
+	 *  renderable underneath the overlay even though dispatch() ignored them.
+	 *  When textInputActive() is true, printable keys are suppressed WITHOUT
+	 *  stopPropagation() so they fall through to the focused InputRenderable
+	 *  as text instead of firing a binding (see KeymapOptions.textInputActive). */
 	dispatch(key: KeyEvent): Binding | null {
 		const k = eventToKey(key);
 
@@ -230,6 +258,18 @@ export class Keymap {
 			if (k === '?' || k === 'escape') this.closeHelp();
 			return null;
 		}
+
+		// A printable keystroke while a text input owns focus is text, not a
+		// command. Returns before the binding loop without stopPropagation(), so
+		// the character carries on to the focused InputRenderable (OpenTUI runs
+		// this global handler first, then the focused renderable's). Sits after
+		// the modal checks so an open overlay still swallows everything, and
+		// keys off the raw event rather than the normalised key string:
+		// normaliseKey() aliases "j" to "down", so a name-based allowlist would
+		// wrongly re-admit the vim navigation letters. Backspace (0x7f) passes
+		// isPrintable's >= 0x20 test and so is suppressed here too, which is
+		// correct: it should delete a character, not fire a nav binding.
+		if (this.textInputActive?.() && isPrintable(key)) return null;
 
 		for (const binding of this.bindings) {
 			if (

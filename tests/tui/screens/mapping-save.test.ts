@@ -57,6 +57,20 @@ function findPanel(root: any, title: string): any {
 	return null;
 }
 
+/** Grab the Keymap's dispatcher registered via renderer.keyInput.on('keypress', fn). */
+function getKeypressHandler(mockContext: ReturnType<typeof fixtures.createMockContext>) {
+	const call = (mockContext.renderer.keyInput.on as any).mock.calls.find(
+		(c: unknown[]) => c[0] === 'keypress'
+	);
+	return call?.[1] as (key: {
+		name: string;
+		sequence?: string;
+		ctrl?: boolean;
+		meta?: boolean;
+		option?: boolean;
+	}) => unknown;
+}
+
 describe('MappingSaveScreen', () => {
 	let mockContext: ReturnType<typeof fixtures.createMockContext>;
 
@@ -149,5 +163,47 @@ describe('MappingSaveScreen', () => {
 		const root = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		const formPanel = findPanel(root, 'Details');
 		expect(formPanel).toBeDefined();
+	});
+
+	describe('search input key handling (Keymap textInputActive guard)', () => {
+		it('"?" typed into the name field does not open the help overlay', async () => {
+			const screen = new MappingSaveScreen(mockContext);
+			screen.render({ mapping: sampleMapping });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const nameInput = (screen as any).nameInput;
+			const dispatch = getKeypressHandler(mockContext);
+
+			const result = dispatch({ name: '?', sequence: '?' });
+			expect(result).toBeNull();
+			nameInput.pressKey({ sequence: '?' });
+
+			expect((screen as any).keymap.helpOpen).toBe(false);
+			// Pre-filled from sampleMapping.name; "?" is appended, not opened as help.
+			expect(nameInput.value).toBe('Test Mapping?');
+		});
+
+		it('Tab still advances focus while the name field is focused', async () => {
+			const screen = new MappingSaveScreen(mockContext);
+			screen.render({ mapping: sampleMapping });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			expect((screen as any).currentFocus).toBe('name');
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 'tab' });
+
+			expect((screen as any).currentFocus).toBe('version');
+		});
+
+		it('Escape still pops while the name field is focused', async () => {
+			const screen = new MappingSaveScreen(mockContext);
+			const renderPromise = screen.render({ mapping: sampleMapping });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 'escape' });
+
+			await expect(renderPromise).resolves.toEqual({ action: 'pop', data: { saved: false } });
+		});
 	});
 });

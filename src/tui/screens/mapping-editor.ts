@@ -333,6 +333,10 @@ export class MappingEditorScreen implements Screen {
 				{
 					keys: ['/'],
 					label: 'Search',
+					// Purely a keybar/no-double-open concern: textInputActive below
+					// stops "/" (and every other printable key) from firing while
+					// searching, this when() additionally hides the hint from the
+					// footer while it would be a no-op anyway.
 					when: () => this.focusTarget !== 'search',
 					handler: () => this.focusPanel('search'),
 				},
@@ -367,6 +371,12 @@ export class MappingEditorScreen implements Screen {
 				// 3. Pop back
 				resolve({ action: 'pop' });
 			},
+			// The search box is a live InputRenderable: while it owns focus,
+			// printable keys are text, not commands. Without this, "?" opened
+			// the help overlay mid-query (which then swallowed every further
+			// keystroke, leaving the results list frozen), and "j"/"k"/"h"/"l"
+			// fired the aliased navigation binding as well as inserting.
+			textInputActive: () => this.focusTarget === 'search',
 			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
