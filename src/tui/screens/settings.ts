@@ -11,7 +11,7 @@ import {
 	type SelectOption,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols } from '../../../assets/brand/theme';
+import { theme, symbols, applyTheme, type ThemeName } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import {
 	DEFAULT_CONFIG,
@@ -26,7 +26,8 @@ import {
 	getDefaultSchemaDir,
 } from '../../lib/utils/storage/paths';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'settings-root';
 
@@ -37,25 +38,30 @@ interface SettingsField {
 	section: string;
 	getValue: (config: IrisConfig) => string;
 	setValue: (config: IrisConfig, value: string) => IrisConfig;
-	type: 'text' | 'dropdown' | 'directory';
+	type: 'text' | 'dropdown' | 'directory' | 'boolean';
 	editable?: boolean; // defaults to true
 	dropdownLoader?: () => Promise<string[]>;
+	/** Display strings for a 'boolean' field's two states, [off, on]. Enter
+	 *  flips between them. Defaults to ['Off', 'On']. */
+	toggleValues?: [string, string];
 }
 
 /** Contextual help text per field */
 const FIELD_HELP: Record<string, string> = {
-	'provider.ukprn': 'UK Provider Reference Number — 8-digit identifier assigned by UKRLP',
+	'provider.ukprn': 'UK Provider Reference Number: 8-digit identifier assigned by UKRLP',
 	'provider.name': 'Organisation name as registered with the ESFA',
 	'activeSchema': 'XSD schema used for XML generation and validation',
 	'activeMapping': 'CSV→XSD mapping configuration for field translation',
 	'collection': 'ILR collection period (e.g. "R14" for final return)',
-	'serialNo': 'Auto-incremented per submission — leave blank for now',
+	'serialNo': 'Auto-incremented per submission, leave blank for now',
 	'outputDir': 'Directory for generated ILR XML submissions',
 	'csvInputDir': 'Starting directory when browsing for CSV files',
 	'schemaDir': 'Directory for downloaded government XSD schema files',
+	'reduceMotion': 'Disable screen transition animations, takes effect on next launch',
+	'theme': 'Colour theme for the interface, applies immediately on save',
 };
 
-/** Field definitions — declarative description of every editable setting */
+/** Field definitions: declarative description of every editable setting */
 const FIELDS: SettingsField[] = [
 	// Provider
 	{
@@ -143,11 +149,31 @@ const FIELDS: SettingsField[] = [
 		setValue: (c, v) => ({ ...c, schemaDir: v }),
 		type: 'directory',
 	},
+	// Interface
+	{
+		key: 'reduceMotion',
+		label: 'Reduce Motion',
+		section: 'Interface',
+		getValue: (c) => (c.reduceMotion ? 'On' : 'Off'),
+		setValue: (c, v) => ({ ...c, reduceMotion: v === 'On' }),
+		type: 'boolean',
+	},
+	{
+		key: 'theme',
+		label: 'Theme',
+		section: 'Interface',
+		getValue: (c) => (c.theme === 'dark' ? 'Dark' : 'Light'),
+		setValue: (c, v) => ({ ...c, theme: v === 'Dark' ? 'dark' : 'light' }),
+		type: 'boolean',
+		toggleValues: ['Light', 'Dark'],
+	},
 ];
 
 export class SettingsScreen implements Screen {
 	readonly name = 'settings';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private fieldPanel?: Panel;
 	private keymap?: Keymap;
@@ -176,6 +202,13 @@ export class SettingsScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -232,7 +265,7 @@ export class SettingsScreen implements Screen {
 						if (nextIndex >= 0 && nextIndex < options.length) {
 							this.fieldList!.setSelectedIndex(nextIndex);
 						} else {
-							// At boundary — bounce back
+							// At boundary, bounce back
 							this.fieldList!.setSelectedIndex(this.previousIndex);
 						}
 					} else {
@@ -292,7 +325,13 @@ export class SettingsScreen implements Screen {
 						this.resetConfirm = false;
 						this.refreshFooter();
 					}
-					this.save();
+					// Binding.handler is () => void and can't be async, so a
+					// rejection has to be caught here or it becomes an
+					// unhandled rejection. Mirrors history.ts's handleDelete().
+					this.save().catch((error) => {
+						const msg = error instanceof Error ? error.message : 'Unknown error';
+						this.toasts?.error(`Save failed: ${msg}`);
+					});
 				},
 			},
 			{
@@ -303,7 +342,16 @@ export class SettingsScreen implements Screen {
 			},
 		];
 
-		this.keymap = new Keymap({ bindings, onBack: finish, onQuit: finish });
+		this.keymap = new Keymap({
+			bindings,
+			onBack: finish,
+			onQuit: finish,
+			...paletteNav(this.name, resolve),
+			// Block ctrl+p while inline-editing a field: the palette's
+			// swallow-everything-via-stopPropagation model would otherwise
+			// open over a live InputRenderable and silently discard the edit.
+			paletteWhen: () => !this.editing,
+		});
 		const keymap = this.keymap;
 
 		this.fieldList = new SelectRenderable(this.renderer, {
@@ -337,6 +385,7 @@ export class SettingsScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Settings',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.shell.content.add(this.fieldPanel.box);
@@ -392,6 +441,18 @@ export class SettingsScreen implements Screen {
 		this.editFieldIndex = FIELDS.indexOf(field);
 		this.refreshFooter();
 
+		if (field.type === 'boolean') {
+			// Toggle in place: Enter flips the value directly, no editor
+			// renderable and no focus dance, which is the least code and the
+			// best UX for a binary. commitEdit() sets editing=false via
+			// finishEdit(), which rebuilds the field list, so the display
+			// updates for free.
+			const [off, on] = field.toggleValues ?? ['Off', 'On'];
+			const isOn = field.getValue(this.config) === on;
+			this.commitEdit(field, isOn ? off : on);
+			return;
+		}
+
 		if (field.type === 'directory') {
 			this.startDirectoryEdit(field);
 			return;
@@ -418,7 +479,7 @@ export class SettingsScreen implements Screen {
 			focusedBackgroundColor: theme.highlightFocused,
 		});
 
-		this.shell?.setFooter(`Editing ${field.label} — [ENTER] Commit  [ESC] Cancel`);
+		this.shell?.setFooter(`Editing ${field.label}: [ENTER] Commit  [ESC] Cancel`);
 
 		this.editInput.on(InputRenderableEvents.ENTER, () => {
 			const newValue = this.editInput?.value ?? '';
@@ -444,7 +505,7 @@ export class SettingsScreen implements Screen {
 			textColor: theme.text,
 		});
 
-		this.shell?.setFooter(`Select ${field.label} — [ENTER] Confirm  [ESC] Cancel`);
+		this.shell?.setFooter(`Select ${field.label}: [ENTER] Confirm  [ESC] Cancel`);
 
 		this.editDropdown.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 			this.commitEdit(field, option.value as string);
@@ -544,11 +605,37 @@ export class SettingsScreen implements Screen {
 
 		const storage = createStorage();
 		const result = await storage.saveConfig(this.config);
-		if (result.success) {
-			this.originalConfig = { ...this.config };
-			this.dirty = false;
-			this.shell?.setFooter(`${symbols.info.success} Saved!`);
-			setTimeout(() => this.refreshFooter(), 2000);
+		if (!result.success) {
+			this.toasts?.error('Failed to save settings');
+			return;
+		}
+
+		const newTheme: ThemeName = this.config.theme === 'dark' ? 'dark' : 'light';
+		const themeChanged = newTheme !== (this.originalConfig.theme === 'dark' ? 'dark' : 'light');
+
+		this.originalConfig = { ...this.config };
+		this.dirty = false;
+
+		// Apply the theme mutation before the success toast fires: the toast's
+		// initial paint (construction) still resolves accentFor() once, so
+		// building it first would show the outgoing theme's accent for its
+		// first frame even though setMessage() now re-resolves live on any
+		// later update.
+		if (themeChanged) {
+			applyTheme(newTheme);
+			this.renderer.setBackgroundColor(theme.background);
+		}
+
+		this.toasts?.success('Settings saved');
+
+		if (themeChanged) {
+			// Repaint live by rebuilding this screen through the Router's
+			// existing replace() path (cleanup() -> factory(ctx) -> render()).
+			// Colours are baked into renderables at construction time, a
+			// generic walk-and-recolour isn't viable (see applyTheme's doc
+			// comment), so a rebuild is the only way to show the change
+			// immediately without a restart.
+			this.resolveRender?.({ action: 'replace', screen: 'settings' });
 		}
 	}
 

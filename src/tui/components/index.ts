@@ -1,8 +1,16 @@
 export { panel } from './panel';
 export type { Panel, PanelOptions } from './panel';
+export { overlayScaffold, Z_INDEX } from './overlay';
+export type { OverlayScaffold } from './overlay';
 export { appShell } from './appShell';
 export type { AppShell, AppShellOptions } from './appShell';
 export { helpOverlay } from './helpOverlay';
 export type { HelpOverlay, HelpOverlayOptions, HelpRow } from './helpOverlay';
 export { confirmOverlay } from './confirmOverlay';
 export type { ConfirmOverlay, ConfirmOverlayOptions } from './confirmOverlay';
+export { toast } from './toast';
+export type { Toast, ToastOptions, ToastVariant } from './toast';
+export { progressBar } from './progressBar';
+export type { ProgressBar, ProgressBarOptions } from './progressBar';
+export { commandPalette } from './commandPalette';
+export type { CommandPalette, CommandPaletteOptions, PaletteEntry } from './commandPalette';

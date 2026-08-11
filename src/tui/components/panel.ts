@@ -1,6 +1,6 @@
 /** ====== Panel Component ======
  * Bordered, titled box with imperative focus-colour toggle.
- * Focus is NOT managed by OpenTUI's focusable system — child renderables
+ * Focus is NOT managed by OpenTUI's focusable system: child renderables
  * (e.g. SelectRenderable) own focus; panel.setFocused() only repaints the border.
  */
 import { BoxRenderable } from '@opentui/core';
@@ -14,7 +14,7 @@ export interface PanelOptions {
 	id?: string;
 	borderStyle?: 'single' | 'double' | 'rounded' | 'heavy';
 	padding?: SpacingStep | number;
-	/** Initial focus state — sets border colour at construction time. Default false. */
+	/** Initial focus state, sets border colour at construction time. Default false. */
 	focused?: boolean;
 	flexGrow?: number;
 	flexDirection?: 'row' | 'column';
@@ -23,11 +23,11 @@ export interface PanelOptions {
 }
 
 export interface Panel {
-	/** The underlying box — pass to parent.add() or renderer.root.add(). */
+	/** The underlying box, pass to parent.add() or renderer.root.add(). */
 	readonly box: BoxRenderable;
 	/** Toggle the focused border colour (theme.accent) vs muted (theme.border). */
 	setFocused(focused: boolean): void;
-	/** Add a child renderable — shorthand for panel.box.add(child). */
+	/** Add a child renderable, shorthand for panel.box.add(child). */
 	add(child: Parameters<BoxRenderable['add']>[0]): void;
 	/** Update the border title in place. */
 	setTitle(title: string): void;
@@ -38,7 +38,7 @@ export function panel(renderer: Renderer, opts: PanelOptions = {}): Panel {
 		id: opts.id,
 		title: opts.title,
 		titleAlignment: opts.titleAlignment ?? 'left',
-		border: true, // must be explicit — defaults false
+		border: true, // must be explicit, defaults false
 		borderStyle: opts.borderStyle ?? 'rounded',
 		borderColor: opts.focused ? theme.accent : theme.border,
 		backgroundColor: theme.background,

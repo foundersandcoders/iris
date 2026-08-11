@@ -28,14 +28,14 @@ Milestone 2 is blocked on keyboard navigation (2TI.11). Once that's in, all rema
 
 - Build keyboard navigation abstraction (arrows, vim keys, custom bindings)
 - Once navigation exists: Validation explorer (browse errors/warnings), convert workflow screen, validate workflow screen, success screen
-- Direct commands for automation (iris convert, iris validate, iris check) — these don't need TUI, can build in parallel
+- Direct commands for automation (iris convert, iris validate, iris check): these don't need TUI, can build in parallel
 - Desktop GUI via Tauri/SvelteKit (awaiting M2 workflows to adapt for desktop UX)
 
 ---
 
 ## 5. Worth Remembering
 
-**Config system design**: Went through three iterations before landing on the right shape. Started with overly flexible JSON, then moved to strongly-typed interfaces with version tracking. The final design treats `configVersion`, `formatVersion`, and `mappingVersion` as independent concerns — allows upgrading file formats without breaking user data.
+**Config system design**: Went through three iterations before landing on the right shape. Started with overly flexible JSON, then moved to strongly-typed interfaces with version tracking. The final design treats `configVersion`, `formatVersion`, and `mappingVersion` as independent concerns, allowing upgrading file formats without breaking user data.
 
 **Dynamic schema as foundational work**: Spending weeks on this paid off massively. ESFA changes XSD annually; building runtime schema loading meant we never have to hardcode validation rules or XML structure again.
 

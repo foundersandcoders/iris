@@ -10,7 +10,8 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import type { HistoryEntry, SubmissionMetadata } from '../../lib/types/storageTypes';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'history-root';
 
@@ -25,6 +26,8 @@ interface HistoryListItem {
 export class HistoryScreen implements Screen {
 	readonly name = 'history';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private detailPanel?: Panel;
@@ -40,6 +43,13 @@ export class HistoryScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
@@ -108,7 +118,7 @@ export class HistoryScreen implements Screen {
 					const content = await Bun.file(metadataPath).text();
 					metadata = JSON.parse(content);
 				} catch {
-					// Metadata is optional — ignore read errors
+					// Metadata is optional, ignore read errors
 				}
 			} catch {
 				// File doesn't exist or is unreadable at stored path
@@ -195,20 +205,26 @@ export class HistoryScreen implements Screen {
 							handler: () => {
 								this.handleDelete().catch((error) => {
 									const msg = error instanceof Error ? error.message : 'Unknown error';
-									this.shell?.setFooter(`${symbols.info.error} Delete failed: ${msg}`);
+									this.toasts?.error(`Delete failed: ${msg}`);
 								});
 							},
 						},
 						{ keys: ['backspace'], label: 'Back', hidden: true, handler: finish },
 					];
 
-		this.keymap = new Keymap({ bindings, onBack: finish, onQuit: finish });
+		this.keymap = new Keymap({
+			bindings,
+			onBack: finish,
+			onQuit: finish,
+			...paletteNav(this.name, resolve),
+		});
 		const keymap = this.keymap;
 
 		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
 			breadcrumb: 'Submission History',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		const brokenCount = this.historyItems.filter((i) => i.isBroken).length;
@@ -412,7 +428,7 @@ export class HistoryScreen implements Screen {
 		const result = await storage.deleteHistoryEntry(item.entry.checksum);
 
 		if (!result.success) {
-			this.shell?.setFooter(`${symbols.info.error} Failed to delete history entry`);
+			this.toasts?.error('Failed to delete history entry');
 			return;
 		}
 
@@ -427,15 +443,10 @@ export class HistoryScreen implements Screen {
 				this.updateDetailPanel(newIndex);
 			}
 
-			this.shell?.setFooter(`${symbols.info.success} Entry deleted`);
-			setTimeout(() => this.refreshFooter(), 2000);
+			this.toasts?.success('Entry deleted');
 		} catch (error) {
 			throw new Error(`UI rebuild failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-	}
-
-	private refreshFooter(): void {
-		this.shell?.setFooter(this.keymap?.toKeybar() ?? '');
 	}
 
 	private rebuildListAndHandlers(): void {

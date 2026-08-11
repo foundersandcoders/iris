@@ -69,7 +69,7 @@ try {
 		process.exit(1);
 	}
 
-	// Bun creates the binary with the entrypoint name — rename it to our desired name
+	// Bun creates the binary with the entrypoint name; rename it to our desired name
 	const bunOutputPath = './dist/cli' + (isWindows ? '.exe' : '');
 	await rename(bunOutputPath, outputPath);
 

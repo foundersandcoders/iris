@@ -8,11 +8,12 @@ import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { createStorage } from '../../lib/storage';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 
 const CONTAINER_ID = 'mapping-builder-root';
 
-/** Bundled mapping ID — cannot be deleted */
+/** Bundled mapping ID, cannot be deleted */
 const BUNDLED_ID = 'fac-airtable-2025';
 
 interface MappingListItem {
@@ -28,9 +29,11 @@ interface MappingListItem {
 export class MappingBuilderScreen implements Screen {
 	readonly name = 'mapping-builder';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private listPanel?: Panel;
 	private keymap?: Keymap;
+	private toasts?: ToastManager;
 
 	// State
 	private mappingItems: MappingListItem[] = [];
@@ -41,6 +44,13 @@ export class MappingBuilderScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+		this.toasts = ctx.toasts;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -67,12 +77,12 @@ export class MappingBuilderScreen implements Screen {
 
 			const keymap = this.buildUI(resolve);
 
-			// List selection changed — update detail panel
+			// List selection changed, update detail panel
 			this.listSelect?.on(SelectRenderableEvents.SELECTION_CHANGED, (index: number) => {
 				this.updateDetailPanel(index);
 			});
 
-			// Item selected — edit
+			// Item selected, edit
 			this.listSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (index: number, option: SelectOption) => {
 				const value = option.value as string;
 
@@ -127,7 +137,7 @@ export class MappingBuilderScreen implements Screen {
 					schemaDisplay: mapping.targetSchema.displayName,
 				});
 			} else {
-				// Mapping exists but failed to load — show as broken
+				// Mapping exists but failed to load, show as broken
 				this.mappingItems.push({
 					id,
 					name: id,
@@ -154,7 +164,7 @@ export class MappingBuilderScreen implements Screen {
 					label: 'Navigate',
 					handler: () => {},
 				},
-				// Edit — SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
+				// Edit: SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
 				{ keys: ['enter'], label: 'Edit', handler: () => {} },
 				{ keys: ['n'], label: 'New', handler: () => this.keymapGoCreate?.() },
 				{ keys: ['d'], label: 'Duplicate', handler: () => this.duplicateSelected(resolve) },
@@ -162,13 +172,15 @@ export class MappingBuilderScreen implements Screen {
 					keys: ['x'],
 					label: 'Delete',
 					handler: () => {
-						this.handleDelete(resolve).catch(() => {
-							this.shell?.setFooter(`${symbols.info.error} Delete failed — try again`);
+						this.handleDelete(resolve).catch((error) => {
+							const msg = error instanceof Error ? error.message : 'Unknown error';
+							this.toasts?.error(`Delete failed: ${msg}`);
 						});
 					},
 				},
 			],
 			onBack: () => resolve({ action: 'pop' }),
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 
@@ -176,6 +188,7 @@ export class MappingBuilderScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Mapping Builder',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.shell.content.add(
@@ -206,7 +219,7 @@ export class MappingBuilderScreen implements Screen {
 		this.listPanel.add(this.listSelect);
 		body.add(this.listPanel.box);
 
-		// Detail — non-interactive, never a focus target, so a plain box rather than a panel.
+		// Detail: non-interactive, never a focus target, so a plain box rather than a panel.
 		this.detailPanel = new BoxRenderable(this.renderer, { flexDirection: 'column', width: '40%' });
 		body.add(this.detailPanel);
 
@@ -232,7 +245,7 @@ export class MappingBuilderScreen implements Screen {
 			if (item.isBroken) {
 				options.push({
 					name: `${symbols.info.error} ${item.name} (corrupt)`,
-					description: 'Failed to load — press [x] to delete',
+					description: 'Failed to load, press [x] to delete',
 					value: item.id,
 				});
 			} else {
@@ -275,7 +288,7 @@ export class MappingBuilderScreen implements Screen {
 		if (item.isBroken) {
 			this.detailPanel.add(
 				new TextRenderable(this.renderer, {
-					content: `${symbols.info.error} ${item.name} — corrupt or unreadable`,
+					content: `${symbols.info.error} ${item.name}: corrupt or unreadable`,
 					fg: theme.error,
 				})
 			);
@@ -312,7 +325,7 @@ export class MappingBuilderScreen implements Screen {
 		if (item.isBundled) {
 			this.detailPanel.add(
 				new TextRenderable(this.renderer, {
-					content: `${symbols.info.warning} Bundled mapping — read-only, duplicate to customise`,
+					content: `${symbols.info.warning} Bundled mapping: read-only, duplicate to customise`,
 					fg: theme.warning,
 				})
 			);
@@ -344,9 +357,9 @@ export class MappingBuilderScreen implements Screen {
 
 		const item = this.mappingItems[index];
 
-		// Block bundled deletion (unless broken — always allow cleaning up corrupt entries)
+		// Block bundled deletion (unless broken, always allow cleaning up corrupt entries)
 		if (item.isBundled && !item.isBroken) {
-			this.shell?.setFooter(`${symbols.info.warning} Bundled mappings cannot be deleted — duplicate to customise`);
+			this.toasts?.warning('Bundled mappings cannot be deleted, duplicate to customise');
 			return;
 		}
 
@@ -356,7 +369,7 @@ export class MappingBuilderScreen implements Screen {
 		const storage = createStorage();
 		const result = await storage.deleteMapping(item.id);
 		if (!result.success) {
-			this.shell?.setFooter(`${symbols.info.error} Failed to delete mapping`);
+			this.toasts?.error('Failed to delete mapping');
 			return;
 		}
 
@@ -366,5 +379,6 @@ export class MappingBuilderScreen implements Screen {
 			this.listSelect.options = this.buildListOptions();
 		}
 		this.updateFooter();
+		this.toasts?.success('Mapping deleted');
 	}
 }

@@ -86,7 +86,7 @@ export function isOptional(element: SchemaElement): boolean {
 /**
  * Determines if an element is effectively required given current mappings.
  * Walks the ancestor chain: if any optional ancestor has no mapped descendants,
- * it won't be generated — so its mandatory children aren't truly required.
+ * it won't be generated, so its mandatory children aren't truly required.
  * If an optional ancestor DOES have mapped descendants, its mandatory children
  * become effectively required.
  */
@@ -95,7 +95,7 @@ export function isEffectivelyRequired(
 	registry: SchemaRegistry,
 	mappedPaths: Set<string>,
 ): boolean {
-	// Element itself is optional — never effectively required
+	// Element itself is optional: never effectively required
 	if (element.cardinality.min < 1) return false;
 
 	// Walk up ancestor chain via path decomposition
@@ -108,7 +108,7 @@ export function isEffectivelyRequired(
 		// Only care about optional ancestors
 		if (ancestor.cardinality.min >= 1) continue;
 
-		// Optional ancestor found — check if any mapped path falls under it
+		// Optional ancestor found: check if any mapped path falls under it
 		const prefix = ancestorPath + '.';
 		let hasMapping = false;
 		for (const mp of mappedPaths) {
@@ -123,7 +123,7 @@ export function isEffectivelyRequired(
 		if (!hasMapping) return false;
 	}
 
-	// All ancestors either mandatory or have mappings — element is required
+	// All ancestors either mandatory or have mappings: element is required
 	return true;
 }
 

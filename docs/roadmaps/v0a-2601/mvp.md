@@ -17,7 +17,7 @@ The MVP development has been split into three distinct phases:
 - **M2B:** Direct Commands (`iris convert`, `iris validate`, `iris check`)
 - **M2C:** Advanced TUI + Polish + Docs (mapping builder, schema mgmt, settings, user guide)
 
-**Status:** In progress (M2A — OpenTUI migration is the next task)
+**Status:** In progress (M2A, OpenTUI migration is the next task)
 
 </details>
 
@@ -60,7 +60,7 @@ The MVP development has been split into three distinct phases:
 | **2** |    M3     |            CLI Completion            | [Phase 2](./phase-2-production-features.md#m3-cli-completion) |
 | **2** |    M4     |          Desktop Interface           | [Phase 2](./phase-2-production-features.md#m4-desktop-interface) |
 | **2** |    M5     |           Production Docs            | [Phase 2](./phase-2-production-features.md#m5-production-ready) |
-| **3** |     —     |           Future Features            | [Phase 3](./phase-3-future-features.md) |
+| **3** |     -     |           Future Features            | [Phase 3](./phase-3-future-features.md) |
 
 ---
 

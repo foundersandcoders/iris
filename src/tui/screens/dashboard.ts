@@ -12,11 +12,11 @@ import {
 	type TextChunk,
 } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, symbols, PALETTE } from '../../../assets/brand/theme';
+import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 import { APP_VERSION } from '../utils/layout';
-import { appShell, panel } from '../components';
+import { appShell, panel, type AppShell } from '../components';
 import { createStorage } from '../../lib/storage';
 import type { IrisConfig } from '../../lib/types/configTypes';
 import type { HistoryEntry } from '../../lib/types/storageTypes';
@@ -51,7 +51,7 @@ function gradientLine(text: string, from: string, to: string): StyledText {
 }
 
 /** Box-drawing "Iris" wordmark, framed with a lattice border. Ported verbatim
- *  from the pre-OpenTUI dashboard (commit 07c7deb) — ASCII art, not text. */
+ *  from the pre-OpenTUI dashboard (commit 07c7deb): ASCII art, not text. */
 const LOGO_LINES = [
 	'  ┏━┓   ╭┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬╮   ┏━┓  ',
 	'  ┗━╋━━━┿┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┷┿━━━╋━┛  ',
@@ -78,6 +78,8 @@ function formatActivityRow(entry: HistoryEntry): string {
 export class Dashboard implements Screen {
 	readonly name = 'dashboard';
 	private renderer: Renderer;
+	private motion?: boolean;
+	private shell?: AppShell;
 	private keymap?: Keymap;
 
 	private menuItems: MenuItem[] = [
@@ -93,6 +95,12 @@ export class Dashboard implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -129,17 +137,18 @@ export class Dashboard implements Screen {
 			this.keymap = new Keymap({
 				onQuit: () => resolve({ action: 'quit' }),
 				onBack: () => resolve({ action: 'quit' }), // ESC also quits at root
+				...paletteNav(this.name, resolve),
 				bindings: [
-					// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+					// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 					{
 						keys: ['up', 'down', 'k', 'j'],
 						hint: `${symbols.arrows.up}${symbols.arrows.down}/1-8`,
 						label: 'Select',
 						handler: () => {},
 					},
-					// Enter hint — Select owns enter nav; handler is a safe passthrough
+					// Enter hint: Select owns enter nav, handler is a safe passthrough
 					{ keys: ['enter'], label: 'Confirm', handler: () => select.selectCurrent() },
-					// Number shortcuts 1–8 — dispatch but hidden from the keybar
+					// Number shortcuts 1–8, dispatch but hidden from the keybar
 					...this.menuItems.map((_, i) => ({
 						keys: [String(i + 1)],
 						label: `Item ${i + 1}`,
@@ -154,12 +163,13 @@ export class Dashboard implements Screen {
 			});
 
 			// Shell: header + breadcrumb, content region, footer keybar.
-			// Title drops "Iris" — the wordmark now lives in the left column below.
-			const shell = appShell(this.renderer, {
+			// Title drops "Iris", the wordmark now lives in the left column below.
+			this.shell = appShell(this.renderer, {
 				id: CONTAINER_ID,
 				title: `v${APP_VERSION}`,
 				breadcrumb: 'Dashboard',
 				footer: this.keymap.toKeybar(),
+				opacity: this.motion ? 0 : 1,
 			});
 
 			// Menu panel
@@ -181,14 +191,14 @@ export class Dashboard implements Screen {
 			for (const line of LOGO_LINES) {
 				logoRow.add(
 					new TextRenderable(this.renderer, {
-						content: gradientLine(line, PALETTE.foreground.main.midi, PALETTE.foreground.alt.midi),
+						content: gradientLine(line, theme.primary, theme.secondary),
 					})
 				);
 			}
 			leftColumn.add(logoRow);
 			leftColumn.add(menuPanel.box);
 
-			// Recent Activity panel — display-only, newest-first
+			// Recent Activity panel: display-only, newest-first
 			const activityPanel = panel(this.renderer, { title: 'Recent Activity', flexGrow: 1 });
 			if (recent.length === 0) {
 				activityPanel.add(
@@ -206,10 +216,10 @@ export class Dashboard implements Screen {
 			const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
 			body.add(leftColumn);
 			body.add(activityPanel.box);
-			shell.content.add(body);
+			this.shell.content.add(body);
 
 			// Add to renderer
-			this.renderer.root.add(shell.root);
+			this.renderer.root.add(this.shell.root);
 			select.focus();
 			this.keymap.attach(this.renderer);
 

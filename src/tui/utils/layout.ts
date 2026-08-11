@@ -1,6 +1,6 @@
 /** ====== Layout Utilities ======
  * Spacing scale, version helper, and TUI header formatter.
- * `APP_VERSION` and `header()` import from package.json — single source of truth.
+ * `APP_VERSION` and `header()` import from package.json: single source of truth.
  * See `.claude/CLAUDE.md` § Version Management and `scripts/update-version.ts`.
  */
 import packageJson from '../../../package.json';
@@ -27,7 +27,7 @@ export function space(step: SpacingStep | number): number {
 export const APP_VERSION: string = packageJson.version;
 
 /** Header line for the app shell and about screen (e.g. "Iris  v1.4.2").
- *  Returns a plain string — callers apply their own fg colour. */
+ *  Returns a plain string; callers apply their own fg colour. */
 export function header(title = 'Iris'): string {
 	return `${title}  v${APP_VERSION}`;
 }

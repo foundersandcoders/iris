@@ -35,6 +35,7 @@ const FOCUS_ORDER: FocusTarget[] = ['name', 'version', 'active', 'buttons'];
 export class MappingSaveScreen implements Screen {
 	readonly name = 'mapping-save';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private formPanel?: Panel;
 	private keymap?: Keymap;
@@ -64,6 +65,12 @@ export class MappingSaveScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -142,7 +149,7 @@ export class MappingSaveScreen implements Screen {
 		this.keymap = new Keymap({
 			bindings: [
 				{ keys: ['tab'], label: 'Next Field', handler: () => this.advanceFocus() },
-				// Confirm — Input/Select ENTER events own the action; this is bar-only.
+				// Confirm: Input/Select ENTER events own the action, this is bar-only.
 				{ keys: ['enter'], label: 'Confirm', handler: () => {} },
 			],
 			onBack: () => resolve({ action: 'pop', data: { saved: false } }),
@@ -153,6 +160,7 @@ export class MappingSaveScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Save Mapping',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.formPanel = panel(this.renderer, { title: 'Details', flexGrow: 1, focused: true });

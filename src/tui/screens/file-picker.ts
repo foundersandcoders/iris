@@ -14,7 +14,7 @@ import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { Keymap } from '../utils/keymap';
-import { appShell, panel, type Panel } from '../components';
+import { appShell, panel, type AppShell, type Panel } from '../components';
 
 interface FileEntry {
 	name: string;
@@ -27,12 +27,14 @@ const CONTAINER_ID = 'file-picker-root';
 export class FilePicker implements Screen {
 	readonly name = 'file-picker';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private currentPath: string;
 	private entries: FileEntry[] = [];
 	private select?: SelectRenderable;
 	private emptyMessage?: TextRenderable;
 	private keymap?: Keymap;
 	private filePanel?: Panel;
+	private shell?: AppShell;
 	private screenData?: ScreenData;
 
 	private title: string = 'Select CSV File';
@@ -42,7 +44,13 @@ export class FilePicker implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
 		this.currentPath = process.cwd();
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -105,9 +113,9 @@ export class FilePicker implements Screen {
 		// Build keymap before the shell so its keybar can seed the footer
 		this.keymap = new Keymap({
 			onBack: () => resolve({ action: 'pop' }),
-			onQuit: () => resolve({ action: 'pop' }), // "q" also pops here — file-picker has no quit-to-desktop concept
+			onQuit: () => resolve({ action: 'pop' }), // "q" also pops here, file-picker has no quit-to-desktop concept
 			bindings: [
-				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 				{
 					keys: ['up', 'down', 'k', 'j'],
 					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
@@ -131,13 +139,14 @@ export class FilePicker implements Screen {
 		});
 
 		// Shell: header + breadcrumb, content region, footer keybar
-		const shell = appShell(this.renderer, {
+		this.shell = appShell(this.renderer, {
 			id: CONTAINER_ID,
 			breadcrumb: this.title,
 			footer: this.keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
-		// File-list panel — border title shows the current directory path
+		// File-list panel: border title shows the current directory path
 		this.filePanel = panel(this.renderer, {
 			title: this.shortenPath(this.currentPath),
 			flexGrow: 1,
@@ -148,12 +157,12 @@ export class FilePicker implements Screen {
 		// Body: the file-list panel (room for a preview pane alongside it later)
 		const body = new BoxRenderable(this.renderer, { flexDirection: 'row', flexGrow: 1 });
 		body.add(this.filePanel.box);
-		shell.content.add(body);
+		this.shell.content.add(body);
 
 		// Add to renderer
-		this.renderer.root.add(shell.root);
+		this.renderer.root.add(this.shell.root);
 
-		// Focus and wire events — select is always created
+		// Focus and wire events, select is always created
 		if (hasOptions) {
 			this.select.focus();
 		}
@@ -206,7 +215,7 @@ export class FilePicker implements Screen {
 						},
 					});
 				} else if (this.workflowType === 'mapping-create') {
-					// CSV selected for new mapping — push to mapping editor
+					// CSV selected for new mapping, push to mapping editor
 					resolve({
 						action: 'push',
 						screen: 'mapping-editor',

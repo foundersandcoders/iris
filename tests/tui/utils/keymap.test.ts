@@ -1,15 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 
 // keymap.ts imports assets/brand/theme, which has a concrete @opentui/core
-// import (RGBA) — see tests/fixtures/tui/opentui.ts for why the real package
+// import (RGBA), see tests/fixtures/tui/opentui.ts for why the real package
 // can't load under vitest.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-import { normaliseKey, eventToKey, Keymap, type Binding } from '../../../src/tui/utils/keymap';
+import { normaliseKey, eventToKey, Keymap, paletteNav, PALETTE_SCREENS } from '../../../src/tui/utils/keymap';
 import type { KeyEvent } from '@opentui/core';
 import * as fixtures from '../../fixtures/tui/tui';
+import * as paletteFixtures from '../../fixtures/tui/palette';
 
-// ——— normaliseKey ————————————————————————————————————————————————————————————
+// ─── normaliseKey ────────────────────────────────────────────────────────────
 
 describe('normaliseKey()', () => {
 	it('lowercases plain keys', () => {
@@ -44,7 +45,7 @@ describe('normaliseKey()', () => {
 	});
 });
 
-// ——— eventToKey ——————————————————————————————————————————————————————————————
+// ─── eventToKey ──────────────────────────────────────────────────────────────
 
 function makeKey(overrides: Partial<KeyEvent> = {}): KeyEvent {
 	return {
@@ -83,7 +84,7 @@ describe('eventToKey()', () => {
 	});
 });
 
-// ——— Keymap — dispatch ————————————————————————————————————————————————————————
+// ─── Keymap: dispatch ─────────────────────────────────────────────────────────
 
 describe('Keymap.dispatch()', () => {
 	it('runs the handler and returns the matching binding', () => {
@@ -120,7 +121,7 @@ describe('Keymap.dispatch()', () => {
 		expect(globalHandler).not.toHaveBeenCalled();
 	});
 
-	it('matches vim aliases — "j" triggers a "down" binding', () => {
+	it('matches vim aliases: "j" triggers a "down" binding', () => {
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['down', 'j'], label: 'Nav', handler }] });
 		km.dispatch(makeKey({ name: 'j' }));
@@ -134,7 +135,7 @@ describe('Keymap.dispatch()', () => {
 	});
 });
 
-// ——— Keymap — toKeybar ———————————————————————————————————————————————————————
+// ─── Keymap: toKeybar ─────────────────────────────────────────────────────────
 
 describe('Keymap.toKeybar()', () => {
 	it('produces "[KEY] Label  [KEY] Label" format with double-space separator', () => {
@@ -183,7 +184,7 @@ describe('Keymap.toKeybar()', () => {
 		expect(km.toKeybar()).not.toContain('Back');
 	});
 
-	it('includes Help by default — the overlay is automatic on every screen', () => {
+	it('includes Help by default, the overlay is automatic on every screen', () => {
 		const km = new Keymap({ bindings: [] });
 		expect(km.toKeybar()).toContain('[?] Help');
 	});
@@ -205,7 +206,7 @@ describe('Keymap.toKeybar()', () => {
 	});
 });
 
-// ——— Keymap — toHelp —————————————————————————————————————————————————————————
+// ─── Keymap: toHelp ───────────────────────────────────────────────────────────
 
 describe('Keymap.toHelp()', () => {
 	it('returns display rows for visible bindings', () => {
@@ -251,7 +252,7 @@ describe('Keymap.toHelp()', () => {
 	});
 });
 
-// ——— Keymap — attach / detach ————————————————————————————————————————————————
+// ─── Keymap: attach / detach ──────────────────────────────────────────────────
 
 describe('Keymap.attach() / detach()', () => {
 	it('registers a keypress listener on attach', () => {
@@ -275,14 +276,14 @@ describe('Keymap.attach() / detach()', () => {
 		expect(() => km.detach(ctx.renderer)).not.toThrow();
 	});
 
-	it('attach is idempotent — re-attaching removes the previous listener first', () => {
+	it('attach is idempotent: re-attaching removes the previous listener first', () => {
 		const ctx = fixtures.createMockContext();
 		const km = new Keymap({ bindings: [] });
 		km.attach(ctx.renderer);
 		km.attach(ctx.renderer);
 		// The second attach() must have called off() to remove the stale handler
 		expect(ctx.renderer.keyInput.off).toHaveBeenCalledWith('keypress', expect.any(Function));
-		// Two on() calls — one per attach()
+		// Two on() calls, one per attach()
 		expect(ctx.renderer.keyInput.on).toHaveBeenCalledTimes(2);
 	});
 
@@ -330,7 +331,7 @@ describe('Keymap.attach() / detach()', () => {
 	});
 });
 
-// ——— Keymap — help overlay toggling —————————————————————————————————————————
+// ─── Keymap: help overlay toggling ───────────────────────────────────────────
 
 describe('Keymap help overlay', () => {
 	it('"?" opens the overlay; an unrelated key is swallowed while open', () => {
@@ -382,7 +383,7 @@ describe('Keymap help overlay', () => {
 	it('stops propagation while open, so a focused renderable (e.g. SelectRenderable) never sees the key', () => {
 		// Keymap.attach() registers on the shared InternalKeyHandler as a "global"
 		// listener, which runs BEFORE the focused renderable's own keypress
-		// handler — but only stopPropagation() actually prevents that handler
+		// handler, but only stopPropagation() actually prevents that handler
 		// from firing too. Without it, arrow/enter keys would reach the
 		// renderable underneath the overlay even though dispatch() ignored them.
 		const ctx = fixtures.createMockContext();
@@ -395,7 +396,7 @@ describe('Keymap help overlay', () => {
 		expect(stopPropagation).toHaveBeenCalledOnce();
 	});
 
-	it('does not stop propagation once closed — normal dispatch is unaffected', () => {
+	it('does not stop propagation once closed: normal dispatch is unaffected', () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -410,7 +411,7 @@ describe('Keymap help overlay', () => {
 	});
 });
 
-// ——— Keymap — confirm overlay ————————————————————————————————————————————————
+// ─── Keymap: confirm overlay ──────────────────────────────────────────────────
 
 describe('Keymap confirm overlay', () => {
 	it('confirm() shows the overlay and returns a pending promise', async () => {
@@ -466,7 +467,7 @@ describe('Keymap confirm overlay', () => {
 		await expect(promise).resolves.toBe(false);
 	});
 
-	it('swallows unrelated keys while a confirm is open — no fall-through to other bindings', () => {
+	it('swallows unrelated keys while a confirm is open: no fall-through to other bindings', () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -498,7 +499,7 @@ describe('Keymap confirm overlay', () => {
 		expect(stopPropagation).toHaveBeenCalledOnce();
 	});
 
-	it('does not stop propagation once resolved — normal dispatch resumes', async () => {
+	it('does not stop propagation once resolved: normal dispatch resumes', async () => {
 		const ctx = fixtures.createMockContext();
 		const handler = vi.fn();
 		const km = new Keymap({ bindings: [{ keys: ['enter'], label: 'Confirm', handler }] });
@@ -525,7 +526,316 @@ describe('Keymap confirm overlay', () => {
 	});
 });
 
-// ——— globals ——————————————————————————————————————————————————————————————————
+// ─── command palette (TR.D1) ─────────────────────────────────────────────────
+
+const PALETTE_ENTRIES = paletteFixtures.paletteEntries;
+
+describe('Keymap command palette', () => {
+	it('ctrl+p is absent from the keybar without paletteEntries/onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [] });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+	});
+
+	it('ctrl+p is absent when paletteEntries is supplied without onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('ctrl+p opens the palette when both paletteEntries and onCommand are supplied', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).toContain('Jump');
+		const binding = km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(binding).not.toBeNull();
+	});
+
+	it('a false paletteWhen blocks ctrl+p from opening the palette', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => false,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('a false paletteWhen also hides Jump from the keybar', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => false,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('paletteWhen re-evaluates live, so ctrl+p opens once the guard flips true', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		let editing = true;
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			paletteWhen: () => !editing,
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: 'p', ctrl: true }))).toBeNull();
+		expect((km as any).paletteOpen).toBe(false);
+
+		editing = false;
+		const binding = km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(binding).not.toBeNull();
+		expect((km as any).paletteOpen).toBe(true);
+	});
+
+	it('printable characters build up the query', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 's', sequence: 's' }));
+		km.dispatch(makeKey({ name: 'e', sequence: 'e' }));
+		km.dispatch(makeKey({ name: 't', sequence: 't' }));
+
+		const overlay = (km as any).paletteOverlay;
+		expect(overlay.getSelected()?.screen).toBe('settings');
+	});
+
+	it('accepts a multi-byte BMP character into the query', () => {
+		// OpenTUI sets stdin to utf8, so an accented/CJK character already
+		// arrives as a length-1 JS string (unlike an escape sequence, which
+		// is multiple ASCII characters) and should pass isPrintable().
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'e', sequence: 'é' }));
+
+		expect((km as any).paletteQuery).toBe('é');
+	});
+
+	it('backspace trims the query', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'x', sequence: 'x' }));
+		km.dispatch(makeKey({ name: 'backspace' }));
+
+		expect((km as any).paletteQuery).toBe('');
+	});
+
+	it('up/down move the selection', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'down' }));
+
+		const overlay = (km as any).paletteOverlay;
+		expect(overlay.getSelected()?.screen).toBe('settings');
+	});
+
+	it('enter fires onCommand with the selected screen and closes', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'enter' }));
+
+		expect(onCommand).toHaveBeenCalledWith('dashboard');
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('enter on an empty result list does not fire onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'z', sequence: 'z' }));
+		km.dispatch(makeKey({ name: 'enter' }));
+
+		expect(onCommand).not.toHaveBeenCalled();
+	});
+
+	it('escape closes the palette without firing onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		km.dispatch(makeKey({ name: 'escape' }));
+
+		expect(onCommand).not.toHaveBeenCalled();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('ctrl+p again closes the palette (toggle), mirroring "?" for the help overlay', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // open
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // close
+
+		expect(onCommand).not.toHaveBeenCalled();
+		expect((km as any).paletteOpen).toBe(false);
+	});
+
+	it('swallows unrelated keys while the palette is open: "q" does not quit', () => {
+		const ctx = fixtures.createMockContext();
+		const onQuit = vi.fn();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand, onQuit });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(km.dispatch(makeKey({ name: 'q', sequence: 'q' }))).toBeNull();
+		expect(onQuit).not.toHaveBeenCalled();
+	});
+
+	it('stops propagation on every key while the palette is open', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 'x', sequence: 'x', stopPropagation }));
+		expect(stopPropagation).toHaveBeenCalledOnce();
+	});
+
+	it('detach() removes the overlay and resets palette state', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: 'p', ctrl: true }));
+
+		km.detach(ctx.renderer);
+
+		expect(ctx.renderer.root.remove).toHaveBeenCalledWith('command-palette-root');
+		expect((km as any).paletteOpen).toBe(false);
+		expect((km as any).paletteQuery).toBe('');
+	});
+
+	it('disableGlobals can suppress ctrl+p even with paletteEntries/onCommand', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			disableGlobals: ['ctrl+p'],
+		});
+		km.attach(ctx.renderer);
+
+		expect(km.toKeybar()).not.toContain('Jump');
+	});
+
+	it('disableGlobals suppressing ctrl+p also skips constructing the overlay entirely', () => {
+		// attach() previously recomputed a weaker enablement check that omitted
+		// the disableGlobals test: the binding was correctly suppressed, but
+		// the overlay was still built and mounted, an unreachable renderable.
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			disableGlobals: ['ctrl+p'],
+		});
+		km.attach(ctx.renderer);
+
+		expect(ctx.renderer.root.add).not.toHaveBeenCalledWith(
+			expect.objectContaining({ id: 'command-palette-root' })
+		);
+	});
+
+	it('cannot be opened while the help overlay is open: help takes precedence', () => {
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({ bindings: [], paletteEntries: PALETTE_ENTRIES, onCommand });
+		km.attach(ctx.renderer);
+
+		km.dispatch(makeKey({ name: '?' })); // open help
+		km.dispatch(makeKey({ name: 'p', ctrl: true })); // attempt to open palette
+
+		expect((km as any).paletteOpen).toBe(false);
+		expect(onCommand).not.toHaveBeenCalled();
+	});
+});
+
+describe('paletteNav()', () => {
+	it('returns the shared PALETTE_SCREENS list', () => {
+		const resolve = vi.fn();
+		expect(paletteNav('dashboard', resolve).paletteEntries).toBe(PALETTE_SCREENS);
+	});
+
+	it('PALETTE_SCREENS matches the data-only test fixture', () => {
+		// fuzzy.test.ts can't import PALETTE_SCREENS directly without pulling
+		// in @opentui/core transitively (see fixtures/tui/palette.ts), so it
+		// keeps a hand-mirrored copy. This guard is what makes that mirror
+		// trustworthy rather than a second, driftable source of truth.
+		expect(PALETTE_SCREENS.map((e) => e.screen)).toEqual(paletteFixtures.paletteScreenNames);
+	});
+
+	it('resolves a push for a different screen', () => {
+		const resolve = vi.fn();
+		const { onCommand } = paletteNav('dashboard', resolve);
+		onCommand?.('settings');
+
+		expect(resolve).toHaveBeenCalledWith({ action: 'push', screen: 'settings' });
+	});
+
+	it('is a no-op for a self-jump', () => {
+		const resolve = vi.fn();
+		const { onCommand } = paletteNav('dashboard', resolve);
+		onCommand?.('dashboard');
+
+		expect(resolve).not.toHaveBeenCalled();
+	});
+});
+
+// ─── globals ──────────────────────────────────────────────────────────────────
 
 describe('global bindings', () => {
 	it('onBack wires ESC to the back handler', () => {

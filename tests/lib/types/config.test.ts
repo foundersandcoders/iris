@@ -132,6 +132,26 @@ describe('config types', () => {
 				expect(result.data.serialNo).toBe('01');
 			}
 		});
+
+		it('defaults reduceMotion to false', async () => {
+			expect(DEFAULT_CONFIG.reduceMotion).toBe(false);
+
+			const result = await storage.loadConfig();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.reduceMotion).toBe(false);
+			}
+		});
+
+		it('defaults theme to light', async () => {
+			expect(DEFAULT_CONFIG.theme).toBe('light');
+
+			const result = await storage.loadConfig();
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.theme).toBe('light');
+			}
+		});
 	});
 
 	describe('type validation', () => {
@@ -310,6 +330,36 @@ describe('config types', () => {
 
 			expect(result.valid).toBe(true);
 			expect(result.issues).toHaveLength(0);
+		});
+
+		it('rejects a non-boolean reduceMotion', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, reduceMotion: 'yes' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'reduceMotion')).toBe(true);
+		});
+
+		it('accepts reduceMotion true/false, and undefined', () => {
+			expect(validateConfig({ ...DEFAULT_CONFIG, reduceMotion: true }).valid).toBe(true);
+			expect(validateConfig({ ...DEFAULT_CONFIG, reduceMotion: false }).valid).toBe(true);
+			const { reduceMotion: _omit, ...withoutReduceMotion } = DEFAULT_CONFIG;
+			expect(validateConfig(withoutReduceMotion).valid).toBe(true);
+		});
+
+		it('rejects an invalid theme value', () => {
+			const invalidConfig = { ...DEFAULT_CONFIG, theme: 'blue' };
+			const result = validateConfig(invalidConfig);
+
+			expect(result.valid).toBe(false);
+			expect(result.issues.some((i) => i.field === 'theme')).toBe(true);
+		});
+
+		it('accepts theme light/dark, and undefined', () => {
+			expect(validateConfig({ ...DEFAULT_CONFIG, theme: 'light' }).valid).toBe(true);
+			expect(validateConfig({ ...DEFAULT_CONFIG, theme: 'dark' }).valid).toBe(true);
+			const { theme: _omit, ...withoutTheme } = DEFAULT_CONFIG;
+			expect(validateConfig(withoutTheme).valid).toBe(true);
 		});
 
 		it('reports multiple validation issues', () => {

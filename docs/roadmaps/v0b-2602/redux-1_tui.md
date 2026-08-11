@@ -12,7 +12,7 @@
 > The broader TUI aesthetic/UX overhaul (framed panels, app shell, help overlay,
 > semantic colours) is *designed and sequenced* in
 > [tui-redesign.md](../../../tui-redesign.md), informed by
-> [tui-design-review.md](../../../../technical/tui-design-review.md) — see those docs for
+> [tui-design-review.md](../../../../technical/tui-design-review.md); see those docs for
 > the design rationale and branch ordering behind 2TI.12, 2TI.18, 2TM.5/2TM.6.
 
 <details>
@@ -36,9 +36,9 @@ graph TD
     classDef mile fill:#E8EFF6,color:#000;
 ```
 
-- **Must** (dark/light iris purple) — Non-negotiable core functionality
-- **Should** (deep purple) — Important features that enhance UX
-- **Could** (teal) — Nice-to-have features that add value
+- **Must** (dark/light iris purple): Non-negotiable core functionality
+- **Should** (deep purple): Important features that enhance UX
+- **Could** (teal): Nice-to-have features that add value
 
 **Open** (darker shade) = Ready to start | **Blocked** (lighter shade) = Awaiting dependencies
 
@@ -122,7 +122,7 @@ graph TD
 - [x] 2TI.4. Implement interactive file picker for CSV selection
 - [x] 2TI.5. Create processing screen with live progress and log viewer
 - [x] 2TI.6. Live processing screen with progress and logs
-- [x] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/) — exists in core lib (`storage.loadSchema()`)
+- [x] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/); exists in core lib (`storage.loadSchema()`)
 
 </details>
 
@@ -130,17 +130,17 @@ graph TD
 <summary><strong>✅ M2X: OpenTUI Migration (Complete)</strong></summary>
 
 - [x] 1. Foundation ✅
-  - [x] **2TI.20** — Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
-  - [x] **2TI.21** — Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput) — **depends on 2TI.20**
-  - [x] **2TI.22** — Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly) — **depends on 2TI.20**
-  - [x] **2TI.23** — Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance) — **depends on 2TI.21**
+  - [x] **2TI.20**: Install `@opentui/core` and `opentui-spinner` (pin exact versions, no `^`/`~`)
+  - [x] **2TI.21**: Rewrite `app.ts` bootstrap (`createCliRenderer()` replaces terminal-kit fullscreen/grabInput); **depends on 2TI.20**
+  - [x] **2TI.22**: Create OpenTUI theme adapter (convert hex theme to `RGBA`; hex strings also accepted directly); **depends on 2TI.20**
+  - [x] **2TI.23**: Adapt `router.ts` for OpenTUI screen interface (screen signature changes, renderer context replaces terminal instance); **depends on 2TI.21**
 - [x] 2. Screen Migration ✅
-  - [x] **2TI.24** — Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
-  - [x] **2TI.25** — Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
-  - [x] **2TI.26** — Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
+  - [x] **2TI.24**: Migrate Dashboard screen (menu → `SelectRenderable`, layout → flexbox `GroupRenderable`, gradient header retained)
+  - [x] **2TI.25**: Migrate FilePicker screen (file list → `SelectRenderable` with scrolling, path breadcrumb → `TextRenderable`, manual scroll offset eliminated)
+  - [x] **2TI.26**: Migrate Processing screen (step display → property-update model with auto re-render, spinner → `opentui-spinner`, no manual redraw loop)
 - [x] 3. Cleanup ✅
-  - [x] **2TI.27** — Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture — **depends on 2TI.24, 2TI.25, 2TI.26**
-  - [x] **2TI.28** — (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
+  - [x] **2TI.27**: Update documentation that still references terminal-kit; unify `app.test.ts` to use shared mock fixture; **depends on 2TI.24, 2TI.25, 2TI.26**
+  - [x] **2TI.28**: (merged into 2TI.27) Update TUI test fixtures for OpenTUI mock renderer interface; verify on target terminal environments
 
 </details>
 
@@ -153,31 +153,31 @@ graph TD
 > [!NOTE]
 > These tasks build **on top of the OpenTUI migration**. OpenTUI's built-in keyboard/focus system, `SelectRenderable`, `ScrollBox`, `BoxRenderable`, `ASCIIFontRenderable`, and Timeline API simplify most of these significantly compared to building them on terminal-kit.
 
-All tasks complete — no open tasks in M2A.
+All tasks complete: no open tasks in M2A.
 
 ### Must Have
 
-- [x] **2TI.11** — Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`)
-- [x] **2TI.13** — Build convert workflow screen (generic `WorkflowScreen` handles file select → process → results for all workflow types)
-- [x] **2TI.7** — Build validation results explorer (tab-filtered issue browser with detail panel; `TabSelectRenderable` for error/warning/all, `SelectRenderable` for issue list)
-- [x] **2TI.14** — Build validate workflow screen (file select → validate → explore errors; shares generic `WorkflowScreen` with convert)
-- [x] **2TI.15** — Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view)
-- [x] **2TI.29** — Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas — fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
-- [x] **1WA.20** — Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
-- [x] **1WA.21** — Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()` — cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
-- [x] **1WA.22** — Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
-- [x] **1WA.23** — Fix validate workflow routing — currently routes to failure screen on first missing field instead of collecting all validation issues and showing the explorer. The validator itself collects all issues; the workflow layer treats the first error as fatal.
-- [x] **2TI.30** — Fix validation explorer UX issues:
+- [x] **2TI.11**: Implement keyboard navigation (vim-style j/k, custom shortcuts; arrow keys and focus routing handled by OpenTUI's `KeyEvent` system and `SelectRenderable`)
+- [x] **2TI.13**: Build convert workflow screen (generic `WorkflowScreen` handles file select → process → results for all workflow types)
+- [x] **2TI.7**: Build validation results explorer (tab-filtered issue browser with detail panel; `TabSelectRenderable` for error/warning/all, `SelectRenderable` for issue list)
+- [x] **2TI.14**: Build validate workflow screen (file select → validate → explore errors; shares generic `WorkflowScreen` with convert)
+- [x] **2TI.15**: Build cross-submission check workflow (file select → check → results; `CheckResultsScreen` with issue detail view)
+- [x] **2TI.29**: Fix schema resolution for global installs (`loadSchema` uses `process.cwd()` for bundled schemas, fails when `iris` run from outside project root; use `import.meta.dir` or copy schema to `~/.iris/schemas/`)
+- [x] **1WA.20**: Fix output filename to match ESFA `Filename_1` rule: `ILR-LLLLLLLL-YYYY-yyyymmdd-hhmmss-NN.XML` (currently generates `ILR-<ISO-timestamp>.xml`, missing UKPRN, academic year, serial number; all available from config). Allow user-defined naming convention in config as a `COULD`.
+- [x] **1WA.21**: Append to submission history after successful convert (`csvConvert` calls `storage.saveSubmission()` but never `storage.appendHistory()`, so cross-check has no history to compare against). Also: order history by timestamp, not insertion order.
+- [x] **1WA.22**: Block convert from producing XML when validation fails (currently saves output even for completely invalid input like `hey, hey, hey`; should abort before `generate` step if error count > 0, or at minimum require user confirmation)
+- [x] **1WA.23**: Fix validate workflow routing: currently routes to failure screen on first missing field instead of collecting all validation issues and showing the explorer. The validator itself collects all issues; the workflow layer treats the first error as fatal.
+- [x] **2TI.30**: Fix validation explorer UX issues:
   - Status bar says `[Tab] Switch filter` but `TabSelectRenderable` uses `[←→]` arrows
   - Tab switching causes display glitches (same bordered-container rendering issue as check-results)
-  - Row numbers 0-indexed — should display as 1-indexed for non-dev users
+  - Row numbers 0-indexed, should display as 1-indexed for non-dev users
   - Single-issue display doesn't indicate it's the first occurrence of a repeated error
-- [x] **2TI.32** — Two-file-picker for cross-check workflow — user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
-- [x] **2TI.17** — Test TUI with real CSV exports from Airtable — **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
+- [x] **2TI.32**: Two-file-picker for cross-check workflow: user must select both current and previous submission files (not auto-select from history array). Blocks 2TI.15 completion.
+- [x] **2TI.17**: Test TUI with real CSV exports from Airtable; **depends on 2TI.29, 1WA.20, 1WA.21, 1WA.22, 1WA.23, 2TI.30, 2TI.15**
 
 ### Should Have
 
-- [x] **2TI.8** — Implement success/completion screen (generic for all workflow types; conditional "View Issues" menu, duration/output/learner count display)
+- [x] **2TI.8**: Implement success/completion screen (generic for all workflow types; conditional "View Issues" menu, duration/output/learner count display)
 
 </details>
 
@@ -193,7 +193,7 @@ All tasks complete — no open tasks in M2A.
 
 ```mermaid
 ---
-title: M2B — Direct Commands
+title: "M2B: Direct Commands"
 ---
 graph TD
 
@@ -210,12 +210,12 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Should Have
 
-- [ ] **2DC.2** — Implement `iris convert <file>` (non-TUI execution with pretty output) — **depends on 2TI.17**
-- [ ] **2DC.3** — Implement `iris validate <file>` (non-TUI validation) — **depends on 2DC.2**
+- [ ] **2DC.2**: Implement `iris convert <file>` (non-TUI execution with pretty output); **depends on 2TI.17**
+- [ ] **2DC.3**: Implement `iris validate <file>` (non-TUI validation); **depends on 2DC.2**
 
 ### Could Have
 
-- [ ] **2DC.4** — Implement `iris check` (non-TUI cross-submission check) — **depends on 2TI.18**
+- [ ] **2DC.4**: Implement `iris check` (non-TUI cross-submission check); **depends on 2TI.18**
 
 </details>
 
@@ -227,7 +227,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ```mermaid
 ---
-title: M2D — Homebrew Distribution
+title: "M2D: Homebrew Distribution"
 ---
 graph TD
 
@@ -243,7 +243,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2HB.1** — Set up Homebrew tap for frictionless macOS distribution — **depends on 2BD.1**
+- [ ] **2HB.1**: Set up Homebrew tap for frictionless macOS distribution; **depends on 2BD.1**
   - Create `foundersandcoders/homebrew-iris` repository
   - Write `Formula/iris.rb` with binary URLs and SHA256 checksums
   - Support both ARM64 and Intel architectures
@@ -263,7 +263,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ```mermaid
 ---
-title: M2C — Advanced TUI + Polish + Docs
+title: "M2C: Advanced TUI + Polish + Docs"
 ---
 graph TD
 
@@ -325,39 +325,39 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ### Must Have
 
-- [ ] **2TI.12** — Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning) — **depends on 2TI.10**
-- [x] **2TM.2** — Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter)
-- [x] **2TM.3** — Add mapping preview/validation (show which fields will map, highlight issues; uses `BoxRenderable` for preview panel, `TextRenderable` for status) — **depends on 2TM.2**
-- [x] **2TM.1** — Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout) — **depends on 2TM.3**
-- [x] **2TM.4** — Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`) — **depends on 2TM.1**
-- [ ] **2TI.10** — Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards)
-- [x] **2BD.1** — Bundle TUI into standalone executables (`bun build --compile` targeting macOS; single binary, no runtime dependency)
+- [ ] **2TI.12**: Add help overlay system (contextual help; can use OpenTUI's built-in overlay positioning); **depends on 2TI.10**
+- [x] **2TM.2**: Implement CSV column → XSD path mapping UI (interactive path selector; uses `SelectRenderable` for column/path lists, `InputRenderable` for search/filter)
+- [x] **2TM.3**: Add mapping preview/validation (show which fields will map, highlight issues; uses `BoxRenderable` for preview panel, `TextRenderable` for status); **depends on 2TM.2**
+- [x] **2TM.1**: Build mapping builder screen (list available mappings, create new; uses `SelectRenderable` + `GroupRenderable` flexbox layout); **depends on 2TM.3**
+- [x] **2TM.4**: Implement mapping save dialog (name, description, set as default; uses `InputRenderable` + `BoxRenderable`); **depends on 2TM.1**
+- [ ] **2TI.10**: Create submission history browser (uses `ScrollBox` for history list, `BoxRenderable` for detail cards)
+- [x] **2BD.1**: Bundle TUI into standalone executables (`bun build --compile` targeting macOS; single binary, no runtime dependency)
 
 ### Should Have
 
-- [x] **1SS.8** — Add default input/output directory config (user preferences in `~/.iris/config.json` — avoids navigating to the same directory every session) — **depends on 2TI.10**
-- [x] **2TI.9** — Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections) — **depends on 2TM.4**
-- [ ] **2TI.33** — Remove collection from settings; prompt for collection when running convert workflow (collection varies per submission, not a global setting) — **depends on 2TI.9**
-- [ ] **2UD.1** — Write user guide for non-technical users (includes download/install instructions for end users) — **depends on 2BD.1 (optional)**
-- [ ] **2TI.18** — Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API) — **depends on 2DC.3**
-- [ ] **2TI.31** — Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown — gives user confidence the output is genuinely valid) — **depends on 2TI.10**
-- [ ] **2TC.1** — Clean test history after test runs (prevent test submissions from polluting global history; use isolated history per test or cleanup in afterEach) — **depends on 2TI.18**
-- [ ] **2TM.7** — Fix `IlrIlrMappingConfig` typo in mapping-save & storage/create (doubled `Ilr` prefix in `import type` at `src/tui/screens/mapping-save.ts:18` and `src/lib/storage/create.ts:18` imports a non-existent type; the real `IlrMappingConfig` is used in three type positions but silently resolves to `any`. Bun erases it at runtime so no crash, but the mapping config loses all type safety. Fix the import name; `tsc` clears.)
-- [ ] **2TI.34** — Fix missing `filePath` on `previousSubmission` in cross-check workflow (the object literal at `src/lib/workflows/crossCheck.ts:144` is typed `HistoryEntry` but omits the required `filePath` field. Latent today since that branch never reads it, but it violates the type contract — any future read of `previousSubmission.filePath` yields `undefined`. Add `filePath: input.previousFilePath`.)
+- [x] **1SS.8**: Add default input/output directory config (user preferences in `~/.iris/config.json`, avoids navigating to the same directory every session); **depends on 2TI.10**
+- [x] **2TI.9**: Add settings management screen (built on OpenTUI: `SelectRenderable` for options, `InputRenderable` for values, `BoxRenderable` for sections); **depends on 2TM.4**
+- [ ] **2TI.33**: Remove collection from settings; prompt for collection when running convert workflow (collection varies per submission, not a global setting); **depends on 2TI.9**
+- [ ] **2UD.1**: Write user guide for non-technical users (includes download/install instructions for end users); **depends on 2BD.1 (optional)**
+- [ ] **2TI.18**: Add visual feedback (spinners via `opentui-spinner` with 80+ animations and dynamic color effects; transitions via OpenTUI Timeline API); **depends on 2DC.3**
+- [ ] **2TI.31**: Show validation proof on success screen (summary of checks passed, schema version validated against, learner count breakdown, gives user confidence the output is genuinely valid); **depends on 2TI.10**
+- [ ] **2TC.1**: Clean test history after test runs (prevent test submissions from polluting global history; use isolated history per test or cleanup in afterEach); **depends on 2TI.18**
+- [ ] **2TM.7**: Fix `IlrIlrMappingConfig` typo in mapping-save & storage/create (doubled `Ilr` prefix in `import type` at `src/tui/screens/mapping-save.ts:18` and `src/lib/storage/create.ts:18` imports a non-existent type; the real `IlrMappingConfig` is used in three type positions but silently resolves to `any`. Bun erases it at runtime so no crash, but the mapping config loses all type safety. Fix the import name; `tsc` clears.)
+- [ ] **2TI.34**: Fix missing `filePath` on `previousSubmission` in cross-check workflow (the object literal at `src/lib/workflows/crossCheck.ts:144` is typed `HistoryEntry` but omits the required `filePath` field. Latent today since that branch never reads it, but it violates the type contract; any future read of `previousSubmission.filePath` yields `undefined`. Add `filePath: input.previousFilePath`.)
 
 ### Could Have
 
-- [ ] **2TM.5** — Shorten schema field display in mapping editor (line 1: element `name` only e.g. "AddLine1"; line 2: path without "Message." prefix e.g. "Learner.AddLine1") — **depends on 2TM.2 (optional)**
-- [ ] **2TM.6** — Group schema fields by ancestor in mapping editor (nested layout with indented entries; section headers for containers like Learner, LearningDelivery; skip non-mappable groups in navigation) — **depends on 2TM.5 (optional)**
-- [ ] **2TC.2** — Implement history cleanup utility on startup (remove history entries where corresponding XML file no longer exists; runs when TUI launches) — **depends on 2TS.2 (optional)**
-- [ ] **2TC.3** — Dual-picker screen for cross-check (single screen with two file selection slots instead of sequential pickers; fancier UX than 2TI.32) — **depends on 2TC.2 (optional)**
-- [ ] **2TC.4** — Bordered detail panel in validation explorer (investigate OpenTUI container redraw; re-add border to detail panel if rendering issue resolved) — **depends on 2TC.2 (optional)**
-- [ ] **2TI.19** — Add schema management settings to settings screen — **depends on 2TS.2, 2TI.9 (optional)**
-- [ ] **2TS.2** — Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`) — **depends on 2TI.12, 1SS.8, 2TI.31**
-- [ ] **2TS.3** — Add schema version selection to workflows — **depends on 2TS.2 (optional)**
-- [ ] **2TS.4** — Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4 (optional)**
-- [ ] **2BD.2** — Create GitHub Actions release workflow (on tag push: build binaries for macOS + Windows, create GitHub Release with downloadable assets) — **depends on 2BD.1 (optional)**
-- [ ] **2UD.2** — Document validation rules and error messages — **depends on 2UD.1 (optional)**
+- [ ] **2TM.5**: Shorten schema field display in mapping editor (line 1: element `name` only e.g. "AddLine1"; line 2: path without "Message." prefix e.g. "Learner.AddLine1"); **depends on 2TM.2 (optional)**
+- [ ] **2TM.6**: Group schema fields by ancestor in mapping editor (nested layout with indented entries; section headers for containers like Learner, LearningDelivery; skip non-mappable groups in navigation); **depends on 2TM.5 (optional)**
+- [ ] **2TC.2**: Implement history cleanup utility on startup (remove history entries where corresponding XML file no longer exists; runs when TUI launches); **depends on 2TS.2 (optional)**
+- [ ] **2TC.3**: Dual-picker screen for cross-check (single screen with two file selection slots instead of sequential pickers; fancier UX than 2TI.32); **depends on 2TC.2 (optional)**
+- [ ] **2TC.4**: Bordered detail panel in validation explorer (investigate OpenTUI container redraw; re-add border to detail panel if rendering issue resolved); **depends on 2TC.2 (optional)**
+- [ ] **2TI.19**: Add schema management settings to settings screen; **depends on 2TS.2, 2TI.9 (optional)**
+- [ ] **2TS.2**: Build schema manager TUI screen (upload, list, select active schema; uses `SelectRenderable` + `ScrollBox`); **depends on 2TI.12, 1SS.8, 2TI.31**
+- [ ] **2TS.3**: Add schema version selection to workflows; **depends on 2TS.2 (optional)**
+- [ ] **2TS.4**: Implement migration guidance when schema changes affect existing mappings; **depends on 2TS.3, 2TM.4 (optional)**
+- [ ] **2BD.2**: Create GitHub Actions release workflow (on tag push: build binaries for macOS + Windows, create GitHub Release with downloadable assets); **depends on 2BD.1 (optional)**
+- [ ] **2UD.2**: Document validation rules and error messages; **depends on 2UD.1 (optional)**
 
 </details>
 
@@ -366,7 +366,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ```mermaid
 ---
-title: Phase 1 — Complete Picture
+title: "Phase 1: Complete Picture"
 ---
 graph TD
 

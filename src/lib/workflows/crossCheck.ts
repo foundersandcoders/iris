@@ -139,7 +139,7 @@ export async function* checkWorkflow(
 	let previousSubmission: HistoryEntry | undefined;
 
 	if (input.previousFilePath) {
-		// User explicitly chose previous file — parse for comparison data
+		// User explicitly chose previous file: parse for comparison data
 		let prevXml: string;
 		try {
 			prevXml = await readFile(input.previousFilePath, 'utf-8');
@@ -178,7 +178,7 @@ export async function* checkWorkflow(
 				previousSubmission = candidate;
 				break;
 			} catch {
-				// Candidate file doesn't exist — try the next one
+				// Candidate file doesn't exist, try the next one
 			}
 		}
 	}

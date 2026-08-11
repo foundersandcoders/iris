@@ -26,18 +26,18 @@ import packageJson from '../../../package.json';
 
 // Embed schema for compiled binary. Under Bun this import attribute yields
 // the file's text content. Under Vite/vitest it instead resolves to an
-// asset URL (`assetsInclude` in vite.config.ts), not text — so the embedded
+// asset URL (`assetsInclude` in vite.config.ts), not text, so the embedded
 // map below is only trusted under Bun; Node falls back to reading from disk.
 import bundledSchemaXsd from '../../../docs/schemas/schemafile25.xsd' with { type: 'text' };
 
 /** Bundled schema dir, resolved relative to this file (not cwd).
- *  create.ts is at src/lib/storage/ — project root is 3 levels up.
+ *  create.ts is at src/lib/storage/; project root is 3 levels up.
  *  `import.meta.dirname` (not the Bun-only `import.meta.dir`) works under
  *  both Bun and Node, so this module loads cleanly under either runtime. */
 const BUNDLED_SCHEMA_DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'schemas');
 
 /** Map of embedded schemas (available in compiled binary).
- *  Populated from the Bun text-import only when actually running under Bun —
+ *  Populated from the Bun text-import only when actually running under Bun;
  *  under Node/vitest, `bundledSchemaXsd` holds a URL rather than XSD text, so
  *  `loadSchema` relies on its filesystem fallback instead (see below). */
 const BUNDLED_SCHEMAS: Record<string, string> =
@@ -302,7 +302,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 					return { success: true, data: BUNDLED_SCHEMAS[name] };
 				}
 
-				// Fall back to bundled schemas (dev mode — may not exist in compiled binary)
+				// Fall back to bundled schemas (dev mode, may not exist in compiled binary)
 				try {
 					const bundledSchemaPath = join(BUNDLED_SCHEMA_DIR, name);
 					if (await adapter.exists(bundledSchemaPath)) {
@@ -337,7 +337,7 @@ export function createStorage(options: StorageOptions = {}): IrisStorage {
 					const bundledSchemaDir = BUNDLED_SCHEMA_DIR;
 					bundledSchemas = await adapter.list(bundledSchemaDir, { pattern: '*.xsd' });
 				} catch {
-					// Ignore — expected in compiled binary
+					// Ignore: expected in compiled binary
 				}
 
 				// Combine and deduplicate (user takes precedence)

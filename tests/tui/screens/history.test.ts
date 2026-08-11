@@ -66,8 +66,9 @@ describe('HistoryScreen', () => {
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
-		// one for the auto-mounted confirm overlay (TR.C2).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
+		// one for the auto-mounted confirm overlay (TR.C2), one for the
+		// auto-mounted command palette overlay (TR.D1).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(4);
 		const shellRoot = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(shellRoot.constructor.name).toBe('BoxRenderable');
 	});
@@ -186,7 +187,7 @@ describe('HistoryScreen', () => {
 	describe('with a broken entry', () => {
 		it('offers Delete in the footer keybar for a broken entry', async () => {
 			// loadHistory() drives isBroken via a real fs.stat() call, which is awkward
-			// to fake through the module mock here — set the post-load state directly
+			// to fake through the module mock here; set the post-load state directly
 			// and rebuild the UI, mirroring how rebuildListAndHandlers() re-renders
 			// after loadHistory() runs in the real delete flow.
 			const screen = new HistoryScreen(mockContext);
@@ -241,6 +242,34 @@ describe('HistoryScreen', () => {
 				await (screen as any).handleDelete();
 
 				expect(confirmMock).toHaveBeenCalledWith(expect.stringContaining('Delete'));
+			});
+
+			it('fires a success toast, without scheduling a footer timeout, on successful delete', async () => {
+				vi.useFakeTimers();
+				const toasts = fixtures.createMockToasts();
+				const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+				const screen = new HistoryScreen(ctx);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+				await (screen as any).handleDelete();
+
+				expect(toasts.success).toHaveBeenCalledWith('Entry deleted');
+				expect(vi.getTimerCount()).toBe(0);
+				vi.useRealTimers();
+			});
+
+			it('fires an error toast when the delete itself fails', async () => {
+				deleteHistoryEntryMock.mockResolvedValue({ success: false, error: { message: 'boom' } });
+				const toasts = fixtures.createMockToasts();
+				const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+				const screen = new HistoryScreen(ctx);
+				setUpBrokenEntry(screen);
+				(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+				await (screen as any).handleDelete();
+
+				expect(toasts.error).toHaveBeenCalledWith('Failed to delete history entry');
 			});
 		});
 	});

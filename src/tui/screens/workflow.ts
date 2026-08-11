@@ -6,8 +6,9 @@ import { SpinnerRenderable } from 'opentui-spinner';
 import type { RenderContext, Renderer } from '../types';
 import { theme, symbols } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
-import { appShell, panel, type AppShell, type Panel } from '../components';
+import { appShell, panel, progressBar, type AppShell, type Panel, type ProgressBar } from '../components';
 import { Keymap } from '../utils/keymap';
+import type { ToastManager } from '../utils/toastManager';
 import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import { validateWorkflow } from '../../lib/workflows/csvValidate';
@@ -31,8 +32,49 @@ interface StepDisplay {
 	id: string;
 	name: string;
 	status: 'pending' | 'running' | 'complete' | 'failed' | 'skipped';
+	/** 0-100, mirroring WorkflowStep.progress. Only meaningful while running,
+	 *  terminal states (complete/failed/skipped) count as a whole step
+	 *  regardless of this value; see computeAggregateProgress(). */
+	progress: number;
 	message?: string;
 	errorSamples?: string[];
+}
+
+/** Format milliseconds as m:ss. Floor, not round, so the readout never runs
+ *  ahead of reality (e.g. 1999ms reads "0:01", not "0:02"). */
+export function formatElapsed(ms: number): string {
+	const total = Math.max(0, Math.floor(ms / 1000));
+	const minutes = Math.floor(total / 60);
+	const seconds = total % 60;
+	return `elapsed ${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/** Aggregate completion across steps, 0-1. Each step contributes 1/n; a
+ *  running step contributes its own fractional progress, so a workflow that
+ *  later starts emitting step:progress refines the estimate automatically;
+ *  today no workflow does, so running steps sit at 0 and this degenerates
+ *  exactly to completedSteps/totalSteps.
+ *
+ *  Skipped and failed both count as a WHOLE step, not zero: csvConvert.ts
+ *  marks the generate/save steps 'skipped' when validation blocks the run,
+ *  leaving their progress at 0. If skipped didn't count, a blocked
+ *  conversion would freeze the bar at 50% while the workflow visibly
+ *  finishes and navigates away: a bar that lies. Failed steps stop the
+ *  workflow the same way, so the bar should settle rather than hang. */
+export function computeAggregateProgress(steps: StepDisplay[]): number {
+	if (steps.length === 0) return 0;
+	const done = steps.reduce((sum, step) => {
+		if (step.status === 'complete' || step.status === 'skipped' || step.status === 'failed') {
+			return sum + 1;
+		}
+		if (step.status === 'running') {
+			return sum + Math.min(100, Math.max(0, step.progress)) / 100;
+		}
+		return sum;
+	}, 0);
+	// Guards a malformed progress value (or floating-point drift) pushing the
+	// total fractionally over 1.
+	return Math.min(1, done / steps.length);
 }
 
 interface StepRenderables {
@@ -87,9 +129,14 @@ const WORKFLOW_CONFIGS: Record<WorkflowType, WorkflowConfig> = {
 export class WorkflowScreen implements Screen {
 	readonly name = 'workflow';
 	private renderer: Renderer;
+	private toasts?: ToastManager;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private stepsPanel?: Panel;
 	private stepsContainer?: BoxRenderable;
+	private progress?: ProgressBar;
+	private elapsedTimer?: ReturnType<typeof setInterval>;
+	private startTime = 0;
 	private keymap?: Keymap;
 
 	private workflowType: WorkflowType = 'convert';
@@ -100,6 +147,13 @@ export class WorkflowScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.toasts = ctx.toasts;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -116,6 +170,7 @@ export class WorkflowScreen implements Screen {
 			id: s.id,
 			name: s.name,
 			status: 'pending' as const,
+			progress: 0,
 		}));
 
 		// Load schema for convert/validate workflows only
@@ -136,6 +191,8 @@ export class WorkflowScreen implements Screen {
 		this.buildUI(config.title);
 
 		// Execute workflow
+		this.startTime = Date.now();
+		this.startElapsedTimer();
 		try {
 			const gen = this.createWorkflowGenerator(workflowType, filePath, registry, data);
 
@@ -149,13 +206,42 @@ export class WorkflowScreen implements Screen {
 			}
 		} catch (err) {
 			this.error = err instanceof Error ? err : new Error(String(err));
+		} finally {
+			// Covers success, error, and early return alike: one place, before
+			// routeToResultScreen() navigates away.
+			this.stopElapsedTimer();
 		}
 
 		// Route to appropriate result screen
 		return this.routeToResultScreen();
 	}
 
+	private startElapsedTimer(): void {
+		this.elapsedTimer ??= setInterval(() => {
+			this.progress?.setStatus(formatElapsed(Date.now() - this.startTime));
+		}, 1000);
+	}
+
+	private stopElapsedTimer(): void {
+		if (this.elapsedTimer) {
+			clearInterval(this.elapsedTimer);
+			this.elapsedTimer = undefined;
+		}
+	}
+
+	private updateProgress(): void {
+		this.progress?.setValue(computeAggregateProgress(this.steps));
+	}
+
 	cleanup(): void {
+		// The single most important line in this feature: a surviving interval
+		// holds a reference to this screen and keeps calling setStatus on
+		// renderables that cleanup() is about to remove, forever. The finally
+		// in render() covers the normal (success/error) exit; this covers
+		// teardown while the workflow is still running (e.g. the router
+		// replacing the screen mid-flight). stopElapsedTimer() is idempotent,
+		// so the two calls never conflict.
+		this.stopElapsedTimer();
 		this.keymap?.detach(this.renderer);
 		// Stop any running spinners
 		for (const renderables of this.stepRenderables.values()) {
@@ -247,6 +333,14 @@ export class WorkflowScreen implements Screen {
 				}
 
 				const hasIssues = !convertData.validation.valid;
+				const learnerCount = convertData.csvData.rows.length;
+
+				// Fired here, not on the success screen: this toast must survive
+				// this screen's teardown, which is exactly what proves the toast
+				// manager is renderer-scoped rather than screen-owned (TR.C2).
+				this.toasts?.success(
+					`Converted ${learnerCount} learner${learnerCount === 1 ? '' : 's'}`
+				);
 
 				return {
 					action: 'replace',
@@ -255,7 +349,7 @@ export class WorkflowScreen implements Screen {
 						type: 'convert',
 						duration,
 						outputPath: convertData.outputPath,
-						learnerCount: convertData.csvData.rows.length,
+						learnerCount,
 						hasIssues,
 						validation: convertData.validation,
 					},
@@ -317,6 +411,7 @@ export class WorkflowScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: title,
 			footer: 'Processing...',
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.stepsPanel = panel(this.renderer, { title, flexGrow: 1 });
@@ -364,6 +459,18 @@ export class WorkflowScreen implements Screen {
 		}
 
 		this.stepsPanel.add(this.stepsContainer);
+
+		// Sibling of stepsContainer, not nested inside it: stepsContainer has
+		// flexGrow:1 and absorbs the slack, which pins this to the panel's
+		// bottom edge and keeps it there as messages/error samples get
+		// appended above.
+		this.progress = progressBar(this.renderer, {
+			value: 0,
+			status: formatElapsed(0),
+			fillColor: theme.successAccent,
+		});
+		this.stepsPanel.add(this.progress.root);
+
 		this.shell.content.add(this.stepsPanel.box);
 
 		// Add to renderer
@@ -379,6 +486,7 @@ export class WorkflowScreen implements Screen {
 
 		if (event.type === 'step:start') {
 			step.status = 'running';
+			step.progress = 0;
 			step.message = undefined;
 			step.errorSamples = undefined;
 
@@ -394,10 +502,20 @@ export class WorkflowScreen implements Screen {
 
 			// Update name colour
 			renderables.nameText.fg = theme.primary;
+			this.updateProgress();
+		} else if (event.type === 'step:progress') {
+			// Dead code today by construction: no workflow yields this event,
+			// present so the bar's wiring is correct the day one does. Must NOT
+			// touch the spinner or icon: the step is still running.
+			step.progress = event.step.progress ?? 0;
+			if (event.step.message) step.message = event.step.message;
+			this.updateProgress();
 		} else if (event.type === 'step:complete') {
 			// Check if step was skipped (e.g. blocked by validation)
 			const isSkipped = event.step.status === 'skipped';
 			step.status = isSkipped ? 'skipped' : 'complete';
+			step.progress = 100;
+			this.updateProgress();
 
 			// Stop spinner, replace with appropriate icon
 			if (renderables.spinner) {
@@ -471,7 +589,10 @@ export class WorkflowScreen implements Screen {
 			}
 		} else if (event.type === 'step:error') {
 			step.status = 'failed';
+			step.progress = 100;
 			step.message = event.step.error?.message;
+			this.updateProgress();
+			this.progress?.setFillColor(theme.errorAccent);
 
 			// Stop spinner, replace with error icon
 			if (renderables.spinner) {

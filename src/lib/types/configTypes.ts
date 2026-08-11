@@ -35,6 +35,19 @@ export interface IrisConfig {
 	csvInputDir?: string;
 	/** Directory for user XSD schema files */
 	schemaDir?: string;
+	/** Disable screen transition animations. Read once at Router construction,
+	 *  changing this takes effect on next launch, not live.
+	 *  TUI-only: the desktop GUI and direct commands ignore this. It lives on
+	 *  the shared IrisConfig so a single config file serves every interface,
+	 *  not because it has cross-interface meaning. */
+	reduceMotion?: boolean;
+	/** Colour theme for the interface. Applied live, Settings rebuilds the
+	 *  current screen on save so the switch is visible immediately, and it's
+	 *  also applied before the renderer is created so the correct theme
+	 *  paints from first launch.
+	 *  TUI-only, as above: the desktop GUI has its own styling and doesn't
+	 *  read this. */
+	theme?: 'light' | 'dark';
 }
 
 /** Default configuration values */
@@ -52,6 +65,8 @@ export const DEFAULT_CONFIG: IrisConfig = {
 	activeMapping: 'fac-airtable-2025',
 	collection: 'ILR',
 	serialNo: '01',
+	reduceMotion: false,
+	theme: 'light',
 };
 
 /** Validation issue for config validation */
@@ -127,6 +142,16 @@ export function validateConfig(config: unknown): ConfigValidationResult {
 		if (typeof c.serialNo !== 'string' || c.serialNo.length !== 2) {
 			issues.push({ field: 'serialNo', message: 'Must be a 2-character string' });
 		}
+	}
+
+	// reduceMotion (optional)
+	if (c.reduceMotion !== undefined && typeof c.reduceMotion !== 'boolean') {
+		issues.push({ field: 'reduceMotion', message: 'Must be true or false' });
+	}
+
+	// theme (optional)
+	if (c.theme !== undefined && c.theme !== 'light' && c.theme !== 'dark') {
+		issues.push({ field: 'theme', message: "Must be 'light' or 'dark'" });
 	}
 
 	return {
