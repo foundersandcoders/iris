@@ -90,6 +90,15 @@ Each task is a single, independently-mergeable branch (per the project's small-b
 
 ---
 
+## Known Issues
+
+Cross-cutting bugs found during other work, not scoped to any single task above.
+
+- **Mapping-editor right panel search filter renders empty results.** Surfaced during TR.D3's manual verification; confirmed present on the pre-TR.D3 base, so unrelated to the schema field grouping change. Not yet triaged to a branch.
+- **`bun test` hangs when `tests/tui/screens/mapping-editor.test.ts` is targeted in isolation** (e.g. `bun test tests/tui/screens/mapping-editor.test.ts`), but passes cleanly as part of the full suite (`bun test`, 296 pass / 0 fail). Confirmed present on `main`, so unrelated to TR.D3. Likely a `vi.mock` hoisting interaction specific to Bun's single-file test runner. Not yet triaged to a branch.
+
+---
+
 ## Per-branch definition of done
 
 - Conventional-commit message (KSB-relevant where applicable).
