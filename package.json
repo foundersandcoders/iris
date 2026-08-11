@@ -50,7 +50,7 @@
   "dependencies": {
     "@jasonwarrenuk/schema-forge": "^0.1.0",
     "@opentui/core": "0.1.77",
-    "fast-xml-parser": "^5.3.3",
+    "fast-xml-parser": "^5.7.0",
     "opentui-spinner": "0.0.6",
     "papaparse": "^5.5.3"
   }
