@@ -150,9 +150,10 @@ export class SelectRenderable extends BaseRenderable {
  *  `value` option (destructured out before `super()`, same idiom as
  *  TextRenderable.content above, so BaseRenderable's Object.assign doesn't
  *  route the initial value through the setter and fire a spurious `input`
- *  event) and `pressKey()` appends to it exactly like the real
- *  TextareaRenderable.handleKeyPress's insertion branch: no ctrl/meta/option,
- *  single-char sequence at or above 0x20.
+ *  event) and `pressKey()` mutates it exactly like the real
+ *  TextareaRenderable.handleKeyPress: an unmodified backspace deletes the
+ *  preceding character, and any other unmodified single-char sequence at or
+ *  above 0x20 is appended.
  *
  *  `on` records handlers (not just a bare vi.fn()) so `pressKey()` can fire
  *  the registered INPUT/ENTER listeners the same way the real renderable's
@@ -192,12 +193,33 @@ export class InputRenderable extends BaseRenderable {
 
 	/** Simulates this renderable receiving a keypress that OpenTUI's dispatch
 	 *  order let through (i.e. the Keymap's global listener did not
-	 *  stopPropagation()). Mirrors TextareaRenderable.handleKeyPress's
-	 *  printable-insertion branch: appends `key.sequence` and fires INPUT.
+	 *  stopPropagation()). Mirrors the two branches of
+	 *  TextareaRenderable.handleKeyPress that tests/tui/** exercises, in the
+	 *  real method's order: an unmodified backspace resolves to the
+	 *  "backspace" key binding and deletes the character before the cursor,
+	 *  and only if no binding matched does a printable single-char sequence
+	 *  get appended. Both fire INPUT.
+	 *
+	 *  Backspace is matched on either shape a caller might build, because the
+	 *  real parseKeypress emits both: it sets `name` to "backspace" for DEL
+	 *  but leaves `sequence` as the raw "\x7f". That DEL sequence is length-1
+	 *  and at or above 0x20, so without this branch it would sail through the
+	 *  printable test and get appended as a literal DEL character; the real
+	 *  renderable rejects charCode 127 explicitly for exactly that reason.
+	 *
+	 *  Returns true for any key the input consumes, matching the real
+	 *  deleteCharBackward's unconditional true, so a backspace on an empty
+	 *  value is still "handled" (a focused input swallows it either way) and
+	 *  still emits INPUT, again unconditionally as the real one does.
 	 *  Returns false without mutating state for a non-printable/modified key,
 	 *  matching the real renderable's refusal to insert those. */
-	pressKey(key: { sequence?: string; ctrl?: boolean; meta?: boolean; option?: boolean }): boolean {
+	pressKey(key: { name?: string; sequence?: string; ctrl?: boolean; meta?: boolean; option?: boolean }): boolean {
 		if (key.ctrl || key.meta || key.option) return false;
+		if (key.name === 'backspace' || key.sequence === '\x7f') {
+			this._value = this._value.slice(0, -1);
+			this.emit('input', this._value);
+			return true;
+		}
 		const seq = key.sequence;
 		if (!seq || seq.length !== 1 || seq.charCodeAt(0) < 0x20) return false;
 		this._value += seq;

@@ -445,10 +445,21 @@ describe('MappingEditorScreen', () => {
 			expect((screen as any).rightSelect.options).toEqual([]);
 
 			// Keep typing after the "?": the bug froze all further input once
-			// help opened. Backspace to something that does match instead.
-			(screen as any).searchQuery = 'ULN';
-			(screen as any).filterPaths();
-			(screen as any).updateRightPanel();
+			// help opened. Backspace out "U?L" and type something that does
+			// match instead, driven through dispatch()+pressKey() like every
+			// other keystroke in this test, not by poking searchQuery directly.
+			for (let i = 0; i < 'U?L'.length; i++) {
+				dispatch({ name: 'backspace', sequence: '\x7f' });
+				searchInput.pressKey({ name: 'backspace', sequence: '\x7f' });
+			}
+			expect(searchInput.value).toBe('');
+
+			for (const ch of ['U', 'L', 'N']) {
+				dispatch({ name: ch, sequence: ch });
+				searchInput.pressKey({ sequence: ch });
+			}
+
+			expect((screen as any).searchQuery).toBe('ULN');
 			const options = (screen as any).rightSelect.options;
 			expect(options.some((o: { value: string }) => o.value === 'Message.Learner.ULN')).toBe(true);
 		});

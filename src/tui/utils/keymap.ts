@@ -136,9 +136,12 @@ export interface KeymapOptions {
 	 *  help overlay, and "j"/"k" insert letters instead of firing the
 	 *  aliased navigation binding.
 	 *
-	 *  Non-printable keys (escape, tab, arrows, enter, backspace) and any
-	 *  modified key (ctrl+p) still dispatch: none of them can be typed into
-	 *  the field, and screens rely on them to get back out of it.
+	 *  Non-printable keys (escape, tab, arrows, enter) and any modified key
+	 *  (ctrl+p) still dispatch: none of them can be typed into the field, and
+	 *  screens rely on them to get back out of it. Backspace is the exception:
+	 *  it passes isPrintable()'s printable-range test (DEL is 0x7f), so it is
+	 *  suppressed here too and reaches the focused input as a delete instead
+	 *  of firing a binding.
 	 *
 	 *  Deliberately does NOT stopPropagation(): the whole point is to let the
 	 *  character continue on to the focused InputRenderable, which sits behind
