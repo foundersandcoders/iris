@@ -355,5 +355,39 @@ describe('MappingEditorScreen', () => {
 
 			expect((screen as any).mappings).toHaveLength(before);
 		});
+
+		it('initializes previousRightIndex to the first field row, not the row-0 header', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const options = (screen as any).rightSelect.options;
+			expect(options[0].value).toBe('__group_Learner'); // row 0 is always a header
+			const expectedFirstFieldIndex = options.findIndex(
+				(o: { value: string }) => !o.value.startsWith('__group_')
+			);
+
+			expect((screen as any).previousRightIndex).toBe(expectedFirstFieldIndex);
+		});
+
+		it('re-initializes previousRightIndex to the first field row after a filtered rebuild', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Simulate having navigated away from the initial position before filtering.
+			(screen as any).previousRightIndex = 99;
+			(screen as any).searchQuery = 'UCASPERID';
+			(screen as any).filterPaths();
+			(screen as any).updateRightPanel();
+
+			const options = (screen as any).rightSelect.options;
+			expect(options[0].value).toBe('__group_Learner.LearnerHE'); // still a header, even filtered
+			const expectedFirstFieldIndex = options.findIndex(
+				(o: { value: string }) => !o.value.startsWith('__group_')
+			);
+
+			expect((screen as any).previousRightIndex).toBe(expectedFirstFieldIndex);
+		});
 	});
 });

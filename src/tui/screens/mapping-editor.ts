@@ -48,6 +48,14 @@ function isAimTemplate(csvColumn: string): boolean {
 	return csvColumn.includes('{n}');
 }
 
+/** Index of the first non-header row in a grouped right-panel option list, for
+ *  initializing previousRightIndex. Row 0 is always a group header (every field
+ *  belongs to some group), so it's never a valid rest position on its own. */
+function firstFieldIndex(options: SelectOption[]): number {
+	const index = options.findIndex((o) => !(o.value as string).startsWith(GROUP_VALUE_PREFIX));
+	return index === -1 ? 0 : index;
+}
+
 /** Collapse aim-specific mappings into template rows for display */
 function collapseAimMappings(mappings: ColumnMapping[]): ColumnMapping[] {
 	const templates = new Map<string, ColumnMapping>();
@@ -119,6 +127,8 @@ export class MappingEditorScreen implements Screen {
 	private searchQuery = '';
 	// Last non-header index in the right panel, used to skip over group
 	// header rows on arrow-key navigation (see the SELECTION_CHANGED handler).
+	// Initialized via firstFieldIndex() whenever right-panel options are built,
+	// since row 0 is always a group header and is never a valid rest position.
 	private previousRightIndex = 0;
 
 	// CSV headers (for new mappings)
@@ -412,8 +422,10 @@ export class MappingEditorScreen implements Screen {
 		});
 		this.rightPanel.add(this.searchInput);
 
+		const rightOptions = this.buildRightOptions();
+		this.previousRightIndex = firstFieldIndex(rightOptions);
 		this.rightSelect = new SelectRenderable(this.renderer, {
-			options: this.buildRightOptions(),
+			options: rightOptions,
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
 			selectedBackgroundColor: theme.highlightFocused,
@@ -689,8 +701,9 @@ export class MappingEditorScreen implements Screen {
 
 	private updateRightPanel(): void {
 		if (this.rightSelect) {
-			this.rightSelect.options = this.buildRightOptions();
-			this.previousRightIndex = 0;
+			const options = this.buildRightOptions();
+			this.rightSelect.options = options;
+			this.previousRightIndex = firstFieldIndex(options);
 		}
 	}
 
