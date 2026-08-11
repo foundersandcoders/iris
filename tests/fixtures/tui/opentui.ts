@@ -144,10 +144,66 @@ export class SelectRenderable extends BaseRenderable {
 	selectCurrent = vi.fn();
 }
 
+/** Test double for opentui's InputRenderable.
+ *
+ *  `value` is real state, not a stub: it starts from the constructor's
+ *  `value` option (destructured out before `super()`, same idiom as
+ *  TextRenderable.content above, so BaseRenderable's Object.assign doesn't
+ *  route the initial value through the setter and fire a spurious `input`
+ *  event) and `pressKey()` appends to it exactly like the real
+ *  TextareaRenderable.handleKeyPress's insertion branch: no ctrl/meta/option,
+ *  single-char sequence at or above 0x20.
+ *
+ *  `on` records handlers (not just a bare vi.fn()) so `pressKey()` can fire
+ *  the registered INPUT/ENTER listeners the same way the real renderable's
+ *  keypress handler does, letting tests drive the search box end-to-end
+ *  instead of poking `searchQuery` directly. See keymap.ts's textInputActive
+ *  guard: the real bug this exists to catch is a global Keymap binding
+ *  matching a printable key that should have reached this renderable instead. */
 export class InputRenderable extends BaseRenderable {
-	on = vi.fn();
+	private _value: string;
+	private handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
+
+	constructor(renderer: unknown, options: Record<string, unknown> = {}) {
+		const { value, ...rest } = options;
+		super(renderer, rest);
+		this._value = (value as string) ?? '';
+	}
+
+	get value(): string {
+		return this._value;
+	}
+
+	set value(next: string) {
+		this._value = next;
+	}
+
+	on = vi.fn(function (this: InputRenderable, event: string, handler: (...args: unknown[]) => void) {
+		(this.handlers[event] ??= []).push(handler);
+		return this;
+	});
+
 	focus = vi.fn();
 	blur = vi.fn();
+
+	private emit(event: string, ...args: unknown[]): void {
+		for (const handler of this.handlers[event] ?? []) handler(...args);
+	}
+
+	/** Simulates this renderable receiving a keypress that OpenTUI's dispatch
+	 *  order let through (i.e. the Keymap's global listener did not
+	 *  stopPropagation()). Mirrors TextareaRenderable.handleKeyPress's
+	 *  printable-insertion branch: appends `key.sequence` and fires INPUT.
+	 *  Returns false without mutating state for a non-printable/modified key,
+	 *  matching the real renderable's refusal to insert those. */
+	pressKey(key: { sequence?: string; ctrl?: boolean; meta?: boolean; option?: boolean }): boolean {
+		if (key.ctrl || key.meta || key.option) return false;
+		const seq = key.sequence;
+		if (!seq || seq.length !== 1 || seq.charCodeAt(0) < 0x20) return false;
+		this._value += seq;
+		this.emit('input', this._value);
+		return true;
+	}
 }
 
 export class TabSelectRenderable extends BaseRenderable {

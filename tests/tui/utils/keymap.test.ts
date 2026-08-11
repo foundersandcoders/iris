@@ -835,6 +835,141 @@ describe('paletteNav()', () => {
 	});
 });
 
+// ─── Keymap: text-input guard ─────────────────────────────────────────────────
+
+describe('Keymap text-input guard', () => {
+	it('suppresses a printable binding while textInputActive() is true', () => {
+		const handler = vi.fn();
+		const km = new Keymap({
+			bindings: [{ keys: ['t'], label: 'Transform', handler }],
+			textInputActive: () => true,
+		});
+		expect(km.dispatch(makeKey({ name: 't', sequence: 't' }))).toBeNull();
+		expect(handler).not.toHaveBeenCalled();
+	});
+
+	it('still dispatches escape while a text input is active', () => {
+		const onBack = vi.fn();
+		const km = new Keymap({ bindings: [], onBack, textInputActive: () => true });
+		km.dispatch(makeKey({ name: 'escape' }));
+		expect(onBack).toHaveBeenCalledOnce();
+	});
+
+	it('still dispatches tab while a text input is active', () => {
+		const handler = vi.fn();
+		const km = new Keymap({
+			bindings: [{ keys: ['tab'], label: 'Switch', handler }],
+			textInputActive: () => true,
+		});
+		km.dispatch(makeKey({ name: 'tab' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('still dispatches arrow keys while a text input is active', () => {
+		const handler = vi.fn();
+		const km = new Keymap({
+			bindings: [{ keys: ['up', 'down', 'k', 'j'], label: 'Nav', handler }],
+			textInputActive: () => true,
+		});
+		km.dispatch(makeKey({ name: 'down' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('suppresses the vim aliases j/k/h/l while a text input is active', () => {
+		// The regression guard: normaliseKey() aliases "j" to "down", so a
+		// name-based allowlist of ['up','down',...] would wrongly re-admit
+		// these letters. The guard must key off isPrintable(key) instead.
+		const handler = vi.fn();
+		const km = new Keymap({
+			bindings: [{ keys: ['up', 'down', 'k', 'j'], label: 'Nav', handler }],
+			textInputActive: () => true,
+		});
+		expect(km.dispatch(makeKey({ name: 'j', sequence: 'j' }))).toBeNull();
+		expect(km.dispatch(makeKey({ name: 'k', sequence: 'k' }))).toBeNull();
+		expect(km.dispatch(makeKey({ name: 'h', sequence: 'h' }))).toBeNull();
+		expect(km.dispatch(makeKey({ name: 'l', sequence: 'l' }))).toBeNull();
+		expect(handler).not.toHaveBeenCalled();
+	});
+
+	it('suppresses the auto "?" help binding while a text input is active', () => {
+		// The headline case: without this guard, "?" typed into a search box
+		// opens the help overlay, which then swallows every further keystroke.
+		const ctx = fixtures.createMockContext();
+		const km = new Keymap({ bindings: [], textInputActive: () => true });
+		km.attach(ctx.renderer);
+
+		expect(km.dispatch(makeKey({ name: '?', sequence: '?' }))).toBeNull();
+		expect((km as any).helpOpen).toBe(false);
+	});
+
+	it('still dispatches ctrl+p while a text input is active', () => {
+		// Modified keys are commands, not text: they can't be typed into a field.
+		const ctx = fixtures.createMockContext();
+		const onCommand = vi.fn();
+		const km = new Keymap({
+			bindings: [],
+			paletteEntries: PALETTE_ENTRIES,
+			onCommand,
+			textInputActive: () => true,
+		});
+		km.attach(ctx.renderer);
+
+		const binding = km.dispatch(makeKey({ name: 'p', ctrl: true }));
+		expect(binding).not.toBeNull();
+	});
+
+	it('does not stopPropagation when suppressing, so the character reaches the input', () => {
+		const km = new Keymap({
+			bindings: [{ keys: ['t'], label: 'Transform', handler: vi.fn() }],
+			textInputActive: () => true,
+		});
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 't', sequence: 't', stopPropagation }));
+		expect(stopPropagation).not.toHaveBeenCalled();
+	});
+
+	it('an open overlay still swallows keys even while a text input is active', () => {
+		// Pins the guard's placement: it must sit AFTER the modal checks, not
+		// before, or an open help overlay would leak keys to the input. Help is
+		// opened first while textInputActive() is false (e.g. the left panel
+		// had focus), then focus moves to the search box while help stays open
+		// — a naive guard placed at the top of dispatch() would let "t" leak
+		// through to the input here instead of being swallowed by helpOpen.
+		const ctx = fixtures.createMockContext();
+		let active = false;
+		const km = new Keymap({ bindings: [], textInputActive: () => active });
+		km.attach(ctx.renderer);
+		km.dispatch(makeKey({ name: '?' })); // opens help; guard doesn't apply yet
+		active = true;
+
+		const stopPropagation = vi.fn();
+		km.dispatch(makeKey({ name: 't', sequence: 't', stopPropagation }));
+		expect(stopPropagation).toHaveBeenCalledOnce();
+	});
+
+	it('re-evaluates textInputActive live', () => {
+		const handler = vi.fn();
+		let active = true;
+		const km = new Keymap({
+			bindings: [{ keys: ['t'], label: 'Transform', handler }],
+			textInputActive: () => active,
+		});
+		expect(km.dispatch(makeKey({ name: 't', sequence: 't' }))).toBeNull();
+		expect(handler).not.toHaveBeenCalled();
+
+		active = false;
+		km.dispatch(makeKey({ name: 't', sequence: 't' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+
+	it('dispatches normally when textInputActive is omitted', () => {
+		const handler = vi.fn();
+		const km = new Keymap({ bindings: [{ keys: ['t'], label: 'Transform', handler }] });
+		km.dispatch(makeKey({ name: 't', sequence: 't' }));
+		expect(handler).toHaveBeenCalledOnce();
+	});
+});
+
 // ─── globals ──────────────────────────────────────────────────────────────────
 
 describe('global bindings', () => {
