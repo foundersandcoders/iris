@@ -1,4 +1,4 @@
-import type { CSVRow } from '../../../../src/lib/utils/csv/csvParser';
+import type { CSVRow } from '@jasonwarrenuk/schema-forge';
 
 export const validHeaders = [
 	'LearnRefNum',

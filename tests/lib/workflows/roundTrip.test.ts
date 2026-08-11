@@ -7,8 +7,8 @@ import { readFileSync } from 'fs';
 import { convertWorkflow } from '../../../src/lib/workflows/csvConvert';
 import { xmlValidateWorkflow } from '../../../src/lib/workflows/xmlValidate';
 import { skimWorkflow } from '../../../src/lib/workflows/utils';
-import { buildSchemaRegistry } from '../../../src/lib/schema/registryBuilder';
-import type { SchemaRegistry } from '../../../src/lib/types/interpreterTypes';
+import { buildSchemaRegistry } from '@jasonwarrenuk/schema-forge';
+import type { SchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import { facAirtableMapping } from '../../../src/lib/mappings/fac-airtable-2025';
 import * as fixtures from '../../fixtures/lib/workflows/workflow';
 

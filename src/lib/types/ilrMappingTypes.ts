@@ -5,7 +5,7 @@
  *  |=============================================================|
  */
 
-import type { MappingConfig } from './schemaTypes';
+import type { MappingConfig } from '@jasonwarrenuk/schema-forge';
 
 // |------------------------|| Builder Templates ||-------------------------|
 /** Template for generating LearningDeliveryFAM entries from CSV columns */

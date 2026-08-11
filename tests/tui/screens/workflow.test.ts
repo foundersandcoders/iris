@@ -19,7 +19,8 @@ vi.mock('../../../src/lib/storage', () => ({
 	}),
 }));
 
-vi.mock('../../../src/lib/schema/registryBuilder', () => ({
+vi.mock('@jasonwarrenuk/schema-forge', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@jasonwarrenuk/schema-forge')>()),
 	buildSchemaRegistry: vi.fn().mockReturnValue({}),
 }));
 

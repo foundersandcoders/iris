@@ -3,9 +3,9 @@
  *  | TUI, CLI commands, and Desktop GUI.
  *  |======================================================================|
  */
-import type { CSVData, CSVRow } from '../utils/csv/csvParser';
-import type { ValidationResult } from '../utils/csv/csvValidator';
-import type { SchemaRegistry } from './interpreterTypes';
+import type { CSVData, CSVRow } from '@jasonwarrenuk/schema-forge';
+import type { ValidationResult } from '@jasonwarrenuk/schema-forge';
+import type { SchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import type { IlrMappingConfig } from './ilrMappingTypes';
 
 export type WorkflowStatus = 'pending' | 'running' | 'complete' | 'failed' | 'skipped';

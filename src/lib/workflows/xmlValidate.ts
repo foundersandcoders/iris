@@ -9,10 +9,10 @@ import { readFileSync } from 'fs';
 import { createStep, stepEvent, failedResult } from './utils';
 import { parseILR, type ParseResult } from '../mappings/legacy/xmlParser';
 import type { ILRMessage } from '../mappings/legacy/xmlGenerator.legacy';
-import type { SchemaRegistry } from '../types/interpreterTypes';
-import { validateValue } from '../schema/schemaValidator';
+import type { SchemaRegistry } from '@jasonwarrenuk/schema-forge';
+import { validateValue } from '@jasonwarrenuk/schema-forge';
 
-import type { SchemaValidationIssue } from '../types/schemaTypes';
+import type { SchemaValidationIssue } from '@jasonwarrenuk/schema-forge';
 import type {
 	XmlValidateInput,
 	ValidateOutput,

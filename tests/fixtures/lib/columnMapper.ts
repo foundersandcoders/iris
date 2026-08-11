@@ -1,4 +1,4 @@
-import type { ColumnMapping, MappingConfig } from '../../../src/lib/types/schemaTypes';
+import type { ColumnMapping, MappingConfig } from '@jasonwarrenuk/schema-forge';
 
 export const simpleMappings: ColumnMapping[] = [
 	{

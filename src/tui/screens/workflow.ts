@@ -9,7 +9,7 @@ import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { appShell, panel, progressBar, type AppShell, type Panel, type ProgressBar } from '../components';
 import { Keymap } from '../utils/keymap';
 import type { ToastManager } from '../utils/toastManager';
-import { buildSchemaRegistry } from '../../lib/schema/registryBuilder';
+import { buildSchemaRegistry } from '@jasonwarrenuk/schema-forge';
 import { convertWorkflow } from '../../lib/workflows/csvConvert';
 import { validateWorkflow } from '../../lib/workflows/csvValidate';
 import { xmlValidateWorkflow } from '../../lib/workflows/xmlValidate';
@@ -23,7 +23,7 @@ import type {
 	ValidateOutput,
 	CheckOutput,
 } from '../../lib/types/workflowTypes';
-import type { ValidationResult } from '../../lib/utils/csv/csvValidator';
+import type { ValidationResult } from '@jasonwarrenuk/schema-forge';
 
 type WorkflowType = 'convert' | 'validate' | 'check';
 type WorkflowOutput = ConvertOutput | ValidateOutput | CheckOutput;
