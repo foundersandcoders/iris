@@ -84,7 +84,13 @@ function getKeypressHandler(mockContext: ReturnType<typeof fixtures.createMockCo
 	const call = (mockContext.renderer.keyInput.on as any).mock.calls.find(
 		(c: unknown[]) => c[0] === 'keypress'
 	);
-	return call?.[1] as (key: { name: string }) => void;
+	return call?.[1] as (key: {
+		name: string;
+		sequence?: string;
+		ctrl?: boolean;
+		meta?: boolean;
+		option?: boolean;
+	}) => unknown;
 }
 
 describe('MappingEditorScreen', () => {
@@ -388,6 +394,162 @@ describe('MappingEditorScreen', () => {
 			);
 
 			expect((screen as any).previousRightIndex).toBe(expectedFirstFieldIndex);
+		});
+	});
+
+	describe('search input key handling (Keymap textInputActive guard)', () => {
+		beforeEach(() => {
+			loadSchemaMock.mockResolvedValueOnce({ success: true, data: {} });
+			buildSchemaRegistryMock.mockReturnValueOnce(buildTestRegistry());
+		});
+
+		it('"?" typed into the search box inserts a character instead of opening the help overlay', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const dispatch = getKeypressHandler(mockContext);
+			const searchInput = (screen as any).searchInput;
+
+			// dispatch() must suppress the binding (return null, no help opened);
+			// the character reaching the input is what OpenTUI does next because
+			// dispatch() didn't stopPropagation() — simulated explicitly here
+			// since the mock renderer doesn't wire real key delivery.
+			const result = dispatch({ name: '?', sequence: '?' });
+			expect(result).toBeNull();
+			searchInput.pressKey({ sequence: '?' });
+
+			expect((screen as any).keymap.helpOpen).toBe(false);
+			expect(searchInput.value).toBe('?');
+		});
+
+		it('the results list keeps filtering after a "?" is typed', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const dispatch = getKeypressHandler(mockContext);
+			const searchInput = (screen as any).searchInput;
+
+			for (const ch of ['U', '?', 'L']) {
+				dispatch({ name: ch, sequence: ch });
+				searchInput.pressKey({ sequence: ch });
+			}
+
+			expect(searchInput.value).toBe('U?L');
+			expect((screen as any).searchQuery).toBe('U?L');
+			// No path contains "U?L", so the filtered list is legitimately empty,
+			// not frozen: options is exactly the empty-selectable-rows shape.
+			expect((screen as any).rightSelect.options).toEqual([]);
+
+			// Keep typing after the "?": the bug froze all further input once
+			// help opened. Backspace to something that does match instead.
+			(screen as any).searchQuery = 'ULN';
+			(screen as any).filterPaths();
+			(screen as any).updateRightPanel();
+			const options = (screen as any).rightSelect.options;
+			expect(options.some((o: { value: string }) => o.value === 'Message.Learner.ULN')).toBe(true);
+		});
+
+		it('"j" typed into the search box does not fire the navigate binding', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const dispatch = getKeypressHandler(mockContext);
+			const searchInput = (screen as any).searchInput;
+
+			const result = dispatch({ name: 'j', sequence: 'j' });
+			expect(result).toBeNull();
+			searchInput.pressKey({ sequence: 'j' });
+
+			expect(searchInput.value).toBe('j');
+		});
+
+		it('Enter in the search box moves focus to the results list', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const searchInput = (screen as any).searchInput;
+			const enterCall = (searchInput.on as any).mock.calls.find((c: unknown[]) => c[0] === 'enter');
+			(enterCall![1] as () => void)();
+
+			expect((screen as any).focusTarget).toBe('right');
+		});
+
+		it('Escape in the search box clears the query rather than popping', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			const renderPromise = screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			(screen as any).searchQuery = 'ULN';
+			(screen as any).filterPaths();
+			const dispatch = getKeypressHandler(mockContext);
+
+			dispatch({ name: 'escape' });
+
+			expect((screen as any).searchQuery).toBe('');
+			let popped = false;
+			renderPromise.then(() => {
+				popped = true;
+			});
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(popped).toBe(false);
+		});
+
+		it('Tab out of the search box still switches pane', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 'tab' });
+
+			expect((screen as any).focusTarget).toBe('left');
+		});
+
+		it('"t"/"x"/"s" typed into the search box are inserted, not executed', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'edit', mappingId: 'test-mapping' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			(screen as any).focusPanel('search');
+			const dispatch = getKeypressHandler(mockContext);
+			const searchInput = (screen as any).searchInput;
+			const mappingsBefore = [...(screen as any).mappings];
+
+			for (const ch of ['t', 'x', 's']) {
+				const result = dispatch({ name: ch, sequence: ch });
+				expect(result).toBeNull();
+				searchInput.pressKey({ sequence: ch });
+			}
+
+			expect(searchInput.value).toBe('txs');
+			expect((screen as any).mappings).toEqual(mappingsBefore);
+		});
+
+		it('printable keys still dispatch as commands when the left panel has focus', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'edit', mappingId: 'test-mapping' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const leftSelect = (screen as any).leftSelect;
+			leftSelect.setSelectedIndex(0); // ULN row, starts at stringToInt
+			(screen as any).focusPanel('left');
+
+			const dispatch = getKeypressHandler(mockContext);
+			dispatch({ name: 't', sequence: 't' });
+
+			const mappings = (screen as any).mappings;
+			const uln = mappings.find((m: { csvColumn: string }) => m.csvColumn === 'ULN');
+			expect(uln.transform).toBe('postcode');
 		});
 	});
 });
