@@ -351,6 +351,11 @@ export class SettingsScreen implements Screen {
 			// swallow-everything-via-stopPropagation model would otherwise
 			// open over a live InputRenderable and silently discard the edit.
 			paletteWhen: () => !this.editing,
+			// Printable keys while a field editor is live are text, not
+			// commands. The per-binding when()s above cover s/r/enter, but
+			// "?" is Keymap-owned and unreachable from a screen guard, and
+			// the vim aliases j/k/h/l are printable too.
+			textInputActive: () => this.editing,
 		});
 		const keymap = this.keymap;
 

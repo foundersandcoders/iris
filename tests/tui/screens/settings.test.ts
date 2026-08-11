@@ -416,6 +416,52 @@ describe('SettingsScreen', () => {
 		screen.cleanup();
 	});
 
+	describe('inline edit key handling (Keymap textInputActive guard)', () => {
+		function startTextEdit(screen: any) {
+			const fieldList = screen.fieldList;
+			const listIndex = fieldList.options.findIndex((o: any) => o.value === 'provider.ukprn');
+			const itemSelectedHandler = (fieldList.on as any).mock.calls.find(
+				(call: any[]) => call[0] === 'itemSelected'
+			)[1];
+			itemSelectedHandler(listIndex);
+		}
+
+		it('"?" typed into an inline field editor does not open the help overlay', async () => {
+			const screen = new SettingsScreen(mockContext);
+			screen.render();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			startTextEdit(screen);
+			expect((screen as any).editing).toBe(true);
+			const editInput = (screen as any).editInput;
+
+			const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+			const result = handler({ name: '?', sequence: '?' });
+			expect(result).toBeNull();
+			editInput.pressKey({ sequence: '?' });
+
+			expect((screen as any).keymap.helpOpen).toBe(false);
+
+			screen.cleanup();
+		});
+
+		it('Escape still cancels an inline edit', async () => {
+			const screen = new SettingsScreen(mockContext);
+			screen.render();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			startTextEdit(screen);
+			expect((screen as any).editing).toBe(true);
+
+			const handler = (mockContext.renderer.keyInput.on as any).mock.calls[0][1];
+			handler({ name: 'escape' });
+
+			expect((screen as any).editing).toBe(false);
+
+			screen.cleanup();
+		});
+	});
+
 	it('applies the new theme before firing the success toast, so the toast paints in the new theme', async () => {
 		const toasts = fixtures.createMockToasts();
 		const ctx = fixtures.createMockContext(mockContext.renderer, toasts);

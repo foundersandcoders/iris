@@ -153,6 +153,10 @@ export class MappingSaveScreen implements Screen {
 				{ keys: ['enter'], label: 'Confirm', handler: () => {} },
 			],
 			onBack: () => resolve({ action: 'pop', data: { saved: false } }),
+			// name/version are live InputRenderables: printable keys are text.
+			// Without this, typing "?" into a mapping name opened the help
+			// overlay, which then swallowed the rest of what the user typed.
+			textInputActive: () => this.currentFocus === 'name' || this.currentFocus === 'version',
 		});
 		const keymap = this.keymap;
 
