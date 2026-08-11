@@ -6,7 +6,7 @@
 |  **M4**   | Desktop Interface | Blocked (depends on M3) |
 |  **M5**   |  Production Docs  | Blocked (depends on M4) |
 
-**Prerequisite:** [Phase 1: MVP Features](./phase-1-mvp-features.md) — All M2A, M2B, M2C tasks complete
+**Prerequisite:** [Phase 1: MVP Features](./phase-1-mvp-features.md); all M2A, M2B, M2C tasks complete
 
 ---
 
@@ -22,9 +22,9 @@ classDef could-blocked fill:#5FA3BA,color:#fff;
 classDef mile fill:#E8EFF6,color:#000;
 ```
 
-- **Must** (dark/light iris purple) — Non-negotiable core functionality
-- **Should** (deep purple) — Important features that enhance UX
-- **Could** (teal) — Nice-to-have features that add value
+- **Must** (dark/light iris purple): Non-negotiable core functionality
+- **Should** (deep purple): Important features that enhance UX
+- **Could** (teal): Nice-to-have features that add value
 
 **Open** (darker shade) = Ready to start | **Blocked** (lighter shade) = Awaiting dependencies
 
@@ -40,7 +40,7 @@ classDef mile fill:#E8EFF6,color:#000;
 
 ```mermaid
 ---
-title: Milestone 3 — CLI Completion
+title: "Milestone 3: CLI Completion"
 ---
 graph TD
 
@@ -59,9 +59,9 @@ classDef mile fill:#9ff;
 
 ### To Do
 
-- [ ] **3DC.1** — Implement `iris --help` and command-specific help
-- [ ] **3DC.2** — Test direct commands in automation/scripting scenarios — **depends on 3DC.1**
-- [ ] **3DC.3** — Add `--interactive` flag to launch TUI for specific workflows — **depends on 3DC.2**
+- [ ] **3DC.1**: Implement `iris --help` and command-specific help
+- [ ] **3DC.2**: Test direct commands in automation/scripting scenarios; **depends on 3DC.1**
+- [ ] **3DC.3**: Add `--interactive` flag to launch TUI for specific workflows; **depends on 3DC.2**
 
 ---
 
@@ -78,7 +78,7 @@ classDef mile fill:#9ff;
 
 ```mermaid
 ---
-title: Milestone 4 — Desktop Interface
+title: "Milestone 4: Desktop Interface"
 ---
 graph TD
 
@@ -108,22 +108,22 @@ classDef mile fill:#9ff;
 
 ### To Do
 
-- [ ] **4GC.1** — Create file picker UI for CSV input
-- [ ] **4GC.2** — Add validation results display panel
-- [ ] **4GC.3** — Add XML preview panel (show output before saving)
+- [ ] **4GC.1**: Create file picker UI for CSV input
+- [ ] **4GC.2**: Add validation results display panel
+- [ ] **4GC.3**: Add XML preview panel (show output before saving)
 
 ### Blocked
 
-- [ ] **4GC.4** — Implement output file save dialog — **depends on 4GC.1, 4GC.3**
-- [ ] **4GC.6** — Add configuration UI (manage field mappings and preferences) — **depends on 4GC.4**
-- [ ] **4GC.7** — Add basic error handling and user feedback — **depends on 4GC.2**
-- [ ] **4GC.8** — Create `/convert` SvelteKit route — **depends on 4GC.4**
-- [ ] **4GC.9** — Create `/validate` SvelteKit route — **depends on 4GC.4**
-- [ ] **4GC.10** — Create `/check` SvelteKit route — **depends on 4GC.4**
-- [ ] **4GC.5** — Show cross-submission warnings in UI — **depends on 4GC.10**
-- [ ] **4NB.1** — Compile macOS `.app` build — **depends on 4GC.5, 4GC.6, 4GC.7**
-- [ ] **4NB.2** — Compile Windows `.exe` build — **depends on 4NB.1**
-- [ ] **4NB.3** — Compile Linux `.AppImage` build — **depends on 4NB.1**
+- [ ] **4GC.4**: Implement output file save dialog; **depends on 4GC.1, 4GC.3**
+- [ ] **4GC.6**: Add configuration UI (manage field mappings and preferences); **depends on 4GC.4**
+- [ ] **4GC.7**: Add basic error handling and user feedback; **depends on 4GC.2**
+- [ ] **4GC.8**: Create `/convert` SvelteKit route; **depends on 4GC.4**
+- [ ] **4GC.9**: Create `/validate` SvelteKit route; **depends on 4GC.4**
+- [ ] **4GC.10**: Create `/check` SvelteKit route; **depends on 4GC.4**
+- [ ] **4GC.5**: Show cross-submission warnings in UI; **depends on 4GC.10**
+- [ ] **4NB.1**: Compile macOS `.app` build; **depends on 4GC.5, 4GC.6, 4GC.7**
+- [ ] **4NB.2**: Compile Windows `.exe` build; **depends on 4NB.1**
+- [ ] **4NB.3**: Compile Linux `.AppImage` build; **depends on 4NB.1**
 
 ---
 
@@ -137,7 +137,7 @@ classDef mile fill:#9ff;
 
 ```mermaid
 ---
-title: Milestone 5 — Production Ready
+title: "Milestone 5: Production Ready"
 ---
 graph TD
 
@@ -155,11 +155,11 @@ classDef mile fill:#9ff;
 
 ### To Do
 
-- [ ] **5UD.1** — Document ILR XML structure and requirements
+- [ ] **5UD.1**: Document ILR XML structure and requirements
 
 ### Blocked
 
-- [ ] **5UD.2** — Create transformation logic reference (Airtable formulas → TypeScript) — **depends on 5UD.1**
+- [ ] **5UD.2**: Create transformation logic reference (Airtable formulas → TypeScript); **depends on 5UD.1**
 
 ---
 
@@ -167,7 +167,7 @@ classDef mile fill:#9ff;
 
 ```mermaid
 ---
-title: Phase 2 — Complete Picture
+title: "Phase 2: Complete Picture"
 ---
 graph TD
 

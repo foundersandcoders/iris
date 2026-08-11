@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../fixtures/tui/opentui'));
 
-import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme } from '../../assets/brand/theme';
+import { PALETTE, THEMES, symbols, borders, spinners, rgba, theme, applyTheme, activeTheme } from '../../assets/brand/theme';
 import { RGBA } from '@opentui/core';
 
 const hexPattern = /^#[0-9a-f]{6}$/i;
@@ -48,7 +48,7 @@ describe('THEMES.themeLight', () => {
 		const { success, warning, error, info } = themeLight;
 		const states = new Set([success, warning, error, info]);
 		expect(states.size).toBe(4);
-		// warning previously collided with textMuted — guard against regression.
+		// warning previously collided with textMuted; guard against regression.
 		expect(themeLight.warning).not.toBe(themeLight.textMuted);
 	});
 
@@ -98,8 +98,8 @@ describe('symbols', () => {
 	it('exports info symbols', () => {
 		expect(symbols.info.success).toBe('✓');
 		expect(symbols.info.error).toBe('✗');
-		expect(symbols.info.warning).toBe('(!)'); // swapped from ⚠ — degrades to 'Ar ' in some terminals
-		expect(symbols.info.required).toBe('*');  // swapped from ⚡︎ — multi-codepoint, width-ambiguous
+		expect(symbols.info.warning).toBe('(!)'); // swapped from ⚠, degrades to 'Ar ' in some terminals
+		expect(symbols.info.required).toBe('*');  // swapped from ⚡︎, multi-codepoint, width-ambiguous
 	});
 
 	it('exports bullet, loading and progress symbols', () => {
@@ -168,7 +168,39 @@ describe('rgba (OpenTUI adapter)', () => {
 });
 
 describe('theme convenience export', () => {
-	it('is themeLight', () => {
-		expect(theme).toBe(THEMES.themeLight);
+	afterEach(() => {
+		// applyTheme mutates the shared `theme`/`rgba` objects in place;
+		// reset so a switch in one test can't leak into the next.
+		applyTheme('light');
+	});
+
+	it('defaults to light on module load', () => {
+		expect(theme).toEqual(THEMES.themeLight);
+		expect(activeTheme()).toBe('light');
+	});
+
+	it('applyTheme("dark") mutates theme in place, keeping object identity', () => {
+		const themeRef = theme;
+		const rgbaRef = rgba;
+
+		applyTheme('dark');
+
+		expect(theme).toBe(themeRef);
+		expect(rgba).toBe(rgbaRef);
+		expect(theme).toEqual(THEMES.themeDark);
+		expect(activeTheme()).toBe('dark');
+	});
+
+	it('applyTheme keeps rgba in sync with theme', () => {
+		applyTheme('dark');
+		expect(rgba.background).toEqual(RGBA.fromHex(THEMES.themeDark.background));
+		expect(rgba.accent).toEqual(RGBA.fromHex(THEMES.themeDark.accent));
+	});
+
+	it('round-trips back to light', () => {
+		applyTheme('dark');
+		applyTheme('light');
+		expect(theme).toEqual(THEMES.themeLight);
+		expect(activeTheme()).toBe('light');
 	});
 });

@@ -28,6 +28,7 @@ interface DisplayIssue {
 export class ValidationExplorerScreen implements Screen {
 	readonly name = 'validation-explorer';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private filterPanel?: Panel;
 	private issuesPanel?: Panel;
@@ -43,6 +44,12 @@ export class ValidationExplorerScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -155,7 +162,7 @@ export class ValidationExplorerScreen implements Screen {
 
 		this.keymap = new Keymap({
 			bindings: [
-				// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+				// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 				{
 					keys: ['up', 'down', 'k', 'j'],
 					hint: `${symbols.arrows.up}${symbols.arrows.down}`,
@@ -180,6 +187,7 @@ export class ValidationExplorerScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Validation Issues',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		// Summary

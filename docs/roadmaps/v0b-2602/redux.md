@@ -2,7 +2,7 @@
 
 |          | Status                      | Next Up                             | Blocked |
 |----------|-----------------------------|-------------------------------------|---------|
-| **Core** | ✅ **Milestone 1 complete** |                  —                  |    —    |
+| **Core** | ✅ **Milestone 1 complete** |                  -                  |    -    |
 | **CLI**  |        TUI launches         | direct commands (convert, validate) | `iris check` command (needs 3DC.2/3) |
 | **TUI**  | Basic screens & navigation  |    keyboard abstraction (2TI.11)    | all screens (needs 2TI.11) |
 | **GUI**  |    SvelteKit configured     |      (awaiting TUI workflows)       | all functionality (needs M2 complete) |
@@ -25,7 +25,7 @@
 
 <a name="milestones"><h2>Milestones</h2></a>
 
-Format: {Milestone}{Category}.{Seq} — alternating number-alpha-number
+Format: {Milestone}{Category}.{Seq}: alternating number-alpha-number
 
 - Examples: 1C.1, 1SC.15, 2T.6, 2MB.3, 3D.1
 - Sub-tasks: 2T.3a, 2T.3b (alpha suffix)
@@ -176,26 +176,26 @@ classDef mile fill:#9ff;
 
 <a name="m2-todo"><h4>To Do (Milestone 2)</h4></a>
 
-- [ ] 2TI.7. Build validation results explorer (error/warning navigation) — **depends on 2TI.11**
-- [ ] 2TI.12. Add help overlay system (contextual help) — **depends on 2TI.11**
-- [ ] 2TI.13. Build convert workflow screen (file select → process → results) — **depends on 2TI.11**
-- [ ] 2TI.17. Test TUI with real CSV exports from Airtable — **depends on 2TI.8**
-- [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector) — **depends on 2TI.11**
-- [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues) — **depends on 2TM.2**
-- [ ] 2TS.2. Build schema manager TUI screen (upload, list, select active schema) — **depends on 2TI.11**
+- [ ] 2TI.7. Build validation results explorer (error/warning navigation); **depends on 2TI.11**
+- [ ] 2TI.12. Add help overlay system (contextual help); **depends on 2TI.11**
+- [ ] 2TI.13. Build convert workflow screen (file select → process → results); **depends on 2TI.11**
+- [ ] 2TI.17. Test TUI with real CSV exports from Airtable; **depends on 2TI.8**
+- [ ] 2TM.2. Implement CSV column → XSD path mapping UI (interactive path selector); **depends on 2TI.11**
+- [ ] 2TM.3. Add mapping preview/validation (show which fields will map, highlight issues); **depends on 2TM.2**
+- [ ] 2TS.2. Build schema manager TUI screen (upload, list, select active schema); **depends on 2TI.11**
 
 <a name="m2-blocked"><h4>Blocked (Milestone 2)</h4></a>
 
-- [ ] 2TI.8. Implement success/completion screen with next actions — **depends on 2TI.13, 2TI.14, 2TI.15**
-- [ ] 2TI.9. Add settings management screen — **depends on 2TM.4, 2TS.2**
-- [ ] 2TI.10. Create submission history browser — **depends on 2TS.2**
-- [ ] 2TI.14. Build validate workflow screen (file select → validate → explore errors) — **depends on 2TI.13, 2TI.7**
-- [ ] 2TI.15. Build cross-submission check workflow — **depends on 2TI.14, 2TI.7**
-- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new) — **depends on 2TM.3**
-- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default) — **depends on 2TM.1**
-- [ ] 2TS.3. Add schema version selection to workflows — **depends on 2TS.2**
-- [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings — **depends on 2TS.3, 2TM.4, 2TI.12**
-- [ ] 2TI.18. Move theme module from `assets/brand/theme.ts` to `src/tui/theme.ts` (co-locate with consumers, update 18 imports) — **depends on 2TI.17**
+- [ ] 2TI.8. Implement success/completion screen with next actions; **depends on 2TI.13, 2TI.14, 2TI.15**
+- [ ] 2TI.9. Add settings management screen; **depends on 2TM.4, 2TS.2**
+- [ ] 2TI.10. Create submission history browser; **depends on 2TS.2**
+- [ ] 2TI.14. Build validate workflow screen (file select → validate → explore errors); **depends on 2TI.13, 2TI.7**
+- [ ] 2TI.15. Build cross-submission check workflow; **depends on 2TI.14, 2TI.7**
+- [ ] 2TM.1. Build mapping builder screen (list available mappings, create new); **depends on 2TM.3**
+- [ ] 2TM.4. Implement mapping save dialog (name, description, set as default); **depends on 2TM.1**
+- [ ] 2TS.3. Add schema version selection to workflows; **depends on 2TS.2**
+- [ ] 2TS.4. Implement migration guidance when schema changes affect existing mappings; **depends on 2TS.3, 2TM.4, 2TI.12**
+- [ ] 2TI.18. Move theme module from `assets/brand/theme.ts` to `src/tui/theme.ts` (co-locate with consumers, update 18 imports); **depends on 2TI.17**
 
 <a name="m2-done"><h4>Completed (Milestone 2)</h4></a>
 
@@ -208,7 +208,7 @@ classDef mile fill:#9ff;
 - [x] 2TI.4. Implement interactive file picker for CSV selection
 - [x] 2TI.5. Create processing screen with live progress and log viewer
 - [x] 2TI.6. Live processing screen with progress and logs
-- [x] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/) — exists in core lib (`storage.loadSchema()`)
+- [x] 2TS.1. Create schema loader module (load/cache schemas from ~/.iris/schemas/); exists in core lib (`storage.loadSchema()`)
 
 ---
 
@@ -254,10 +254,10 @@ classDef mile fill:#9ff;
 
 <a name="m3-blocked"><h4>Blocked (Milestone 3)</h4></a>
 
-- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check) — **depends on 3DC.2, 3DC.3**
-- [ ] 3DC.5. Implement `iris --help` and command-specific help — **depends on 3DC.4**
-- [ ] 3DC.6. Test direct commands in automation/scripting scenarios — **depends on 3DC.5, 3DC.7**
-- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows — **depends on 3DC.4**
+- [ ] 3DC.4. Implement `iris check` (non-TUI cross-submission check); **depends on 3DC.2, 3DC.3**
+- [ ] 3DC.5. Implement `iris --help` and command-specific help; **depends on 3DC.4**
+- [ ] 3DC.6. Test direct commands in automation/scripting scenarios; **depends on 3DC.5, 3DC.7**
+- [ ] 3DC.7. Add `--interactive` flag to launch TUI for specific workflows; **depends on 3DC.4**
 
 <a name="m3-done"><h4>Completed (Milestone 3)</h4></a>
 
@@ -322,11 +322,11 @@ classDef mile fill:#9ff;
 
 <a name="m4-blocked"><h4>Blocked (Milestone 4)</h4></a>
 
-- [ ] 4GC.5. Show cross-submission warnings in UI — **depends on 4GC.10**
-- [ ] 4GC.10. Create `/check` SvelteKit route — **depends on 4GC.4**
-- [ ] 4NB.1. Compile macOS `.app` build — **depends on 4GC.5, 4GC.6, 4GC.7**
-- [ ] 4NB.2. Compile Windows `.exe` build — **depends on 4NB.1**
-- [ ] 4NB.3. Compile Linux `.AppImage` build — **depends on 4NB.1**
+- [ ] 4GC.5. Show cross-submission warnings in UI; **depends on 4GC.10**
+- [ ] 4GC.10. Create `/check` SvelteKit route; **depends on 4GC.4**
+- [ ] 4NB.1. Compile macOS `.app` build; **depends on 4GC.5, 4GC.6, 4GC.7**
+- [ ] 4NB.2. Compile Windows `.exe` build; **depends on 4NB.1**
+- [ ] 4NB.3. Compile Linux `.AppImage` build; **depends on 4NB.1**
 
 <a name="m4-done"><h4>Completed (Milestone 4)</h4></a>
 
@@ -370,11 +370,11 @@ classDef mile fill:#9ff;
 
 <a name="m5-blocked"><h4>Blocked (Milestone 5)</h4></a>
 
-- [ ] 5TI.1. Add visual feedback (animations, transitions, spinners) — **depends on Milestone 4**
-- [ ] 5UD.1. Document ILR XML structure and requirements — **depends on Milestone 4**
-- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript) — **depends on 5UD.1**
-- [ ] 5UD.3. Write user guide for non-technical users — **depends on Milestone 4**
-- [ ] 5UD.4. Document validation rules and error messages — **depends on 5UD.1**
+- [ ] 5TI.1. Add visual feedback (animations, transitions, spinners); **depends on Milestone 4**
+- [ ] 5UD.1. Document ILR XML structure and requirements; **depends on Milestone 4**
+- [ ] 5UD.2. Create transformation logic reference (Airtable formulas → TypeScript); **depends on 5UD.1**
+- [ ] 5UD.3. Write user guide for non-technical users; **depends on Milestone 4**
+- [ ] 5UD.4. Document validation rules and error messages; **depends on 5UD.1**
 
 <a name="m5-done"><h4>Completed (Milestone 5)</h4></a>
 

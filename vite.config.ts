@@ -20,7 +20,7 @@ export default defineConfig({
 		},
 		// bun.ts uses the global `Bun` runtime API, unavailable under vitest's Node
 		// environment. It's exercised under `bun test` instead (tests/lib is the bun
-		// test root — see bunfig.toml).
+		// test root; see bunfig.toml).
 		exclude: [...configDefaults.exclude, 'tests/lib/storage/adapters/bun.test.ts']
 	},
 	// Tauri expects the dev server to run on a specific port

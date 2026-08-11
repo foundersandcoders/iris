@@ -15,6 +15,7 @@ const CONTAINER_ID = 'check-results-root';
 export class CheckResultsScreen implements Screen {
 	readonly name = 'check-results';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private issuesPanel?: Panel;
 	private detailPanel?: Panel;
@@ -25,6 +26,12 @@ export class CheckResultsScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -84,7 +91,7 @@ export class CheckResultsScreen implements Screen {
 		this.keymap = new Keymap({
 			bindings: hasIssueList
 				? [
-						// Nav hint — arrow keys handled by SelectRenderable; this is bar-only
+						// Nav hint: arrow keys handled by SelectRenderable, this is bar-only
 						{
 							keys: ['up', 'down', 'k', 'j'],
 							hint: `${symbols.arrows.up}${symbols.arrows.down}`,
@@ -103,6 +110,7 @@ export class CheckResultsScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'Cross-Submission Check',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		// Current submission

@@ -1,10 +1,10 @@
 # Phase 3: Future Features
 
-**Prerequisite:** [Phase 2: Production Features](./phase-2-production-features.md) — All of M3, M4, M5 complete
+**Prerequisite:** [Phase 2: Production Features](./phase-2-production-features.md); all of M3, M4, M5 complete
 
 > [!NOTE]
 > This phase contains exploratory features and enhancements beyond the core MVP.
-> Tasks are not assigned IDs or dependencies — these are conceptual directions for future development.
+> Tasks are not assigned IDs or dependencies: these are conceptual directions for future development.
 
 ---
 

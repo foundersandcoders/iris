@@ -25,11 +25,11 @@ Sixteen modules, roughly 2000 lines, left `src/lib/` for the package:
 
 Everything ILR-specific, which is the point of the split:
 
-- `src/lib/mappings/` — the ILR orchestrator (`ilrColumnMapper`), builders, `builderPaths`, `fac-airtable-2025`
-- `src/lib/types/ilrMappingTypes.ts` — `FamTemplate`, `AppFinTemplate`, `EsmField`, `EmploymentStatusConfig`, `IlrMappingConfig`
-- `src/lib/workflows/` — the CSV convert, validate, cross-check and XML validate pipelines
-- `tests/lib/schema/schemafile25.test.ts` — ILR schema conformance
-- `tests/lib/utils/csv/csvValidator.test.ts` — depends on `facAirtableMapping` and `createAimSkipFilter`
+- `src/lib/mappings/`: the ILR orchestrator (`ilrColumnMapper`), builders, `builderPaths`, `fac-airtable-2025`
+- `src/lib/types/ilrMappingTypes.ts`: `FamTemplate`, `AppFinTemplate`, `EsmField`, `EmploymentStatusConfig`, `IlrMappingConfig`
+- `src/lib/workflows/`: the CSV convert, validate, cross-check and XML validate pipelines
+- `tests/lib/schema/schemafile25.test.ts`: ILR schema conformance
+- `tests/lib/utils/csv/csvValidator.test.ts`: depends on `facAirtableMapping` and `createAimSkipFilter`
 
 The engine has no knowledge of ILR. `grep -rin ilr` across the package returns nothing.
 

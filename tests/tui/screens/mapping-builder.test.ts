@@ -10,7 +10,7 @@ vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 // (the factory below builds a fresh object with fresh vi.fn()s per call).
 let deleteMappingMock = vi.fn().mockResolvedValue({ success: true, data: undefined });
 
-// Mock createStorage — include ALL methods to avoid leaking incomplete mocks
+// Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		init: vi.fn().mockResolvedValue({ success: true, data: undefined }),
@@ -111,8 +111,9 @@ describe('MappingBuilderScreen', () => {
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
-		// one for the auto-mounted confirm overlay (TR.C2).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
+		// one for the auto-mounted confirm overlay (TR.C2), one for the
+		// auto-mounted command palette overlay (TR.D1).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(4);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(addedRenderable).toBeDefined();
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
@@ -183,7 +184,7 @@ describe('MappingBuilderScreen', () => {
 		}
 
 		it('deletes via keymap.confirm() when the user confirms', async () => {
-			const { screen } = await renderAndSelect(2); // 'my-custom-mapping' — not bundled
+			const { screen } = await renderAndSelect(2); // 'my-custom-mapping', not bundled
 			const resolve = vi.fn();
 			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
 
@@ -203,7 +204,7 @@ describe('MappingBuilderScreen', () => {
 		});
 
 		it('blocks deletion of a bundled mapping before confirm() is ever called', async () => {
-			const { screen } = await renderAndSelect(1); // 'fac-airtable-2025' — bundled
+			const { screen } = await renderAndSelect(1); // 'fac-airtable-2025', bundled
 			const resolve = vi.fn();
 			const confirmMock = vi.fn().mockResolvedValue(true);
 			(screen as any).keymap.confirm = confirmMock;
@@ -212,6 +213,48 @@ describe('MappingBuilderScreen', () => {
 
 			expect(confirmMock).not.toHaveBeenCalled();
 			expect(deleteMappingMock).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('toast feedback', () => {
+		async function renderWithToasts(index: number) {
+			const toasts = fixtures.createMockToasts();
+			const ctx = fixtures.createMockContext(mockContext.renderer, toasts);
+			const screen = new MappingBuilderScreen(ctx);
+			screen.render();
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			(screen as any).listSelect.selectedIndex = index;
+			return { screen, toasts };
+		}
+
+		it('warns via toast, not the footer, when blocking a bundled deletion', async () => {
+			const { screen, toasts } = await renderWithToasts(1); // bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.warning).toHaveBeenCalledWith(
+				'Bundled mappings cannot be deleted, duplicate to customise'
+			);
+		});
+
+		it('errors via toast when storage.deleteMapping() fails', async () => {
+			const { screen, toasts } = await renderWithToasts(2); // not bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+			deleteMappingMock.mockResolvedValueOnce({ success: false, error: { message: 'disk full' } });
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.error).toHaveBeenCalledWith('Failed to delete mapping');
+		});
+
+		it('confirms success via toast after a successful delete', async () => {
+			const { screen, toasts } = await renderWithToasts(2); // not bundled
+			(screen as any).keymap.confirm = vi.fn().mockResolvedValue(true);
+
+			await (screen as any).handleDelete(vi.fn());
+
+			expect(toasts.success).toHaveBeenCalledWith('Mapping deleted');
 		});
 	});
 });

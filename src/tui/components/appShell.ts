@@ -1,6 +1,6 @@
 /** ====== App Shell Component ======
  * Three-band layout: header band, content region (flexGrow 1), footer keybar.
- * Keymap-agnostic — accepts a plain footer string and exposes setFooter() so
+ * Keymap-agnostic: accepts a plain footer string and exposes setFooter() so
  * the keymap registry (TR.A3) can thread its toKeybar() output through in Phase B.
  */
 import { BoxRenderable, TextRenderable } from '@opentui/core';
@@ -16,12 +16,17 @@ export interface AppShellOptions {
 	breadcrumb?: string;
 	/** Initial footer hint string in "[KEY] Label  " format. */
 	footer?: string;
+	/** Initial root opacity. The Router sets 0 so a fade-in transition
+	 *  (TR.C4) has somewhere to start; defaults to 1 (fully visible) for
+	 *  anything constructing a shell outside the Router (tests, and
+	 *  reduce-motion where Router never lowers it). */
+	opacity?: number;
 }
 
 export interface AppShell {
-	/** Root box — pass to renderer.root.add(). */
+	/** Root box, pass to renderer.root.add(). */
 	readonly root: BoxRenderable;
-	/** Content region (flexGrow 1) — screens mount their own renderables here. */
+	/** Content region (flexGrow 1), screens mount their own renderables here. */
 	readonly content: BoxRenderable;
 	/** Replace the footer hint string (supports stateful screens). */
 	setFooter(hint: string): void;
@@ -40,6 +45,7 @@ export function appShell(renderer: Renderer, opts: AppShellOptions = {}): AppShe
 		width: '100%',
 		height: '100%',
 		backgroundColor: theme.background,
+		opacity: opts.opacity ?? 1,
 	});
 
 	const headerText = new TextRenderable(renderer, {

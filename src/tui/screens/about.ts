@@ -3,10 +3,10 @@
  */
 import { TextRenderable, t, fg, link, underline } from '@opentui/core';
 import type { RenderContext, Renderer } from '../types';
-import { theme, PALETTE } from '../../../assets/brand/theme';
+import { theme } from '../../../assets/brand/theme';
 import type { Screen, ScreenResult, ScreenData } from '../utils/router';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'about-root';
 
@@ -16,12 +16,19 @@ import packageJson from '../../../package.json';
 export class AboutScreen implements Screen {
 	readonly name = 'about';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private infoPanel?: Panel;
 	private keymap?: Keymap;
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(_data?: ScreenData): Promise<ScreenResult> {
@@ -42,6 +49,7 @@ export class AboutScreen implements Screen {
 			bindings: [],
 			onBack: finish,
 			onQuit: finish,
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 
@@ -49,6 +57,7 @@ export class AboutScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: 'About',
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		this.infoPanel = panel(this.renderer, { title: 'About Iris', flexGrow: 1 });
@@ -67,7 +76,7 @@ export class AboutScreen implements Screen {
 
 		// Software info
 		const labelColour = theme.text;
-		const linkColour = PALETTE.foreground.alt.midi;
+		const linkColour = theme.secondary;
 
 		const fields: { label: string; value: string; url?: string }[] = [
 			{ label: 'Software Package', value: 'Iris', url: 'https://github.com/fac/iris' },

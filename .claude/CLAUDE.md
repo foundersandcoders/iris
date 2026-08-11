@@ -21,7 +21,7 @@ Iris is an ILR (Individualised Learner Record) toolkit that replaces Founders an
 
 - **Runtime:** Bun
 - **TUI Framework:** @opentui/core (primary interface)
-- **Desktop Framework:** Tauri (Rust backend, no Rust code written)
+- **Desktop Framework:** Tauri (Rust backend, no Rust code written; building from source still needs a Rust toolchain matching `src-tauri/Cargo.toml`'s `rust-version`, currently 1.88.0)
 - **Frontend:** SvelteKit with TypeScript (desktop GUI)
 - **Storage:** File-based (local filesystem, no database)
 - **XML Generation:** Native TypeScript (no external XML libraries yet)

@@ -6,7 +6,7 @@ import { createMockRenderer } from './tui';
  *
  * The real package bundles its tree-sitter grammars AND its native Zig
  * renderer bindings (`bun:ffi`) into one eagerly-evaluated chunk, so it can
- * only ever load under Bun — there is no way to import any symbol from it
+ * only ever load under Bun; there is no way to import any symbol from it
  * under vitest/Node. Suites `vi.mock('@opentui/core', ...)` this module
  * instead of the real package.
  *
@@ -20,8 +20,8 @@ import { createMockRenderer } from './tui';
 /**
  * Colour-shaped option keys opentui coerces from hex string to RGBA, both at
  * construction and on later reassignment (e.g. panel.ts's box.borderColor =
- * theme.accent). Defined as accessors on the prototype so every set — not
- * just the constructor's initial assignment — goes through parseColor.
+ * theme.accent). Defined as accessors on the prototype so every set, not
+ * just the constructor's initial assignment, goes through parseColor.
  */
 const COLOUR_KEYS = ['backgroundColor', 'borderColor', 'fg', 'bg', 'color', 'selectedBackgroundColor'];
 
@@ -55,6 +55,12 @@ class BaseRenderable {
 	getChildren(): BaseRenderable[] {
 		return this.children;
 	}
+
+	/** Real Renderable.requestRender() delegates to the render context.
+	 *  opentui-spinner's SpinnerRenderable calls this from its color/frames
+	 *  setters (including during construction, via Object.assign above), so
+	 *  it must exist even though this double never runs an actual render loop. */
+	requestRender(): void {}
 }
 
 for (const key of COLOUR_KEYS) {
@@ -70,7 +76,7 @@ for (const key of COLOUR_KEYS) {
 	});
 }
 
-/** Base class opentui-spinner's SpinnerRenderable extends — construction only, no render loop. */
+/** Base class opentui-spinner's SpinnerRenderable extends: construction only, no render loop. */
 export class Renderable extends BaseRenderable {}
 
 export class BoxRenderable extends BaseRenderable {}
@@ -116,7 +122,7 @@ export class SelectRenderable extends BaseRenderable {
 	// and reading the current selection goes through getSelectedIndex() instead.
 	// Backed by a private field with only a setter defined (no getter), so
 	// `screen.leftSelect.selectedIndex` reads back `undefined` here exactly as it
-	// does against the real renderable — code that (incorrectly) reads
+	// does against the real renderable; code that (incorrectly) reads
 	// `.selectedIndex` instead of calling `getSelectedIndex()` fails the same way
 	// under test as it would in production.
 	private _selectedIndex = 0;
@@ -228,7 +234,7 @@ export function parseColor(color: unknown): unknown {
 }
 
 /**
- * The real resolveRenderLib() loads the native Zig binding via bun:ffi — not
+ * The real resolveRenderLib() loads the native Zig binding via bun:ffi, not
  * reproducible under Node. Nothing in tests/tui/** constructs a renderable
  * that calls into it at runtime (opentui-spinner's SpinnerRenderable is only
  * ever imported, never instantiated, by the suites here), so a throwing stub
@@ -236,11 +242,11 @@ export function parseColor(color: unknown): unknown {
  */
 export function resolveRenderLib(): never {
 	throw new Error(
-		'resolveRenderLib() is not mocked — tests must not instantiate renderables that need the native render lib.'
+		'resolveRenderLib() is not mocked; tests must not instantiate renderables that need the native render lib.'
 	);
 }
 
-/** Styled-text helpers (assets/brand + about.ts) — simple passthroughs. */
+/** Styled-text helpers (assets/brand + about.ts): simple passthroughs. */
 export function t(strings: TemplateStringsArray, ...values: unknown[]): { chunks: { text: string }[] } {
 	const text = strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
 	return { chunks: [{ text }] };
@@ -261,3 +267,49 @@ export function underline(text: string): string {
 export async function createCliRenderer(_options?: unknown) {
 	return createMockRenderer();
 }
+
+/**
+ * Timeline/engine doubles for transitions.ts (TR.C4). `add()` records the
+ * target/properties rather than actually animating; tests drive completion
+ * deterministically by asserting on the recorded call, not by pumping
+ * deltaTime through a fake clock.
+ */
+export class Timeline {
+	items: { target: unknown; properties: Record<string, unknown> }[] = [];
+	isPlaying = false;
+	isComplete = false;
+
+	add = vi.fn(function (this: Timeline, target: unknown, properties: Record<string, unknown>) {
+		this.items.push({ target, properties });
+		return this;
+	});
+	once = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	call = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	play = vi.fn(function (this: Timeline) {
+		this.isPlaying = true;
+		return this;
+	});
+	pause = vi.fn(function (this: Timeline) {
+		this.isPlaying = false;
+		return this;
+	});
+	restart = vi.fn(function (this: Timeline) {
+		return this;
+	});
+	update = vi.fn();
+}
+
+export const engine = {
+	attach: vi.fn(),
+	detach: vi.fn(),
+	register: vi.fn(),
+	unregister: vi.fn(),
+	clear: vi.fn(),
+	update: vi.fn(),
+};
+
+export const createTimeline = vi.fn((_options?: unknown) => new Timeline());

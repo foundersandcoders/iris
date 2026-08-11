@@ -9,7 +9,7 @@ import { rm, writeFile, readFile, access } from 'fs/promises';
 import { createStorage } from '$lib/storage';
 import * as fixtures from '../../fixtures/storage';
 
-/** fs/promises has no direct `exists()` helper — probe via access(). */
+/** fs/promises has no direct `exists()` helper; probe via access(). */
 async function pathExists(path: string): Promise<boolean> {
 	try {
 		await access(path);
@@ -373,7 +373,7 @@ describe('IrisStorage', () => {
 			expect(result.success).toBe(true);
 
 			if (result.success) {
-				// List submissions — should include metadata
+				// List submissions, should include metadata
 				const listResult = await storage.listSubmissions();
 				expect(listResult.success).toBe(true);
 

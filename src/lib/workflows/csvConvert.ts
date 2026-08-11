@@ -175,7 +175,7 @@ export async function* convertWorkflow(
 		outputPath = saveResult.data;
 		const filename = outputPath.split('/').pop() ?? 'unknown';
 
-		// Append to submission history (non-fatal — log warning if fails)
+		// Append to submission history (non-fatal, log warning if fails)
 		const checksum = createHash('sha256').update(xml).digest('hex');
 		const learnerRefs = (message.Learner as Record<string, unknown>[])
 			.map(l => String(l.LearnRefNumber ?? ''))

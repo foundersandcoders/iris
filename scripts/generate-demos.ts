@@ -15,7 +15,7 @@ import { join } from 'path';
 const BUNDLED_FONT = join(import.meta.dirname, '..', 'assets', 'fonts', 'FiraCode-Regular.ttf');
 
 /** VHS renders via headless Chrome and resolves FontFamily against whatever
- *  fonts are OS-registered — an uninstalled font silently falls back to a
+ *  fonts are OS-registered; an uninstalled font silently falls back to a
  *  wide, non-monospace substitute. Install the bundled Fira Code so every
  *  machine that runs `bun run demos` renders identically, without requiring
  *  a manual `brew install --cask font-fira-code` step first. */
@@ -25,7 +25,7 @@ function fontDestination(): string {
 	}
 	if (process.platform === 'win32') {
 		// Copying the .ttf into the per-user Fonts folder alone doesn't register
-		// it — Windows also requires a matching HKCU\...\Fonts registry value
+		// it; Windows also requires a matching HKCU\...\Fonts registry value
 		// before GDI/DirectWrite (and so headless Chrome, which VHS renders
 		// through) will enumerate it. Automating registry writes from here isn't
 		// worth the risk with no Windows machine to verify it against, so fail
@@ -38,7 +38,7 @@ function fontDestination(): string {
 	return join(homedir(), '.local', 'share', 'fonts', 'FiraCode-Regular.ttf');
 }
 
-/** Bytes must match the bundled font exactly — a same-named-but-different
+/** Bytes must match the bundled font exactly: a same-named-but-different
  *  file at the destination (or an `fc-list` hit for an unrelated font that
  *  merely shares "Fira Code" in its family name) must not short-circuit the
  *  install, or the recording silently stops being reproducible across
@@ -85,7 +85,7 @@ Options:
   -h, --help  Show this help message
 
 Requires:
-  vhs, ttyd, ffmpeg on PATH — see README.md#demo-recordings for install steps.
+  vhs, ttyd, ffmpeg on PATH; see README.md#demo-recordings for install steps.
 	`);
 	process.exit(0);
 }

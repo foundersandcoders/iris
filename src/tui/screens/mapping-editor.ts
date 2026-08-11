@@ -25,11 +25,11 @@ import { validateMappingStructure } from '../../lib/mappings/validate';
 import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
 import { parseCSV } from '@jasonwarrenuk/schema-forge';
 import { appShell, panel, type AppShell, type Panel } from '../components';
-import { Keymap } from '../utils/keymap';
+import { Keymap, paletteNav } from '../utils/keymap';
 
 const CONTAINER_ID = 'mapping-editor-root';
 
-/** Only Learner paths need CSV column mappings — everything else is auto-populated */
+/** Only Learner paths need CSV column mappings, everything else is auto-populated */
 const LEARNER_PREFIX = 'Message.Learner.';
 
 /** Learner-level paths that are auto-generated (not from CSV) */
@@ -86,12 +86,13 @@ function countAimExpansions(mappings: ColumnMapping[], templateCsv: string): num
 }
 
 /** Which pane owns real keyboard focus. 'search' and 'right' both live inside the
- *  Schema Fields panel, so both light its border — only the input vs list target differs. */
+ *  Schema Fields panel, so both light its border; only the input vs list target differs. */
 type FocusTarget = 'left' | 'search' | 'right';
 
 export class MappingEditorScreen implements Screen {
 	readonly name = 'mapping-editor';
 	private renderer: Renderer;
+	private motion?: boolean;
 	private shell?: AppShell;
 	private leftPanel?: Panel;
 	private rightPanel?: Panel;
@@ -119,7 +120,7 @@ export class MappingEditorScreen implements Screen {
 	// CSV headers (for new mappings)
 	private csvHeaders: string[] = [];
 
-	// UI state — the single focus authority. Every focus change (Tab, search, CSV
+	// UI state: the single focus authority. Every focus change (Tab, search, CSV
 	// picker) routes through focusPanel() so border colour, real OpenTUI focus, and
 	// this field can never desync (the "weak two-panel focus model" TR.B5 fixes).
 	private focusTarget: FocusTarget = 'left';
@@ -138,6 +139,12 @@ export class MappingEditorScreen implements Screen {
 
 	constructor(ctx: RenderContext) {
 		this.renderer = ctx.renderer;
+		this.motion = ctx.motion;
+	}
+
+	/** Transition target for the Router's fade-in (TR.C4). */
+	get root(): AppShell['root'] | undefined {
+		return this.shell?.root;
 	}
 
 	async render(data?: ScreenData): Promise<ScreenResult> {
@@ -162,7 +169,7 @@ export class MappingEditorScreen implements Screen {
 				const csvData = await parseCSV(csvFilePath);
 				this.csvHeaders = csvData.headers;
 			} catch {
-				// CSV parsing failed — editor still works, just no CSV column picker
+				// CSV parsing failed, editor still works, just no CSV column picker
 			}
 		}
 
@@ -176,7 +183,7 @@ export class MappingEditorScreen implements Screen {
 			this.leftSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 				const value = option.value as string;
 
-				// CSV column picker mode — intercept selection
+				// CSV column picker mode, intercept selection
 				if (this.csvPickerSelect && this.pendingXsdPath) {
 					if (value === '__header__') return; // Skip header row
 					this.dismissCsvPicker();
@@ -251,7 +258,7 @@ export class MappingEditorScreen implements Screen {
 				this.filteredPaths = [...this.leafPaths];
 			}
 		} catch {
-			// Schema loading failed — editor still works, just no XSD paths
+			// Schema loading failed, editor still works, just no XSD paths
 		}
 	}
 
@@ -269,7 +276,7 @@ export class MappingEditorScreen implements Screen {
 				this.existingId = mode === 'edit' ? mapping.id : undefined;
 			}
 		} catch {
-			// Failed to load — start fresh
+			// Failed to load, start fresh
 		}
 	}
 
@@ -285,7 +292,7 @@ export class MappingEditorScreen implements Screen {
 					handler: () => {},
 				},
 				{ keys: ['tab'], label: 'Switch Pane', handler: () => this.togglePanel() },
-				// Map — SelectRenderable ITEM_SELECTED owns Enter; this is bar-only.
+				// Map: SelectRenderable ITEM_SELECTED owns Enter, this is bar-only.
 				{ keys: ['enter'], label: 'Map', handler: () => {} },
 				{
 					keys: ['/'],
@@ -324,6 +331,7 @@ export class MappingEditorScreen implements Screen {
 				// 3. Pop back
 				resolve({ action: 'pop' });
 			},
+			...paletteNav(this.name, resolve),
 		});
 		const keymap = this.keymap;
 
@@ -331,6 +339,7 @@ export class MappingEditorScreen implements Screen {
 			id: CONTAINER_ID,
 			breadcrumb: `Edit Mapping: ${this.mappingName}`,
 			footer: keymap.toKeybar(),
+			opacity: this.motion ? 0 : 1,
 		});
 
 		// Summary
@@ -364,7 +373,7 @@ export class MappingEditorScreen implements Screen {
 		this.leftPanel.add(this.leftSelect);
 		editorRow.add(this.leftPanel.box);
 
-		// Right panel: search + XSD paths — one panel, one border, for both children
+		// Right panel: search + XSD paths, one panel, one border, for both children
 		this.rightPanel = panel(this.renderer, { title: 'Schema Fields', flexGrow: 1 });
 
 		this.searchInput = new InputRenderable(this.renderer, {
@@ -396,7 +405,7 @@ export class MappingEditorScreen implements Screen {
 
 		this.shell.content.add(new TextRenderable(this.renderer, { content: '' }));
 
-		// Preview panel — non-interactive, never a focus target
+		// Preview panel: non-interactive, never a focus target
 		this.previewPanel = new BoxRenderable(this.renderer, { flexDirection: 'column' });
 		this.shell.content.add(this.previewPanel);
 		this.updatePreview();
@@ -452,7 +461,7 @@ export class MappingEditorScreen implements Screen {
 
 	// === Interactions ===
 
-	/** The single focus authority. Every focus change — Tab, search, CSV picker —
+	/** The single focus authority. Every focus change (Tab, search, CSV picker)
 	 *  routes through here so border colour, real OpenTUI focus, and `focusTarget`
 	 *  can never disagree. 'search' and 'right' both live in the Schema Fields panel,
 	 *  so both light its border; only which child owns real input focus differs. */
@@ -477,7 +486,7 @@ export class MappingEditorScreen implements Screen {
 			this.rightSelect?.focus();
 		}
 
-		// Refresh the keybar — the when-guards hide left-only keys (t/x/s) off-left.
+		// Refresh the keybar: the when-guards hide left-only keys (t/x/s) off-left.
 		this.shell?.setFooter(this.keymap!.toKeybar());
 	}
 
@@ -660,7 +669,7 @@ export class MappingEditorScreen implements Screen {
 			this.previewPanel.remove(child.id);
 		}
 
-		// Count mapped vs required — only Learner fields, skip auto-generated
+		// Count mapped vs required, only Learner fields, skip auto-generated
 		const mappedPaths = new Set(this.mappings.map((m) => m.xsdPath));
 		let mappedCount = 0;
 		let unmappedRequired = 0;

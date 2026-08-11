@@ -198,7 +198,7 @@ Updated project documentation and reorganized work records for better navigation
 
 ### fast-xml-parser's Array Normalization Behaviour
 
-The XML parser has quirky but predictable behaviour: when parsing repeated elements, it returns a single object if there's one element, or an array if there are multiple. This isn't a bug—it's a design choice to save memory—but it requires defensive coding.
+The XML parser has quirky but predictable behaviour: when parsing repeated elements, it returns a single object if there's one element, or an array if there are multiple. This isn't a bug; it's a design choice to save memory, but it requires defensive coding.
 
 **Implication**:
 Every XSD parsing function needs to normalize this with helper utilities. The `asArray<T>()` pattern (return empty array for undefined, wrap single values, pass through arrays) became essential throughout the test suite and will be needed in production code too. This is documented in `xsdParser.test.ts:15-18` as a reusable pattern.
@@ -294,7 +294,7 @@ The raw types (`RawXsdElement`, `RawXsdSimpleType`, etc.) serve as excellent doc
 ## Notes for Future Self
 
 **XSD Parsing Quirks:**
-- `fast-xml-parser` returns single values OR arrays unpredictably—always normalize with `asArray()` helper
+- `fast-xml-parser` returns single values OR arrays unpredictably: always normalize with `asArray()` helper
 - Attribute names get `@_` prefix, namespaced elements get `xs:` prefix
 - Empty elements parse to `undefined`, not empty objects
 
@@ -304,7 +304,7 @@ The raw types (`RawXsdElement`, `RawXsdSimpleType`, etc.) serve as excellent doc
 - Named type resolution will require two-pass parsing: collect all named types first, then resolve references
 
 **Testing Pattern:**
-The fixtures pattern for schema tests works brilliantly—minimal, focused examples that test one thing each. Keep this approach for registry builder tests.
+The fixtures pattern for schema tests works brilliantly: minimal, focused examples that test one thing each. Keep this approach for registry builder tests.
 
 ---
 
@@ -321,7 +321,7 @@ The fixtures pattern for schema tests works brilliantly—minimal, focused examp
 - **Type naming could be more consistent** - Mix of `Raw*` prefix and `Parsed*` prefix. Settle on one convention.
 
 ### Key Takeaways
-- Fast-xml-parser's single-vs-array quirk is predictable once you know it—defensive coding with helpers is the answer
+- Fast-xml-parser's single-vs-array quirk is predictable once you know it; defensive coding with helpers is the answer
 - Renaming files proactively prevents technical debt from calcifying
 - Testing against real-world data (ESFA schema) validates assumptions that synthetic fixtures can't
-- The sommelier analogy in the PR was effective—explaining complex technical work through relatable metaphors aids understanding
+- The sommelier analogy in the PR was effective: explaining complex technical work through relatable metaphors aids understanding

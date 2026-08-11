@@ -7,12 +7,12 @@ import * as fixtures from '../../fixtures/tui/tui';
 // so it's replaced with a shared test double.
 vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 
-// RGBA import resolves to the mock above — same idiom as panel.test.ts / theme.test.ts.
+// RGBA import resolves to the mock above, same idiom as panel.test.ts / theme.test.ts.
 import { RGBA } from '@opentui/core';
 const accentColour = RGBA.fromHex(theme.accent);
 const borderColour = RGBA.fromHex(theme.border);
 
-// Mock createStorage — include ALL methods to avoid leaking incomplete mocks
+// Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
 	createStorage: () => ({
 		init: vi.fn().mockResolvedValue({ success: true, data: undefined }),
@@ -105,8 +105,9 @@ describe('MappingEditorScreen', () => {
 		await new Promise((resolve) => setTimeout(resolve, 50));
 
 		// One call for the screen shell, one for the auto-mounted help overlay (TR.C1),
-		// one for the auto-mounted confirm overlay (TR.C2).
-		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(3);
+		// one for the auto-mounted confirm overlay (TR.C2), one for the
+		// auto-mounted command palette overlay (TR.D1).
+		expect(mockContext.renderer.root.add).toHaveBeenCalledTimes(4);
 		const addedRenderable = (mockContext.renderer.root.add as any).mock.calls[0][0];
 		expect(addedRenderable).toBeDefined();
 		expect(addedRenderable.constructor.name).toBe('BoxRenderable');
@@ -191,7 +192,7 @@ describe('MappingEditorScreen', () => {
 			const rightBox = findPanelBox(root, 'Schema Fields');
 
 			const dispatch = getKeypressHandler(mockContext);
-			dispatch({ name: '/' }); // focus search — right border lights
+			dispatch({ name: '/' }); // focus search, right border lights
 
 			// Find the searchInput's registered ENTER handler and invoke it directly,
 			// mirroring how InputRenderableEvents.ENTER fires in the real renderer.
@@ -201,7 +202,7 @@ describe('MappingEditorScreen', () => {
 			(enterCall![1] as () => void)();
 
 			// Focus moved from search to the results list, but stayed inside the right
-			// panel — the border must not flicker or fall out of sync with focusTarget.
+			// panel; the border must not flicker or fall out of sync with focusTarget.
 			expect(rightBox.borderColor.equals(accentColour)).toBe(true);
 			expect((screen as any).focusTarget).toBe('right');
 		});
@@ -209,7 +210,7 @@ describe('MappingEditorScreen', () => {
 
 	describe('selection-driven actions (TR.B5 regression)', () => {
 		// leftSelect.selectedIndex is write-only on the real SelectRenderable and
-		// always reads back undefined — the mock mirrors this (see
+		// always reads back undefined; the mock mirrors this (see
 		// tests/fixtures/tui/opentui.ts) so these tests only pin the fix if
 		// they assert the resulting mutation, not just that the handler ran.
 		// Driving selection via setSelectedIndex() and checking the outcome is
