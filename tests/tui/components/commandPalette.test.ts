@@ -125,6 +125,26 @@ describe('commandPalette()', () => {
 		expect(textOf(rows[0])).toContain('History');
 	});
 
+	it('setEntries() reuses surviving row renderables when the list shrinks', () => {
+		const palette = commandPalette(ctx.renderer);
+		palette.setEntries([
+			{ screen: 'a', label: 'A' },
+			{ screen: 'b', label: 'B' },
+			{ screen: 'c', label: 'C' },
+		]);
+
+		const card = palette.root.getChildren()[0] as any;
+		const resultsBox = card.getChildren()[2];
+		const rowBefore = resultsBox.getChildren()[0];
+
+		palette.setEntries([{ screen: 'b', label: 'B' }]);
+
+		const rowsAfter = resultsBox.getChildren();
+		expect(rowsAfter).toHaveLength(1);
+		expect(rowsAfter[0]).toBe(rowBefore);
+		expect(textOf(rowsAfter[0])).toContain('B');
+	});
+
 	it('setEntries() with an empty list shows the no-matches hint', () => {
 		const palette = commandPalette(ctx.renderer);
 		palette.setEntries([{ screen: 'settings', label: 'Settings' }]);

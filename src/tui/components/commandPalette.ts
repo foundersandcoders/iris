@@ -90,29 +90,50 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 			: t`${fg(theme.text)(`  ${entry.label}`)}`;
 	}
 
-	function renderRows(): void {
-		for (const row of rows) resultsBox.remove(row.id);
-		rows = [];
+	let emptyRow: TextRenderable | null = null;
 
+	/** Reconcile the mounted rows against `entries` in place. setEntries()
+	 *  fires on every keystroke via the fuzzy filter, so rows are restyled
+	 *  where they already exist and only created/removed when the list
+	 *  changes length: the same churn-avoidance moveSelection() applies to
+	 *  selection changes. */
+	function syncRows(): void {
 		if (entries.length === 0) {
-			const emptyRow = new TextRenderable(renderer, {
-				id: 'command-palette-empty',
-				content: EMPTY_HINT,
-				fg: theme.textMuted,
-			});
-			rows.push(emptyRow);
-			resultsBox.add(emptyRow);
+			for (const row of rows) resultsBox.remove(row.id);
+			rows = [];
+			if (!emptyRow) {
+				emptyRow = new TextRenderable(renderer, {
+					id: 'command-palette-empty',
+					content: EMPTY_HINT,
+					fg: theme.textMuted,
+				});
+				resultsBox.add(emptyRow);
+			}
 			return;
 		}
 
-		entries.forEach((entry, index) => {
+		if (emptyRow) {
+			resultsBox.remove(emptyRow.id);
+			emptyRow = null;
+		}
+
+		while (rows.length > entries.length) {
+			const surplus = rows.pop();
+			if (surplus) resultsBox.remove(surplus.id);
+		}
+
+		rows.forEach((row, index) => {
+			row.content = contentFor(entries[index], index === selectedIndex);
+		});
+
+		for (let index = rows.length; index < entries.length; index++) {
 			const row = new TextRenderable(renderer, {
 				id: `command-palette-row-${index}`,
-				content: contentFor(entry, index === selectedIndex),
+				content: contentFor(entries[index], index === selectedIndex),
 			});
 			rows.push(row);
 			resultsBox.add(row);
-		});
+		}
 	}
 
 	return {
@@ -123,7 +144,7 @@ export function commandPalette(renderer: Renderer, opts: CommandPaletteOptions =
 		setEntries(newEntries) {
 			entries = newEntries;
 			selectedIndex = 0;
-			renderRows();
+			syncRows();
 		},
 		moveSelection(delta) {
 			if (entries.length === 0) return;
