@@ -488,6 +488,8 @@ export class MappingEditorScreen implements Screen {
 			const isMapped = mappedPaths.has(path);
 			const prefix = isMapped ? `${symbols.info.success} ` : required ? `${symbols.info.required} ` : '  ';
 			const fieldName = el?.name ?? path.split('.').slice(-1)[0];
+			// No registry fallback needed here: shortPath is derived from path itself,
+			// not from el, so it can't go stale even if the registry lookup misses.
 			const shortPath = path.replace(/^Message\./, '');
 
 			return {
