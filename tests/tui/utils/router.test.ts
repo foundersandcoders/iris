@@ -101,7 +101,7 @@ describe('Router', () => {
       expect(router.getBreadcrumbs()).toEqual(['screen1']);
     });
 
-    it('the re-pushed entry carries the new data, not the stale payload', async () => {
+    it('the re-pushed entry lets new data win over the stale payload per key', async () => {
       // screen1 (data: {v: 1}) -> screen2 -> screen1 (data: {v: 2}) -> quit.
       const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
       const screen2 = fixtures.createMockScreen('screen2', {
@@ -119,6 +119,27 @@ describe('Router', () => {
       await router.push('screen1', { v: 1 });
 
       expect(screen1Second.render).toHaveBeenCalledWith({ v: 2 });
+    });
+
+    it('the re-pushed entry keeps preserved state the new data does not name', async () => {
+      // Symmetric with pop()'s merge: screen1 stashed scrollTop in its stack
+      // payload, and a palette jump-back to screen1 must not discard it.
+      const screen1First = fixtures.createMockScreen('screen1', { action: 'push', screen: 'screen2' });
+      const screen2 = fixtures.createMockScreen('screen2', {
+        action: 'push',
+        screen: 'screen1',
+        data: { v: 2 },
+      });
+      const screen1Second = fixtures.createMockScreen('screen1', { action: 'quit' });
+
+      router.register('screen1', vi.fn()
+        .mockReturnValueOnce(screen1First)
+        .mockReturnValueOnce(screen1Second));
+      router.register('screen2', () => screen2);
+
+      await router.push('screen1', { v: 1, scrollTop: 42 });
+
+      expect(screen1Second.render).toHaveBeenCalledWith({ v: 2, scrollTop: 42 });
     });
 
     it('unwinding to the root still leaves canGoBack() false', async () => {

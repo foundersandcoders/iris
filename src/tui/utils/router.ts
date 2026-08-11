@@ -68,11 +68,13 @@ export class Router {
 		// Palette cycling (A -> B -> A -> B) would otherwise grow the stack
 		// without bound and turn getBreadcrumbs() into a repeating trail.
 		// Truncating to the existing entry keeps the breadcrumbs a real path
-		// and keeps ESC/back walking sensibly outwards. The new data wins
-		// over the stale entry's payload, since truncate-then-push discards
-		// the old entry entirely rather than reusing it in place.
+		// and keeps ESC/back walking sensibly outwards. The revisited entry's
+		// payload is merged under the new data, symmetric with pop(): state a
+		// screen preserved via its stack payload (scroll position, filter
+		// text) survives a palette jump-back just as it survives ESC.
 		const existing = this.stack.findIndex((entry) => entry.screenName === screenName);
 		if (existing !== -1) {
+			data = { ...this.stack[existing].data, ...data };
 			this.stack.length = existing;
 		}
 
