@@ -26,6 +26,7 @@ import { ALL_BUILDER_PATHS } from '../../lib/mappings/builderPaths';
 import { parseCSV } from '@jasonwarrenuk/schema-forge';
 import { appShell, panel, type AppShell, type Panel } from '../components';
 import { Keymap, paletteNav } from '../utils/keymap';
+import { groupFieldPaths, GROUP_VALUE_PREFIX } from '../utils/schemaFieldRows';
 
 const CONTAINER_ID = 'mapping-editor-root';
 
@@ -45,6 +46,14 @@ const TRANSFORMS = ['none', 'trim', 'uppercase', 'lowercase', 'stringToInt', 'po
 /** Detect if a CSV column name uses the {n} aim template pattern */
 function isAimTemplate(csvColumn: string): boolean {
 	return csvColumn.includes('{n}');
+}
+
+/** Index of the first non-header row in a grouped right-panel option list, for
+ *  initializing previousRightIndex. Row 0 is always a group header (every field
+ *  belongs to some group), so it's never a valid rest position on its own. */
+function firstFieldIndex(options: SelectOption[]): number {
+	const index = options.findIndex((o) => !(o.value as string).startsWith(GROUP_VALUE_PREFIX));
+	return index === -1 ? 0 : index;
 }
 
 /** Collapse aim-specific mappings into template rows for display */
@@ -116,6 +125,11 @@ export class MappingEditorScreen implements Screen {
 	private leafPaths: string[] = [];
 	private filteredPaths: string[] = [];
 	private searchQuery = '';
+	// Last non-header index in the right panel, used to skip over group
+	// header rows on arrow-key navigation (see the SELECTION_CHANGED handler).
+	// Initialized via firstFieldIndex() whenever right-panel options are built,
+	// since row 0 is always a group header and is never a valid rest position.
+	private previousRightIndex = 0;
 
 	// CSV headers (for new mappings)
 	private csvHeaders: string[] = [];
@@ -209,10 +223,33 @@ export class MappingEditorScreen implements Screen {
 			// Right panel: XSD path selection
 			this.rightSelect?.on(SelectRenderableEvents.ITEM_SELECTED, (_index: number, option: SelectOption) => {
 				const xsdPath = option.value as string;
-				if (xsdPath) {
+				if (xsdPath && !xsdPath.startsWith(GROUP_VALUE_PREFIX)) {
 					this.addMapping(xsdPath);
 				}
 			});
+
+			// Right panel: skip over group header rows on arrow-key navigation
+			this.rightSelect?.on(
+				SelectRenderableEvents.SELECTION_CHANGED,
+				(index: number, option: SelectOption | null) => {
+					if (!option) return;
+					const value = option.value as string;
+
+					if (value.startsWith(GROUP_VALUE_PREFIX)) {
+						const direction = index > this.previousRightIndex ? 1 : -1;
+						const options = this.rightSelect!.options;
+						const nextIndex = index + direction;
+						if (nextIndex >= 0 && nextIndex < options.length) {
+							this.rightSelect!.setSelectedIndex(nextIndex);
+						} else {
+							// At boundary, bounce back
+							this.rightSelect!.setSelectedIndex(this.previousRightIndex);
+						}
+					} else {
+						this.previousRightIndex = index;
+					}
+				}
+			);
 
 			// Search input
 			this.searchInput?.on(InputRenderableEvents.INPUT, () => {
@@ -254,7 +291,6 @@ export class MappingEditorScreen implements Screen {
 					if (AUTO_LEARNER_PATHS.has(path)) continue;
 					this.leafPaths.push(path);
 				}
-				this.leafPaths.sort();
 				this.filteredPaths = [...this.leafPaths];
 			}
 		} catch {
@@ -386,8 +422,10 @@ export class MappingEditorScreen implements Screen {
 		});
 		this.rightPanel.add(this.searchInput);
 
+		const rightOptions = this.buildRightOptions();
+		this.previousRightIndex = firstFieldIndex(rightOptions);
 		this.rightSelect = new SelectRenderable(this.renderer, {
-			options: this.buildRightOptions(),
+			options: rightOptions,
 			backgroundColor: theme.background,
 			focusedBackgroundColor: theme.background,
 			selectedBackgroundColor: theme.highlightFocused,
@@ -443,17 +481,32 @@ export class MappingEditorScreen implements Screen {
 
 	private buildRightOptions(): SelectOption[] {
 		const mappedPaths = new Set(this.mappings.map((m) => m.xsdPath));
+		const rows = groupFieldPaths(this.filteredPaths, 'Message.');
 
-		return this.filteredPaths.map((path) => {
+		return rows.map((row) => {
+			const indent = '  '.repeat(row.depth);
+
+			if (row.kind === 'group') {
+				return {
+					name: `${indent}${row.name}`,
+					description: '',
+					value: `${GROUP_VALUE_PREFIX}${row.path}`,
+				};
+			}
+
+			const path = row.path;
 			const el = this.registry?.elementsByPath.get(path);
 			const required = el && this.registry ? isEffectivelyRequired(el, this.registry, mappedPaths) : false;
 			const isMapped = mappedPaths.has(path);
 			const prefix = isMapped ? `${symbols.info.success} ` : required ? `${symbols.info.required} ` : '  ';
-			const shortPath = path.split('.').slice(-2).join('.');
+			const fieldName = el?.name ?? path.split('.').slice(-1)[0];
+			// No registry fallback needed here: shortPath is derived from path itself,
+			// not from el, so it can't go stale even if the registry lookup misses.
+			const shortPath = path.replace(/^Message\./, '');
 
 			return {
-				name: `${prefix}${shortPath}`,
-				description: path,
+				name: `${indent}${prefix}${fieldName}`,
+				description: `${indent}  ${shortPath}`,
 				value: path,
 			};
 		});
@@ -648,7 +701,9 @@ export class MappingEditorScreen implements Screen {
 
 	private updateRightPanel(): void {
 		if (this.rightSelect) {
-			this.rightSelect.options = this.buildRightOptions();
+			const options = this.buildRightOptions();
+			this.rightSelect.options = options;
+			this.previousRightIndex = firstFieldIndex(options);
 		}
 	}
 

@@ -197,9 +197,9 @@
 					{
 						"id": "TR.D3",
 						"description": "`feat/refine-schema-field-display`: Two-line + ancestor-grouped schema fields in mapping-editor.",
-						"status": "todo",
+						"status": "done",
 						"dependsOn": [],
-						"notes": "Cross-referenced as 2TM.5 / 2TM.6 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here)."
+						"notes": "Cross-referenced as 2TM.5 / 2TM.6 in the existing phase-1-mvp-features.md roadmap (external ID, not tracked here). Evidence: src/tui/utils/schemaFieldRows.ts (new, pure groupFieldPaths()); buildRightOptions() in src/tui/screens/mapping-editor.ts rewritten to emit indented __group_-prefixed header rows plus name/description built from the element name and Message.-stripped path; SELECTION_CHANGED skip-over navigation ported from settings.ts, guarded ITEM_SELECTED against group values. Manually verified in bun run cli: grouped/indented display renders correctly and arrow-key skip-over works; also surfaced a pre-existing (unrelated) bug where the right panel's search filter renders empty results, confirmed present on the pre-TR.D3 base and left out of scope."
 					}
 				]
 			},

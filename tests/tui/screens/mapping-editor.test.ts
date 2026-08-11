@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MappingEditorScreen } from '../../../src/tui/screens/mapping-editor';
 import { theme } from '../../../assets/brand/theme';
 import * as fixtures from '../../fixtures/tui/tui';
+import { buildTestRegistry } from '../../fixtures/tui/schemaRegistry';
 
 // @opentui/core can only load under Bun (see tests/fixtures/tui/opentui.ts),
 // so it's replaced with a shared test double.
@@ -11,6 +12,11 @@ vi.mock('@opentui/core', async () => import('../../fixtures/tui/opentui'));
 import { RGBA } from '@opentui/core';
 const accentColour = RGBA.fromHex(theme.accent);
 const borderColour = RGBA.fromHex(theme.border);
+
+// loadSchema is hoisted so the grouped-display describe block below can
+// override it to succeed; every other test keeps the default failure so
+// this.registry stays undefined and the right panel stays a no-op.
+const loadSchemaMock = vi.fn().mockResolvedValue({ success: false, error: { message: 'not found' } });
 
 // Mock createStorage: include ALL methods to avoid leaking incomplete mocks
 vi.mock('../../../src/lib/storage', () => ({
@@ -43,7 +49,7 @@ vi.mock('../../../src/lib/storage', () => ({
 		saveMapping: vi.fn().mockResolvedValue({ success: true, data: undefined }),
 		deleteMapping: vi.fn().mockResolvedValue({ success: true, data: undefined }),
 		listMappings: vi.fn().mockResolvedValue({ success: true, data: ['fac-airtable-2025'] }),
-		loadSchema: vi.fn().mockResolvedValue({ success: false, error: { message: 'not found' } }),
+		loadSchema: loadSchemaMock,
 		listSchemas: vi.fn().mockResolvedValue({ success: true, data: ['schemafile25.xsd'] }),
 		saveSubmission: vi.fn().mockResolvedValue({ success: true, data: '/tmp/test.xml' }),
 		listSubmissions: vi.fn().mockResolvedValue({ success: true, data: [] }),
@@ -52,12 +58,15 @@ vi.mock('../../../src/lib/storage', () => ({
 	}),
 }));
 
-// Mock buildSchemaRegistry (won't be called since loadSchema fails). Spreads
-// the real module so the screen's other imports from the package, isRequired,
+// buildSchemaRegistry is hoisted the same way as loadSchemaMock: most tests
+// never reach it (loadSchema fails by default), but the grouped-display
+// block below points it at a real, hand-built SchemaRegistry fixture.
+// Spreads the real module so the screen's other imports, isRequired,
 // isEffectivelyRequired and parseCSV, keep their real implementations.
+const buildSchemaRegistryMock = vi.fn();
 vi.mock('@jasonwarrenuk/schema-forge', async (importOriginal) => ({
 	...(await importOriginal<typeof import('@jasonwarrenuk/schema-forge')>()),
-	buildSchemaRegistry: vi.fn(),
+	buildSchemaRegistry: (...args: unknown[]) => buildSchemaRegistryMock(...args),
 }));
 
 /** Find the first descendant (recursively) with the given border title. */
@@ -247,6 +256,138 @@ describe('MappingEditorScreen', () => {
 			const mappings = (screen as any).mappings;
 			const uln = mappings.find((m: { csvColumn: string }) => m.csvColumn === 'ULN');
 			expect(uln.transform).toBe('postcode'); // next after stringToInt in TRANSFORMS
+		});
+	});
+
+	describe('grouped schema field display (TR.D3)', () => {
+		beforeEach(() => {
+			loadSchemaMock.mockResolvedValueOnce({ success: true, data: {} });
+			buildSchemaRegistryMock.mockReturnValueOnce(buildTestRegistry());
+		});
+
+		it('renders ancestor group headers with a __group_ value and no description', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const options = (screen as any).rightSelect.options;
+			const learnerHeader = options.find((o: { value: string }) => o.value === '__group_Learner');
+
+			expect(learnerHeader).toBeDefined();
+			expect(learnerHeader.description).toBe('');
+			expect(learnerHeader.name.trim()).toBe('Learner');
+		});
+
+		it('renders field rows with the bare element name and a Message.-stripped path', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const options = (screen as any).rightSelect.options;
+			const ulnRow = options.find((o: { value: string }) => o.value === 'Message.Learner.ULN');
+
+			expect(ulnRow).toBeDefined();
+			expect(ulnRow.name.trim().endsWith('ULN')).toBe(true);
+			expect(ulnRow.description).not.toContain('Message.');
+			expect(ulnRow.description.trim()).toBe('Learner.ULN');
+		});
+
+		it('indents a nested group and its fields deeper than the top-level group', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const options = (screen as any).rightSelect.options;
+			const learnerHeHeader = options.find((o: { value: string }) => o.value === '__group_Learner.LearnerHE');
+			const learnerHeader = options.find((o: { value: string }) => o.value === '__group_Learner');
+
+			expect(learnerHeHeader.name.length).toBeGreaterThan(learnerHeader.name.length);
+		});
+
+		it('skips over a group header when SELECTION_CHANGED lands on one, in either direction', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const rightSelect = (screen as any).rightSelect;
+			const options = rightSelect.options;
+			// Learner.LearnerHE sits mid-list (not at either boundary), so both
+			// skip directions land on a real neighbouring row rather than bouncing.
+			const headerIndex = options.findIndex(
+				(o: { value: string }) => o.value === '__group_Learner.LearnerHE'
+			);
+			expect(headerIndex).toBeGreaterThan(0);
+			expect(headerIndex).toBeLessThan(options.length - 1);
+
+			const selectionChangedCall = (rightSelect.on as any).mock.calls.find(
+				(c: unknown[]) => c[0] === 'selectionChanged'
+			);
+			expect(selectionChangedCall).toBeDefined();
+			const onSelectionChanged = selectionChangedCall[1] as (
+				index: number,
+				option: unknown
+			) => void;
+
+			// Moving downward onto the header should step one further forward.
+			(screen as any).previousRightIndex = headerIndex - 1;
+			onSelectionChanged(headerIndex, options[headerIndex]);
+			expect(rightSelect.setSelectedIndex).toHaveBeenCalledWith(headerIndex + 1);
+
+			// Moving upward onto the header should step one further back.
+			(screen as any).previousRightIndex = headerIndex + 1;
+			onSelectionChanged(headerIndex, options[headerIndex]);
+			expect(rightSelect.setSelectedIndex).toHaveBeenCalledWith(headerIndex - 1);
+		});
+
+		it('does not create a mapping when ITEM_SELECTED fires on a group header', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const rightSelect = (screen as any).rightSelect;
+			const itemSelectedCall = (rightSelect.on as any).mock.calls.find(
+				(c: unknown[]) => c[0] === 'itemSelected'
+			);
+			const onItemSelected = itemSelectedCall[1] as (index: number, option: unknown) => void;
+
+			const before = (screen as any).mappings.length;
+			onItemSelected(0, { name: 'Learner', description: '', value: '__group_Learner' });
+
+			expect((screen as any).mappings).toHaveLength(before);
+		});
+
+		it('initializes previousRightIndex to the first field row, not the row-0 header', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			const options = (screen as any).rightSelect.options;
+			expect(options[0].value).toBe('__group_Learner'); // row 0 is always a header
+			const expectedFirstFieldIndex = options.findIndex(
+				(o: { value: string }) => !o.value.startsWith('__group_')
+			);
+
+			expect((screen as any).previousRightIndex).toBe(expectedFirstFieldIndex);
+		});
+
+		it('re-initializes previousRightIndex to the first field row after a filtered rebuild', async () => {
+			const screen = new MappingEditorScreen(mockContext);
+			screen.render({ mode: 'create' });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Simulate having navigated away from the initial position before filtering.
+			(screen as any).previousRightIndex = 99;
+			(screen as any).searchQuery = 'UCASPERID';
+			(screen as any).filterPaths();
+			(screen as any).updateRightPanel();
+
+			const options = (screen as any).rightSelect.options;
+			expect(options[0].value).toBe('__group_Learner.LearnerHE'); // still a header, even filtered
+			const expectedFirstFieldIndex = options.findIndex(
+				(o: { value: string }) => !o.value.startsWith('__group_')
+			);
+
+			expect((screen as any).previousRightIndex).toBe(expectedFirstFieldIndex);
 		});
 	});
 });

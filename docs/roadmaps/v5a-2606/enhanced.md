@@ -72,8 +72,9 @@ Each task is a single, independently-mergeable branch (per the project's small-b
   - Note: Evidence: `src/tui/components/commandPalette.ts` and `src/tui/utils/fuzzy.ts` (new, subsequence match + rank); `ctrl+p` binding, `PALETTE_SCREENS` jump list and overlay lifecycle added to `src/tui/utils/keymap.ts`; wired into the six no-payload screens (dashboard, mapping-builder, mapping-editor, settings, about, history) (commit `a3bba1c`, "add ctrl+p command palette for fuzzy screen jump") on branch `feat/improve-ui`. Scoped to screen jumps only, actions are not in the palette, a deliberate cut.
 - [x] **TR.D2**: `feat/add-theme-toggle`: Light/dark switch in settings, persisted to config. _(depends on TR.A1)_
   - Note: Evidence: `applyTheme()`/`activeTheme()` and the dark palette added to `assets/brand/theme.ts` (mutating the shared theme object in place so every importer sees the switch); `theme` added to `src/lib/types/configTypes.ts` and exposed as a toggle field in `src/tui/screens/settings.ts`, which repaints live by resolving a `replace()` back through the Router (commit `9a69b66`, "add live light/dark theme toggle to Settings") on branch `feat/improve-ui`.
-- [ ] **TR.D3**: `feat/refine-schema-field-display`: Two-line + ancestor-grouped schema fields in mapping-editor.
+- [x] **TR.D3**: `feat/refine-schema-field-display`: Two-line + ancestor-grouped schema fields in mapping-editor.
   - Note: Cross-referenced as `2TM.5` / `2TM.6` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
+  - Note: Evidence: `src/tui/utils/schemaFieldRows.ts` (new, pure `groupFieldPaths()`, parents-before-children ordering); `buildRightOptions()` in `src/tui/screens/mapping-editor.ts` rewritten to emit indented `__group_`-prefixed header rows plus `name`/`description` built from the element name and the `Message.`-stripped path; `SELECTION_CHANGED` skip-over navigation ported from `settings.ts`, and `ITEM_SELECTED` guarded against group values so Enter on a header can't create a mapping. Manually verified in `bun run cli`: grouped/indented display renders correctly against the real `schemafile25.xsd` registry, and arrow-key navigation skips headers in both directions. Also surfaced a pre-existing (unrelated) bug where the right panel's search filter renders an empty list; confirmed present on the pre-TR.D3 base and left out of scope for this branch.
 
 ---
 
@@ -86,6 +87,15 @@ Each task is a single, independently-mergeable branch (per the project's small-b
   - Note: Added `scripts/demo-env.ts` to pre-seed/restore `~/.iris/config.json` around recordings (convert gets a disposable scratch `outputDir` so it never writes into the tracked `docs/data/iris` samples). All four tapes exit via the dashboard's own `q` quit path; a raw `Ctrl+C` leaves the ttyd terminal unresponsive to further input after OpenTUI exits. Also fixed the `mapping-builder.ts` `selectedIndex` bug flagged as a follow-up in TR.B5's notes (duplicate/delete now use `getSelectedIndex()`).
 - [x] **TR.E3**: `docs/add-quickstart-tutorial`: A getting-started tutorial for non-technical users, illustrated with the TR.E2 recordings (first launch → convert → resolve issues → submit).
   - Note: Cross-referenced as `2UD.1` in the existing `phase-1-mvp-features.md` roadmap (external ID, not tracked here).
+
+---
+
+## Known Issues
+
+Cross-cutting bugs found during other work, not scoped to any single task above.
+
+- **Mapping-editor right panel search filter renders empty results.** Surfaced during TR.D3's manual verification; confirmed present on the pre-TR.D3 base, so unrelated to the schema field grouping change. Not yet triaged to a branch.
+- **`bun test` hangs when `tests/tui/screens/mapping-editor.test.ts` is targeted in isolation** (e.g. `bun test tests/tui/screens/mapping-editor.test.ts`), but passes cleanly as part of the full suite (`bun test`, 296 pass / 0 fail). Confirmed present on `main`, so unrelated to TR.D3. Likely a `vi.mock` hoisting interaction specific to Bun's single-file test runner. Not yet triaged to a branch.
 
 ---
 
@@ -177,8 +187,7 @@ graph LR
 	TR.E1 --> TR.E2
 	TR.E2 --> TR.E3
 	TR.E3 --> M6
-	class TR.D3 todo
-	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.D1,TR.D2,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2,TR.S3 done
+	class TR.A1,TR.A2,TR.A3,TR.A4,TR.A5,TR.A6,TR.B1,TR.B2,TR.B3,TR.B4,TR.B5,TR.B6,TR.C1,TR.C2,TR.C3,TR.C4,TR.C5,TR.D1,TR.D2,TR.D3,TR.E1,TR.E2,TR.E3,TR.S1,TR.S2,TR.S3 done
 ```
 
 ## Cross-references to existing roadmap
